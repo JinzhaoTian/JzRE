@@ -1,0 +1,30 @@
+{
+    "env": {
+        "projectIncludePath": [
+            "${workspaceFolder}/JzRE/include",
+            "${workspaceFolder}/JzRE/source"
+        ],
+        "projectDefines": [
+            "_DEBUG",
+            "UNICODE",
+            "_UNICODE"
+        ]
+    },
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${projectIncludePath}"
+            ],
+            "defines": [
+                "${projectDefines}",
+                "_WINDOWS"
+            ],
+            "compilerPath": "C:\\Users\\jinzh\\source\\mingw64\\bin\\g++.exe",
+            "cStandard": "c23",
+            "cppStandard": "c++23",
+            "intelliSenseMode": "windows-gcc-x64"
+        }
+    ],
+    "version": 4
+}
