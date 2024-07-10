@@ -1,6 +1,7 @@
 {
     "env": {
         "projectIncludePath": [
+            "${workspaceFolder}/dependencies/include",
             "${workspaceFolder}/JzRE/include",
             "${workspaceFolder}/JzRE/source"
         ],

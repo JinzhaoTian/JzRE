@@ -10,10 +10,17 @@
                 "-g", // 添加调试选项
                 "${workspaceFolder}\\main.cpp",
                 "${workspaceFolder}\\JzRE\\source\\*.cpp",
+                "${workspaceFolder}\\JzRE\\source\\*.c",
                 "-I",
                 "${workspaceFolder}\\JzRE\\include",
                 "-I",
                 "${workspaceFolder}\\JzRE\\source",
+                "-L",
+                "${workspaceFolder}\\denpendencies\\lib",
+                "-l",
+                "glfw3",
+                "-l",
+                "opengl32",
                 "-o",
                 "${workspaceFolder}\\output\\RenderingEngine.exe",
                 "-lgdi32"
