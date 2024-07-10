@@ -15,8 +15,8 @@ Framebuffer::~Framebuffer() {
 void Framebuffer::Resize(I32 w, I32 h) {
     U32 *newData = new U32[w * h];
 
-    for (int i = 0; i < std::min(height, h); ++i) {
-        for (int j = 0; j < std::min(width, w); ++j) {
+    for (int i = 0; i < (std::min)(height, h); ++i) {
+        for (int j = 0; j < (std::min)(width, w); ++j) {
             newData[i * w + j] = this->data[i * width + j];
         }
     }

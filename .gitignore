@@ -30,3 +30,9 @@
 *.exe
 *.out
 *.app
+
+# Build Path
+/[Bb]uild
+
+# Output Path
+/[Oo]utput
