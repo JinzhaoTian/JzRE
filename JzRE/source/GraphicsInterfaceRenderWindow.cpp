@@ -1,6 +1,7 @@
 #include "GraphicsInterfaceRenderWindow.h"
 
 namespace JzRE {
+
 void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
     // make sure the viewport matches the new window dimensions; note that width and
     // height will be significantly larger than specified on retina displays.
@@ -31,6 +32,9 @@ GraphicsInterfaceRenderWindow::GraphicsInterfaceRenderWindow(I32 w, I32 h, const
         this->hwnd == NULL;
         return;
     }
+}
+
+GraphicsInterfaceRenderWindow::~GraphicsInterfaceRenderWindow() {
 }
 
 void GraphicsInterfaceRenderWindow::ResizeWindow(I32 w, I32 h) {

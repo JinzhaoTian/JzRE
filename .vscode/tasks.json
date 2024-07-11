@@ -3,27 +3,25 @@
         {
             "type": "cppbuild",
             "label": "C/C++: g++.exe build active file",
-            "command": "C:\\Users\\jinzh\\source\\mingw64\\bin\\g++.exe",
+            "command": "D:\\mingw64\\bin\\g++.exe",
             "args": [
                 "-fdiagnostics-color=always",
                 "-std=c++2a",
                 "-g", // 添加调试选项
-                "${workspaceFolder}\\main.cpp",
-                "${workspaceFolder}\\JzRE\\source\\*.cpp",
-                "${workspaceFolder}\\JzRE\\source\\*.c",
+                "${workspaceFolder}/main.cpp",
+                "${workspaceFolder}/JzRE/source/*.c",
+                "${workspaceFolder}/JzRE/source/*.cpp",
                 "-I",
-                "${workspaceFolder}\\JzRE\\include",
+                "${workspaceFolder}/JzRE/include",
                 "-I",
-                "${workspaceFolder}\\JzRE\\source",
+                "${workspaceFolder}/dependencies/include",
                 "-L",
-                "${workspaceFolder}\\denpendencies\\lib",
-                "-l",
-                "glfw3",
-                "-l",
-                "opengl32",
+                "${workspaceFolder}/dependencies/lib",
+                "-lglfw3dll",
+                "-lopengl32",
+                "-lgdi32",
                 "-o",
-                "${workspaceFolder}\\output\\RenderingEngine.exe",
-                "-lgdi32"
+                "${workspaceFolder}/output/RenderingEngine.exe",
             ],
             "options": {
                 "cwd": "${fileDirname}"

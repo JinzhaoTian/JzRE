@@ -1,9 +1,8 @@
 {
     "env": {
         "projectIncludePath": [
-            "${workspaceFolder}/dependencies/include",
-            "${workspaceFolder}/JzRE/include",
-            "${workspaceFolder}/JzRE/source"
+            "${workspaceFolder}/JzRE/include/",
+            "${workspaceFolder}/dependencies/include/"
         ],
         "projectDefines": [
             "_DEBUG",
@@ -21,7 +20,7 @@
                 "${projectDefines}",
                 "_WINDOWS"
             ],
-            "compilerPath": "C:\\Users\\jinzh\\source\\mingw64\\bin\\g++.exe",
+            "compilerPath": "D:\\mingw64\\bin\\g++.exe",
             "cStandard": "c23",
             "cppStandard": "c++23",
             "intelliSenseMode": "windows-gcc-x64"

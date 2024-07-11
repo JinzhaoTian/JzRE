@@ -1,5 +1,8 @@
 #pragma once
 
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+
 #include <cstdint>
 #include <cstring>
 #include <string>
@@ -13,6 +16,7 @@
 #include <cmath>
 #include <functional>
 #include <memory>
+#include <iostream>
 #include <sstream>
 #include <cmath>
 #include <cassert>
