@@ -7,6 +7,7 @@ namespace JzRE {
 class GraphicsInterfaceRenderEngine {
 public:
     GraphicsInterfaceRenderEngine();
+    ~GraphicsInterfaceRenderEngine();
     void Render();
 
 private:

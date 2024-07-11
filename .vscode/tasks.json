@@ -17,7 +17,7 @@
                 "${workspaceFolder}/dependencies/include",
                 "-L",
                 "${workspaceFolder}/dependencies/lib",
-                "-lglfw3dll",
+                "-lglfw3",
                 "-lopengl32",
                 "-lgdi32",
                 "-o",
