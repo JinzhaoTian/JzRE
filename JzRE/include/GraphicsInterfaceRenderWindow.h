@@ -7,20 +7,25 @@ namespace JzRE {
 
 class GraphicsInterfaceRenderWindow {
 public:
-    GLFWwindow *hwnd;
+    RawPtr<GLFWwindow> hwnd;
 
     I32 wndWidth, wndHeight;
+    String title;
 
 public:
-    GraphicsInterfaceRenderWindow(I32 w, I32 h, const String &title);
+    GraphicsInterfaceRenderWindow();
     ~GraphicsInterfaceRenderWindow();
+
+    bool Initialize(I32 w, I32 h, const String &title);
 
     void ResizeWindow(I32 w, I32 h);
 
     bool ShouldClose();
     void PollEvents();
-    void SwapBuffer();
-    void ClearBuffer();
+
+    void CreateFramebuffer();
+    void SwapFramebuffer();
+    void ClearFramebuffer();
 
     void ProcessInput();
 };

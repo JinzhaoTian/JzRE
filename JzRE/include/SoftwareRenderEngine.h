@@ -8,7 +8,11 @@ namespace JzRE {
 class SoftwareRenderEngine {
 public:
     SoftwareRenderEngine();
-    void Render();
+    ~SoftwareRenderEngine();
+
+    bool Initialize();
+    void Run();
+    void Shutdown();
 
 private:
     const int wndWidth = 800;
@@ -16,7 +20,9 @@ private:
 
     const String title = "Software/CPU Render Engine";
 
-    SharedPtr<SoftwareRenderWindow> window;
-    SharedPtr<Renderer> renderer;
+    bool isRunning;
+
+    SoftwareRenderWindow window;
+    Renderer renderer;
 };
 } // namespace JzRE

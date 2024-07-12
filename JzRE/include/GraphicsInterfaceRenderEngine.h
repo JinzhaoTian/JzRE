@@ -8,14 +8,19 @@ class GraphicsInterfaceRenderEngine {
 public:
     GraphicsInterfaceRenderEngine();
     ~GraphicsInterfaceRenderEngine();
-    void Render();
+
+    bool Initialize();
+    void Run();
+    void Shutdown();
 
 private:
     const int wndWidth = 800;
     const int wndHeight = 600;
 
-    const String title = "GraphicsInterface Render Engine";
+    const String title = "Graphics Interface Render Engine";
 
-    SharedPtr<GraphicsInterfaceRenderWindow> window;
+    bool isRunning;
+
+    GraphicsInterfaceRenderWindow window;
 };
 } // namespace JzRE

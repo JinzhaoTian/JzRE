@@ -2,6 +2,7 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
 
 #include <cstdint>
 #include <cstring>
@@ -88,6 +89,11 @@ inline UniquePtr<T> CreateUniquePtr(Args &&...args) {
 template <typename T, typename... Args>
 inline RawPtr<T> CreateRawPtr(Args &&...args) {
     return new T(std::forward<Args>(args)...);
+}
+
+template <typename To, typename From>
+inline To StaticCast(From from) {
+    return static_cast<To>(from);
 }
 
 } // namespace JzRE

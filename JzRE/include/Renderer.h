@@ -9,7 +9,7 @@ namespace JzRE {
 
 class Renderer {
 public:
-    Renderer() = delete;
+    Renderer() = default;
     ~Renderer() = default;
     Renderer(I32 w, I32 h) :
         deviceWidth(w), deviceHeight(h){};

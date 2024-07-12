@@ -2,8 +2,15 @@
 #include "GraphicsInterfaceRenderEngine.h"
 
 int main() {
-    JzRE::UniquePtr<JzRE::GraphicsInterfaceRenderEngine> renderEngine = JzRE::CreateUniquePtr<JzRE::GraphicsInterfaceRenderEngine>();
-    renderEngine->Render();
+    JzRE::GraphicsInterfaceRenderEngine re;
+
+    if (!re.Initialize()) {
+        std::cerr << "Failed to initialize engine" << std::endl;
+        return -1;
+    }
+
+    re.Run();
+    re.Shutdown();
 
     return 0;
 }

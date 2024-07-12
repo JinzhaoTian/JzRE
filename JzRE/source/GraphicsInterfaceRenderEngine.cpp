@@ -16,14 +16,27 @@ const char *fragmentShaderSource = "#version 330 core\n"
                                    "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
                                    "}\n\0";
 
-GraphicsInterfaceRenderEngine::GraphicsInterfaceRenderEngine() {
-    this->window = CreateSharedPtr<GraphicsInterfaceRenderWindow>(this->wndWidth, this->wndHeight, this->title.c_str());
+GraphicsInterfaceRenderEngine::GraphicsInterfaceRenderEngine() :
+    isRunning(false) {
 }
 
 GraphicsInterfaceRenderEngine::~GraphicsInterfaceRenderEngine() {
+    Shutdown();
 }
 
-void GraphicsInterfaceRenderEngine::Render() {
+bool GraphicsInterfaceRenderEngine::Initialize() {
+    bool isWndCreated = window.Initialize(this->wndWidth, this->wndHeight, this->title);
+    if (!isWndCreated) {
+        return false;
+    }
+
+    // TODO: init
+
+    isRunning = true;
+    return true;
+}
+
+void GraphicsInterfaceRenderEngine::Run() {
     // build and compile our shader program
     // ------------------------------------
     // vertex shader
@@ -109,10 +122,10 @@ void GraphicsInterfaceRenderEngine::Render() {
 
     // render loop
     // -----------
-    while (!this->window->ShouldClose()) {
+    while (isRunning && !window.ShouldClose()) {
         // input
         // -----
-        this->window->ProcessInput();
+        window.ProcessInput();
 
         // render
         // ------
@@ -128,9 +141,13 @@ void GraphicsInterfaceRenderEngine::Render() {
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
-        this->window->SwapBuffer();
-        this->window->PollEvents();
+        window.SwapFramebuffer();
+        window.PollEvents();
     }
+}
+
+void GraphicsInterfaceRenderEngine::Shutdown() {
+    // TODO: 释放资源
 }
 
 } // namespace JzRE
