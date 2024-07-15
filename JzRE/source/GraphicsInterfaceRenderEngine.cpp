@@ -31,6 +31,7 @@ bool GraphicsInterfaceRenderEngine::Initialize() {
     }
 
     // TODO: init
+    renderer.Initialize();
 
     isRunning = true;
     return true;

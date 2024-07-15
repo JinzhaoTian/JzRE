@@ -61,14 +61,7 @@ bool GraphicsInterfaceRenderWindow::Initialize(I32 w, I32 h, const String &title
     // callback: key
     glfwSetKeyCallback(this->hwnd, callback_key);
 
-    // glad: load all OpenGL function pointers
-    // ---------------------------------------
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-        std::cout << "Failed to initialize GLAD" << std::endl;
-        this->hwnd == NULL;
-        return false;
-    }
-    return true;
+        return true;
 }
 
 void GraphicsInterfaceRenderWindow::ResizeWindow(I32 w, I32 h) {

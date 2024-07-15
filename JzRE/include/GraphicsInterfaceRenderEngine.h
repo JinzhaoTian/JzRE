@@ -2,6 +2,7 @@
 
 #include "CommonTypes.h"
 #include "GraphicsInterfaceRenderWindow.h"
+#include "GraphicsInterfaceRenderer.h"
 
 namespace JzRE {
 class GraphicsInterfaceRenderEngine {
@@ -22,5 +23,6 @@ private:
     bool isRunning;
 
     GraphicsInterfaceRenderWindow window;
+    GraphicsInterfaceRenderer renderer;
 };
 } // namespace JzRE
