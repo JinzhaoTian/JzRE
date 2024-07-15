@@ -20,7 +20,7 @@
                 "${projectDefines}",
                 "_WINDOWS"
             ],
-            "compilerPath": "D:\\mingw64\\bin\\g++.exe",
+            "compilerPath": "C:/Program Files/mingw64/bin/g++.exe",
             "cStandard": "c23",
             "cppStandard": "c++23",
             "intelliSenseMode": "windows-gcc-x64"
