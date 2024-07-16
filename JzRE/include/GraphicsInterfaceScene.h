@@ -1,18 +1,30 @@
 #pragma once
 
 #include "CommonTypes.h"
-#include "Object.h"
 #include "GraphicsInterfaceShader.h"
+#include "RenderableObject.h"
 
 namespace JzRE {
 class GraphicsInterfaceScene {
 public:
-    void AddObject(RawPtr<Object> object);
-    void RemoveObject(RawPtr<Object> object);
-    void Update(float deltaTime);
-    void Draw(GraphcsInterfaceShader &shader);
+    GraphicsInterfaceScene();
+    ~GraphicsInterfaceScene();
+
+    void AddObject(SharedPtr<RenderableObject> object);
+    void RemoveObject(SharedPtr<RenderableObject> object);
+
+    // void AddLight(SharedPtr<Light> light);
+    // void RemoveLight(SharedPtr<Light> light);
+
+    // void SetCamera(SharedPtr<Camera> camera);
+    // SharedPtr<Camera> GetCamera() const;
+
+    void Update(F32 deltaTime);
+    void Draw(const GraphicsInterfaceShader &shader) const;
 
 private:
-    List<RawPtr<Object>> objects;
+    List<SharedPtr<RenderableObject>> objects;
+    // List<SharedPtr<Light>> lights;
+    // SharedPtr<Camera> camera;
 };
 } // namespace JzRE

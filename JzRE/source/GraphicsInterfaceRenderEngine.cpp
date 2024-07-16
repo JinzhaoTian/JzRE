@@ -25,13 +25,32 @@ GraphicsInterfaceRenderEngine::~GraphicsInterfaceRenderEngine() {
 }
 
 Bool GraphicsInterfaceRenderEngine::Initialize() {
-    Bool isWndCreated = this->window.Initialize(this->wndWidth, this->wndHeight, this->title);
-    if (!isWndCreated) {
+    Bool isWndInited = this->window.Initialize(this->wndWidth, this->wndHeight, this->title);
+    if (!isWndInited) {
         return false;
     }
 
-    // TODO: init
-    this->renderer.Initialize();
+    Bool isRendererInited = this->renderer.Initialize();
+    if (!isRendererInited) {
+        return false;
+    }
+
+    GraphicsInterfaceInput::Initialize(this->window.GetGLFWwindow());
+
+    auto texture = GraphicsInterfaceResourceManager::getInstance().LoadTexture("example", "path/to/texture.png");
+    auto shader = GraphicsInterfaceResourceManager::getInstance().LoadShader("example", "path/to/vertex.shader", "path/to/fragment.shader");
+
+    if (!texture || !shader) {
+        std::cerr << "Failed to load resources" << std::endl;
+        return false;
+    }
+
+    // 初始化场景并添加对象
+    auto object = CreateSharedPtr<RenderableObject>();
+    // 设置对象的纹理、着色器等
+    object->SetTexture(texture);
+    object->SetShader(shader);
+    scene.AddObject(object);
 
     this->isRunning = true;
     return true;
@@ -149,6 +168,9 @@ void GraphicsInterfaceRenderEngine::Run() {
 
 void GraphicsInterfaceRenderEngine::Shutdown() {
     // TODO: 释放资源
+}
+
+void GraphicsInterfaceRenderEngine::ProcessInput() {
 }
 
 } // namespace JzRE

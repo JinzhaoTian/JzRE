@@ -3,6 +3,10 @@
 #include "CommonTypes.h"
 #include "GraphicsInterfaceRenderWindow.h"
 #include "GraphicsInterfaceRenderer.h"
+#include "GraphicsInterfaceScene.h"
+#include "GraphicsInterfaceInput.h"
+#include "GraphicsInterfaceResourceManager.h"
+#include "RenderableObject.h"
 
 namespace JzRE {
 class GraphicsInterfaceRenderEngine {
@@ -24,5 +28,8 @@ private:
 
     GraphicsInterfaceRenderWindow window;
     GraphicsInterfaceRenderer renderer;
+    GraphicsInterfaceScene scene;
+
+    void ProcessInput();
 };
 } // namespace JzRE

@@ -7,11 +7,17 @@
 namespace JzRE {
 class Transform {
 public:
-    void Translate(const Vec3 &vector);
-    void Rotate(float angle, const Vec3 &axis);
-    void Scale(const Vec3 &factor);
+    Transform();
+
+    void SetPosition(const glm::vec3 &position);
+    void SetRotation(float angle, const glm::vec3 &axis);
+    void SetScale(const glm::vec3 &scale);
+
+    glm::mat4 GetModelMatrix() const;
 
 private:
-    Mat4 matrix;
+    glm::vec3 position;
+    glm::vec3 scale;
+    glm::mat4 rotation;
 };
 } // namespace JzRE

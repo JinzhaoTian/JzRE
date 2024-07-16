@@ -7,8 +7,8 @@
 namespace JzRE {
 class Object {
 public:
-    virtual void Update(float deltaTime) = 0;
-    virtual void Draw(GraphicsInterfaceRenderer &renderer) = 0;
+    virtual void Update(F32 deltaTime) = 0;
+    virtual void Draw() const = 0;
 
 protected:
     Transform transform;

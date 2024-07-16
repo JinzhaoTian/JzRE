@@ -16,14 +16,18 @@
 #include <array>
 #include <unordered_set>
 #include <unordered_map>
+#include <algorithm>
 #include <cmath>
 #include <functional>
 #include <memory>
 #include <iostream>
 #include <sstream>
+#include <fstream>
 #include <cmath>
 #include <cassert>
 #include <type_traits>
+
+#include <stb/stb_image.h>
 
 #include <windows.h>
 
