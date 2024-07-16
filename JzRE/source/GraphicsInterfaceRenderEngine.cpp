@@ -24,16 +24,16 @@ GraphicsInterfaceRenderEngine::~GraphicsInterfaceRenderEngine() {
     Shutdown();
 }
 
-bool GraphicsInterfaceRenderEngine::Initialize() {
-    bool isWndCreated = window.Initialize(this->wndWidth, this->wndHeight, this->title);
+Bool GraphicsInterfaceRenderEngine::Initialize() {
+    Bool isWndCreated = this->window.Initialize(this->wndWidth, this->wndHeight, this->title);
     if (!isWndCreated) {
         return false;
     }
 
     // TODO: init
-    renderer.Initialize();
+    this->renderer.Initialize();
 
-    isRunning = true;
+    this->isRunning = true;
     return true;
 }
 

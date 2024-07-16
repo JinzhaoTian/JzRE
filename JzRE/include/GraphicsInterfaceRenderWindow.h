@@ -16,11 +16,11 @@ public:
     GraphicsInterfaceRenderWindow();
     ~GraphicsInterfaceRenderWindow();
 
-    bool Initialize(I32 w, I32 h, const String &title);
+    Bool Initialize(I32 w, I32 h, const String &title);
 
     void ResizeWindow(I32 w, I32 h);
 
-    bool ShouldClose();
+    Bool ShouldClose();
     void PollEvents();
 
     void CreateFramebuffer();

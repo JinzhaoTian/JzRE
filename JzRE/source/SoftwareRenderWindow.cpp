@@ -35,17 +35,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     return DefWindowProc(hWnd, msg, wParam, lParam);
 }
 
-SoftwareRenderWindow::SoftwareRenderWindow():
-hwnd(NULL), wndWidth(800), wndHeight(600), title("Software/CPU Render Engine"){
-    
+SoftwareRenderWindow::SoftwareRenderWindow() :
+    hwnd(NULL), wndWidth(800), wndHeight(600), title("Software/CPU Render Engine") {
 }
 
 SoftwareRenderWindow::~SoftwareRenderWindow() {
 }
 
-bool SoftwareRenderWindow::Initialize(I32 w, I32 h, const String &title) {
+Bool SoftwareRenderWindow::Initialize(I32 w, I32 h, const String &title) {
     this->wndWidth = w;
-    this-> wndHeight= h; 
+    this->wndHeight = h;
     this->hasClosed = false;
 
     frontBuffer = CreateSharedPtr<Framebuffer>(wndWidth, wndHeight);
@@ -133,9 +132,7 @@ bool SoftwareRenderWindow::Initialize(I32 w, I32 h, const String &title) {
     return true;
 }
 
-
-
-bool SoftwareRenderWindow::ShouldClose() {
+Bool SoftwareRenderWindow::ShouldClose() {
     return hasClosed;
 }
 

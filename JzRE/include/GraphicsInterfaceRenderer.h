@@ -10,7 +10,7 @@ public:
     GraphicsInterfaceRenderer();
     ~GraphicsInterfaceRenderer();
 
-    bool Initialize();
+    Bool Initialize();
     void Shutdown();
 
     void Render(const GraphicsInterfaceScene &scene);

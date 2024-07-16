@@ -13,7 +13,7 @@ public:
     I32 wndWidth, wndHeight;
     String title;
 
-    bool hasClosed;
+    Bool hasClosed;
 
     SharedPtr<Framebuffer> frontBuffer;
     SharedPtr<Framebuffer> backBuffer;

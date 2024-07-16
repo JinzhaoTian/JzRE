@@ -9,30 +9,31 @@ SoftwareRenderEngine::~SoftwareRenderEngine() {
     Shutdown();
 }
 
-bool SoftwareRenderEngine::Initialize() {
-    bool isWndCreated = window.Initialize(this->wndWidth, this->wndHeight, this->title);
+Bool SoftwareRenderEngine::Initialize() {
+    Bool isWndCreated = this->window.Initialize(this->wndWidth, this->wndHeight, this->title);
     if (!isWndCreated) {
         return false;
     }
 
     // TODO: init
-    renderer = Renderer(wndWidth, wndHeight);
-    renderer.BindFrambuffer(window.backBuffer);
+    this->renderer = Renderer(wndWidth, wndHeight);
+    this->renderer.BindFrambuffer(window.backBuffer);
 
-    isRunning = true;
+    this->isRunning = true;
     return true;
 }
 
 void SoftwareRenderEngine::Run() {
-    while (!window.ShouldClose()) {
-        renderer.DrawLine(0, 0, 100, 500, Color::white);
+    while (this->isRunning && !this->window.ShouldClose()) {
+        this->renderer.DrawLine(0, 0, 100, 500, Color::white);
 
-        window.SwapBuffer();
-        window.PollEvents();
+        this->window.SwapBuffer();
+        this->window.PollEvents();
 
         Sleep(1000);
     }
 }
+
 void SoftwareRenderEngine::Shutdown() {
     // TODO: 释放资源
 }

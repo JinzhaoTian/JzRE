@@ -38,6 +38,6 @@ void GraphcsInterfaceShader::SetUniform(const String &name, const glm::mat4 &mat
 String GraphcsInterfaceShader::ReadFile(const String &path) const {
 }
 
-bool GraphcsInterfaceShader::CompileShader(const String &source, GLenum shaderType, GLuint &shader) const {
+Bool GraphcsInterfaceShader::CompileShader(const String &source, GLenum shaderType, GLuint &shader) const {
 }
 } // namespace JzRE

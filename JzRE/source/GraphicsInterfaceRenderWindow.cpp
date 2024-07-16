@@ -30,7 +30,7 @@ GraphicsInterfaceRenderWindow::~GraphicsInterfaceRenderWindow() {
     }
 }
 
-bool GraphicsInterfaceRenderWindow::Initialize(I32 w, I32 h, const String &title) {
+Bool GraphicsInterfaceRenderWindow::Initialize(I32 w, I32 h, const String &title) {
     this->wndWidth = w;
     this->wndHeight = h;
     this->title = title;
@@ -61,7 +61,7 @@ bool GraphicsInterfaceRenderWindow::Initialize(I32 w, I32 h, const String &title
     // callback: key
     glfwSetKeyCallback(this->hwnd, callback_key);
 
-        return true;
+    return true;
 }
 
 void GraphicsInterfaceRenderWindow::ResizeWindow(I32 w, I32 h) {
@@ -70,7 +70,7 @@ void GraphicsInterfaceRenderWindow::ResizeWindow(I32 w, I32 h) {
     glViewport(0, 0, w, h);
 }
 
-bool GraphicsInterfaceRenderWindow::ShouldClose() {
+Bool GraphicsInterfaceRenderWindow::ShouldClose() {
     return glfwWindowShouldClose(this->hwnd);
 }
 

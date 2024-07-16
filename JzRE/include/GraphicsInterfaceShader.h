@@ -20,6 +20,6 @@ private:
     GLuint program;
 
     String ReadFile(const String &path) const;
-    bool CompileShader(const String &source, GLenum shaderType, GLuint &shader) const;
+    Bool CompileShader(const String &source, GLenum shaderType, GLuint &shader) const;
 };
 } // namespace JzRE

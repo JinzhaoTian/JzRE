@@ -15,12 +15,12 @@ public:
     void Shutdown();
 
 private:
-    const int wndWidth = 800;
-    const int wndHeight = 600;
+    const I32 wndWidth = 800;
+    const I32 wndHeight = 600;
 
     const String title = "Software/CPU Render Engine";
 
-    bool isRunning;
+    Bool isRunning;
 
     SoftwareRenderWindow window;
     Renderer renderer;
