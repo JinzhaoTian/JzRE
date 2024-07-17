@@ -8,9 +8,8 @@
                 "-fdiagnostics-color=always",
                 "-std=c++2a",
                 "-g", // 添加调试选项
+                "${workspaceFolder}/JzRE/source/**",
                 "${workspaceFolder}/main.cpp",
-                "${workspaceFolder}/JzRE/source/*.c",
-                "${workspaceFolder}/JzRE/source/*.cpp",
                 "-I",
                 "${workspaceFolder}/JzRE/include",
                 "-I",
