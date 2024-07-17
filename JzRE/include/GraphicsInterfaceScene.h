@@ -1,7 +1,6 @@
 #pragma once
 
 #include "CommonTypes.h"
-#include "GraphicsInterfaceShader.h"
 #include "RenderableObject.h"
 
 namespace JzRE {
@@ -20,7 +19,7 @@ public:
     // SharedPtr<Camera> GetCamera() const;
 
     void Update(F32 deltaTime);
-    void Draw(const GraphicsInterfaceShader &shader) const;
+    void Draw() const;
 
 private:
     List<SharedPtr<RenderableObject>> objects;

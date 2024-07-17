@@ -2,7 +2,6 @@
 
 #include "CommonTypes.h"
 #include "Transform.h"
-#include "GraphicsInterfaceRenderer.h"
 
 namespace JzRE {
 class Object {

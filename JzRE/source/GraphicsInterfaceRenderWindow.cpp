@@ -12,10 +12,7 @@ GraphicsInterfaceRenderWindow::GraphicsInterfaceRenderWindow() :
 }
 
 GraphicsInterfaceRenderWindow::~GraphicsInterfaceRenderWindow() {
-    if (hwnd) {
-        glfwDestroyWindow(hwnd);
-        glfwTerminate();
-    }
+    Shutdown();
 }
 
 Bool GraphicsInterfaceRenderWindow::Initialize(I32 w, I32 h, const String &title) {
@@ -76,14 +73,15 @@ void GraphicsInterfaceRenderWindow::ProcessInput() {
         glfwSetWindowShouldClose(this->hwnd, true);
 }
 
-void GraphicsInterfaceRenderWindow::CreateFramebuffer() {
-}
-
 void GraphicsInterfaceRenderWindow::SwapFramebuffer() {
     glfwSwapBuffers(this->hwnd);
 }
 
-void GraphicsInterfaceRenderWindow::ClearFramebuffer() {
+void GraphicsInterfaceRenderWindow::Shutdown() {
+    if (hwnd) {
+        glfwDestroyWindow(hwnd);
+        glfwTerminate();
+    }
 }
 
 } // namespace JzRE

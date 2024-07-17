@@ -30,6 +30,7 @@
 #include <stb/stb_image.h>
 
 #include <windows.h>
+#include <chrono>
 
 #define RGBA(r, g, b, a) ((b) | ((g) << 8) | ((r) << 16) | ((a) << 24))
 

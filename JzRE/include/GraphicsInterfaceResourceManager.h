@@ -27,7 +27,5 @@ private:
 
     UnorderedMap<String, SharedPtr<GraphicsInterfaceTexture>> textures;
     UnorderedMap<String, SharedPtr<GraphicsInterfaceShader>> shaders;
-
-    static GraphicsInterfaceResourceManager m_instance;
 };
 } // namespace JzRE

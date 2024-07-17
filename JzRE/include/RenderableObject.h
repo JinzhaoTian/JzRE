@@ -4,8 +4,6 @@
 #include "Object.h"
 #include "GraphicsInterfaceShader.h"
 #include "GraphicsInterfaceTexture.h"
-#include "GraphicsInterfaceRenderer.h"
-#include "Transform.h"
 
 namespace JzRE {
 class RenderableObject : public Object {
@@ -27,7 +25,7 @@ public:
     void Draw() const override;
 
 private:
-    GLuint VAO, VBO;
+    GLuint VAO, VBO, EBO;
 
     SharedPtr<GraphicsInterfaceTexture> texture;
     SharedPtr<GraphicsInterfaceShader> shader;

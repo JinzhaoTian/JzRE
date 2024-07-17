@@ -2,6 +2,7 @@
 
 namespace JzRE {
 GraphicsInterfaceResourceManager &GraphicsInterfaceResourceManager::getInstance() {
+    static GraphicsInterfaceResourceManager m_instance;
     return m_instance;
 }
 

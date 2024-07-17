@@ -3,7 +3,6 @@
 #include "CommonTypes.h"
 #include "GraphicsInterfaceShader.h"
 #include "GraphicsInterfaceScene.h"
-#include "RenderableObject.h"
 
 namespace JzRE {
 class GraphicsInterfaceRenderer {
@@ -11,14 +10,19 @@ public:
     GraphicsInterfaceRenderer();
     ~GraphicsInterfaceRenderer();
 
-    Bool Initialize();
+    Bool Initialize(I32 width, I32 height);
     void Shutdown();
 
-    void Render(const GraphicsInterfaceScene &scene);
-    void RenderObject(const RenderableObject &object) const;
+    void Render(const GraphicsInterfaceScene &scene) const;
 
     void Clear();
 
 private:
+    GLuint framebuffer;
+    GLuint textureColorbuffer;
+    GLuint rboDepthStencil;
+
+    Bool CreateFramebuffer(I32 width, I32 height);
+    void CleanFramebuffer();
 };
 } // namespace JzRE

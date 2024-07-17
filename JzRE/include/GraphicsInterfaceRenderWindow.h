@@ -11,18 +11,13 @@ public:
     ~GraphicsInterfaceRenderWindow();
 
     Bool Initialize(I32 w, I32 h, const String &title);
-
     RawPtr<GLFWwindow> GetGLFWwindow();
     void ResizeWindow(I32 w, I32 h);
-
     Bool ShouldClose();
     void PollEvents();
-
-    void CreateFramebuffer();
     void SwapFramebuffer();
-    void ClearFramebuffer();
-
     void ProcessInput();
+    void Shutdown();
 
 private:
     RawPtr<GLFWwindow> hwnd;

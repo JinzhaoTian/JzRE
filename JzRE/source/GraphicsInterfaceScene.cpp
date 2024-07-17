@@ -37,7 +37,7 @@ void GraphicsInterfaceScene::Update(F32 deltaTime) {
     }
 }
 
-void GraphicsInterfaceScene::Draw(const GraphicsInterfaceShader &shader) const {
+void GraphicsInterfaceScene::Draw() const {
     // for (const auto &light : lights) {
     //     light->apply(shader);
     // }

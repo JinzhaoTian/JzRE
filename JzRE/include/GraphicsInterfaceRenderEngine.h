@@ -18,6 +18,8 @@ public:
     void Run();
     void Shutdown();
 
+    Bool InitScene();
+
 private:
     const I32 wndWidth = 800;
     const I32 wndHeight = 600;
