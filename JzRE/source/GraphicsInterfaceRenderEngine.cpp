@@ -62,8 +62,8 @@ void GraphicsInterfaceRenderEngine::ProcessInput() {
 }
 
 Bool GraphicsInterfaceRenderEngine::InitScene() {
-    auto texture = GraphicsInterfaceResourceManager::getInstance().LoadTexture("example", "./resource/texture/example.png");
-    auto shader = GraphicsInterfaceResourceManager::getInstance().LoadShader("example", "./resource/shader/example.vert", "./resource/shader/example.frag");
+    auto texture = GraphicsInterfaceResourceManager::getInstance().LoadTexture("example", "./resources/textures/example.png");
+    auto shader = GraphicsInterfaceResourceManager::getInstance().LoadShader("example", "./resources/shaders/example.vert", "./resources/shaders/example.frag");
 
     if (!texture || !shader) {
         std::cerr << "Failed to load resources" << std::endl;
