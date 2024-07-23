@@ -20,6 +20,11 @@ Bool GraphicsInterfaceRenderEngine::Initialize() {
         return false;
     }
 
+    Bool isCameraInited = this->camera.Initialize(this->wndWidth, this->wndHeight, glm::vec3(0.0f, 0.0f, 3.0f));
+    if (!isCameraInited) {
+        return false;
+    }
+
     GraphicsInterfaceInput::Initialize(this->window.GetGLFWwindow());
 
     Bool isSceneInited = InitScene();
@@ -40,7 +45,7 @@ void GraphicsInterfaceRenderEngine::Run() {
         F32 deltaTime = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - previousTime).count();
         previousTime = currentTime;
 
-        window.ProcessInput();
+        ProcessInput();
 
         scene.Update(deltaTime);
 
@@ -59,9 +64,14 @@ void GraphicsInterfaceRenderEngine::Shutdown() {
 }
 
 void GraphicsInterfaceRenderEngine::ProcessInput() {
+    // camera.ProcessKeyboard();
+    camera.ProcessMouseMovement(GraphicsInterfaceInput::GetMouseMovement());
+    camera.ProcessMouseScroll(GraphicsInterfaceInput::GetMouseScroll());
 }
 
 Bool GraphicsInterfaceRenderEngine::InitScene() {
+    scene.SetCamera(CreateSharedPtr<GraphicsInterfaceCamera>(camera));
+
     auto texture = GraphicsInterfaceResourceManager::getInstance().LoadTexture("example", "./resources/textures/example.png");
     auto shader = GraphicsInterfaceResourceManager::getInstance().LoadShader("example", "./resources/shaders/example.vert", "./resources/shaders/example.frag");
 

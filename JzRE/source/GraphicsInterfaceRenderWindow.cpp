@@ -68,11 +68,6 @@ void GraphicsInterfaceRenderWindow::PollEvents() {
     glfwPollEvents();
 }
 
-void GraphicsInterfaceRenderWindow::ProcessInput() {
-    if (glfwGetKey(this->hwnd, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(this->hwnd, true);
-}
-
 void GraphicsInterfaceRenderWindow::SwapFramebuffer() {
     glfwSwapBuffers(this->hwnd);
 }

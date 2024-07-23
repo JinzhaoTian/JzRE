@@ -23,13 +23,13 @@ void GraphicsInterfaceScene::RemoveObject(SharedPtr<RenderableObject> object) {
 //     lights.erase(std::remove(lights.begin(), lights.end(), light), lights.end());
 // }
 
-// void GraphicsInterfaceScene::SetCamera(SharedPtr<Camera> camera) {
-//     this->camera = camera;
-// }
+void GraphicsInterfaceScene::SetCamera(SharedPtr<GraphicsInterfaceCamera> camera) {
+    this->camera = camera;
+}
 
-// SharedPtr<Camera> GraphicsInterfaceScene::GetCamera() const {
-//     return camera;
-// }
+SharedPtr<GraphicsInterfaceCamera> GraphicsInterfaceScene::GetCamera() const {
+    return camera;
+}
 
 void GraphicsInterfaceScene::Update(F32 deltaTime) {
     for (auto &object : objects) {
@@ -42,12 +42,11 @@ void GraphicsInterfaceScene::Draw() const {
     //     light->apply(shader);
     // }
 
-    // if (camera) {
-    //     shader.setUniform("view", camera->getViewMatrix());
-    //     shader.setUniform("projection", camera->getProjectionMatrix());
-    // }
-
     for (const auto &object : objects) {
+        if (camera) {
+            object->GetShader()->SetUniform("view", camera->GetViewMatrix());
+            object->GetShader()->SetUniform("projection", camera->GetProjectionMatrix());
+        }
         object->Draw();
     }
 }

@@ -50,8 +50,16 @@ void RenderableObject::SetTexture(SharedPtr<GraphicsInterfaceTexture> texture) {
     this->texture = texture;
 }
 
+SharedPtr<GraphicsInterfaceTexture> RenderableObject::GetTexture() const {
+    return this->texture;
+}
+
 void RenderableObject::SetShader(SharedPtr<GraphicsInterfaceShader> shader) {
     this->shader = shader;
+}
+
+SharedPtr<GraphicsInterfaceShader> RenderableObject::GetShader() const {
+    return this->shader;
 }
 
 void RenderableObject::Update(F32 deltaTime) {

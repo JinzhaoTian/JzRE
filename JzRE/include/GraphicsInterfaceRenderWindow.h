@@ -16,7 +16,6 @@ public:
     Bool ShouldClose();
     void PollEvents();
     void SwapFramebuffer();
-    void ProcessInput();
     void Shutdown();
 
 private:

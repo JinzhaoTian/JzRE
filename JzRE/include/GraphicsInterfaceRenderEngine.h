@@ -7,6 +7,7 @@
 #include "GraphicsInterfaceInput.h"
 #include "GraphicsInterfaceResourceManager.h"
 #include "RenderableObject.h"
+#include "GraphicsInterfaceCamera.h"
 
 namespace JzRE {
 class GraphicsInterfaceRenderEngine {
@@ -31,6 +32,7 @@ private:
     GraphicsInterfaceRenderWindow window;
     GraphicsInterfaceRenderer renderer;
     GraphicsInterfaceScene scene;
+    GraphicsInterfaceCamera camera;
 
     void ProcessInput();
 };
