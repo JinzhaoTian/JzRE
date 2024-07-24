@@ -7,6 +7,8 @@ class GraphicsInterfaceInput {
 public:
     static void Initialize(RawPtr<GLFWwindow> window);
 
+    static void Update();
+
     static Bool IsKeyPressed(I32 key);
     static Bool IsMouseButtonPressed(I32 button);
     static glm::vec2 GetMousePosition();
@@ -19,6 +21,9 @@ private:
     static F32 deltaX, deltaY;
     static F32 offsetX, offsetY;
     static Bool firstMouse;
+
+    static UnorderedMap<int, bool> keys;
+    static UnorderedMap<int, bool> mouseButtons;
 
     static void callback_cursor_pos(RawPtr<GLFWwindow> window, F64 xposin, F64 yposin);
     static void callback_mouse_scroll(RawPtr<GLFWwindow> window, F64 xoffset, F64 yoffset);

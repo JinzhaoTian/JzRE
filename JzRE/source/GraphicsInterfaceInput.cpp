@@ -21,14 +21,20 @@ void GraphicsInterfaceInput::Initialize(RawPtr<GLFWwindow> window) {
 
     // callback: key
     glfwSetKeyCallback(window, callback_keyboard);
+
+    // tell GLFW to capture our mouse
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+}
+
+void GraphicsInterfaceInput::Update() {
 }
 
 Bool GraphicsInterfaceInput::IsKeyPressed(I32 key) {
-    return glfwGetKey(window, key) == GLFW_PRESS;
+    return keys[key];
 }
 
 Bool GraphicsInterfaceInput::IsMouseButtonPressed(I32 button) {
-    return glfwGetMouseButton(window, button) == GLFW_PRESS;
+    return mouseButtons[button];
 }
 
 glm::vec2 GraphicsInterfaceInput::GetMousePosition() {
@@ -68,41 +74,19 @@ void GraphicsInterfaceInput::callback_mouse_scroll(RawPtr<GLFWwindow> window, F6
 }
 
 void GraphicsInterfaceInput::callback_mouse_button(RawPtr<GLFWwindow> window, I32 button, I32 action, I32 mods) {
-    if (button == GLFW_MOUSE_BUTTON_LEFT) {
-        switch (action) {
-        case GLFW_PRESS: {
-            break;
-        }
-        case GLFW_RELEASE: {
-            break;
-        }
-        }
-    }
-    if (button == GLFW_MOUSE_BUTTON_MIDDLE) {
-        switch (action) {
-        case GLFW_PRESS: {
-            break;
-        }
-        case GLFW_RELEASE: {
-            break;
-        }
-        }
-    }
-    if (button == GLFW_MOUSE_BUTTON_RIGHT) {
-        switch (action) {
-        case GLFW_PRESS: {
-            break;
-        }
-        case GLFW_RELEASE: {
-            break;
-        }
-        }
+    if (action == GLFW_PRESS) {
+        mouseButtons[button] = true;
+    } else if (action == GLFW_RELEASE) {
+        mouseButtons[button] = false;
     }
 }
 
 void GraphicsInterfaceInput::callback_keyboard(RawPtr<GLFWwindow> window, I32 key, I32 scancode, I32 action, I32 mode) {
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
+    if (action == GLFW_PRESS) {
+        keys[key] = true;
+    } else if (action == GLFW_RELEASE) {
+        keys[key] = false;
+    }
 }
 
 } // namespace JzRE
