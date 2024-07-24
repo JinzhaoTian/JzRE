@@ -44,8 +44,8 @@ void GraphicsInterfaceScene::Draw() const {
 
     for (const auto &object : objects) {
         if (camera) {
-            object->GetShader()->SetUniform("view", camera->GetViewMatrix());
-            object->GetShader()->SetUniform("projection", camera->GetProjectionMatrix());
+            object->SetViewMatrix(camera->GetViewMatrix());
+            object->SetProjectionMatrix(camera->GetProjectionMatrix());
         }
         object->Draw();
     }

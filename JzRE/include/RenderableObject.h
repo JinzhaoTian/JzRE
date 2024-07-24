@@ -24,10 +24,16 @@ public:
     void Update(F32 deltaTime) override;
     void Draw() const override;
 
+    void SetProjectionMatrix(glm::mat4);
+    void SetViewMatrix(glm::mat4);
+
 private:
     GLuint VAO, VBO, EBO;
 
     SharedPtr<GraphicsInterfaceTexture> texture;
     SharedPtr<GraphicsInterfaceShader> shader;
+
+    glm::mat4 projectionMatrix;
+glm::mat4 viewMatrix;
 };
 } // namespace JzRE
