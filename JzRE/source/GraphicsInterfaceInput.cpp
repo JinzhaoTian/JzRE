@@ -18,16 +18,12 @@ void GraphicsInterfaceInput::Initialize(RawPtr<GLFWwindow> window) {
     GraphicsInterfaceInput::window = window;
 
     // callback: mouse
-    glfwSetCursorPosCallback(window, callback_cursor_pos);
+    glfwSetCursorPosCallback(window, callback_mouse_cursor_pos);
     glfwSetScrollCallback(window, callback_mouse_scroll);
     glfwSetMouseButtonCallback(window, callback_mouse_button);
 
     // callback: key
     glfwSetKeyCallback(window, callback_keyboard);
-}
-
-void GraphicsInterfaceInput::Update() {
-    glfwPollEvents();
 }
 
 Bool GraphicsInterfaceInput::IsKeyPressed(I32 key) {
@@ -54,7 +50,7 @@ glm::vec2 GraphicsInterfaceInput::GetMouseScroll() {
     return glm::vec2(offsetX, offsetY);
 }
 
-void GraphicsInterfaceInput::callback_cursor_pos(RawPtr<GLFWwindow> window, F64 xposin, F64 yposin) {
+void GraphicsInterfaceInput::callback_mouse_cursor_pos(RawPtr<GLFWwindow> window, F64 xposin, F64 yposin) {
     F32 xpos = StaticCast<F32>(xposin);
     F32 ypos = StaticCast<F32>(yposin);
 

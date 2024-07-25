@@ -112,6 +112,8 @@ void RenderableObject::SetModelMatrix(glm::mat4 model) {
 
 void RenderableObject::Update(F32 deltaTime) {
     // 这里可以更新物体的逻辑，例如位置变化等
+    F32 rotationSpeed = 20.0f;
+    this->transform.SetRotation(rotationSpeed * deltaTime, glm::vec3(5.0f, 5.0f, 0.0f));
 }
 
 void RenderableObject::Draw() const {

@@ -7,7 +7,7 @@ namespace JzRE {
 // Default camera values
 const F32 YAW = -90.0f;
 const F32 PITCH = 0.0f;
-const F32 SPEED = 2.5f;
+const F32 SPEED = 0.01f;
 const F32 SENSITIVITY = 0.1f;
 const F32 ZOOM = 45.0f;
 
@@ -37,8 +37,8 @@ public:
     GraphicsInterfaceCamera(I32 width, I32 height,
                             F32 posX, F32 posY, F32 posZ, F32 upX, F32 upY, F32 upZ,
                             F32 yaw = YAW, F32 pitch = PITCH);
-    Bool Initialize(I32 width, I32 height,
-                    glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f));
+
+    void ResetPosition(glm::vec3 position);
     glm::mat4 GetViewMatrix();
     glm::mat4 GetProjectionMatrix();
     void ProcessMouseMovement(glm::vec2 mouseDelta, GLboolean constrainPitch = true);

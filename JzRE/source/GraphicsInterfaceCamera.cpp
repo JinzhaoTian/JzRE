@@ -26,15 +26,12 @@ GraphicsInterfaceCamera::GraphicsInterfaceCamera(I32 width, I32 height, F32 posX
     updateCameraVectors();
 }
 
-Bool GraphicsInterfaceCamera::Initialize(I32 width, I32 height, glm::vec3 position, glm::vec3 up) {
-    wndWidth = width;
-    wndHeight = height;
-
+void GraphicsInterfaceCamera::ResetPosition(glm::vec3 position) {
     Position = position;
-    WorldUp = up;
-    updateCameraVectors();
-
-    return true;
+    WorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
+    Front = glm::vec3(0.0f, 0.0f, -1.0f);
+    Yaw = YAW;
+    Pitch = PITCH;
 }
 
 glm::mat4 GraphicsInterfaceCamera::GetViewMatrix() {

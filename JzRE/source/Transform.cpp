@@ -9,8 +9,8 @@ void Transform::SetPosition(const glm::vec3 &position) {
     this->position = position;
 }
 
-void Transform::SetRotation(float angle, const glm::vec3 &axis) {
-    this->rotation = glm::rotate(glm::mat4(1.0f), glm::radians(angle), axis);
+void Transform::SetRotation(F32 angle, const glm::vec3 &axis) {
+    this->rotation = glm::rotate(this->rotation, glm::radians(angle), axis);
 }
 
 void Transform::SetScale(const glm::vec3 &scale) {

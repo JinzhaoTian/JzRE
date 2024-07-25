@@ -73,6 +73,10 @@ void GraphicsInterfaceRenderEngine::ProcessInput() {
         glfwSetWindowShouldClose(this->window->GetGLFWwindow(), true);
     }
 
+    if (GraphicsInterfaceInput::IsKeyPressed(GLFW_KEY_SPACE)) {
+        this->camera->ResetPosition(glm::vec3(0.0f, 0.0f, 3.0f));
+    }
+
     if (GraphicsInterfaceInput::IsMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT)) {
         this->camera->ProcessMouseMovement(GraphicsInterfaceInput::GetMouseMovement());
     }
