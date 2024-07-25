@@ -11,6 +11,9 @@ F32 GraphicsInterfaceInput::offsetX = 0.0;
 F32 GraphicsInterfaceInput::offsetY = 0.0;
 Bool GraphicsInterfaceInput::firstMouse = true;
 
+UnorderedMap<int, bool> GraphicsInterfaceInput::keys;
+UnorderedMap<int, bool> GraphicsInterfaceInput::mouseButtons;
+
 void GraphicsInterfaceInput::Initialize(RawPtr<GLFWwindow> window) {
     GraphicsInterfaceInput::window = window;
 
@@ -21,20 +24,20 @@ void GraphicsInterfaceInput::Initialize(RawPtr<GLFWwindow> window) {
 
     // callback: key
     glfwSetKeyCallback(window, callback_keyboard);
-
-    // tell GLFW to capture our mouse
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
 void GraphicsInterfaceInput::Update() {
+    glfwPollEvents();
 }
 
 Bool GraphicsInterfaceInput::IsKeyPressed(I32 key) {
-    return keys[key];
+    auto it = keys.find(key);
+    return it != keys.end() && it->second;
 }
 
 Bool GraphicsInterfaceInput::IsMouseButtonPressed(I32 button) {
-    return mouseButtons[button];
+    auto it = mouseButtons.find(button);
+    return it != mouseButtons.end() && it->second;
 }
 
 glm::vec2 GraphicsInterfaceInput::GetMousePosition() {

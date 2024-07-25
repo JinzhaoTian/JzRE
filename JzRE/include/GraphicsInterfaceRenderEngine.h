@@ -32,7 +32,7 @@ private:
     GraphicsInterfaceRenderWindow window;
     GraphicsInterfaceRenderer renderer;
     GraphicsInterfaceScene scene;
-    GraphicsInterfaceCamera camera;
+    SharedPtr<GraphicsInterfaceCamera> camera;
 
     void ProcessInput();
 };

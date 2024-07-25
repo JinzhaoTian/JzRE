@@ -15,17 +15,17 @@ Bool GraphicsInterfaceRenderEngine::Initialize() {
         return false;
     }
 
+    GraphicsInterfaceInput::Initialize(this->window.GetGLFWwindow());
+
     Bool isRendererInited = this->renderer.Initialize(this->wndWidth, this->wndHeight);
     if (!isRendererInited) {
         return false;
     }
 
-    Bool isCameraInited = this->camera.Initialize(this->wndWidth, this->wndHeight, glm::vec3(0.0f, 0.0f, 3.0f));
-    if (!isCameraInited) {
+    this->camera = CreateSharedPtr<GraphicsInterfaceCamera>(this->wndWidth, this->wndHeight, glm::vec3(0.0f, 0.0f, 3.0f));
+    if (this->camera == nullptr) {
         return false;
     }
-
-    GraphicsInterfaceInput::Initialize(this->window.GetGLFWwindow());
 
     Bool isSceneInited = InitScene();
     if (!isSceneInited) {
@@ -64,13 +64,23 @@ void GraphicsInterfaceRenderEngine::Shutdown() {
 }
 
 void GraphicsInterfaceRenderEngine::ProcessInput() {
-    // camera.ProcessKeyboard();
-    camera.ProcessMouseMovement(GraphicsInterfaceInput::GetMouseMovement());
-    camera.ProcessMouseScroll(GraphicsInterfaceInput::GetMouseScroll());
+    if (GraphicsInterfaceInput::IsKeyPressed(GLFW_KEY_ESCAPE)) {
+        glfwSetWindowShouldClose(window.GetGLFWwindow(), true);
+    }
+
+    if (GraphicsInterfaceInput::IsMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT)) {
+        this->camera->ProcessMouseMovement(GraphicsInterfaceInput::GetMouseMovement());
+    }
+
+    if (GraphicsInterfaceInput::IsMouseButtonPressed(GLFW_MOUSE_BUTTON_RIGHT)) {
+        this->camera->ProcessKeyboardMovement(GraphicsInterfaceInput::GetMouseMovement());
+    }
+
+    this->camera->ProcessMouseScroll(GraphicsInterfaceInput::GetMouseScroll());
 }
 
 Bool GraphicsInterfaceRenderEngine::InitScene() {
-    scene.SetCamera(CreateSharedPtr<GraphicsInterfaceCamera>(camera));
+    scene.SetCamera(this->camera);
 
     auto texture = GraphicsInterfaceResourceManager::getInstance().LoadTexture("example", "./resources/textures/example.png");
     auto shader = GraphicsInterfaceResourceManager::getInstance().LoadShader("example", "./resources/shaders/example.vert", "./resources/shaders/example.frag");

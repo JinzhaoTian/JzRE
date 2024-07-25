@@ -8,9 +8,8 @@ GraphicsInterfaceCamera::GraphicsInterfaceCamera() :
     updateCameraVectors();
 }
 
-// constructor with vectors
-GraphicsInterfaceCamera::GraphicsInterfaceCamera(glm::vec3 position, glm::vec3 up, F32 yaw, F32 pitch) :
-    wndWidth(0), wndHeight(0), Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM) {
+GraphicsInterfaceCamera::GraphicsInterfaceCamera(I32 width, I32 height, glm::vec3 position, glm::vec3 up, F32 yaw, F32 pitch) :
+    wndWidth(width), wndHeight(height), Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM) {
     Position = position;
     WorldUp = up;
     Yaw = yaw;
@@ -18,9 +17,8 @@ GraphicsInterfaceCamera::GraphicsInterfaceCamera(glm::vec3 position, glm::vec3 u
     updateCameraVectors();
 }
 
-// constructor with scalar values
-GraphicsInterfaceCamera::GraphicsInterfaceCamera(F32 posX, F32 posY, F32 posZ, F32 upX, F32 upY, F32 upZ, F32 yaw, F32 pitch) :
-    wndWidth(0), wndHeight(0), Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM) {
+GraphicsInterfaceCamera::GraphicsInterfaceCamera(I32 width, I32 height, F32 posX, F32 posY, F32 posZ, F32 upX, F32 upY, F32 upZ, F32 yaw, F32 pitch) :
+    wndWidth(width), wndHeight(height), Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM) {
     Position = glm::vec3(posX, posY, posZ);
     WorldUp = glm::vec3(upX, upY, upZ);
     Yaw = yaw;
@@ -39,39 +37,17 @@ Bool GraphicsInterfaceCamera::Initialize(I32 width, I32 height, glm::vec3 positi
     return true;
 }
 
-// returns the view matrix calculated using Euler Angles and the LookAt Matrix
 glm::mat4 GraphicsInterfaceCamera::GetViewMatrix() {
     return glm::lookAt(Position, Position + Front, Up);
 }
 
-// returns the projection matrix calculated
 glm::mat4 GraphicsInterfaceCamera::GetProjectionMatrix() {
     return glm::perspective(glm::radians(Zoom), (F32)this->wndWidth / (F32)this->wndHeight, 0.1f, 100.0f);
 }
 
-// processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
-void GraphicsInterfaceCamera::ProcessKeyboard(Camera_Movement direction, F32 deltaTime) {
-    F32 velocity = MovementSpeed * deltaTime;
-    if (direction == FORWARD)
-        Position += Front * velocity;
-    if (direction == BACKWARD)
-        Position -= Front * velocity;
-    if (direction == LEFT)
-        Position -= Right * velocity;
-    if (direction == RIGHT)
-        Position += Right * velocity;
-}
-
-// processes input received from a mouse input system. Expects the offset value in both the x and y direction.
 void GraphicsInterfaceCamera::ProcessMouseMovement(glm::vec2 mouseDelta, GLboolean constrainPitch) {
-    F32 xoffset = mouseDelta.x;
-    F32 yoffset = mouseDelta.y;
-
-    xoffset *= MouseSensitivity;
-    yoffset *= MouseSensitivity;
-
-    Yaw += xoffset;
-    Pitch += yoffset;
+    Yaw += mouseDelta.x * MouseSensitivity;
+    Pitch += mouseDelta.y * MouseSensitivity;
 
     // make sure that when pitch is out of bounds, screen doesn't get flipped
     if (constrainPitch) {
@@ -85,7 +61,6 @@ void GraphicsInterfaceCamera::ProcessMouseMovement(glm::vec2 mouseDelta, GLboole
     updateCameraVectors();
 }
 
-// processes input received from a mouse scroll-wheel event. Only requires input on the vertical wheel-axis
 void GraphicsInterfaceCamera::ProcessMouseScroll(glm::vec2 mouseOffset) {
     Zoom -= mouseOffset.y;
     if (Zoom < 1.0f)
@@ -94,7 +69,11 @@ void GraphicsInterfaceCamera::ProcessMouseScroll(glm::vec2 mouseOffset) {
         Zoom = 45.0f;
 }
 
-// calculates the front vector from the Camera's (updated) Euler Angles
+void GraphicsInterfaceCamera::ProcessKeyboardMovement(glm::vec2 mouseDelta) {
+    Position += Right * mouseDelta.x * MovementSpeed;
+    Position += Up * mouseDelta.y * MovementSpeed;
+}
+
 void GraphicsInterfaceCamera::updateCameraVectors() {
     // calculate the new Front vector
     glm::vec3 front;

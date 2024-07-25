@@ -106,6 +106,10 @@ void RenderableObject::SetViewMatrix(glm::mat4 view) {
     this->viewMatrix = view;
 }
 
+void RenderableObject::SetModelMatrix(glm::mat4 model) {
+    this->modelMatrix = model;
+}
+
 void RenderableObject::Update(F32 deltaTime) {
     // 这里可以更新物体的逻辑，例如位置变化等
 }

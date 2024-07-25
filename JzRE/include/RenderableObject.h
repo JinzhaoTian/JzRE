@@ -16,16 +16,13 @@ public:
 
     SharedPtr<GraphicsInterfaceTexture> GetTexture() const;
     SharedPtr<GraphicsInterfaceShader> GetShader() const;
-
-    Transform GetTransform() const;
-
-    GLuint GetVAO() const;
-
+    
     void Update(F32 deltaTime) override;
     void Draw() const override;
 
     void SetProjectionMatrix(glm::mat4);
     void SetViewMatrix(glm::mat4);
+    void SetModelMatrix(glm::mat4);
 
 private:
     GLuint VAO, VBO, EBO;
@@ -34,6 +31,7 @@ private:
     SharedPtr<GraphicsInterfaceShader> shader;
 
     glm::mat4 projectionMatrix;
-glm::mat4 viewMatrix;
+    glm::mat4 viewMatrix;
+    glm::mat4 modelMatrix;
 };
 } // namespace JzRE
