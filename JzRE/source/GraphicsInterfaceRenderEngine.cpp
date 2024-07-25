@@ -10,15 +10,15 @@ GraphicsInterfaceRenderEngine::~GraphicsInterfaceRenderEngine() {
 }
 
 Bool GraphicsInterfaceRenderEngine::Initialize() {
-    Bool isWndInited = this->window.Initialize(this->wndWidth, this->wndHeight, this->title);
-    if (!isWndInited) {
+    this->window = CreateSharedPtr<GraphicsInterfaceRenderWindow>(this->wndWidth, this->wndHeight, this->title);
+    if (this->window == nullptr) {
         return false;
     }
 
-    GraphicsInterfaceInput::Initialize(this->window.GetGLFWwindow());
+    GraphicsInterfaceInput::Initialize(this->window->GetGLFWwindow());
 
-    Bool isRendererInited = this->renderer.Initialize(this->wndWidth, this->wndHeight);
-    if (!isRendererInited) {
+    this->renderer = CreateSharedPtr<GraphicsInterfaceRenderer>(this->wndWidth, this->wndHeight);
+    if (this->renderer == nullptr) {
         return false;
     }
 
@@ -27,10 +27,17 @@ Bool GraphicsInterfaceRenderEngine::Initialize() {
         return false;
     }
 
+    this->scene = CreateSharedPtr<GraphicsInterfaceScene>();
+    if (this->scene == nullptr) {
+        return false;
+    }
+
     Bool isSceneInited = InitScene();
     if (!isSceneInited) {
         return false;
     }
+
+    this->renderer->BindScene(this->scene);
 
     this->isRunning = true;
     return true;
@@ -40,32 +47,30 @@ void GraphicsInterfaceRenderEngine::Run() {
     auto previousTime = std::chrono::high_resolution_clock::now();
 
     // render loop
-    while (isRunning && !window.ShouldClose()) {
+    while (this->isRunning && !this->window->ShouldClose()) {
         auto currentTime = std::chrono::high_resolution_clock::now();
         F32 deltaTime = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - previousTime).count();
         previousTime = currentTime;
 
         ProcessInput();
 
-        scene.Update(deltaTime);
+        this->scene->Update(deltaTime);
 
-        renderer.Clear();
-        renderer.Render(scene);
+        this->renderer->Clear();
+        this->renderer->Render();
 
-        window.SwapFramebuffer();
-        window.PollEvents();
+        this->window->SwapFramebuffer();
+        this->window->PollEvents();
     }
 }
 
 void GraphicsInterfaceRenderEngine::Shutdown() {
     GraphicsInterfaceResourceManager::getInstance().Clear();
-    renderer.Shutdown();
-    window.Shutdown();
 }
 
 void GraphicsInterfaceRenderEngine::ProcessInput() {
     if (GraphicsInterfaceInput::IsKeyPressed(GLFW_KEY_ESCAPE)) {
-        glfwSetWindowShouldClose(window.GetGLFWwindow(), true);
+        glfwSetWindowShouldClose(this->window->GetGLFWwindow(), true);
     }
 
     if (GraphicsInterfaceInput::IsMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT)) {
@@ -80,7 +85,7 @@ void GraphicsInterfaceRenderEngine::ProcessInput() {
 }
 
 Bool GraphicsInterfaceRenderEngine::InitScene() {
-    scene.SetCamera(this->camera);
+    this->scene->SetCamera(this->camera);
 
     auto texture = GraphicsInterfaceResourceManager::getInstance().LoadTexture("example", "./resources/textures/example.png");
     auto shader = GraphicsInterfaceResourceManager::getInstance().LoadShader("example", "./resources/shaders/example.vert", "./resources/shaders/example.frag");
@@ -93,7 +98,7 @@ Bool GraphicsInterfaceRenderEngine::InitScene() {
     auto object = CreateSharedPtr<RenderableObject>();
     object->SetTexture(texture);
     object->SetShader(shader);
-    scene.AddObject(object);
+    scene->AddObject(object);
 
     return true;
 }

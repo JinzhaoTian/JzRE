@@ -19,8 +19,6 @@ public:
     void Run();
     void Shutdown();
 
-    Bool InitScene();
-
 private:
     const I32 wndWidth = 800;
     const I32 wndHeight = 600;
@@ -29,11 +27,12 @@ private:
 
     Bool isRunning;
 
-    GraphicsInterfaceRenderWindow window;
-    GraphicsInterfaceRenderer renderer;
-    GraphicsInterfaceScene scene;
+    SharedPtr<GraphicsInterfaceRenderWindow> window;
+    SharedPtr<GraphicsInterfaceRenderer> renderer;
+    SharedPtr<GraphicsInterfaceScene> scene;
     SharedPtr<GraphicsInterfaceCamera> camera;
 
+    Bool InitScene();
     void ProcessInput();
 };
 } // namespace JzRE

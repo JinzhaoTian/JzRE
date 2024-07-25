@@ -7,29 +7,17 @@ void callback_framebuffer_size(RawPtr<GLFWwindow> window, int width, int height)
     self->ResizeWindow(width, height);
 }
 
-GraphicsInterfaceRenderWindow::GraphicsInterfaceRenderWindow() :
-    hwnd(nullptr), wndWidth(800), wndHeight(600), title("Graphics Interface Render Window") {
-}
-
-GraphicsInterfaceRenderWindow::~GraphicsInterfaceRenderWindow() {
-    Shutdown();
-}
-
-Bool GraphicsInterfaceRenderWindow::Initialize(I32 w, I32 h, const String &title) {
-    this->wndWidth = w;
-    this->wndHeight = h;
-    this->title = title;
-
+GraphicsInterfaceRenderWindow::GraphicsInterfaceRenderWindow(I32 width, I32 height, const String &title) :
+    wndWidth(width), wndHeight(height), title(title) {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    this->hwnd = glfwCreateWindow(w, h, title.c_str(), NULL, NULL);
+    this->hwnd = glfwCreateWindow(this->wndWidth, this->wndHeight, title.c_str(), NULL, NULL);
     if (this->hwnd == NULL) {
         std::cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
-        return false;
     }
 
     glfwMakeContextCurrent(this->hwnd);
@@ -42,12 +30,16 @@ Bool GraphicsInterfaceRenderWindow::Initialize(I32 w, I32 h, const String &title
     // ---------------------------------------
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         std::cout << "Failed to initialize GLAD" << std::endl;
-        return false;
     }
 
-    glViewport(0, 0, w, h);
+    glViewport(0, 0, this->wndWidth, this->wndHeight);
+}
 
-    return true;
+GraphicsInterfaceRenderWindow::~GraphicsInterfaceRenderWindow() {
+    if (hwnd) {
+        glfwDestroyWindow(hwnd);
+        glfwTerminate();
+    }
 }
 
 RawPtr<GLFWwindow> GraphicsInterfaceRenderWindow::GetGLFWwindow() {
@@ -70,13 +62,6 @@ void GraphicsInterfaceRenderWindow::PollEvents() {
 
 void GraphicsInterfaceRenderWindow::SwapFramebuffer() {
     glfwSwapBuffers(this->hwnd);
-}
-
-void GraphicsInterfaceRenderWindow::Shutdown() {
-    if (hwnd) {
-        glfwDestroyWindow(hwnd);
-        glfwTerminate();
-    }
 }
 
 } // namespace JzRE

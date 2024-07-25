@@ -1,33 +1,29 @@
 #include "GraphicsInterfaceRenderer.h"
 
 namespace JzRE {
-GraphicsInterfaceRenderer::GraphicsInterfaceRenderer() :
-    framebuffer(0), textureColorbuffer(0), rboDepthStencil(0) {
-}
-
-GraphicsInterfaceRenderer::~GraphicsInterfaceRenderer() {
-    Shutdown();
-}
-
-Bool GraphicsInterfaceRenderer::Initialize(I32 width, I32 height) {
+GraphicsInterfaceRenderer::GraphicsInterfaceRenderer(I32 width, I32 height) {
     // 初始化帧缓冲对象
     if (!CreateFramebuffer(width, height)) {
         std::cerr << "Failed to initialize framebuffer" << std::endl;
-        return false;
+        return;
     }
 
     // 配置 OpenGL 状态
     glEnable(GL_DEPTH_TEST);
-
-    return true;
 }
 
-void GraphicsInterfaceRenderer::Shutdown() {
+GraphicsInterfaceRenderer::~GraphicsInterfaceRenderer() {
     CleanFramebuffer();
 }
 
-void GraphicsInterfaceRenderer::Render(const GraphicsInterfaceScene &scene) const {
-    scene.Draw();
+void GraphicsInterfaceRenderer::BindScene(SharedPtr<GraphicsInterfaceScene> scene) {
+    this->scene = scene;
+}
+
+void GraphicsInterfaceRenderer::Render() {
+    if (this->scene != nullptr) {
+        this->scene->Draw();
+    }
 }
 
 void GraphicsInterfaceRenderer::Clear() {

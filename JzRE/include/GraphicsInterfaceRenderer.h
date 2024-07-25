@@ -7,20 +7,19 @@
 namespace JzRE {
 class GraphicsInterfaceRenderer {
 public:
-    GraphicsInterfaceRenderer();
+    GraphicsInterfaceRenderer(I32 width, I32 height);
     ~GraphicsInterfaceRenderer();
 
-    Bool Initialize(I32 width, I32 height);
-    void Shutdown();
-
-    void Render(const GraphicsInterfaceScene &scene) const;
-
+    void BindScene(SharedPtr<GraphicsInterfaceScene> scene);
+    void Render();
     void Clear();
 
 private:
     GLuint framebuffer;
     GLuint textureColorbuffer;
     GLuint rboDepthStencil;
+
+    SharedPtr<GraphicsInterfaceScene> scene;
 
     Bool CreateFramebuffer(I32 width, I32 height);
     void CleanFramebuffer();
