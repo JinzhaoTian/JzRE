@@ -23,7 +23,7 @@ private:
     const I32 wndWidth = 800;
     const I32 wndHeight = 600;
 
-    const String title = "Graphics Interface Render Engine";
+    const String title = "Graphics Interface Rendering Engine";
 
     Bool isRunning;
 

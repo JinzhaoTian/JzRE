@@ -16,14 +16,58 @@ GraphicsInterfaceRenderer::~GraphicsInterfaceRenderer() {
     CleanFramebuffer();
 }
 
-void GraphicsInterfaceRenderer::BindScene(SharedPtr<GraphicsInterfaceScene> scene) {
-    this->scene = scene;
+void GraphicsInterfaceRenderer::RenderScene(SharedPtr<GraphicsInterfaceScene> scene) {
+    Clear();
+
+    if (scene->GetCamera()) {
+        SetViewMatrix(scene->GetCamera()->GetViewMatrix());
+        SetProjectionMatrix(scene->GetCamera()->GetProjectionMatrix());
+    }
+
+    for (Size i = 0; i < scene->GetLights().size(); ++i) {
+        scene->GetLights()[i]->ApplyLight(this->shader, StaticCast<I32>(i));
+    }
+
+    this->shader->Use();
+
+    // 设置纹理
+    if (this->texture) {
+        texture->Bind(0);
+        shader->SetUniform("texture1", 0);
+    }
+
+    this->shader->SetUniform("view", this->viewMatrix);
+    this->shader->SetUniform("projection", this->projectionMatrix);
+
+    for (const auto object : scene->GetObjects()) {
+        // 设置模型矩阵
+        shader->SetUniform("model", object->GetModelMatrix());
+        object->Draw();
+    }
 }
 
-void GraphicsInterfaceRenderer::Render() {
-    if (this->scene != nullptr) {
-        this->scene->Draw();
-    }
+void GraphicsInterfaceRenderer::SetViewMatrix(const glm::mat4 &viewMatrix) {
+    this->viewMatrix = viewMatrix;
+}
+
+void GraphicsInterfaceRenderer::SetProjectionMatrix(const glm::mat4 &projectionMatrix) {
+    this->projectionMatrix = projectionMatrix;
+}
+
+void GraphicsInterfaceRenderer::SetShader(SharedPtr<GraphicsInterfaceShader> shader) {
+    this->shader = shader;
+}
+
+SharedPtr<GraphicsInterfaceShader> GraphicsInterfaceRenderer::GetShader() const {
+    return this->shader;
+}
+
+void GraphicsInterfaceRenderer::SetTexture(SharedPtr<GraphicsInterfaceTexture> texture) {
+    this->texture = texture;
+}
+
+SharedPtr<GraphicsInterfaceTexture> GraphicsInterfaceRenderer::GetTexture() const {
+    return this->texture;
 }
 
 void GraphicsInterfaceRenderer::Clear() {

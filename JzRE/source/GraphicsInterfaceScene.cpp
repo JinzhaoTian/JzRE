@@ -5,23 +5,33 @@ GraphicsInterfaceScene::GraphicsInterfaceScene() {
 }
 
 GraphicsInterfaceScene::~GraphicsInterfaceScene() {
+    this->objects.clear();
+    this->lights.clear();
 }
 
 void GraphicsInterfaceScene::AddObject(SharedPtr<RenderableObject> object) {
-    objects.push_back(object);
+    this->objects.push_back(object);
 }
 
 void GraphicsInterfaceScene::RemoveObject(SharedPtr<RenderableObject> object) {
-    objects.erase(std::remove(objects.begin(), objects.end(), object), objects.end());
+    this->objects.erase(std::remove(objects.begin(), objects.end(), object), objects.end());
 }
 
-// void GraphicsInterfaceScene::AddLight(SharedPtr<Light> light) {
-//     lights.push_back(light);
-// }
+List<SharedPtr<RenderableObject>> GraphicsInterfaceScene::GetObjects() const {
+    return this->objects;
+}
 
-// void GraphicsInterfaceScene::RemoveLight(SharedPtr<Light> light) {
-//     lights.erase(std::remove(lights.begin(), lights.end(), light), lights.end());
-// }
+void GraphicsInterfaceScene::AddLight(SharedPtr<GraphicsInterfaceLight> light) {
+    lights.push_back(light);
+}
+
+void GraphicsInterfaceScene::RemoveLight(SharedPtr<GraphicsInterfaceLight> light) {
+    lights.erase(std::remove(lights.begin(), lights.end(), light), lights.end());
+}
+
+List<SharedPtr<GraphicsInterfaceLight>> GraphicsInterfaceScene::GetLights() const {
+    return this->lights;
+}
 
 void GraphicsInterfaceScene::SetCamera(SharedPtr<GraphicsInterfaceCamera> camera) {
     this->camera = camera;
@@ -34,20 +44,6 @@ SharedPtr<GraphicsInterfaceCamera> GraphicsInterfaceScene::GetCamera() const {
 void GraphicsInterfaceScene::Update(F32 deltaTime) {
     for (auto &object : objects) {
         object->Update(deltaTime);
-    }
-}
-
-void GraphicsInterfaceScene::Draw() const {
-    // for (const auto &light : lights) {
-    //     light->apply(shader);
-    // }
-
-    for (const auto &object : objects) {
-        if (camera) {
-            object->SetViewMatrix(camera->GetViewMatrix());
-            object->SetProjectionMatrix(camera->GetProjectionMatrix());
-        }
-        object->Draw();
     }
 }
 } // namespace JzRE

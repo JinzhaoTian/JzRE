@@ -13,6 +13,7 @@ public:
 
     void SetUniform(const String &name, int value) const;
     void SetUniform(const String &name, float value) const;
+    void SetUniform(const String &name, const glm::vec3 &vec) const;
     void SetUniform(const String &name, const glm::mat4 &mat) const;
 
 private:

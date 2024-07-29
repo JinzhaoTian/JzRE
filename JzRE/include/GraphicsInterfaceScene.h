@@ -4,6 +4,7 @@
 #include "RenderableObject.h"
 #include "GraphicsInterfaceShader.h"
 #include "GraphicsInterfaceCamera.h"
+#include "GraphicsInterfaceLight.h"
 
 namespace JzRE {
 class GraphicsInterfaceScene {
@@ -13,19 +14,20 @@ public:
 
     void AddObject(SharedPtr<RenderableObject> object);
     void RemoveObject(SharedPtr<RenderableObject> object);
+    List<SharedPtr<RenderableObject>> GetObjects() const;
 
-    // void AddLight(SharedPtr<Light> light);
-    // void RemoveLight(SharedPtr<Light> light);
+    void AddLight(SharedPtr<GraphicsInterfaceLight> light);
+    void RemoveLight(SharedPtr<GraphicsInterfaceLight> light);
+    List<SharedPtr<GraphicsInterfaceLight>> GetLights() const;
 
     void SetCamera(SharedPtr<GraphicsInterfaceCamera> camera);
     SharedPtr<GraphicsInterfaceCamera> GetCamera() const;
 
     void Update(F32 deltaTime);
-    void Draw() const;
 
 private:
     List<SharedPtr<RenderableObject>> objects;
-    // List<SharedPtr<Light>> lights;
+    List<SharedPtr<GraphicsInterfaceLight>> lights;
     SharedPtr<GraphicsInterfaceCamera> camera;
 };
 } // namespace JzRE

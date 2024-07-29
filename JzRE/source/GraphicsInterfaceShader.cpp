@@ -67,6 +67,10 @@ void GraphicsInterfaceShader::SetUniform(const String &name, float value) const 
     glUniform1f(glGetUniformLocation(programID, name.c_str()), value);
 }
 
+void GraphicsInterfaceShader::SetUniform(const String &name, const glm::vec3 &vec) const {
+    glUniform3fv(glGetUniformLocation(programID, name.c_str()), 1, glm::value_ptr(vec));
+}
+
 void GraphicsInterfaceShader::SetUniform(const String &name, const glm::mat4 &mat) const {
     glUniformMatrix4fv(glGetUniformLocation(programID, name.c_str()), 1, GL_FALSE, glm::value_ptr(mat));
 }

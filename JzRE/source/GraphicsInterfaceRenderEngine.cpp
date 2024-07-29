@@ -37,7 +37,7 @@ Bool GraphicsInterfaceRenderEngine::Initialize() {
         return false;
     }
 
-    this->renderer->BindScene(this->scene);
+    this->scene->SetCamera(this->camera);
 
     this->isRunning = true;
     return true;
@@ -52,15 +52,14 @@ void GraphicsInterfaceRenderEngine::Run() {
         F32 deltaTime = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - previousTime).count();
         previousTime = currentTime;
 
+        this->window->PollEvents();
+
         ProcessInput();
 
         this->scene->Update(deltaTime);
-
-        this->renderer->Clear();
-        this->renderer->Render();
+        this->renderer->RenderScene(this->scene);
 
         this->window->SwapFramebuffer();
-        this->window->PollEvents();
     }
 }
 
@@ -89,10 +88,13 @@ void GraphicsInterfaceRenderEngine::ProcessInput() {
 }
 
 Bool GraphicsInterfaceRenderEngine::InitScene() {
-    this->scene->SetCamera(this->camera);
+    auto texture = GraphicsInterfaceResourceManager::getInstance()
+                       .LoadTexture("example", "./resources/textures/example.png");
+    auto shader = GraphicsInterfaceResourceManager::getInstance()
+                      .LoadShader("example", "./resources/shaders/example.vert", "./resources/shaders/example.frag");
 
-    auto texture = GraphicsInterfaceResourceManager::getInstance().LoadTexture("example", "./resources/textures/example.png");
-    auto shader = GraphicsInterfaceResourceManager::getInstance().LoadShader("example", "./resources/shaders/example.vert", "./resources/shaders/example.frag");
+    this->renderer->SetShader(shader);
+    this->renderer->SetTexture(texture);
 
     if (!texture || !shader) {
         std::cerr << "Failed to load resources" << std::endl;
@@ -100,8 +102,6 @@ Bool GraphicsInterfaceRenderEngine::InitScene() {
     }
 
     auto object = CreateSharedPtr<RenderableObject>();
-    object->SetTexture(texture);
-    object->SetShader(shader);
     scene->AddObject(object);
 
     return true;

@@ -1,8 +1,7 @@
 #include "RenderableObject.h"
 
 namespace JzRE {
-RenderableObject::RenderableObject() :
-    texture(nullptr), shader(nullptr) {
+RenderableObject::RenderableObject() {
     // 初始化VAO、VBO等OpenGL对象
     GLfloat vertices[] = {
         -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
@@ -82,59 +81,20 @@ RenderableObject::~RenderableObject() {
     glDeleteBuffers(1, &VBO);
 }
 
-void RenderableObject::SetTexture(SharedPtr<GraphicsInterfaceTexture> texture) {
-    this->texture = texture;
-}
-
-SharedPtr<GraphicsInterfaceTexture> RenderableObject::GetTexture() const {
-    return this->texture;
-}
-
-void RenderableObject::SetShader(SharedPtr<GraphicsInterfaceShader> shader) {
-    this->shader = shader;
-}
-
-SharedPtr<GraphicsInterfaceShader> RenderableObject::GetShader() const {
-    return this->shader;
-}
-
-void RenderableObject::SetProjectionMatrix(glm::mat4 project) {
-    this->projectionMatrix = project;
-}
-
-void RenderableObject::SetViewMatrix(glm::mat4 view) {
-    this->viewMatrix = view;
-}
-
-void RenderableObject::SetModelMatrix(glm::mat4 model) {
-    this->modelMatrix = model;
-}
-
 void RenderableObject::Update(F32 deltaTime) {
     // 这里可以更新物体的逻辑，例如位置变化等
     F32 rotationSpeed = 20.0f;
     this->transform.SetRotation(rotationSpeed * deltaTime, glm::vec3(5.0f, 5.0f, 0.0f));
 }
 
+glm::mat4 RenderableObject::GetModelMatrix() const {
+    return this->transform.GetModelMatrix();
+}
+
 void RenderableObject::Draw() const {
-    if (this->shader) {
-        shader->Use();
-
-        // 设置纹理
-        if (texture) {
-            texture->Bind(0);
-            shader->SetUniform("texture1", 0);
-        }
-
-        // 设置模型矩阵
-        shader->SetUniform("model", this->transform.GetModelMatrix());
-        shader->SetUniform("view", this->viewMatrix);
-        shader->SetUniform("projection", this->projectionMatrix);
-
-        // 渲染物体
-        glBindVertexArray(this->VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-        glBindVertexArray(0);
-    }
+    // 渲染物体
+    glBindVertexArray(this->VAO);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glBindVertexArray(0);
 }
 } // namespace JzRE
