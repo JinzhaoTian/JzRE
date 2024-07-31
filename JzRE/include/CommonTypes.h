@@ -1,5 +1,8 @@
 #pragma once
 
+/**
+ * 3rd party dependencies
+*/ 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -7,6 +10,11 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include <stb/stb_image.h>
+
+/**
+ * sys
+*/
 #include <cstdint>
 #include <cstring>
 #include <string>
@@ -27,8 +35,6 @@
 #include <cmath>
 #include <cassert>
 #include <type_traits>
-
-#include <stb/stb_image.h>
 
 #include <windows.h>
 #include <chrono>
