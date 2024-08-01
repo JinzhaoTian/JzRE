@@ -5,9 +5,9 @@
 #include "GraphicsInterfaceRenderer.h"
 #include "GraphicsInterfaceScene.h"
 #include "GraphicsInterfaceInput.h"
-#include "GraphicsInterfaceResourceManager.h"
 #include "RenderableObject.h"
 #include "GraphicsInterfaceCamera.h"
+#include "GraphicsInterfaceDirectionalLight.h"
 
 namespace JzRE {
 class GraphicsInterfaceRenderEngine {

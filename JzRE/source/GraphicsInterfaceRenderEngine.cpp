@@ -88,21 +88,11 @@ void GraphicsInterfaceRenderEngine::ProcessInput() {
 }
 
 Bool GraphicsInterfaceRenderEngine::InitScene() {
-    auto texture = GraphicsInterfaceResourceManager::getInstance()
-                       .LoadTexture("example", "./resources/textures/example.png");
-    auto shader = GraphicsInterfaceResourceManager::getInstance()
-                      .LoadShader("example", "./resources/shaders/example.vert", "./resources/shaders/example.frag");
-
-    this->renderer->SetShader(shader);
-    this->renderer->SetTexture(texture);
-
-    if (!texture || !shader) {
-        std::cerr << "Failed to load resources" << std::endl;
-        return false;
-    }
-
     auto object = CreateSharedPtr<RenderableObject>();
     scene->AddObject(object);
+
+    auto light = CreateSharedPtr<GraphicsInterfaceDirectionalLight>();
+    scene->AddLight(light);
 
     return true;
 }

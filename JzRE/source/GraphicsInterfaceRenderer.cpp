@@ -10,6 +10,16 @@ GraphicsInterfaceRenderer::GraphicsInterfaceRenderer(I32 width, I32 height) {
 
     // 配置 OpenGL 状态
     glEnable(GL_DEPTH_TEST);
+
+    this->shader = GraphicsInterfaceResourceManager::getInstance()
+                       .LoadShader("example", "./resources/shaders/example.vert", "./resources/shaders/example.frag");
+    this->texture = GraphicsInterfaceResourceManager::getInstance()
+                        .LoadTexture("example", "./resources/textures/example.png");
+
+    if (!this->texture || !this->shader) {
+        std::cerr << "Failed to load resources" << std::endl;
+        return;
+    }
 }
 
 GraphicsInterfaceRenderer::~GraphicsInterfaceRenderer() {

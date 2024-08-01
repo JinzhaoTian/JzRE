@@ -4,6 +4,7 @@
 #include "GraphicsInterfaceShader.h"
 #include "GraphicsInterfaceTexture.h"
 #include "GraphicsInterfaceScene.h"
+#include "GraphicsInterfaceResourceManager.h"
 
 namespace JzRE {
 class GraphicsInterfaceRenderer {
