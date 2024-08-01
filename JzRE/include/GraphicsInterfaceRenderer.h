@@ -17,12 +17,6 @@ public:
     void SetViewMatrix(const glm::mat4 &viewMatrix);
     void SetProjectionMatrix(const glm::mat4 &projectionMatrix);
 
-    void SetShader(SharedPtr<GraphicsInterfaceShader> shader);
-    SharedPtr<GraphicsInterfaceShader> GetShader() const;
-
-    void SetTexture(SharedPtr<GraphicsInterfaceTexture> texture);
-    SharedPtr<GraphicsInterfaceTexture> GetTexture() const;
-
 private:
     GLuint framebuffer;
     GLuint textureColorbuffer;
@@ -32,7 +26,7 @@ private:
     glm::mat4 projectionMatrix;
 
     SharedPtr<GraphicsInterfaceShader> shader;
-    SharedPtr<GraphicsInterfaceTexture> texture;
+    UnorderedMap<String, SharedPtr<GraphicsInterfaceTexture>> textures;
 
     void Clear();
     Bool CreateFramebuffer(I32 width, I32 height);

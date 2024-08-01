@@ -1,6 +1,12 @@
 #version 330 core
 out vec4 FragColor;
 
+struct Material {
+    sampler2D diffuse;
+    sampler2D specular;    
+    float shininess;
+}; 
+
 struct PointLight {
     vec3 position;
     vec3 color;
@@ -29,10 +35,25 @@ in vec3 FragPos;
 in vec3 Normal;  
 in vec2 TexCoords;
 
-// texture samplers
-uniform sampler2D texture1;
+uniform Material material;
+uniform DirectionalLight light;
 
 void main()
 {
-	FragColor = texture(texture1, TexCoord);
+    // ambient
+    vec3 ambient = texture(material.diffuse, TexCoords).rgb;
+
+    // diffuse 
+    vec3 norm = normalize(Normal);
+    float diff = max(dot(norm, light.direction), 0.0);
+    vec3 diffuse = diff * texture(material.diffuse, TexCoords).rgb;
+
+    // specular
+    vec3 viewDir = normalize(viewPos - FragPos);
+    vec3 reflectDir = reflect(-light.direction, norm);  
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+    vec3 specular = spec * texture(material.specular, TexCoords).rgb; 
+
+	vec3 result = ambient + diffuse + specular;
+    FragColor = vec4(result, 1.0);
 }

@@ -13,13 +13,26 @@ GraphicsInterfaceRenderer::GraphicsInterfaceRenderer(I32 width, I32 height) {
 
     this->shader = GraphicsInterfaceResourceManager::getInstance()
                        .LoadShader("example", "./resources/shaders/example.vert", "./resources/shaders/example.frag");
-    this->texture = GraphicsInterfaceResourceManager::getInstance()
-                        .LoadTexture("example", "./resources/textures/example.png");
-
-    if (!this->texture || !this->shader) {
+    if (!this->shader) {
         std::cerr << "Failed to load resources" << std::endl;
         return;
     }
+
+    auto diffuseMap = GraphicsInterfaceResourceManager::getInstance()
+                          .LoadTexture("example", "./resources/textures/container2.png");
+    if (!diffuseMap) {
+        std::cerr << "Failed to load resources" << std::endl;
+        return;
+    }
+    this->textures["diffuseMap"] = diffuseMap;
+
+    auto specularMap = GraphicsInterfaceResourceManager::getInstance()
+                           .LoadTexture("example", "./resources/textures/container2_specular.png");
+    if (!specularMap) {
+        std::cerr << "Failed to load resources" << std::endl;
+        return;
+    }
+    this->textures["specularMap"] = specularMap;
 }
 
 GraphicsInterfaceRenderer::~GraphicsInterfaceRenderer() {
@@ -41,9 +54,14 @@ void GraphicsInterfaceRenderer::RenderScene(SharedPtr<GraphicsInterfaceScene> sc
     this->shader->Use();
 
     // 设置纹理
-    if (this->texture) {
-        texture->Bind(0);
-        shader->SetUniform("texture1", 0);
+    if (!this->textures.empty()) {
+        this->textures["diffuseMap"]->Bind(0);
+        this->shader->SetUniform("material.diffuse", 0);
+
+        this->textures["specularMap"]->Bind(1);
+        this->shader->SetUniform("material.specular", 0);
+
+        this->shader->SetUniform("material.shininess", 64.0f);
     }
 
     this->shader->SetUniform("view", this->viewMatrix);
@@ -62,22 +80,6 @@ void GraphicsInterfaceRenderer::SetViewMatrix(const glm::mat4 &viewMatrix) {
 
 void GraphicsInterfaceRenderer::SetProjectionMatrix(const glm::mat4 &projectionMatrix) {
     this->projectionMatrix = projectionMatrix;
-}
-
-void GraphicsInterfaceRenderer::SetShader(SharedPtr<GraphicsInterfaceShader> shader) {
-    this->shader = shader;
-}
-
-SharedPtr<GraphicsInterfaceShader> GraphicsInterfaceRenderer::GetShader() const {
-    return this->shader;
-}
-
-void GraphicsInterfaceRenderer::SetTexture(SharedPtr<GraphicsInterfaceTexture> texture) {
-    this->texture = texture;
-}
-
-SharedPtr<GraphicsInterfaceTexture> GraphicsInterfaceRenderer::GetTexture() const {
-    return this->texture;
 }
 
 void GraphicsInterfaceRenderer::Clear() {
