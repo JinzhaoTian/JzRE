@@ -34,6 +34,10 @@ void GraphicsInterfaceCamera::ResetPosition(glm::vec3 position) {
     Pitch = PITCH;
 }
 
+glm::vec3 GraphicsInterfaceCamera::GetCameraPosition() {
+    return this->Position;
+}
+
 glm::mat4 GraphicsInterfaceCamera::GetViewMatrix() {
     return glm::lookAt(Position, Position + Front, Up);
 }

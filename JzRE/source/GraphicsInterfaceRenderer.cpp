@@ -42,18 +42,21 @@ GraphicsInterfaceRenderer::~GraphicsInterfaceRenderer() {
 void GraphicsInterfaceRenderer::RenderScene(SharedPtr<GraphicsInterfaceScene> scene) {
     Clear();
 
+    this->shader->Use();
+
+    // camera properties
     if (scene->GetCamera()) {
-        SetViewMatrix(scene->GetCamera()->GetViewMatrix());
-        SetProjectionMatrix(scene->GetCamera()->GetProjectionMatrix());
+        this->shader->SetUniform("view", scene->GetCamera()->GetViewMatrix());
+        this->shader->SetUniform("projection", scene->GetCamera()->GetProjectionMatrix());
+        this->shader->SetUniform("viewPos", scene->GetCamera()->GetCameraPosition());
     }
 
+    // light properties
     for (Size i = 0; i < scene->GetLights().size(); ++i) {
         scene->GetLights()[i]->ApplyLight(this->shader, StaticCast<I32>(i));
     }
 
-    this->shader->Use();
-
-    // 设置纹理
+    // texture properties
     if (!this->textures.empty()) {
         this->textures["diffuseMap"]->Bind(0);
         this->shader->SetUniform("material.diffuse", 0);
@@ -64,11 +67,8 @@ void GraphicsInterfaceRenderer::RenderScene(SharedPtr<GraphicsInterfaceScene> sc
         this->shader->SetUniform("material.shininess", 64.0f);
     }
 
-    this->shader->SetUniform("view", this->viewMatrix);
-    this->shader->SetUniform("projection", this->projectionMatrix);
-
+    // object properties
     for (const auto object : scene->GetObjects()) {
-        // 设置模型矩阵
         shader->SetUniform("model", object->GetModelMatrix());
         object->Draw();
     }

@@ -91,9 +91,7 @@ Bool GraphicsInterfaceRenderEngine::InitScene() {
     auto object = CreateSharedPtr<RenderableObject>();
     scene->AddObject(object);
 
-    glm::vec3 dir(1.0f, 0.0f, 0.0f);
-    glm::vec3 col(255.0f, 0.0f, 0.0f);
-    auto light = CreateSharedPtr<GraphicsInterfaceDirectionalLight>(dir, col);
+    auto light = CreateSharedPtr<GraphicsInterfaceDirectionalLight>(glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3( 0.2f, 0.2f, 0.2f));
     scene->AddLight(light);
 
     return true;

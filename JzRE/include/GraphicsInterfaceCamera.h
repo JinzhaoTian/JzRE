@@ -41,6 +41,7 @@ public:
     void ResetPosition(glm::vec3 position);
     glm::mat4 GetViewMatrix();
     glm::mat4 GetProjectionMatrix();
+    glm::vec3 GetCameraPosition();
     void ProcessMouseMovement(glm::vec2 mouseDelta, GLboolean constrainPitch = true);
     void ProcessMouseScroll(glm::vec2 mouseOffset);
     void ProcessKeyboardMovement(glm::vec2 mouseDelta);
