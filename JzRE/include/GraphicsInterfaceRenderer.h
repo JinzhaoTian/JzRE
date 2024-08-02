@@ -14,18 +14,15 @@ public:
 
     void RenderScene(SharedPtr<GraphicsInterfaceScene> scene);
 
-    void SetViewMatrix(const glm::mat4 &viewMatrix);
-    void SetProjectionMatrix(const glm::mat4 &projectionMatrix);
+    Bool AddShader(const String &name, const String &vertexPath, const String &fragmentPath);
+    Bool AddTexture(const String &name, const String &filepath);
 
 private:
     GLuint framebuffer;
     GLuint textureColorbuffer;
     GLuint rboDepthStencil;
 
-    glm::mat4 viewMatrix;
-    glm::mat4 projectionMatrix;
-
-    SharedPtr<GraphicsInterfaceShader> shader;
+    UnorderedMap<String, SharedPtr<GraphicsInterfaceShader>> shaders;
     UnorderedMap<String, SharedPtr<GraphicsInterfaceTexture>> textures;
 
     void Clear();
