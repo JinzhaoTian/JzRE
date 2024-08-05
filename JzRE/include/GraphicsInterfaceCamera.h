@@ -27,6 +27,9 @@ public:
     F32 MouseSensitivity;
     F32 Zoom;
 
+    glm::vec3 Target;
+    F32 Radius; // 与目标的距离
+
     I32 wndWidth;
     I32 wndHeight;
 
@@ -47,6 +50,6 @@ public:
     void ProcessKeyboardMovement(glm::vec2 mouseDelta);
 
 private:
-    void updateCameraVectors();
+    void UpdateCameraVectors();
 };
 }; // namespace JzRE
