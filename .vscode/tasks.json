@@ -17,6 +17,7 @@
                 "-L",
                 "${workspaceFolder}/dependencies/lib",
                 "-lglfw3",
+                "-lassimp",
                 "-lopengl32",
                 "-lgdi32",
                 "-o",
