@@ -84,7 +84,7 @@ void GraphicsInterfaceCamera::ProcessMouseScroll(glm::vec2 mouseOffset) {
         Radius = 2.0f;
     if (Radius > 10.0f)
         Radius = 10.0f;
-    
+
     UpdateCameraVectors();
 }
 
