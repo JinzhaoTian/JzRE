@@ -2,7 +2,7 @@
 
 /**
  * 3rd party dependencies
-*/ 
+ */
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -18,7 +18,7 @@
 
 /**
  * sys
-*/
+ */
 #include <cstdint>
 #include <cstring>
 #include <string>

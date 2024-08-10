@@ -2,7 +2,10 @@
     "env": {
         "projectIncludePath": [
             "${workspaceFolder}/JzRE/include/",
-            "${workspaceFolder}/dependencies/include/"
+            "${workspaceFolder}/dependencies/include/",
+            "${workspaceFolder}/dependencies/include/glad/",
+            "${workspaceFolder}/dependencies/include/glfw/",
+            "${workspaceFolder}/dependencies/include/imgui/"
         ],
         "projectDefines": [
             "_DEBUG",

@@ -1,8 +1,27 @@
 {
     "tasks": [
         {
+            "label": "CMake: Build",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build",
+                "${workspaceFolder}/build",
+                "--target",
+                "all"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "detail": "Builds the project using CMake and MinGW Makefiles"
+        },
+        {
+            "label": "G++: Build",
             "type": "cppbuild",
-            "label": "C/C++: g++.exe build active file",
             "command": "C:/Program Files/mingw64/bin/g++.exe",
             "args": [
                 "-fdiagnostics-color=always",
@@ -22,7 +41,7 @@
                 "-lopengl32",
                 "-lgdi32",
                 "-o",
-                "${workspaceFolder}/output/RenderingEngine.exe",
+                "${workspaceFolder}/output/JzRE.exe",
             ],
             "options": {
                 "cwd": "${fileDirname}"
