@@ -6,56 +6,50 @@ GraphicsInterfaceResourceManager &GraphicsInterfaceResourceManager::getInstance(
     return m_instance;
 }
 
-SharedPtr<GraphicsInterfaceTexture> GraphicsInterfaceResourceManager::LoadTexture(const String &name, const String &filepath) {
-    auto it = textures.find(name);
+GraphicsInterfaceTexture GraphicsInterfaceResourceManager::LoadTexture(const String &textureName, const String &texturePath) {
+    auto it = textures.find(textureName);
     if (it != textures.end()) {
         return it->second;
     }
 
-    SharedPtr<GraphicsInterfaceTexture> texture = CreateSharedPtr<GraphicsInterfaceTexture>();
-    if (texture->LoadFromFile(filepath)) {
-        textures[name] = texture;
-        return texture;
-    } else {
-        std::cerr << "Failed to load texture: " << filepath << std::endl;
-        return nullptr;
+    GraphicsInterfaceTexture texture;
+    if (!texture.LoadFromFile(textureName, texturePath)) {
+        throw std::runtime_error("Failed to load texture: " + textureName);
     }
+
+    textures[textureName] = texture;
+    return texture;
 }
 
-SharedPtr<GraphicsInterfaceTexture> GraphicsInterfaceResourceManager::GetTexture(const String &name) {
-    auto it = textures.find(name);
-    if (it != textures.end()) {
-        return it->second;
-    } else {
-        std::cerr << "Texture not found: " << name << std::endl;
-        return nullptr;
+GraphicsInterfaceTexture GraphicsInterfaceResourceManager::GetTexture(const String &textureName) {
+    auto it = textures.find(textureName);
+    if (it == textures.end()) {
+        throw std::runtime_error("Texture not found: " + textureName);
     }
+    return it->second;
 }
 
-SharedPtr<GraphicsInterfaceShader> GraphicsInterfaceResourceManager::LoadShader(const String &name, const String &vertexPath, const String &fragmentPath) {
-    auto it = shaders.find(name);
+GraphicsInterfaceShader GraphicsInterfaceResourceManager::LoadShader(const String &shaderName, const String &vertexPath, const String &fragmentPath) {
+    auto it = shaders.find(shaderName);
     if (it != shaders.end()) {
         return it->second;
     }
 
-    SharedPtr<GraphicsInterfaceShader> shader = CreateSharedPtr<GraphicsInterfaceShader>();
-    if (shader->LoadFromFile(vertexPath, fragmentPath)) {
-        shaders[name] = shader;
-        return shader;
-    } else {
-        std::cerr << "Failed to load shader: " << vertexPath << " and " << fragmentPath << std::endl;
-        return nullptr;
+    GraphicsInterfaceShader shader;
+    if (!shader.LoadFromFile(vertexPath, fragmentPath)) {
+        throw std::runtime_error("Failed to load shader: " + vertexPath + " and " + fragmentPath);
     }
+
+    shaders[shaderName] = shader;
+    return shader;
 }
 
-SharedPtr<GraphicsInterfaceShader> GraphicsInterfaceResourceManager::GetShader(const String &name) {
-    auto it = shaders.find(name);
-    if (it != shaders.end()) {
-        return it->second;
-    } else {
-        std::cerr << "Shader not found: " << name << std::endl;
-        return nullptr;
+GraphicsInterfaceShader GraphicsInterfaceResourceManager::GetShader(const String &shaderName) {
+    auto it = shaders.find(shaderName);
+    if (it == shaders.end()) {
+        throw std::runtime_error("Shader not found: " + shaderName);
     }
+    return it->second;
 }
 
 void GraphicsInterfaceResourceManager::Clear() {

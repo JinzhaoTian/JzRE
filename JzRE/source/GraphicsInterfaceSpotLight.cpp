@@ -55,14 +55,14 @@ void GraphicsInterfaceSpotLight::SetQuadratic(F32 quadratic) {
     this->quadratic = quadratic;
 }
 
-void GraphicsInterfaceSpotLight::ApplyLight(SharedPtr<GraphicsInterfaceShader> shader, I32 index) const {
-    shader->SetUniform("spotLights[" + std::to_string(index) + "].position", position);
-    shader->SetUniform("spotLights[" + std::to_string(index) + "].direction", direction);
-    shader->SetUniform("spotLights[" + std::to_string(index) + "].color", color);
-    shader->SetUniform("spotLights[" + std::to_string(index) + "].cutOff", glm::cos(glm::radians(cutOff)));
-    shader->SetUniform("spotLights[" + std::to_string(index) + "].outerCutOff", glm::cos(glm::radians(outerCutOff)));
-    shader->SetUniform("spotLights[" + std::to_string(index) + "].constant", constant);
-    shader->SetUniform("spotLights[" + std::to_string(index) + "].linear", linear);
-    shader->SetUniform("spotLights[" + std::to_string(index) + "].quadratic", quadratic);
+void GraphicsInterfaceSpotLight::ApplyLight(const GraphicsInterfaceShader &shader, I32 index) const {
+    shader.SetUniform("spotLights[" + std::to_string(index) + "].position", position);
+    shader.SetUniform("spotLights[" + std::to_string(index) + "].direction", direction);
+    shader.SetUniform("spotLights[" + std::to_string(index) + "].color", color);
+    shader.SetUniform("spotLights[" + std::to_string(index) + "].cutOff", glm::cos(glm::radians(cutOff)));
+    shader.SetUniform("spotLights[" + std::to_string(index) + "].outerCutOff", glm::cos(glm::radians(outerCutOff)));
+    shader.SetUniform("spotLights[" + std::to_string(index) + "].constant", constant);
+    shader.SetUniform("spotLights[" + std::to_string(index) + "].linear", linear);
+    shader.SetUniform("spotLights[" + std::to_string(index) + "].quadratic", quadratic);
 }
 }; // namespace JzRE

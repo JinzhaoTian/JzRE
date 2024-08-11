@@ -9,11 +9,14 @@ GraphicsInterfaceTexture::~GraphicsInterfaceTexture() {
     glDeleteTextures(1, &textureID);
 }
 
-Bool GraphicsInterfaceTexture::LoadFromFile(const String &filepath) {
+Bool GraphicsInterfaceTexture::LoadFromFile(const String &textureName, const String &texturePath) {
+    this->textureName = textureName;
+    this->texturePath = texturePath;
+
     glBindTexture(GL_TEXTURE_2D, textureID);
 
-    int width, height, nrChannels;
-    unsigned char *data = stbi_load(filepath.c_str(), &width, &height, &nrChannels, 0);
+    I32 width, height, nrChannels;
+    unsigned char *data = stbi_load(texturePath.c_str(), &width, &height, &nrChannels, 0);
     if (data) {
         GLenum format;
         if (nrChannels == 1)
@@ -26,10 +29,15 @@ Bool GraphicsInterfaceTexture::LoadFromFile(const String &filepath) {
         glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
 
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
         stbi_image_free(data);
         return true;
     } else {
-        std::cerr << "Failed to load texture: " << filepath << std::endl;
+        std::cerr << "Failed to load texture: " << texturePath << std::endl;
         stbi_image_free(data);
         return false;
     }
@@ -38,6 +46,10 @@ Bool GraphicsInterfaceTexture::LoadFromFile(const String &filepath) {
 void GraphicsInterfaceTexture::Bind(U32 unit) const {
     glActiveTexture(GL_TEXTURE0 + unit);
     glBindTexture(GL_TEXTURE_2D, textureID);
+}
+
+void GraphicsInterfaceTexture::Unbind() const {
+    glActiveTexture(GL_TEXTURE0);
 }
 
 } // namespace JzRE

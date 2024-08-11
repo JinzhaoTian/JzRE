@@ -15,15 +15,13 @@ public:
     void RenderScene(SharedPtr<GraphicsInterfaceScene> scene);
 
     Bool AddShader(const String &name, const String &vertexPath, const String &fragmentPath);
-    Bool AddTexture(const String &name, const String &filepath);
 
 private:
     GLuint framebuffer;
     GLuint textureColorbuffer;
     GLuint rboDepthStencil;
 
-    UnorderedMap<String, SharedPtr<GraphicsInterfaceShader>> shaders;
-    UnorderedMap<String, SharedPtr<GraphicsInterfaceTexture>> textures;
+    UnorderedMap<String, GraphicsInterfaceShader> shaders;
 
     void Clear();
     Bool CreateFramebuffer(I32 width, I32 height);

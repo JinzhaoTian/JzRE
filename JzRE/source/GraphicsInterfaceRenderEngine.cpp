@@ -88,11 +88,15 @@ void GraphicsInterfaceRenderEngine::ProcessInput() {
 }
 
 Bool GraphicsInterfaceRenderEngine::InitScene() {
-    auto object = CreateSharedPtr<RenderableObject>();
-    scene->AddObject(object);
+    // auto object = CreateSharedPtr<RenderableObject>();
+    // scene->AddObject(object);
 
-    auto light = CreateSharedPtr<GraphicsInterfaceDirectionalLight>(glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.5f, 0.5f, 0.5f));
-    scene->AddLight(light);
+    String modelPath = "./resources/models/nanosuit.obj";
+    auto model = CreateSharedPtr<GraphicsInterfaceModel>(modelPath, false);
+    scene->AddModel(model);
+
+    // auto light = CreateSharedPtr<GraphicsInterfaceDirectionalLight>(glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.5f, 0.5f, 0.5f));
+    // scene->AddLight(light);
 
     return true;
 }

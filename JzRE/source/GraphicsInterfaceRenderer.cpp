@@ -16,36 +16,23 @@ GraphicsInterfaceRenderer::GraphicsInterfaceRenderer(I32 width, I32 height) {
         std::cerr << "Failed to load resources" << std::endl;
         return;
     }
-
-    // configure textures
-    if (!AddTexture("diffuseMap", "./resources/textures/container2.png")) {
-        std::cerr << "Failed to load resources" << std::endl;
-        return;
-    }
-
-    if (!AddTexture("specularMap", "./resources/textures/container2_specular.png")) {
-        std::cerr << "Failed to load resources" << std::endl;
-        return;
-    }
 }
 
 GraphicsInterfaceRenderer::~GraphicsInterfaceRenderer() {
     this->CleanFramebuffer();
-
     this->shaders.clear();
-    this->textures.clear();
 }
 
 void GraphicsInterfaceRenderer::RenderScene(SharedPtr<GraphicsInterfaceScene> scene) {
     this->Clear();
 
-    this->shaders["example"]->Use();
+    this->shaders["example"].Use();
 
     // camera properties
     if (scene->GetCamera()) {
-        this->shaders["example"]->SetUniform("view", scene->GetCamera()->GetViewMatrix());
-        this->shaders["example"]->SetUniform("projection", scene->GetCamera()->GetProjectionMatrix());
-        this->shaders["example"]->SetUniform("viewPos", scene->GetCamera()->GetCameraPosition());
+        this->shaders["example"].SetUniform("view", scene->GetCamera()->GetViewMatrix());
+        this->shaders["example"].SetUniform("projection", scene->GetCamera()->GetProjectionMatrix());
+        this->shaders["example"].SetUniform("viewPos", scene->GetCamera()->GetCameraPosition());
     }
 
     // light properties
@@ -53,43 +40,21 @@ void GraphicsInterfaceRenderer::RenderScene(SharedPtr<GraphicsInterfaceScene> sc
         scene->GetLights()[i]->ApplyLight(this->shaders["example"], StaticCast<I32>(i));
     }
 
-    // texture properties
-    if (!this->textures.empty()) {
-        this->textures["diffuseMap"]->Bind(0);
-        this->shaders["example"]->SetUniform("material.diffuse", 0);
-
-        this->textures["specularMap"]->Bind(1);
-        this->shaders["example"]->SetUniform("material.specular", 1);
-
-        this->shaders["example"]->SetUniform("material.shininess", 64.0f);
-    }
-
     // object properties
     for (const auto object : scene->GetObjects()) {
-        shaders["example"]->SetUniform("model", object->GetModelMatrix());
+        shaders["example"].SetUniform("model", object->GetModelMatrix());
         object->Draw();
+    }
+
+    for (const auto model : scene->GetModels()) {
+        model->Draw(this->shaders["example"]);
     }
 }
 
 Bool GraphicsInterfaceRenderer::AddShader(const String &name, const String &vertexPath, const String &fragmentPath) {
     auto shader = GraphicsInterfaceResourceManager::getInstance()
                       .LoadShader(name, vertexPath, fragmentPath);
-    if (!shader) {
-        std::cerr << "Failed to load shaders" << name << std::endl;
-        return false;
-    }
     this->shaders[name] = shader;
-    return true;
-}
-
-Bool GraphicsInterfaceRenderer::AddTexture(const String &name, const String &filepath) {
-    auto texture = GraphicsInterfaceResourceManager::getInstance()
-                       .LoadTexture(name, filepath);
-    if (!texture) {
-        std::cerr << "Failed to load texture: " << name << std::endl;
-        return false;
-    }
-    this->textures[name] = texture;
     return true;
 }
 

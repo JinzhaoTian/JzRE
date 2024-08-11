@@ -17,7 +17,7 @@ public:
     F32 GetQuadratic() const;
     void SetQuadratic(F32 quadratic);
 
-    void ApplyLight(SharedPtr<GraphicsInterfaceShader> shader, I32 index) const override;
+    void ApplyLight(const GraphicsInterfaceShader &shader, I32 index) const override;
 
 private:
     F32 constant;

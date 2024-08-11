@@ -2,6 +2,7 @@
 
 #include "CommonTypes.h"
 #include "RenderableObject.h"
+#include "GraphicsInterfaceModel.h"
 #include "GraphicsInterfaceShader.h"
 #include "GraphicsInterfaceCamera.h"
 #include "GraphicsInterfaceLight.h"
@@ -16,6 +17,10 @@ public:
     void RemoveObject(SharedPtr<RenderableObject> object);
     List<SharedPtr<RenderableObject>> GetObjects() const;
 
+    void AddModel(SharedPtr<GraphicsInterfaceModel> object);
+    void RemoveModel(SharedPtr<GraphicsInterfaceModel> object);
+    List<SharedPtr<GraphicsInterfaceModel>> GetModels() const;
+
     void AddLight(SharedPtr<GraphicsInterfaceLight> light);
     void RemoveLight(SharedPtr<GraphicsInterfaceLight> light);
     List<SharedPtr<GraphicsInterfaceLight>> GetLights() const;
@@ -27,6 +32,7 @@ public:
 
 private:
     List<SharedPtr<RenderableObject>> objects;
+    List<SharedPtr<GraphicsInterfaceModel>> models;
     List<SharedPtr<GraphicsInterfaceLight>> lights;
     SharedPtr<GraphicsInterfaceCamera> camera;
 };

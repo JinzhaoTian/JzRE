@@ -9,11 +9,11 @@ class GraphicsInterfaceResourceManager {
 public:
     static GraphicsInterfaceResourceManager &getInstance();
 
-    SharedPtr<GraphicsInterfaceTexture> LoadTexture(const String &name, const String &filepath);
-    SharedPtr<GraphicsInterfaceTexture> GetTexture(const String &name);
+    GraphicsInterfaceTexture LoadTexture(const String &textureName, const String &texturePath);
+    GraphicsInterfaceTexture GetTexture(const String &textureName);
 
-    SharedPtr<GraphicsInterfaceShader> LoadShader(const String &name, const String &vertexPath, const String &fragmentPath);
-    SharedPtr<GraphicsInterfaceShader> GetShader(const String &name);
+    GraphicsInterfaceShader LoadShader(const String &shaderName, const String &vertexPath, const String &fragmentPath);
+    GraphicsInterfaceShader GetShader(const String &shaderName);
 
     // 清理资源
     void Clear();
@@ -25,7 +25,7 @@ private:
     GraphicsInterfaceResourceManager(const GraphicsInterfaceResourceManager &) = delete;
     GraphicsInterfaceResourceManager &operator=(const GraphicsInterfaceResourceManager &) = delete;
 
-    UnorderedMap<String, SharedPtr<GraphicsInterfaceTexture>> textures;
-    UnorderedMap<String, SharedPtr<GraphicsInterfaceShader>> shaders;
+    UnorderedMap<String, GraphicsInterfaceTexture> textures;
+    UnorderedMap<String, GraphicsInterfaceShader> shaders;
 };
 } // namespace JzRE

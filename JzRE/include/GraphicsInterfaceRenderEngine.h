@@ -6,6 +6,7 @@
 #include "GraphicsInterfaceScene.h"
 #include "GraphicsInterfaceInput.h"
 #include "RenderableObject.h"
+#include "GraphicsInterfaceModel.h"
 #include "GraphicsInterfaceCamera.h"
 #include "GraphicsInterfaceDirectionalLight.h"
 

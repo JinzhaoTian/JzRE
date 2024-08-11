@@ -21,6 +21,18 @@ List<SharedPtr<RenderableObject>> GraphicsInterfaceScene::GetObjects() const {
     return this->objects;
 }
 
+void GraphicsInterfaceScene::AddModel(SharedPtr<GraphicsInterfaceModel> model) {
+    this->models.push_back(model);
+}
+
+void GraphicsInterfaceScene::RemoveModel(SharedPtr<GraphicsInterfaceModel> model) {
+    this->models.erase(std::remove(models.begin(), models.end(), model), models.end());
+}
+
+List<SharedPtr<GraphicsInterfaceModel>> GraphicsInterfaceScene::GetModels() const {
+    return this->models;
+}
+
 void GraphicsInterfaceScene::AddLight(SharedPtr<GraphicsInterfaceLight> light) {
     lights.push_back(light);
 }

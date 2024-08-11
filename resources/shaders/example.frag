@@ -39,22 +39,24 @@ uniform vec3 viewPos;
 uniform Material material;
 uniform DirectionalLight directionalLight[1];
 
+uniform sampler2D texture_diffuse0;
+
 void main()
 {
-    // ambient
-    vec3 ambient = directionalLight[0].color * texture(material.diffuse, TexCoords).rgb;
+    // // ambient
+    // vec3 ambient = directionalLight[0].color * texture(material.diffuse, TexCoords).rgb;
 
-    // diffuse 
-    vec3 norm = normalize(Normal);
-    float diff = max(dot(norm, directionalLight[0].direction), 0.0);
-    vec3 diffuse = directionalLight[0].color * diff * texture(material.diffuse, TexCoords).rgb;
+    // // diffuse 
+    // vec3 norm = normalize(Normal);
+    // float diff = max(dot(norm, directionalLight[0].direction), 0.0);
+    // vec3 diffuse = directionalLight[0].color * diff * texture(material.diffuse, TexCoords).rgb;
 
-    // specular
-    vec3 viewDir = normalize(viewPos - FragPos);
-    vec3 reflectDir = reflect(-directionalLight[0].direction, norm);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-    vec3 specular = directionalLight[0].color * spec * texture(material.specular, TexCoords).rgb; 
+    // // specular
+    // vec3 viewDir = normalize(viewPos - FragPos);
+    // vec3 reflectDir = reflect(-directionalLight[0].direction, norm);
+    // float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+    // vec3 specular = directionalLight[0].color * spec * texture(material.specular, TexCoords).rgb; 
 
-	vec3 result = ambient + diffuse + specular;
-    FragColor = vec4(result, 1.0);
+	// vec3 result = ambient + diffuse + specular;
+    FragColor = texture(texture_diffuse0, TexCoords);
 }
