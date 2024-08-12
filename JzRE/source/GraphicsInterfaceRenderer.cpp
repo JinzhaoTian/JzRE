@@ -20,40 +20,43 @@ GraphicsInterfaceRenderer::GraphicsInterfaceRenderer(I32 width, I32 height) {
 
 GraphicsInterfaceRenderer::~GraphicsInterfaceRenderer() {
     this->CleanFramebuffer();
-    this->shaders.clear();
 }
 
 void GraphicsInterfaceRenderer::RenderScene(SharedPtr<GraphicsInterfaceScene> scene) {
     this->Clear();
 
-    this->shaders["example"].Use();
+    this->shader->Use();
 
     // camera properties
     if (scene->GetCamera()) {
-        this->shaders["example"].SetUniform("view", scene->GetCamera()->GetViewMatrix());
-        this->shaders["example"].SetUniform("projection", scene->GetCamera()->GetProjectionMatrix());
-        this->shaders["example"].SetUniform("viewPos", scene->GetCamera()->GetCameraPosition());
+        this->shader->SetUniform("view", scene->GetCamera()->GetViewMatrix());
+        this->shader->SetUniform("projection", scene->GetCamera()->GetProjectionMatrix());
+        this->shader->SetUniform("viewPos", scene->GetCamera()->GetCameraPosition());
     }
 
     // light properties
     for (Size i = 0; i < scene->GetLights().size(); ++i) {
-        scene->GetLights()[i]->ApplyLight(this->shaders["example"], StaticCast<I32>(i));
+        scene->GetLights()[i]->ApplyLight(this->shader, StaticCast<I32>(i));
     }
 
     // object properties
     for (const auto object : scene->GetObjects()) {
-        shaders["example"].SetUniform("model", object->GetModelMatrix());
+        this->shader->SetUniform("model", object->GetModelMatrix());
         object->Draw();
     }
 
     for (const auto model : scene->GetModels()) {
-        model->Draw(this->shaders["example"]);
+        glm::mat4 modelMatrix = glm::mat4(1.0f);
+        modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
+        modelMatrix = glm::scale(modelMatrix, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
+        this->shader->SetUniform("model", modelMatrix);
+        model->Draw(this->shader);
     }
 }
 
 Bool GraphicsInterfaceRenderer::AddShader(const String &name, const String &vertexPath, const String &fragmentPath) {
-    this->shaders[name] = std::move(GraphicsInterfaceResourceManager::getInstance()
-                                        .LoadShader(name, vertexPath, fragmentPath));
+    this->shader = GraphicsInterfaceResourceManager::getInstance()
+                      .LoadShader(name, vertexPath, fragmentPath);
     return true;
 }
 

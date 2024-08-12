@@ -29,11 +29,11 @@ void GraphicsInterfacePointLight::SetQuadratic(F32 quadratic) {
     this->quadratic = quadratic;
 }
 
-void GraphicsInterfacePointLight::ApplyLight(const GraphicsInterfaceShader &shader, I32 index) const {
-    shader.SetUniform("pointLights[" + std::to_string(index) + "].position", position);
-    shader.SetUniform("pointLights[" + std::to_string(index) + "].color", color);
-    shader.SetUniform("pointLights[" + std::to_string(index) + "].constant", constant);
-    shader.SetUniform("pointLights[" + std::to_string(index) + "].linear", linear);
-    shader.SetUniform("pointLights[" + std::to_string(index) + "].quadratic", quadratic);
+void GraphicsInterfacePointLight::ApplyLight(SharedPtr<GraphicsInterfaceShader> shader, I32 index) const {
+    shader->SetUniform("pointLights[" + std::to_string(index) + "].position", position);
+    shader->SetUniform("pointLights[" + std::to_string(index) + "].color", color);
+    shader->SetUniform("pointLights[" + std::to_string(index) + "].constant", constant);
+    shader->SetUniform("pointLights[" + std::to_string(index) + "].linear", linear);
+    shader->SetUniform("pointLights[" + std::to_string(index) + "].quadratic", quadratic);
 }
 } // namespace JzRE

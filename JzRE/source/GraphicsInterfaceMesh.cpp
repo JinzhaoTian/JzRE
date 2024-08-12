@@ -1,18 +1,37 @@
 #include "GraphicsInterfaceMesh.h"
 
 namespace JzRE {
-GraphicsInterfaceMesh::GraphicsInterfaceMesh(List<GraphicsInterfaceVertex> &&vertices, List<U32> &&indices, List<GraphicsInterfaceTexture> &&textures) :
-    vertices(std::move(vertices)), indices(std::move(indices)), textures(std::move(textures)) {
+GraphicsInterfaceMesh::GraphicsInterfaceMesh(List<GraphicsInterfaceVertex> vertices, List<U32> indices, List<SharedPtr<GraphicsInterfaceTexture>> textures) :
+    vertices(vertices), indices(indices), textures(textures) {
     // now that we have all the required data, set the vertex buffers and its attribute pointers.
     SetupMesh();
 }
 
-void GraphicsInterfaceMesh::Draw(GraphicsInterfaceShader &shader) {
+void GraphicsInterfaceMesh::Draw(SharedPtr<GraphicsInterfaceShader> shader) {
     // bind appropriate textures
+    I32 diffuseCnt = 0, specularCnt = 0, normalCnt = 0, heightCnt = 0;
     for (U32 i = 0; i < this->textures.size(); i++) {
-        this->textures[i].Bind(i);
-        shader.SetUniform(this->textures[i].textureName, StaticCast<I32>(i));
+        this->textures[i]->Bind(i);
+        shader->SetUniform(this->textures[i]->textureName, StaticCast<I32>(i));
+
+        String typeName = this->textures[i]->textureName.substr(
+            this->textures[i]->textureName.find_first_of('.') + 1,
+            this->textures[i]->textureName.find_first_of('[') - this->textures[i]->textureName.find_first_of('.') - 1);
+        if (typeName == "diffuse") {
+            diffuseCnt++;
+        } else if (typeName == "specular") {
+            specularCnt++;
+        } else if (typeName == "normal") {
+            normalCnt++;
+        } else if (typeName == "height") {
+            heightCnt++;
+        }
     }
+
+    shader->SetUniform("numDiffuseTextures", diffuseCnt);
+    shader->SetUniform("numSpecularTextures", specularCnt);
+    shader->SetUniform("numNormalTextures", normalCnt);
+    shader->SetUniform("numHeightTextures", heightCnt);
 
     // draw mesh
     glBindVertexArray(this->VAO);

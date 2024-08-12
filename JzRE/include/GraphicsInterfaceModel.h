@@ -14,12 +14,12 @@ public:
 
     GraphicsInterfaceModel(const String &path, Bool gamma = false);
 
-    void Draw(GraphicsInterfaceShader &shader);
+    void Draw(SharedPtr<GraphicsInterfaceShader> shader);
 
 private:
     void LoadModel(const String &path);
     void ProcessNode(aiNode *node, const aiScene *scene);
     GraphicsInterfaceMesh ProcessMesh(aiMesh *mesh, const aiScene *scene);
-    List<GraphicsInterfaceTexture> LoadMaterialTextures(aiMaterial *mat, aiTextureType type, String typeName);
+    List<SharedPtr<GraphicsInterfaceTexture>> LoadMaterialTextures(aiMaterial *mat, aiTextureType type, String typeName);
 };
 } // namespace JzRE

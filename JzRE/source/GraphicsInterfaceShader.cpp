@@ -33,7 +33,8 @@ Bool GraphicsInterfaceShader::LoadFromFile(const String &vertexPath, const Strin
     String fragmentCode = ReadFile(fragmentPath);
 
     GLuint vertexShader, fragmentShader;
-    if (!CompileShader(vertexCode, GL_VERTEX_SHADER, vertexShader) || !CompileShader(fragmentCode, GL_FRAGMENT_SHADER, fragmentShader)) {
+    if (!CompileShader(vertexCode, GL_VERTEX_SHADER, vertexShader)
+        || !CompileShader(fragmentCode, GL_FRAGMENT_SHADER, fragmentShader)) {
         return false;
     }
 

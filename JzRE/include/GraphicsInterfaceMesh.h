@@ -11,11 +11,11 @@ public:
     // mesh Data
     List<GraphicsInterfaceVertex> vertices;
     List<U32> indices;
-    List<GraphicsInterfaceTexture> textures;
+    List<SharedPtr<GraphicsInterfaceTexture>> textures;
 
-    GraphicsInterfaceMesh(List<GraphicsInterfaceVertex>&& vertices, List<U32>&& indices, List<GraphicsInterfaceTexture>&& textures);
+    GraphicsInterfaceMesh(List<GraphicsInterfaceVertex> vertices, List<U32> indices, List<SharedPtr<GraphicsInterfaceTexture>> textures);
 
-    void Draw(GraphicsInterfaceShader &shader);
+    void Draw(SharedPtr<GraphicsInterfaceShader> shader);
 
 private:
     GLuint VAO, VBO, EBO;

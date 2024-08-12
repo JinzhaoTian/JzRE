@@ -6,7 +6,7 @@ GraphicsInterfaceModel::GraphicsInterfaceModel(const String &path, Bool gamma) :
     LoadModel(path);
 }
 
-void GraphicsInterfaceModel::Draw(GraphicsInterfaceShader &shader) {
+void GraphicsInterfaceModel::Draw(SharedPtr<GraphicsInterfaceShader> shader) {
     for (auto &mesh : this->meshes)
         mesh.Draw(shader);
 }
@@ -49,7 +49,7 @@ GraphicsInterfaceMesh GraphicsInterfaceModel::ProcessMesh(aiMesh *mesh, const ai
     // data to fill
     List<GraphicsInterfaceVertex> vertices;
     List<U32> indices;
-    List<GraphicsInterfaceTexture> textures;
+    List<SharedPtr<GraphicsInterfaceTexture>> textures;
 
     // walk through each of the mesh's vertices
     for (U32 i = 0; i < mesh->mNumVertices; i++) {
@@ -114,31 +114,31 @@ GraphicsInterfaceMesh GraphicsInterfaceModel::ProcessMesh(aiMesh *mesh, const ai
     // normal: texture_normalN
 
     // 1. diffuse maps
-    List<GraphicsInterfaceTexture> diffuseMaps = LoadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
-    textures.insert(textures.end(), std::make_move_iterator(diffuseMaps.begin()), std::make_move_iterator(diffuseMaps.end()));
+    auto diffuseMaps = LoadMaterialTextures(material, aiTextureType_DIFFUSE, "material.diffuse");
+    textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
     // 2. specular maps
-    List<GraphicsInterfaceTexture> specularMaps = LoadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
-    textures.insert(textures.end(), std::make_move_iterator(specularMaps.begin()), std::make_move_iterator(specularMaps.end()));
+    auto specularMaps = LoadMaterialTextures(material, aiTextureType_SPECULAR, "material.specular");
+    textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
     // 3. normal maps
-    List<GraphicsInterfaceTexture> normalMaps = LoadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
-    textures.insert(textures.end(), std::make_move_iterator(normalMaps.begin()), std::make_move_iterator(normalMaps.end()));
+    auto normalMaps = LoadMaterialTextures(material, aiTextureType_NORMALS, "material.normal");
+    textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
     // 4. height maps
-    List<GraphicsInterfaceTexture> heightMaps = LoadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
-    textures.insert(textures.end(), std::make_move_iterator(heightMaps.begin()), std::make_move_iterator(heightMaps.end()));
+    auto heightMaps = LoadMaterialTextures(material, aiTextureType_HEIGHT, "material.height");
+    textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
 
     // return a mesh object created from the extracted mesh data
-    return GraphicsInterfaceMesh(std::move(vertices), std::move(indices), std::move(textures));
+    return GraphicsInterfaceMesh(vertices, indices, textures);
 }
 
-List<GraphicsInterfaceTexture> GraphicsInterfaceModel::LoadMaterialTextures(aiMaterial *mat, aiTextureType type, String typeName) {
-    List<GraphicsInterfaceTexture> textures;
+List<SharedPtr<GraphicsInterfaceTexture>> GraphicsInterfaceModel::LoadMaterialTextures(aiMaterial *mat, aiTextureType type, String typeName) {
+    List<SharedPtr<GraphicsInterfaceTexture>> textures;
     for (U32 i = 0; i < mat->GetTextureCount(type); i++) {
         aiString str;
         mat->GetTexture(type, i, &str);
-        String textureName = typeName + std::to_string(i);
+        String textureName = typeName + "[" + std::to_string(i) + "]";
         String texturePath = this->directory + '/' + str.C_Str();
-        textures.push_back(std::move(GraphicsInterfaceResourceManager::getInstance()
-                                         .LoadTexture(textureName, texturePath)));
+        textures.push_back(GraphicsInterfaceResourceManager::getInstance()
+                               .LoadTexture(textureName, texturePath));
     }
     return std::move(textures);
 }

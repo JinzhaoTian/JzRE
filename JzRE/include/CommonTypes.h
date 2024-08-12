@@ -40,6 +40,7 @@
 #include <cassert>
 #include <type_traits>
 #include <utility>
+#include <regex>
 
 #include <windows.h>
 #include <chrono>

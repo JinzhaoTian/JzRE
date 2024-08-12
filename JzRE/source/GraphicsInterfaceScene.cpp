@@ -6,6 +6,7 @@ GraphicsInterfaceScene::GraphicsInterfaceScene() {
 
 GraphicsInterfaceScene::~GraphicsInterfaceScene() {
     this->objects.clear();
+    this->models.clear();
     this->lights.clear();
 }
 

@@ -21,7 +21,7 @@ private:
     GLuint textureColorbuffer;
     GLuint rboDepthStencil;
 
-    UnorderedMap<String, GraphicsInterfaceShader> shaders;
+    SharedPtr<GraphicsInterfaceShader> shader;
 
     void Clear();
     Bool CreateFramebuffer(I32 width, I32 height);
