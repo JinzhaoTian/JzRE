@@ -17,6 +17,11 @@ Bool GraphicsInterfaceRenderEngine::Initialize() {
 
     GraphicsInterfaceInput::Initialize(this->window->GetGLFWwindow());
 
+    this->simpleUI = CreateSharedPtr<GraphicsInterfaceUI>(this->window->GetGLFWwindow());
+    if (this->simpleUI == nullptr) {
+        return false;
+    }
+
     this->renderer = CreateSharedPtr<GraphicsInterfaceRenderer>(this->wndWidth, this->wndHeight);
     if (this->renderer == nullptr) {
         return false;
@@ -58,6 +63,8 @@ void GraphicsInterfaceRenderEngine::Run() {
 
         this->scene->Update(deltaTime);
         this->renderer->RenderScene(this->scene);
+
+        this->simpleUI->Render();
 
         this->window->SwapFramebuffer();
     }

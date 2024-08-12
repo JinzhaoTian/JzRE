@@ -9,6 +9,7 @@
 #include "GraphicsInterfaceModel.h"
 #include "GraphicsInterfaceCamera.h"
 #include "GraphicsInterfaceDirectionalLight.h"
+#include "GraphicsInterfaceUI.h"
 
 namespace JzRE {
 class GraphicsInterfaceRenderEngine {
@@ -32,6 +33,7 @@ private:
     SharedPtr<GraphicsInterfaceRenderer> renderer;
     SharedPtr<GraphicsInterfaceScene> scene;
     SharedPtr<GraphicsInterfaceCamera> camera;
+    SharedPtr<GraphicsInterfaceUI> simpleUI;
 
     Bool InitScene();
     void ProcessInput();

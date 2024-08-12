@@ -36,8 +36,8 @@ add_library(stb STATIC ${THIRD_PARTY}/lib/stb/stb_image.cpp)
 
 file(GLOB IMGUI_SRC
     ${THIRD_PARTY}/include/imgui/*.cpp
-    ${THIRD_PARTY}/include/imgui/backend/imgui_impl_glfw.cpp
-    ${THIRD_PARTY}/include/imgui/backend/imgui_impl_opengl3.cpp
+    ${THIRD_PARTY}/include/imgui/backends/imgui_impl_glfw.cpp
+    ${THIRD_PARTY}/include/imgui/backends/imgui_impl_opengl3.cpp
 )
 add_library(imgui STATIC ${IMGUI_SRC})
 
