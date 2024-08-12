@@ -32,6 +32,8 @@ add_library(glad STATIC ${THIRD_PARTY}/lib/glad/glad.c)
 
 find_library(ASSIMP_LIB NAMES assimp PATHS "${THIRD_PARTY}/lib/assimp")
 
+add_library(stb STATIC ${THIRD_PARTY}/lib/stb/stb_image.cpp)
+
 file(GLOB IMGUI_SRC
     ${THIRD_PARTY}/include/imgui/*.cpp
     ${THIRD_PARTY}/include/imgui/backend/imgui_impl_glfw.cpp
@@ -51,5 +53,6 @@ add_executable(JzRE main.cpp ${JZRE_SOURCES})
 # link
 target_link_libraries(JzRE ${GLFW_LIB} glad)
 target_link_libraries(JzRE ${ASSIMP_LIB} -lz)
+target_link_libraries(JzRE stb)
 target_link_libraries(JzRE imgui)
 target_link_libraries(JzRE opengl32 gdi32)
