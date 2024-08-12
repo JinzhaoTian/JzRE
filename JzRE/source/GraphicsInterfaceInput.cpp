@@ -61,7 +61,7 @@ void GraphicsInterfaceInput::callback_mouse_cursor_pos(RawPtr<GLFWwindow> window
     }
 
     deltaX = xpos - lastX;
-    deltaY = -(ypos - lastY); // reversed since y-coordinates go from bottom to top
+    deltaY = ypos - lastY;
 
     lastX = xpos;
     lastY = ypos;

@@ -47,8 +47,6 @@ void GraphicsInterfaceRenderer::RenderScene(SharedPtr<GraphicsInterfaceScene> sc
 
     for (const auto model : scene->GetModels()) {
         glm::mat4 modelMatrix = glm::mat4(1.0f);
-        modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
-        modelMatrix = glm::scale(modelMatrix, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
         this->shader->SetUniform("model", modelMatrix);
         model->Draw(this->shader);
     }
@@ -56,7 +54,7 @@ void GraphicsInterfaceRenderer::RenderScene(SharedPtr<GraphicsInterfaceScene> sc
 
 Bool GraphicsInterfaceRenderer::AddShader(const String &name, const String &vertexPath, const String &fragmentPath) {
     this->shader = GraphicsInterfaceResourceManager::getInstance()
-                      .LoadShader(name, vertexPath, fragmentPath);
+                       .LoadShader(name, vertexPath, fragmentPath);
     return true;
 }
 

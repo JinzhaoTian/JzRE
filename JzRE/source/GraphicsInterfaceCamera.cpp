@@ -73,24 +73,18 @@ void GraphicsInterfaceCamera::ProcessMouseMovement(glm::vec2 mouseDelta, GLboole
 }
 
 void GraphicsInterfaceCamera::ProcessMouseScroll(glm::vec2 mouseOffset) {
-    // Zoom -= mouseOffset.y;
-    // if (Zoom < 1.0f)
-    //     Zoom = 1.0f;
-    // if (Zoom > 45.0f)
-    //     Zoom = 45.0f;
-
     Radius -= mouseOffset.y * MouseSensitivity;
     if (Radius < 2.0f)
         Radius = 2.0f;
-    if (Radius > 10.0f)
-        Radius = 10.0f;
+    if (Radius > 20.0f)
+        Radius = 20.0f;
 
     UpdateCameraVectors();
 }
 
 void GraphicsInterfaceCamera::ProcessKeyboardMovement(glm::vec2 mouseDelta) {
-    Position += Right * mouseDelta.x * MouseSensitivity;
-    Position += Up * mouseDelta.y * MouseSensitivity;
+    Target.x += mouseDelta.x * MovementSpeed;
+    Target.y += mouseDelta.y * MovementSpeed;
     UpdateCameraVectors();
 }
 
@@ -103,15 +97,5 @@ void GraphicsInterfaceCamera::UpdateCameraVectors() {
 
     Right = glm::normalize(glm::cross(Position - Target, WorldUp));
     Up = glm::normalize(glm::cross(Right, Position - Target));
-
-    // // calculate the new Front vector
-    // glm::vec3 front;
-    // front.x = cos(glm::radians(Yaw)) * cos(glm::radians(Pitch));
-    // front.y = sin(glm::radians(Pitch));
-    // front.z = sin(glm::radians(Yaw)) * cos(glm::radians(Pitch));
-    // Front = glm::normalize(front);
-    // // also re-calculate the Right and Up vector
-    // Right = glm::normalize(glm::cross(Front, WorldUp)); // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
-    // Up = glm::normalize(glm::cross(Right, Front));
 }
 }; // namespace JzRE
