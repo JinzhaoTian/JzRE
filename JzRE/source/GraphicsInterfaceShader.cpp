@@ -5,8 +5,27 @@ GraphicsInterfaceShader::GraphicsInterfaceShader() :
     programID(0) {
 }
 
+GraphicsInterfaceShader::GraphicsInterfaceShader(GraphicsInterfaceShader &&other) noexcept :
+    programID(other.programID) {
+    other.programID = 0;
+}
+
 GraphicsInterfaceShader::~GraphicsInterfaceShader() {
-    glDeleteProgram(programID);
+    if (programID != 0) {
+        glDeleteProgram(programID);
+    }
+}
+
+GraphicsInterfaceShader &GraphicsInterfaceShader::operator=(GraphicsInterfaceShader &&other) noexcept {
+    if (this != &other) {
+        if (programID != 0) {
+            glDeleteProgram(programID);
+        }
+
+        programID = other.programID;
+        other.programID = 0;
+    }
+    return *this;
 }
 
 Bool GraphicsInterfaceShader::LoadFromFile(const String &vertexPath, const String &fragmentPath) {

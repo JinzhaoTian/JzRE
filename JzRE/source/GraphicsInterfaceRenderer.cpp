@@ -52,9 +52,8 @@ void GraphicsInterfaceRenderer::RenderScene(SharedPtr<GraphicsInterfaceScene> sc
 }
 
 Bool GraphicsInterfaceRenderer::AddShader(const String &name, const String &vertexPath, const String &fragmentPath) {
-    auto shader = GraphicsInterfaceResourceManager::getInstance()
-                      .LoadShader(name, vertexPath, fragmentPath);
-    this->shaders[name] = shader;
+    this->shaders[name] = std::move(GraphicsInterfaceResourceManager::getInstance()
+                                        .LoadShader(name, vertexPath, fragmentPath));
     return true;
 }
 

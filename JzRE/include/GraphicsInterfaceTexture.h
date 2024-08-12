@@ -6,7 +6,10 @@ namespace JzRE {
 class GraphicsInterfaceTexture {
 public:
     GraphicsInterfaceTexture();
+    GraphicsInterfaceTexture(GraphicsInterfaceTexture&& other) noexcept;
     ~GraphicsInterfaceTexture();
+
+    GraphicsInterfaceTexture& operator=(GraphicsInterfaceTexture&& other) noexcept;
 
     Bool LoadFromFile(const String &textureName, const String &texturePath);
     void Bind(U32 unit) const;
@@ -17,5 +20,8 @@ public:
 
 private:
     GLuint textureID;
+
+    GraphicsInterfaceTexture(const GraphicsInterfaceTexture&) = delete;
+    GraphicsInterfaceTexture& operator=(const GraphicsInterfaceTexture&) = delete;
 };
 } // namespace JzRE

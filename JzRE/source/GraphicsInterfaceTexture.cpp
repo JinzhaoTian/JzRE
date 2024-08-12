@@ -5,8 +5,30 @@ GraphicsInterfaceTexture::GraphicsInterfaceTexture() {
     glGenTextures(1, &textureID);
 }
 
+GraphicsInterfaceTexture::GraphicsInterfaceTexture(GraphicsInterfaceTexture &&other) noexcept :
+    textureID(other.textureID), textureName(std::move(other.textureName)), texturePath(std::move(other.texturePath)) {
+    other.textureID = 0;
+}
+
 GraphicsInterfaceTexture::~GraphicsInterfaceTexture() {
-    glDeleteTextures(1, &textureID);
+    if (textureID != 0) {
+        glDeleteTextures(1, &textureID);
+    }
+}
+
+GraphicsInterfaceTexture &GraphicsInterfaceTexture::operator=(GraphicsInterfaceTexture &&other) noexcept {
+    if (this != &other) {
+        if (textureID != 0) {
+            glDeleteTextures(1, &textureID);
+        }
+
+        textureID = other.textureID;
+        textureName = std::move(other.textureName);
+        texturePath = std::move(other.texturePath);
+
+        other.textureID = 0;
+    }
+    return *this;
 }
 
 Bool GraphicsInterfaceTexture::LoadFromFile(const String &textureName, const String &texturePath) {

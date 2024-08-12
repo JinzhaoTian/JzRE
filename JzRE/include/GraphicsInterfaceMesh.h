@@ -13,7 +13,7 @@ public:
     List<U32> indices;
     List<GraphicsInterfaceTexture> textures;
 
-    GraphicsInterfaceMesh(List<GraphicsInterfaceVertex> vertices, List<U32> indices, List<GraphicsInterfaceTexture> textures);
+    GraphicsInterfaceMesh(List<GraphicsInterfaceVertex>&& vertices, List<U32>&& indices, List<GraphicsInterfaceTexture>&& textures);
 
     void Draw(GraphicsInterfaceShader &shader);
 

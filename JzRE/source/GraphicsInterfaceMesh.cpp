@@ -1,11 +1,8 @@
 #include "GraphicsInterfaceMesh.h"
 
 namespace JzRE {
-GraphicsInterfaceMesh::GraphicsInterfaceMesh(List<GraphicsInterfaceVertex> vertices, List<U32> indices, List<GraphicsInterfaceTexture> textures) {
-    this->vertices = vertices;
-    this->indices = indices;
-    this->textures = textures;
-
+GraphicsInterfaceMesh::GraphicsInterfaceMesh(List<GraphicsInterfaceVertex> &&vertices, List<U32> &&indices, List<GraphicsInterfaceTexture> &&textures) :
+    vertices(std::move(vertices)), indices(std::move(indices)), textures(std::move(textures)) {
     // now that we have all the required data, set the vertex buffers and its attribute pointers.
     SetupMesh();
 }

@@ -93,7 +93,7 @@ GraphicsInterfaceMesh GraphicsInterfaceModel::ProcessMesh(aiMesh *mesh, const ai
             vertex.TexCoords = glm::vec2(0.0f, 0.0f);
         }
 
-        vertices.push_back(vertex);
+        vertices.push_back(std::move(vertex));
     }
 
     // now wak through each of the mesh's faces (a face is a mesh its triangle) and retrieve the corresponding vertex indices.
@@ -115,19 +115,19 @@ GraphicsInterfaceMesh GraphicsInterfaceModel::ProcessMesh(aiMesh *mesh, const ai
 
     // 1. diffuse maps
     List<GraphicsInterfaceTexture> diffuseMaps = LoadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
-    textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
+    textures.insert(textures.end(), std::make_move_iterator(diffuseMaps.begin()), std::make_move_iterator(diffuseMaps.end()));
     // 2. specular maps
     List<GraphicsInterfaceTexture> specularMaps = LoadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
-    textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+    textures.insert(textures.end(), std::make_move_iterator(specularMaps.begin()), std::make_move_iterator(specularMaps.end()));
     // 3. normal maps
     List<GraphicsInterfaceTexture> normalMaps = LoadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
-    textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
+    textures.insert(textures.end(), std::make_move_iterator(normalMaps.begin()), std::make_move_iterator(normalMaps.end()));
     // 4. height maps
     List<GraphicsInterfaceTexture> heightMaps = LoadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
-    textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
+    textures.insert(textures.end(), std::make_move_iterator(heightMaps.begin()), std::make_move_iterator(heightMaps.end()));
 
     // return a mesh object created from the extracted mesh data
-    return GraphicsInterfaceMesh(vertices, indices, textures);
+    return GraphicsInterfaceMesh(std::move(vertices), std::move(indices), std::move(textures));
 }
 
 List<GraphicsInterfaceTexture> GraphicsInterfaceModel::LoadMaterialTextures(aiMaterial *mat, aiTextureType type, String typeName) {
@@ -137,11 +137,10 @@ List<GraphicsInterfaceTexture> GraphicsInterfaceModel::LoadMaterialTextures(aiMa
         mat->GetTexture(type, i, &str);
         String textureName = typeName + std::to_string(i);
         String texturePath = this->directory + '/' + str.C_Str();
-        auto texture = GraphicsInterfaceResourceManager::getInstance()
-                           .LoadTexture(textureName, texturePath);
-        textures.push_back(texture);
+        textures.push_back(std::move(GraphicsInterfaceResourceManager::getInstance()
+                                         .LoadTexture(textureName, texturePath)));
     }
-    return textures;
+    return std::move(textures);
 }
 
 } // namespace JzRE
