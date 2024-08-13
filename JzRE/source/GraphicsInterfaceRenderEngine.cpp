@@ -15,15 +15,15 @@ Bool GraphicsInterfaceRenderEngine::Initialize() {
         return false;
     }
 
+    this->renderer = CreateSharedPtr<GraphicsInterfaceRenderer>(this->window, this->wndWidth, this->wndHeight);
+    if (this->renderer == nullptr) {
+        return false;
+    }
+
     GraphicsInterfaceInput::Initialize(this->window->GetGLFWwindow());
 
     this->simpleUI = CreateSharedPtr<GraphicsInterfaceUI>(this->window->GetGLFWwindow());
     if (this->simpleUI == nullptr) {
-        return false;
-    }
-
-    this->renderer = CreateSharedPtr<GraphicsInterfaceRenderer>(this->wndWidth, this->wndHeight);
-    if (this->renderer == nullptr) {
         return false;
     }
 

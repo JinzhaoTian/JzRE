@@ -11,6 +11,9 @@ public:
     ~GraphicsInterfaceRenderWindow();
 
     RawPtr<GLFWwindow> GetGLFWwindow();
+    I32 GetWindowWidth();
+    I32 GetWindowHeight();
+
     void ResizeWindow(I32 w, I32 h);
     Bool ShouldClose();
     void PollEvents();

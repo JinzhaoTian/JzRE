@@ -1,12 +1,6 @@
 #include "GraphicsInterfaceRenderWindow.h"
 
 namespace JzRE {
-
-void callback_framebuffer_size(RawPtr<GLFWwindow> window, int width, int height) {
-    auto self = StaticCast<RawPtr<GraphicsInterfaceRenderWindow>>(glfwGetWindowUserPointer(window));
-    self->ResizeWindow(width, height);
-}
-
 GraphicsInterfaceRenderWindow::GraphicsInterfaceRenderWindow(I32 width, I32 height, const String &title) :
     wndWidth(width), wndHeight(height), title(title) {
     glfwInit();
@@ -23,9 +17,6 @@ GraphicsInterfaceRenderWindow::GraphicsInterfaceRenderWindow(I32 width, I32 heig
     glfwMakeContextCurrent(this->hwnd);
     glfwSetWindowUserPointer(this->hwnd, this);
 
-    // callback: frame buffer size
-    glfwSetFramebufferSizeCallback(this->hwnd, callback_framebuffer_size);
-
     // glad: load all OpenGL function pointers
     // ---------------------------------------
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
@@ -36,17 +27,28 @@ GraphicsInterfaceRenderWindow::GraphicsInterfaceRenderWindow(I32 width, I32 heig
 }
 
 GraphicsInterfaceRenderWindow::~GraphicsInterfaceRenderWindow() {
-    if (hwnd) {
-        glfwDestroyWindow(hwnd);
+    if (this->hwnd) {
+        glfwDestroyWindow(this->hwnd);
         glfwTerminate();
     }
 }
 
 RawPtr<GLFWwindow> GraphicsInterfaceRenderWindow::GetGLFWwindow() {
-    return hwnd;
+    return this->hwnd;
+}
+
+I32 GraphicsInterfaceRenderWindow::GetWindowWidth() {
+    return this->wndWidth;
+}
+
+I32 GraphicsInterfaceRenderWindow::GetWindowHeight() {
+    return this->wndHeight;
 }
 
 void GraphicsInterfaceRenderWindow::ResizeWindow(I32 w, I32 h) {
+    this->wndWidth = w;
+    this->wndHeight = h;
+
     // make sure the viewport matches the new window dimensions; note that width and
     // height will be significantly larger than specified on retina displays.
     glViewport(0, 0, w, h);

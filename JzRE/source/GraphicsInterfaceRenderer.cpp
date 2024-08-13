@@ -1,20 +1,26 @@
 #include "GraphicsInterfaceRenderer.h"
 
 namespace JzRE {
-GraphicsInterfaceRenderer::GraphicsInterfaceRenderer(I32 width, I32 height) {
+
+RawPtr<GraphicsInterfaceRenderer> GraphicsInterfaceRenderer::instance = nullptr;
+
+GraphicsInterfaceRenderer::GraphicsInterfaceRenderer(SharedPtr<GraphicsInterfaceRenderWindow> wnd, I32 width, I32 height) {
+    instance = this;
+
+    // callback: frame buffer size
+    glfwSetFramebufferSizeCallback(wnd->GetGLFWwindow(), callback_framebuffer_size);
+
     // configure framebuffer
-    if (!CreateFramebuffer(width, height)) {
-        std::cerr << "Failed to initialize framebuffer" << std::endl;
-        return;
+    if (!this->CreateFramebuffer(width, height)) {
+        throw std::runtime_error("Failed to initialize framebuffer");
     }
 
     // configure global opengl state
     glEnable(GL_DEPTH_TEST);
 
     // configure shaders
-    if (!AddShader("example", "./resources/shaders/example.vert", "./resources/shaders/example.frag")) {
-        std::cerr << "Failed to load resources" << std::endl;
-        return;
+    if (!this->AddShader("example", "./resources/shaders/example.vert", "./resources/shaders/example.frag")) {
+        throw std::runtime_error("Failed to load resources");
     }
 }
 
@@ -105,6 +111,17 @@ void GraphicsInterfaceRenderer::CleanFramebuffer() {
     if (rboDepthStencil) {
         glDeleteRenderbuffers(1, &rboDepthStencil);
         rboDepthStencil = 0;
+    }
+}
+
+void GraphicsInterfaceRenderer::callback_framebuffer_size(RawPtr<GLFWwindow> window, int width, int height) {
+    auto wnd = StaticCast<RawPtr<GraphicsInterfaceRenderWindow>>(glfwGetWindowUserPointer(window));
+    wnd->ResizeWindow(width, height);
+
+    instance->CleanFramebuffer();
+
+    if (!instance->CreateFramebuffer(width, height)) {
+        throw std::runtime_error("Failed to initialize framebuffer");
     }
 }
 
