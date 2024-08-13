@@ -10,6 +10,10 @@ GraphicsInterfaceUI::GraphicsInterfaceUI(RawPtr<GLFWwindow> window) {
     io.IniFilename = NULL;
     io.LogFilename = NULL;
 
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;     // IF using Docking Branch
+
     // Setup Platform/Renderer backends
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 130");
@@ -30,10 +34,41 @@ void GraphicsInterfaceUI::Render() {
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    // Show a simple window
-    ImGui::Begin("Hello, world!");
+    Bool tool_active = true;
+    ImGui::Begin("Tool Bar", &tool_active, ImGuiWindowFlags_MenuBar);
+    if (ImGui::BeginMenuBar()) {
+        if (ImGui::BeginMenu("File")) {
+            if (ImGui::MenuItem("Open..", "Ctrl+O")) {
+                IGFD::FileDialogConfig config;
+                config.path = ".";
+                ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".obj,.gltf,.glb", config);
+            }
+            if (ImGui::MenuItem("Save", "Ctrl+S")) {
+                /* Do stuff */
+            }
+            if (ImGui::MenuItem("Close", "Ctrl+W")) {
+                tool_active = false;
+            }
+            ImGui::EndMenu();
+        }
+        ImGui::EndMenuBar();
+    }
+
     ImGui::Text("This is some useful text.");
+
     ImGui::End();
+
+    // display
+    if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey")) { // => will show a dialog
+        if (ImGuiFileDialog::Instance()->IsOk()) {                  // action if OK
+            std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
+            std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
+            // action
+        }
+
+        // close
+        ImGuiFileDialog::Instance()->Close();
+    }
 
     // Rendering
     ImGui::Render();
