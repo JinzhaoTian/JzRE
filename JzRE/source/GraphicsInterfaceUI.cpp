@@ -7,6 +7,8 @@ GraphicsInterfaceUI::GraphicsInterfaceUI(RawPtr<GLFWwindow> window) {
     ImGui::CreateContext();
     ImGuiIO &io = ImGui::GetIO();
     (void)io;
+    io.IniFilename = NULL;
+    io.LogFilename = NULL;
 
     // Setup Platform/Renderer backends
     ImGui_ImplGlfw_InitForOpenGL(window, true);
