@@ -121,4 +121,7 @@ inline To StaticCast(From from) {
     return static_cast<To>(from);
 }
 
+template <typename... Args>
+using Callback = std::function<void(Args...)>;
+
 } // namespace JzRE

@@ -39,6 +39,9 @@ void GraphicsInterfaceUI::Render() {
     if (ImGui::BeginMenuBar()) {
         if (ImGui::BeginMenu("File")) {
             if (ImGui::MenuItem("Open..", "Ctrl+O")) {
+                // Set size for the dialog
+                ImGui::SetNextWindowSize(ImVec2(this->dialogWidth, this->dialogHeight), ImGuiCond_FirstUseEver);
+
                 IGFD::FileDialogConfig config;
                 config.path = ".";
                 ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".obj,.gltf,.glb", config);
@@ -61,9 +64,12 @@ void GraphicsInterfaceUI::Render() {
     // display
     if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey")) { // => will show a dialog
         if (ImGuiFileDialog::Instance()->IsOk()) {                  // action if OK
-            std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
-            std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
-            // action
+            String filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
+            std::replace(filePathName.begin(), filePathName.end(), '\\', '/');
+
+            if (callbackOpenFile) {
+                callbackOpenFile(filePathName);
+            }
         }
 
         // close
@@ -76,6 +82,10 @@ void GraphicsInterfaceUI::Render() {
 
     // Update and Render additional Platform Windows
     ImGui::UpdatePlatformWindows();
+}
+
+void GraphicsInterfaceUI::SetCallbackOpenFile(Callback<String> callback) {
+    this->callbackOpenFile = callback;
 }
 
 } // namespace JzRE

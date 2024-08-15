@@ -22,8 +22,8 @@ public:
     void Shutdown();
 
 private:
-    const I32 wndWidth = 800;
-    const I32 wndHeight = 600;
+    const I32 wndWidth = 1200;
+    const I32 wndHeight = 800;
 
     const String title = "Graphics Interface Rendering Engine";
 

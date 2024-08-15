@@ -9,5 +9,13 @@ public:
     ~GraphicsInterfaceUI();
 
     void Render();
+
+    void SetCallbackOpenFile(Callback<String> callback);
+
+private:
+    I32 dialogWidth = 600;
+    I32 dialogHeight = 450;
+
+    Callback<String> callbackOpenFile;
 };
 } // namespace JzRE

@@ -44,6 +44,11 @@ Bool GraphicsInterfaceRenderEngine::Initialize() {
 
     this->scene->SetCamera(this->camera);
 
+    this->simpleUI->SetCallbackOpenFile([&](const String &filePath) {
+        auto model = CreateSharedPtr<GraphicsInterfaceModel>(filePath, false);
+        this->scene->AddModel(model);
+    });
+
     this->isRunning = true;
     return true;
 }
@@ -95,10 +100,6 @@ void GraphicsInterfaceRenderEngine::ProcessInput() {
 }
 
 Bool GraphicsInterfaceRenderEngine::InitScene() {
-    String modelPath = "./resources/models/nanosuit.obj";
-    auto model = CreateSharedPtr<GraphicsInterfaceModel>(modelPath, false);
-    scene->AddModel(model);
-
     auto light = CreateSharedPtr<GraphicsInterfaceDirectionalLight>(glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.5f, 0.5f, 0.5f));
     scene->AddLight(light);
 
