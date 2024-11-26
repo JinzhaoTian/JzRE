@@ -1,22 +1,41 @@
 #include "SoftwareRenderEngine.h"
 
 namespace JzRE {
-SoftwareRenderEngine::SoftwareRenderEngine() {
-    window = CreateSharedPtr<SoftwareRenderWindow>(wndWidth, wndHeight, title);
-    renderer = CreateSharedPtr<Renderer>(wndWidth, wndHeight);
-
-    renderer->BindFrambuffer(window->backBuffer);
+SoftwareRenderEngine::SoftwareRenderEngine() :
+    isRunning(false) {
 }
 
-void SoftwareRenderEngine::Render() {
-    while (!window->ShouldClose()) {
-        renderer->DrawLine(0, 0, 100, 500, Color::white);
+SoftwareRenderEngine::~SoftwareRenderEngine() {
+    Shutdown();
+}
 
-        window->SwapBuffer();
-        window->PollEvents();
+Bool SoftwareRenderEngine::Initialize() {
+    Bool isWndCreated = this->window.Initialize(this->wndWidth, this->wndHeight, this->title);
+    if (!isWndCreated) {
+        return false;
+    }
+
+    // TODO: init
+    this->renderer = Renderer(wndWidth, wndHeight);
+    this->renderer.BindFrambuffer(window.backBuffer);
+
+    this->isRunning = true;
+    return true;
+}
+
+void SoftwareRenderEngine::Run() {
+    while (this->isRunning && !this->window.ShouldClose()) {
+        this->renderer.DrawLine(0, 0, 100, 500, Color::white);
+
+        this->window.SwapBuffer();
+        this->window.PollEvents();
 
         Sleep(1000);
     }
+}
+
+void SoftwareRenderEngine::Shutdown() {
+    // TODO: 释放资源
 }
 
 } // namespace JzRE

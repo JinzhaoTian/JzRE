@@ -1,5 +1,29 @@
 #pragma once
 
+/**
+ * 3rd party dependencies
+ */
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
+#include <stb/stb_image.h>
+
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+
+#include <imgui.h>
+#include <ImGuiFileDialog.h>
+#include <backends/imgui_impl_glfw.h>
+#include <backends/imgui_impl_opengl3.h>
+
+/**
+ * sys
+ */
 #include <cstdint>
 #include <cstring>
 #include <string>
@@ -10,15 +34,21 @@
 #include <array>
 #include <unordered_set>
 #include <unordered_map>
+#include <algorithm>
 #include <cmath>
 #include <functional>
 #include <memory>
+#include <iostream>
 #include <sstream>
+#include <fstream>
 #include <cmath>
 #include <cassert>
 #include <type_traits>
+#include <utility>
+#include <regex>
 
 #include <windows.h>
+#include <chrono>
 
 #define RGBA(r, g, b, a) ((b) | ((g) << 8) | ((r) << 16) | ((a) << 24))
 
@@ -85,5 +115,13 @@ template <typename T, typename... Args>
 inline RawPtr<T> CreateRawPtr(Args &&...args) {
     return new T(std::forward<Args>(args)...);
 }
+
+template <typename To, typename From>
+inline To StaticCast(From from) {
+    return static_cast<To>(from);
+}
+
+template <typename... Args>
+using Callback = std::function<void(Args...)>;
 
 } // namespace JzRE

@@ -1,22 +1,47 @@
 {
     "tasks": [
         {
+            "label": "CMake: Build",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build",
+                "${workspaceFolder}/build",
+                "--target",
+                "all"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "detail": "Builds the project using CMake and MinGW Makefiles"
+        },
+        {
+            "label": "G++: Build",
             "type": "cppbuild",
-            "label": "C/C++: g++.exe build active file",
-            "command": "C:\\Users\\jinzh\\source\\mingw64\\bin\\g++.exe",
+            "command": "C:/Program Files/mingw64/bin/g++.exe",
             "args": [
                 "-fdiagnostics-color=always",
                 "-std=c++2a",
                 "-g", // 添加调试选项
-                "${workspaceFolder}\\main.cpp",
-                "${workspaceFolder}\\JzRE\\source\\*.cpp",
+                "${workspaceFolder}/JzRE/source/**",
+                "${workspaceFolder}/main.cpp",
                 "-I",
-                "${workspaceFolder}\\JzRE\\include",
+                "${workspaceFolder}/JzRE/include",
                 "-I",
-                "${workspaceFolder}\\JzRE\\source",
+                "${workspaceFolder}/dependencies/include",
+                "-L",
+                "${workspaceFolder}/dependencies/lib",
+                "-lglfw3",
+                "-lassimp",
+                "-lz",
+                "-lopengl32",
+                "-lgdi32",
                 "-o",
-                "${workspaceFolder}\\output\\RenderingEngine.exe",
-                "-lgdi32"
+                "${workspaceFolder}/output/JzRE.exe",
             ],
             "options": {
                 "cwd": "${fileDirname}"

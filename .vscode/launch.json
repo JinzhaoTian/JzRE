@@ -2,17 +2,17 @@
     "version": "0.0.1",
     "configurations": [
         {
-            "name": "g++.exe - Build and debug active file",
+            "name": "CMake - Debug",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}\\output\\RenderingEngine.exe",
+            "program": "${workspaceFolder}/build/JzRE.exe",
             "args": [],
             "stopAtEntry": false,
-            "cwd": "${fileDirname}",
+            "cwd": "${workspaceFolder}",
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",
-            "miDebuggerPath": "C:\\Users\\jinzh\\source\\mingw64\\bin\\gdb.exe",
+            "miDebuggerPath": "C:/Program Files/mingw64/bin/gdb.exe", // 替换为你的gdb路径
             "setupCommands": [
                 {
                     "description": "Enable pretty-printing for gdb",
@@ -20,7 +20,28 @@
                     "ignoreFailures": true
                 }
             ],
-            "preLaunchTask": "C/C++: g++.exe build active file"
+            "preLaunchTask": "CMake: Build"
+        },
+        {
+            "name": "G++ - Debug",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/output/JzRE.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "C:/Program Files/mingw64/bin/gdb.exe",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "G++: Build"
         }
     ]
 }

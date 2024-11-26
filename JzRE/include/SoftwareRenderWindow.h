@@ -11,15 +11,18 @@ public:
     HDC screenHDC;
 
     I32 wndWidth, wndHeight;
+    String title;
 
-    bool hasClosed;
+    Bool hasClosed;
 
     SharedPtr<Framebuffer> frontBuffer;
     SharedPtr<Framebuffer> backBuffer;
 
 public:
-    SoftwareRenderWindow(I32 w, I32 h, const String &title);
+    SoftwareRenderWindow();
     ~SoftwareRenderWindow();
+
+    bool Initialize(I32 w, I32 h, const String &title);
 
     void ResizeWindow(I32 w, I32 h);
 

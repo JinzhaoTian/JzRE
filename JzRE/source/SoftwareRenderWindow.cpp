@@ -35,9 +35,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     return DefWindowProc(hWnd, msg, wParam, lParam);
 }
 
-SoftwareRenderWindow::SoftwareRenderWindow(I32 w, I32 h, const String &title) :
-    wndWidth(w), wndHeight(h) {
-    hasClosed = false;
+SoftwareRenderWindow::SoftwareRenderWindow() :
+    hwnd(NULL), wndWidth(800), wndHeight(600), title("Software/CPU Render Engine") {
+}
+
+SoftwareRenderWindow::~SoftwareRenderWindow() {
+}
+
+Bool SoftwareRenderWindow::Initialize(I32 w, I32 h, const String &title) {
+    this->wndWidth = w;
+    this->wndHeight = h;
+    this->hasClosed = false;
 
     frontBuffer = CreateSharedPtr<Framebuffer>(wndWidth, wndHeight);
     backBuffer = CreateSharedPtr<Framebuffer>(wndWidth, wndHeight);
@@ -57,7 +65,7 @@ SoftwareRenderWindow::SoftwareRenderWindow(I32 w, I32 h, const String &title) :
     wndClass.lpszMenuName = NULL;
 
     if (!RegisterClassEx(&wndClass))
-        return;
+        return false;
 
     hwnd = CreateWindowEx(
         0,
@@ -72,7 +80,7 @@ SoftwareRenderWindow::SoftwareRenderWindow(I32 w, I32 h, const String &title) :
         NULL);
 
     if (hwnd == NULL)
-        return;
+        return false;
 
     BITMAPINFOHEADER biheader = {
         sizeof(BITMAPINFOHEADER),
@@ -102,7 +110,7 @@ SoftwareRenderWindow::SoftwareRenderWindow(I32 w, I32 h, const String &title) :
         0);
 
     if (dib == NULL)
-        return;
+        return false;
 
     HBITMAP screenObject = (HBITMAP)SelectObject(screenHDC, dib);
 
@@ -120,12 +128,11 @@ SoftwareRenderWindow::SoftwareRenderWindow(I32 w, I32 h, const String &title) :
 
     ShowWindow(hwnd, SW_NORMAL);
     UpdateWindow(hwnd);
+
+    return true;
 }
 
-SoftwareRenderWindow::~SoftwareRenderWindow() {
-}
-
-bool SoftwareRenderWindow::ShouldClose() {
+Bool SoftwareRenderWindow::ShouldClose() {
     return hasClosed;
 }
 
@@ -138,7 +145,6 @@ void SoftwareRenderWindow::PollEvents() {
 }
 
 void SoftwareRenderWindow::SwapBuffer() {
-    // ˫����
     memcpy(frontBuffer->data, backBuffer->data, wndWidth * wndHeight * sizeof(U32));
 
     HDC hdc = GetDC(hwnd);

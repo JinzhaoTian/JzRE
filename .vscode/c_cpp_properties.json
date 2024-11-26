@@ -1,8 +1,11 @@
 {
     "env": {
         "projectIncludePath": [
-            "${workspaceFolder}/JzRE/include",
-            "${workspaceFolder}/JzRE/source"
+            "${workspaceFolder}/JzRE/include/",
+            "${workspaceFolder}/dependencies/include/",
+            "${workspaceFolder}/dependencies/include/glad/",
+            "${workspaceFolder}/dependencies/include/glfw/",
+            "${workspaceFolder}/dependencies/include/imgui/"
         ],
         "projectDefines": [
             "_DEBUG",
@@ -20,7 +23,7 @@
                 "${projectDefines}",
                 "_WINDOWS"
             ],
-            "compilerPath": "C:\\Users\\jinzh\\source\\mingw64\\bin\\g++.exe",
+            "compilerPath": "C:/Program Files/mingw64/bin/g++.exe",
             "cStandard": "c23",
             "cppStandard": "c++23",
             "intelliSenseMode": "windows-gcc-x64"
