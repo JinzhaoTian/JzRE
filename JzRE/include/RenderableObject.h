@@ -2,8 +2,8 @@
 
 #include "CommonTypes.h"
 #include "Object.h"
-#include "GraphicsInterfaceShader.h"
-#include "GraphicsInterfaceTexture.h"
+#include "OGLShader.h"
+#include "OGLTexture.h"
 
 namespace JzRE {
 class RenderableObject : public Object {

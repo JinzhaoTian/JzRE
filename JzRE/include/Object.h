@@ -2,7 +2,7 @@
 
 #include "CommonTypes.h"
 #include "Transform.h"
-#include "GraphicsInterfaceShader.h"
+#include "OGLShader.h"
 
 namespace JzRE {
 class Object {

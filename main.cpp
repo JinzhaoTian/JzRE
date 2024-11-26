@@ -1,8 +1,8 @@
 #include "SoftwareRenderEngine.h"
-#include "GraphicsInterfaceRenderEngine.h"
+#include "OGLRenderEngine.h"
 
 int main() {
-    JzRE::GraphicsInterfaceRenderEngine re;
+    JzRE::OGLRenderEngine re;
 
     if (!re.Initialize()) {
         std::cerr << "Failed to initialize engine" << std::endl;
