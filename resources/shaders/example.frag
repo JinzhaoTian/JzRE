@@ -1,6 +1,6 @@
 #version 330 core
 
-#define MAX_TEXTURES 9
+#define MAX_TEXTURES 4
 
 in vec3 FragPos;
 in vec3 Normal;
@@ -11,8 +11,6 @@ out vec4 FragColor;
 struct Material {
     sampler2D diffuse[MAX_TEXTURES];
     sampler2D specular[MAX_TEXTURES];
-    sampler2D normal[MAX_TEXTURES];
-    sampler2D height[MAX_TEXTURES];
     float shininess;
 };
 
@@ -42,8 +40,6 @@ struct SpotLight {
 
 uniform int numDiffuseTextures;
 uniform int numSpecularTextures;
-uniform int numNormalTextures;
-uniform int numHeightTextures;
 
 uniform vec3 viewPos;
 uniform Material material;

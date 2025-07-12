@@ -1,5 +1,10 @@
+.DS_Store
+
 # Build Path
 /[Bb]uild
 
 # Output Path
 /[Oo]utput
+
+# vcpkg
+/vcpkg_installed/
