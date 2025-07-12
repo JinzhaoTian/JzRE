@@ -10,16 +10,15 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include <stb/stb_image.h>
+#include <stb_image.h>
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
 #include <imgui.h>
-#include <ImGuiFileDialog.h>
-#include <backends/imgui_impl_glfw.h>
-#include <backends/imgui_impl_opengl3.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
 
 /**
  * sys
@@ -47,7 +46,6 @@
 #include <utility>
 #include <regex>
 
-#include <windows.h>
 #include <chrono>
 
 #define RGBA(r, g, b, a) ((b) | ((g) << 8) | ((r) << 16) | ((a) << 24))
