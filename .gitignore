@@ -1,10 +1,71 @@
+# macOS
 .DS_Store
+.AppleDouble
+.LSOverride
 
 # Build Path
 /[Bb]uild
+/[Bb]uild-*
 
 # Output Path
 /[Oo]utput
 
 # vcpkg
 /vcpkg_installed/
+
+# CMake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+CTestTestfile.cmake
+*.cmake
+
+# VSCode temporary files (保留 .vscode 配置文件夹)
+.vscode/tasks.json
+.vscode/launch.json
+.vscode/extensions.json
+.vscode/*.log
+
+# 编译输出
+*.exe
+*.out
+*.app
+*.so
+*.dylib
+*.dll
+*.lib
+*.a
+*.pdb
+*.ilk
+*.obj
+*.o
+
+# 临时文件
+*.tmp
+*.temp
+*.log
+*.swp
+*.swo
+*~
+
+# IDE 临时文件
+.idea/
+*.sublime-*
+*.code-workspace
+
+# 编译数据库（由 CMake 生成）
+compile_commands.json
+
+# 调试文件
+*.dSYM/
+*.pdb
+
+# 测试覆盖率
+*.gcov
+*.gcda
+*.gcno
+
+# 其他
+node_modules/
+.env
+.env.local
