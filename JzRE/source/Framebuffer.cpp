@@ -49,7 +49,7 @@ void Framebuffer::SetDepthPixel(I32 x, I32 y, F32 depth) {
 void Framebuffer::Clear() {
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
-            ((DWORD *)this->data)[y * width + x] = RGB(0, 0, 0);
+            this->data[y * width + x] = 0; // 清除为黑色
         }
     }
 }

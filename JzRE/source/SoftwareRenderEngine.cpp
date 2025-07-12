@@ -1,4 +1,6 @@
 #include "SoftwareRenderEngine.h"
+#include <thread>
+#include <chrono>
 
 namespace JzRE {
 SoftwareRenderEngine::SoftwareRenderEngine() :
@@ -30,7 +32,8 @@ void SoftwareRenderEngine::Run() {
         this->window.SwapBuffer();
         this->window.PollEvents();
 
-        Sleep(1000);
+        // 使用跨平台的睡眠函数
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
 }
 

@@ -1,11 +1,7 @@
 {
     "env": {
         "projectIncludePath": [
-            "${workspaceFolder}/JzRE/include/",
-            "${workspaceFolder}/dependencies/include/",
-            "${workspaceFolder}/dependencies/include/glad/",
-            "${workspaceFolder}/dependencies/include/glfw/",
-            "${workspaceFolder}/dependencies/include/imgui/"
+            "${workspaceFolder}/JzRE/include/"
         ],
         "projectDefines": [
             "_DEBUG",
@@ -17,16 +13,54 @@
         {
             "name": "Win32",
             "includePath": [
-                "${projectIncludePath}"
+                "${projectIncludePath}",
+                "${workspaceFolder}/vcpkg_installed/x64-windows/include"
             ],
             "defines": [
                 "${projectDefines}",
-                "_WINDOWS"
+                "_WINDOWS",
+                "WIN32_LEAN_AND_MEAN",
+                "NOMINMAX"
             ],
-            "compilerPath": "C:/Program Files/mingw64/bin/g++.exe",
+            "compilerPath": "",
             "cStandard": "c23",
-            "cppStandard": "c++23",
-            "intelliSenseMode": "windows-gcc-x64"
+            "cppStandard": "c++20",
+            "intelliSenseMode": "windows-gcc-x64",
+            "configurationProvider": "ms-vscode.cmake-tools"
+        },
+        {
+            "name": "Mac",
+            "includePath": [
+                "${projectIncludePath}",
+                "${workspaceFolder}/vcpkg_installed/arm64-osx/include"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE",
+                "_MACOS"
+            ],
+            "compilerPath": "",
+            "cStandard": "c23",
+            "cppStandard": "c++20",
+            "intelliSenseMode": "macos-clang-x64",
+            "configurationProvider": "ms-vscode.cmake-tools"
+        },
+        {
+            "name": "Linux",
+            "includePath": [
+                "${projectIncludePath}",
+                "${workspaceFolder}/vcpkg_installed/x64-linux/include"
+            ],
+            "defines": [
+                "${projectDefines}",
+                "_LINUX"
+            ],
+            "compilerPath": "/usr/bin/g++",
+            "cStandard": "c23",
+            "cppStandard": "c++20",
+            "intelliSenseMode": "linux-gcc-x64",
+            "configurationProvider": "ms-vscode.cmake-tools"
         }
     ],
     "version": 4

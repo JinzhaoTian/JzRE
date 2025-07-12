@@ -7,9 +7,8 @@ namespace JzRE {
 
 class SoftwareRenderWindow {
 public:
-    HWND hwnd;
-    HDC screenHDC;
-
+    GLFWwindow* window;
+    
     I32 wndWidth, wndHeight;
     String title;
 

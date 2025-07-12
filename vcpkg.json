@@ -1,0 +1,16 @@
+{
+    "name": "jzre",
+    "version": "0.1.0",
+    "description": "JzRE project dependencies",
+    "dependencies": [
+        "glfw3",
+        "glad",
+        "glm",
+        {
+            "name": "imgui",
+            "features": ["glfw-binding", "opengl3-binding"]
+        },
+        "assimp",
+        "stb"
+    ]
+}
