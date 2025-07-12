@@ -2,7 +2,7 @@
     "version": "0.0.1",
     "configurations": [
         {
-            "name": "CMake - Debug",
+            "name": "CMake - Debug (Windows)",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/JzRE.exe",
@@ -12,7 +12,7 @@
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",
-            "miDebuggerPath": "C:/Program Files/mingw64/bin/gdb.exe", // 替换为你的gdb路径
+            "miDebuggerPath": "C:/Program Files/mingw64/bin/gdb.exe",
             "setupCommands": [
                 {
                     "description": "Enable pretty-printing for gdb",
@@ -20,10 +20,36 @@
                     "ignoreFailures": true
                 }
             ],
-            "preLaunchTask": "CMake: Build"
+            "preLaunchTask": "CMake: Build",
+            "windows": {
+                "MIMode": "gdb"
+            }
         },
         {
-            "name": "G++ - Debug",
+            "name": "CMake - Debug (macOS)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/JzRE",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "lldb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for lldb",
+                    "text": "settings set target.print-object-description true",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "CMake: Build",
+            "osx": {
+                "MIMode": "lldb"
+            }
+        },
+        {
+            "name": "G++ - Debug (Windows)",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/output/JzRE.exe",
@@ -41,7 +67,33 @@
                     "ignoreFailures": true
                 }
             ],
-            "preLaunchTask": "G++: Build"
+            "preLaunchTask": "G++: Build (Windows)",
+            "windows": {
+                "MIMode": "gdb"
+            }
+        },
+        {
+            "name": "Clang++ - Debug (macOS)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/output/JzRE",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "lldb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for lldb",
+                    "text": "settings set target.print-object-description true",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "Clang++: Build (macOS)",
+            "osx": {
+                "MIMode": "lldb"
+            }
         }
     ]
 }

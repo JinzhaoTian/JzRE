@@ -10,9 +10,26 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
-# set c/c++ compiler
-if(MINGW)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libgcc -static-libstdc++ -static")
+# Platform-specific settings
+if(WIN32)
+    # Windows specific settings
+    if(MINGW)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libgcc -static-libstdc++ -static")
+    endif()
+    set(PLATFORM_LIBS opengl32 gdi32)
+elseif(APPLE)
+    # macOS specific settings
+    find_library(COCOA_LIB Cocoa)
+    find_library(IOKIT_LIB IOKit)
+    find_library(COREVIDEO_LIB CoreVideo)
+    set(PLATFORM_LIBS ${COCOA_LIB} ${IOKIT_LIB} ${COREVIDEO_LIB})
+elseif(UNIX AND NOT APPLE)
+    # Linux specific settings
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(X11 REQUIRED x11)
+    find_library(OPENGL_LIB OpenGL)
+    find_library(GL_LIB GL)
+    set(PLATFORM_LIBS ${X11_LIBRARIES} ${OPENGL_LIB} ${GL_LIB})
 endif()
 
 set(THIRD_PARTY ${PROJECT_SOURCE_DIR}/dependencies)
@@ -55,4 +72,4 @@ target_link_libraries(JzRE ${GLFW_LIB} glad)
 target_link_libraries(JzRE ${ASSIMP_LIB} -lz)
 target_link_libraries(JzRE stb)
 target_link_libraries(JzRE imgui)
-target_link_libraries(JzRE opengl32 gdi32)
+target_link_libraries(JzRE ${PLATFORM_LIBS})
