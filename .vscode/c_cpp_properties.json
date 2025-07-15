@@ -13,8 +13,7 @@
         {
             "name": "Win32",
             "includePath": [
-                "${projectIncludePath}",
-                "${workspaceFolder}/vcpkg_installed/x64-windows/include"
+                "${projectIncludePath}"
             ],
             "defines": [
                 "${projectDefines}",
@@ -31,13 +30,10 @@
         {
             "name": "Mac",
             "includePath": [
-                "${projectIncludePath}",
-                "${workspaceFolder}/vcpkg_installed/arm64-osx/include"
+                "${projectIncludePath}"
             ],
             "defines": [
-                "_DEBUG",
-                "UNICODE",
-                "_UNICODE",
+                "${projectDefines}",
                 "_MACOS"
             ],
             "compilerPath": "",
@@ -49,8 +45,7 @@
         {
             "name": "Linux",
             "includePath": [
-                "${projectIncludePath}",
-                "${workspaceFolder}/vcpkg_installed/x64-linux/include"
+                "${projectIncludePath}"
             ],
             "defines": [
                 "${projectDefines}",

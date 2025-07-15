@@ -1,0 +1,100 @@
+{
+    "version": 3,
+    "configurePresets": [
+        {
+            "name": "linux-gcc",
+            "displayName": "Linux (GCC)",
+            "description": "Use GCC on Linux",
+            "generator": "Unix Makefiles",
+            "binaryDir": "${sourceDir}/build/linux",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "gcc",
+                "CMAKE_CXX_COMPILER": "g++",
+                "CMAKE_BUILD_TYPE": "Debug"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
+            }
+        },
+        {
+            "name": "macos-clang",
+            "displayName": "macOS (Clang)",
+            "description": "Use Clang on macOS",
+            "generator": "Unix Makefiles",
+            "binaryDir": "${sourceDir}/build/macos",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "clang",
+                "CMAKE_CXX_COMPILER": "clang++",
+                "CMAKE_BUILD_TYPE": "Debug"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Darwin"
+            }
+        },
+        {
+            "name": "windows-mingw",
+            "displayName": "Windows (MinGW)",
+            "description": "Windows with MinGW compiler",
+            "generator": "MinGW Makefiles",
+            "binaryDir": "${sourceDir}/build/windows",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "gcc",
+                "CMAKE_CXX_COMPILER": "g++",
+                "CMAKE_BUILD_TYPE": "Debug"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "linux-debug",
+            "configurePreset": "linux-gcc",
+            "displayName": "Build (Linux Debug)",
+            "configuration": "Debug",
+            "jobs": 4
+        },
+        {
+            "name": "linux-release",
+            "configurePreset": "linux-gcc",
+            "displayName": "Build (Linux Release)",
+            "configuration": "Release",
+            "jobs": 4
+        },
+        {
+            "name": "macos-debug",
+            "configurePreset": "macos-clang",
+            "displayName": "Build (macOS Debug)",
+            "configuration": "Debug",
+            "jobs": 4
+        },
+        {
+            "name": "macos-release",
+            "configurePreset": "macos-clang",
+            "displayName": "Build (macOS Release)",
+            "configuration": "Release",
+            "jobs": 4
+        },
+        {
+            "name": "windows-debug",
+            "configurePreset": "windows-mingw",
+            "displayName": "Build (Windows Debug)",
+            "configuration": "Debug",
+            "jobs": 4
+        },
+        {
+            "name": "windows-release",
+            "configurePreset": "windows-mingw",
+            "displayName": "Build (Windows Release)",
+            "configuration": "Release",
+            "jobs": 4
+        }
+    ]
+}

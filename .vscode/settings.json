@@ -1,25 +1,6 @@
 {
-    "cmake.generator": "Unix Makefiles",
-    "cmake.configureOnOpen": true,
-    "cmake.buildDirectory": "${workspaceFolder}/build",
-    "cmake.installPrefix": "${workspaceFolder}/install",
-    "cmake.debugConfig": {
-        "stopOnEntry": false,
-        "cwd": "${workspaceFolder}"
-    },
-    "cmake.configureSettings": {
-        "CMAKE_BUILD_TYPE": "Debug",
-        "VCPKG_ROOT": "${workspaceFolder}/vcpkg",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": true,
-        "CMAKE_CXX_STANDARD": "20",
-        "CMAKE_CXX_STANDARD_REQUIRED": "ON"
-    },
-    "cmake.copyCompileCommands": "${workspaceFolder}/compile_commands.json",
-    "cmake.configureEnvironment": {
-        "VCPKG_ROOT": "${workspaceFolder}/vcpkg"
-    },
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
-    "C_Cpp.default.compileCommands": "${workspaceFolder}/compile_commands.json",
+    "C_Cpp.default.compileCommands": "${workspaceFolder}/build/compile_commands.json",
     "C_Cpp.intelliSenseEngine": "default",
     "C_Cpp.errorSquiggles": "enabled",
     "C_Cpp.autocomplete": "default",
