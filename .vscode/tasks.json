@@ -1,102 +1,94 @@
 {
+    "version": "2.0.0",
     "tasks": [
+        {
+            "label": "CMake: Configure",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--preset",
+                "macos-clang"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": [],
+            "detail": "Configure project using CMake preset"
+        },
         {
             "label": "CMake: Build",
             "type": "shell",
             "command": "cmake",
             "args": [
                 "--build",
-                "${workspaceFolder}/build",
-                "--target",
-                "all"
+                "build",
+                "--config",
+                "Debug",
+                "-j"
             ],
             "group": {
                 "kind": "build",
                 "isDefault": true
             },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
             "problemMatcher": [
                 "$gcc"
             ],
-            "detail": "Builds the project using CMake"
+            "dependsOn": "CMake: Configure",
+            "detail": "Build project using CMake"
         },
         {
-            "label": "G++: Build (Windows)",
-            "type": "cppbuild",
-            "command": "C:/Program Files/mingw64/bin/g++.exe",
+            "label": "CMake: Build Release",
+            "type": "shell",
+            "command": "cmake",
             "args": [
-                "-fdiagnostics-color=always",
-                "-std=c++2a",
-                "-g",
-                "${workspaceFolder}/JzRE/source/**",
-                "${workspaceFolder}/main.cpp",
-                "-I",
-                "${workspaceFolder}/JzRE/include",
-                "-I",
-                "${workspaceFolder}/dependencies/include",
-                "-L",
-                "${workspaceFolder}/dependencies/lib",
-                "-lglfw3",
-                "-lassimp",
-                "-lz",
-                "-lopengl32",
-                "-lgdi32",
-                "-o",
-                "${workspaceFolder}/output/JzRE.exe"
+                "--build",
+                "build",
+                "--config",
+                "Release",
+                "-j"
             ],
-            "options": {
-                "cwd": "${fileDirname}"
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
             },
             "problemMatcher": [
                 "$gcc"
             ],
-            "group": {
-                "kind": "build",
-                "isDefault": false
-            },
-            "detail": "Builds the project using G++ on Windows"
+            "dependsOn": "CMake: Configure",
+            "detail": "Build project in Release mode using CMake"
         },
         {
-            "label": "Clang++: Build (macOS)",
-            "type": "cppbuild",
-            "command": "/usr/bin/clang++",
+            "label": "CMake: Clean",
+            "type": "shell",
+            "command": "cmake",
             "args": [
-                "-fcolor-diagnostics",
-                "-std=c++2a",
-                "-g",
-                "${workspaceFolder}/JzRE/source/**",
-                "${workspaceFolder}/main.cpp",
-                "-I",
-                "${workspaceFolder}/JzRE/include",
-                "-I",
-                "${workspaceFolder}/dependencies/include",
-                "-L",
-                "${workspaceFolder}/dependencies/lib",
-                "-lglfw3",
-                "-lassimp",
-                "-lz",
-                "-framework",
-                "Cocoa",
-                "-framework",
-                "IOKit",
-                "-framework",
-                "CoreVideo",
-                "-framework",
-                "OpenGL",
-                "-o",
-                "${workspaceFolder}/output/JzRE"
+                "--build",
+                "build",
+                "--target",
+                "clean"
             ],
-            "options": {
-                "cwd": "${fileDirname}"
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
             },
-            "problemMatcher": [
-                "$gcc"
-            ],
-            "group": {
-                "kind": "build",
-                "isDefault": false
-            },
-            "detail": "Builds the project using Clang++ on macOS"
+            "problemMatcher": [],
+            "detail": "Clean build artifacts"
         }
-    ],
-    "version": "2.0.0"
+    ]
 }

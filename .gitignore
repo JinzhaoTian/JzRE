@@ -18,12 +18,8 @@ CMakeFiles/
 CMakeCache.txt
 cmake_install.cmake
 CTestTestfile.cmake
-*.cmake
 
 # VSCode temporary files (保留 .vscode 配置文件夹)
-.vscode/tasks.json
-.vscode/launch.json
-.vscode/extensions.json
 .vscode/*.log
 
 # 编译输出

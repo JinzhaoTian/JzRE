@@ -20,19 +20,5 @@
         "*.frag": "glsl",
         "*.vert": "glsl",
         "*.glsl": "glsl"
-    },
-    "files.exclude": {
-        "**/build/**": true,
-        "**/vcpkg_installed/**": true,
-        "**/.git": true,
-        "**/.DS_Store": true,
-        "**/Thumbs.db": true
-    },
-    "search.exclude": {
-        "**/build/**": true,
-        "**/vcpkg_installed/**": true,
-        "**/vcpkg/buildtrees/**": true,
-        "**/vcpkg/downloads/**": true,
-        "**/vcpkg/packages/**": true
     }
 }
