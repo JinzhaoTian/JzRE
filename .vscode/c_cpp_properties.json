@@ -11,7 +11,7 @@
     },
     "configurations": [
         {
-            "name": "Win32",
+            "name": "Win64",
             "includePath": [
                 "${projectIncludePath}"
             ],
@@ -22,7 +22,7 @@
                 "NOMINMAX"
             ],
             "compilerPath": "",
-            "cStandard": "c23",
+            "cStandard": "c17",
             "cppStandard": "c++20",
             "intelliSenseMode": "windows-gcc-x64",
             "configurationProvider": "ms-vscode.cmake-tools"
@@ -37,7 +37,7 @@
                 "_MACOS"
             ],
             "compilerPath": "",
-            "cStandard": "c23",
+            "cStandard": "c17",
             "cppStandard": "c++20",
             "intelliSenseMode": "macos-clang-x64",
             "configurationProvider": "ms-vscode.cmake-tools"
@@ -51,8 +51,8 @@
                 "${projectDefines}",
                 "_LINUX"
             ],
-            "compilerPath": "/usr/bin/g++",
-            "cStandard": "c23",
+            "compilerPath": "",
+            "cStandard": "c17",
             "cppStandard": "c++20",
             "intelliSenseMode": "linux-gcc-x64",
             "configurationProvider": "ms-vscode.cmake-tools"

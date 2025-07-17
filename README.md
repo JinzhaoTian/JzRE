@@ -2,24 +2,19 @@
 
 An Out of The Box Render Engine.
 
-## 构建
+## Build
 
-1. **克隆仓库（含子模块）**
+1. **Clone**
 ```bash
-git clone --recursive https://github.com/jinzhaotian/JzRE.git
+git clone https://github.com/jinzhaotian/JzRE.git
 ```
 
-2. **安装依赖**
+2. **Install & Configure**
 ```bash
-vcpkg install
+cmake -B build
 ```
 
-3. **构建**
-```bash
-cmake -B build -S .
-```
-
-4. **编译项目**
+3. **Build**
 ```bash
 cmake --build build
 ```

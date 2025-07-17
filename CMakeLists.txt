@@ -22,7 +22,7 @@ find_package(Stb REQUIRED)
 if(WIN32)
     find_package(OpenGL REQUIRED)
     set(PLATFORM_LIBS opengl32 gdi32)
-    set(OPENGL_LIBS OpenGL::OpenGL)
+    set(OPENGL_LIBS ${OpenGL})
 elseif(APPLE)
     # On macOS, OpenGL is part of the system frameworks
     find_library(COCOA_LIB Cocoa)
@@ -37,7 +37,7 @@ elseif(UNIX AND NOT APPLE)
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(X11 REQUIRED x11)
     set(PLATFORM_LIBS ${X11_LIBRARIES} ${CMAKE_DL_LIBS})
-    set(OPENGL_LIBS OpenGL::OpenGL)
+    set(OPENGL_LIBS ${OpenGL})
 endif()
 
 # set include path
@@ -65,11 +65,4 @@ target_link_libraries(JzRE PRIVATE
     glm::glm
     imgui::imgui
     assimp::assimp
-)
-
-# Set output directory
-set_target_properties(JzRE PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-    RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/bin
-    RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/bin
 )
