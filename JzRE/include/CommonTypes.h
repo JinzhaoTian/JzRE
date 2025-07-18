@@ -50,6 +50,9 @@
 
 #define RGBA(r, g, b, a) ((b) | ((g) << 8) | ((r) << 16) | ((a) << 24))
 
+/**
+ * JzRE Definitions
+ */
 namespace JzRE {
 
 using U8  = uint8_t;
@@ -83,6 +86,9 @@ using Map = std::map<Key, Value>;
 
 template <typename Key, typename Value>
 using UnorderedMap = std::unordered_map<Key, Value>;
+
+template <typename Key, typename Value>
+using Pair = std::pair<Key, Value>;
 
 template <typename T>
 using Set = std::set<T>;
@@ -122,8 +128,5 @@ inline To StaticCast(From from)
 {
     return static_cast<To>(from);
 }
-
-template <typename... Args>
-using Callback = std::function<void(Args...)>;
 
 } // namespace JzRE
