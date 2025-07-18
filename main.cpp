@@ -1,15 +1,10 @@
-#include "OGLRenderEngine.h"
+#include "JzRenderEngine.h"
 
-int main() {
-    JzRE::OGLRenderEngine re;
-
-    if (!re.Initialize()) {
-        std::cerr << "Failed to initialize engine" << std::endl;
-        return -1;
-    }
+int main()
+{
+    JzRE::JzRenderEngine re;
 
     re.Run();
-    re.Shutdown();
 
     return 0;
 }
