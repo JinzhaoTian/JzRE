@@ -3,9 +3,6 @@ cmake_minimum_required(VERSION 3.15.0)
 # set project name
 project(JzRE)
 
-# set vcpkg
-include(cmake/configure_vcpkg.cmake)
-
 # set c/c++ standard
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
