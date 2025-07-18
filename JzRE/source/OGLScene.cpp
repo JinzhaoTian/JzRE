@@ -5,21 +5,8 @@ OGLScene::OGLScene() {
 }
 
 OGLScene::~OGLScene() {
-    this->objects.clear();
     this->models.clear();
     this->lights.clear();
-}
-
-void OGLScene::AddObject(SharedPtr<RenderableObject> object) {
-    this->objects.push_back(object);
-}
-
-void OGLScene::RemoveObject(SharedPtr<RenderableObject> object) {
-    this->objects.erase(std::remove(objects.begin(), objects.end(), object), objects.end());
-}
-
-List<SharedPtr<RenderableObject>> OGLScene::GetObjects() const {
-    return this->objects;
 }
 
 void OGLScene::AddModel(SharedPtr<OGLModel> model) {
@@ -55,8 +42,6 @@ SharedPtr<OGLCamera> OGLScene::GetCamera() const {
 }
 
 void OGLScene::Update(F32 deltaTime) {
-    for (auto &object : objects) {
-        object->Update(deltaTime);
-    }
+    
 }
 } // namespace JzRE

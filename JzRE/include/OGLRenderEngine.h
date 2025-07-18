@@ -5,7 +5,6 @@
 #include "OGLRenderer.h"
 #include "OGLScene.h"
 #include "OGLInput.h"
-#include "RenderableObject.h"
 #include "OGLModel.h"
 #include "OGLCamera.h"
 #include "OGLDirectionalLight.h"

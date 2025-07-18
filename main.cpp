@@ -1,4 +1,3 @@
-#include "SoftwareRenderEngine.h"
 #include "OGLRenderEngine.h"
 
 int main() {

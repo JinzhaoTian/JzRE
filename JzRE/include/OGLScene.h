@@ -1,7 +1,6 @@
 #pragma once
 
 #include "CommonTypes.h"
-#include "RenderableObject.h"
 #include "OGLModel.h"
 #include "OGLShader.h"
 #include "OGLCamera.h"
@@ -12,10 +11,6 @@ class OGLScene {
 public:
     OGLScene();
     ~OGLScene();
-
-    void AddObject(SharedPtr<RenderableObject> object);
-    void RemoveObject(SharedPtr<RenderableObject> object);
-    List<SharedPtr<RenderableObject>> GetObjects() const;
 
     void AddModel(SharedPtr<OGLModel> object);
     void RemoveModel(SharedPtr<OGLModel> object);
@@ -31,7 +26,6 @@ public:
     void Update(F32 deltaTime);
 
 private:
-    List<SharedPtr<RenderableObject>> objects;
     List<SharedPtr<OGLModel>> models;
     List<SharedPtr<OGLLight>> lights;
     SharedPtr<OGLCamera> camera;

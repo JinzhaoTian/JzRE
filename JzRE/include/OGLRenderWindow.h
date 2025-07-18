@@ -1,7 +1,6 @@
 #pragma once
 
 #include "CommonTypes.h"
-#include "Framebuffer.h"
 
 namespace JzRE {
 

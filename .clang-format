@@ -9,10 +9,10 @@ AccessModifierOffset: -4
 AlignAfterOpenBracket: Align
 
 # 连续赋值时，对齐所有等号
-AlignConsecutiveAssignments: false
+AlignConsecutiveAssignments: true
 
 # 连续声明时，对齐所有声明的变量名
-AlignConsecutiveDeclarations: false
+AlignConsecutiveDeclarations: true
 
 # 右对齐逃脱换行(使用反斜杠换行)的反斜杠
 AlignEscapedNewlines: Right
@@ -33,7 +33,7 @@ AllowShortBlocksOnASingleLine: true
 AllowShortCaseLabelsOnASingleLine: true
 
 # 允许短的函数放在同一行: None, InlineOnly(定义在类中), Empty(空函数), Inline(定义在类中，空函数), All
-AllowShortFunctionsOnASingleLine: None
+AllowShortFunctionsOnASingleLine: Empty
 
 # 允许短的if语句保持在同一行
 AllowShortIfStatementsOnASingleLine: true
@@ -63,10 +63,16 @@ BraceWrapping:
   AfterClass: false
   # 控制语句后面
   AfterControlStatement: false
+  # 具体控制每种语句
+  AfterIfStatement: false      # if 语句后不换行
+  AfterWhileStatement: false   # while 语句后不换行
+  AfterForStatement: false     # for 语句后不换行
+  AfterDoStatement: false      # do 语句后不换行
+  AfterSwitchStatement: true   # switch 语句后换行
   # enum定义后面
   AfterEnum: false
   # 函数定义后面
-  AfterFunction: false
+  AfterFunction: true
   # 命名空间定义后面
   AfterNamespace: false
   # struct定义后面
@@ -75,6 +81,8 @@ BraceWrapping:
   AfterUnion: false
   # extern之后
   AfterExternBlock: false
+  # case标签后面
+  AfterCaseLabel: true
   # catch之前
   BeforeCatch: false
   # else之前
@@ -131,7 +139,7 @@ DerivePointerAlignment: false
 FixNamespaceComments: true
 
 # 缩进case标签
-IndentCaseLabels: false
+IndentCaseLabels: true
 
 IndentPPDirectives: None
 
@@ -157,7 +165,7 @@ PointerAlignment: Right
 ReflowComments: true
 
 # 允许排序#include
-SortIncludes: false
+SortIncludes: true
 
 # 允许排序 using 声明
 SortUsingDeclarations: false
@@ -203,6 +211,9 @@ SpacesInParentheses: false
 # 在方括号的[后和]前添加空格，lamda表达式和未指明大小的数组的声明不受影响
 SpacesInSquareBrackets: false
 
+# 在空块中添加空格
+SpaceInEmptyBlock: true
+
 # 标准: Cpp03, Cpp11, Auto
 Standard: Cpp11
 
@@ -211,3 +222,12 @@ TabWidth: 4
 
 # 使用tab字符: Never, ForIndentation, ForContinuationAndIndentation, Always
 UseTab: Never
+
+# Include的排序类别及优先级
+IncludeCategories:
+  - Regex:           '^<[^/]*>$'               # 标准库头文件 例如 <vector>
+    Priority:        1
+  - Regex:           '^<.*/'                   # 其他库文件 例如 <boost/shared_ptr.hpp>
+    Priority:        2
+  - Regex:           '^".*"'                   # 本项目的头文件 例如 "myproject/myfile.h"
+    Priority:        3

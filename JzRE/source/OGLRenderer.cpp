@@ -45,12 +45,6 @@ void OGLRenderer::RenderScene(SharedPtr<OGLScene> scene) {
         scene->GetLights()[i]->ApplyLight(this->shader, StaticCast<I32>(i));
     }
 
-    // object properties
-    for (const auto object : scene->GetObjects()) {
-        this->shader->SetUniform("model", object->GetModelMatrix());
-        object->Draw();
-    }
-
     for (const auto model : scene->GetModels()) {
         glm::mat4 modelMatrix = glm::mat4(1.0f);
         this->shader->SetUniform("model", modelMatrix);
