@@ -33,7 +33,7 @@ OGLRenderWindow::~OGLRenderWindow() {
     }
 }
 
-RawPtr<GLFWwindow> OGLRenderWindow::GetGLFWwindow() {
+GLFWwindow* OGLRenderWindow::GetGLFWwindow() {
     return this->hwnd;
 }
 

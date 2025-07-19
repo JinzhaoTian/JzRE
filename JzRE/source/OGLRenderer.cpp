@@ -2,9 +2,9 @@
 
 namespace JzRE {
 
-RawPtr<OGLRenderer> OGLRenderer::instance = nullptr;
+OGLRenderer* OGLRenderer::instance = nullptr;
 
-OGLRenderer::OGLRenderer(SharedPtr<OGLRenderWindow> wnd, I32 width, I32 height) {
+OGLRenderer::OGLRenderer(std::shared_ptr<OGLRenderWindow> wnd, I32 width, I32 height) {
     instance = this;
 
     // callback: frame buffer size
@@ -28,7 +28,7 @@ OGLRenderer::~OGLRenderer() {
     this->CleanFramebuffer();
 }
 
-void OGLRenderer::RenderScene(SharedPtr<OGLScene> scene) {
+void OGLRenderer::RenderScene(std::shared_ptr<OGLScene> scene) {
     this->Clear();
 
     this->shader->Use();
@@ -42,7 +42,7 @@ void OGLRenderer::RenderScene(SharedPtr<OGLScene> scene) {
 
     // light properties
     for (Size i = 0; i < scene->GetLights().size(); ++i) {
-        scene->GetLights()[i]->ApplyLight(this->shader, StaticCast<I32>(i));
+        scene->GetLights()[i]->ApplyLight(this->shader, static_cast<I32>(i));
     }
 
     for (const auto model : scene->GetModels()) {
@@ -108,8 +108,8 @@ void OGLRenderer::CleanFramebuffer() {
     }
 }
 
-void OGLRenderer::callback_framebuffer_size(RawPtr<GLFWwindow> window, int width, int height) {
-    auto wnd = StaticCast<RawPtr<OGLRenderWindow>>(glfwGetWindowUserPointer(window));
+void OGLRenderer::callback_framebuffer_size(GLFWwindow* window, int width, int height) {
+    auto wnd = static_cast<OGLRenderWindow*>(glfwGetWindowUserPointer(window));
     wnd->ResizeWindow(width, height);
 
     instance->CleanFramebuffer();

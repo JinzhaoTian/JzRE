@@ -16,7 +16,7 @@ public:
     void SetColor(const glm::vec3 &color);
     const glm::vec3 &GetColor() const;
 
-    virtual void ApplyLight(SharedPtr<OGLShader> shader, int index) const = 0;
+    virtual void ApplyLight(std::shared_ptr<OGLShader> shader, int index) const = 0;
 
 protected:
     glm::vec3 position;

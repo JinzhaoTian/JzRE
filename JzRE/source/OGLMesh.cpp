@@ -1,18 +1,18 @@
 #include "OGLMesh.h"
 
 namespace JzRE {
-OGLMesh::OGLMesh(List<OGLVertex> vertices, List<U32> indices, List<SharedPtr<OGLTexture>> textures) :
+OGLMesh::OGLMesh(std::vector<OGLVertex> vertices, std::vector<U32> indices, std::vector<std::shared_ptr<OGLTexture>> textures) :
     vertices(vertices), indices(indices), textures(textures) {
     // now that we have all the required data, set the vertex buffers and its attribute pointers.
     SetupMesh();
 }
 
-void OGLMesh::Draw(SharedPtr<OGLShader> shader) {
+void OGLMesh::Draw(std::shared_ptr<OGLShader> shader) {
     // bind appropriate textures
     I32 diffuseCnt = 0, specularCnt = 0, normalCnt = 0, heightCnt = 0;
     for (U32 i = 0; i < this->textures.size(); i++) {
         this->textures[i]->Bind(i);
-        shader->SetUniform(this->textures[i]->textureName, StaticCast<I32>(i));
+        shader->SetUniform(this->textures[i]->textureName, static_cast<I32>(i));
 
         String typeName = this->textures[i]->textureName.substr(
             this->textures[i]->textureName.find_first_of('.') + 1,

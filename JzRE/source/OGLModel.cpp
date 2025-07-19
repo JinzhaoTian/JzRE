@@ -6,7 +6,7 @@ OGLModel::OGLModel(const String &path, Bool gamma) :
     LoadModel(path);
 }
 
-void OGLModel::Draw(SharedPtr<OGLShader> shader) {
+void OGLModel::Draw(std::shared_ptr<OGLShader> shader) {
     for (auto &mesh : this->meshes)
         mesh.Draw(shader);
 }
@@ -47,9 +47,9 @@ void OGLModel::ProcessNode(aiNode *node, const aiScene *scene) {
 
 OGLMesh OGLModel::ProcessMesh(aiMesh *mesh, const aiScene *scene) {
     // data to fill
-    List<OGLVertex> vertices;
-    List<U32> indices;
-    List<SharedPtr<OGLTexture>> textures;
+    std::vector<OGLVertex> vertices;
+    std::vector<U32> indices;
+    std::vector<std::shared_ptr<OGLTexture>> textures;
 
     // walk through each of the mesh's vertices
     for (U32 i = 0; i < mesh->mNumVertices; i++) {
@@ -130,8 +130,8 @@ OGLMesh OGLModel::ProcessMesh(aiMesh *mesh, const aiScene *scene) {
     return OGLMesh(vertices, indices, textures);
 }
 
-List<SharedPtr<OGLTexture>> OGLModel::LoadMaterialTextures(aiMaterial *mat, aiTextureType type, String typeName) {
-    List<SharedPtr<OGLTexture>> textures;
+std::vector<std::shared_ptr<OGLTexture>> OGLModel::LoadMaterialTextures(aiMaterial *mat, aiTextureType type, String typeName) {
+    std::vector<std::shared_ptr<OGLTexture>> textures;
     for (U32 i = 0; i < mat->GetTextureCount(type); i++) {
         aiString str;
         mat->GetTexture(type, i, &str);

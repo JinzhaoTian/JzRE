@@ -8,18 +8,18 @@ namespace JzRE {
 class OGLModel {
 public:
     // model data
-    List<OGLMesh> meshes;
+    std::vector<OGLMesh> meshes;
     String directory;
     Bool gammaCorrection;
 
     OGLModel(const String &path, Bool gamma = false);
 
-    void Draw(SharedPtr<OGLShader> shader);
+    void Draw(std::shared_ptr<OGLShader> shader);
 
 private:
     void LoadModel(const String &path);
     void ProcessNode(aiNode *node, const aiScene *scene);
     OGLMesh ProcessMesh(aiMesh *mesh, const aiScene *scene);
-    List<SharedPtr<OGLTexture>> LoadMaterialTextures(aiMaterial *mat, aiTextureType type, String typeName);
+    std::vector<std::shared_ptr<OGLTexture>> LoadMaterialTextures(aiMaterial *mat, aiTextureType type, String typeName);
 };
 } // namespace JzRE

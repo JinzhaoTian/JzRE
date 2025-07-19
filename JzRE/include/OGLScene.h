@@ -12,22 +12,22 @@ public:
     OGLScene();
     ~OGLScene();
 
-    void AddModel(SharedPtr<OGLModel> object);
-    void RemoveModel(SharedPtr<OGLModel> object);
-    List<SharedPtr<OGLModel>> GetModels() const;
+    void AddModel(std::shared_ptr<OGLModel> object);
+    void RemoveModel(std::shared_ptr<OGLModel> object);
+    std::vector<std::shared_ptr<OGLModel>> GetModels() const;
 
-    void AddLight(SharedPtr<OGLLight> light);
-    void RemoveLight(SharedPtr<OGLLight> light);
-    List<SharedPtr<OGLLight>> GetLights() const;
+    void AddLight(std::shared_ptr<OGLLight> light);
+    void RemoveLight(std::shared_ptr<OGLLight> light);
+    std::vector<std::shared_ptr<OGLLight>> GetLights() const;
 
-    void SetCamera(SharedPtr<OGLCamera> camera);
-    SharedPtr<OGLCamera> GetCamera() const;
+    void SetCamera(std::shared_ptr<OGLCamera> camera);
+    std::shared_ptr<OGLCamera> GetCamera() const;
 
     void Update(F32 deltaTime);
 
 private:
-    List<SharedPtr<OGLModel>> models;
-    List<SharedPtr<OGLLight>> lights;
-    SharedPtr<OGLCamera> camera;
+    std::vector<std::shared_ptr<OGLModel>> models;
+    std::vector<std::shared_ptr<OGLLight>> lights;
+    std::shared_ptr<OGLCamera> camera;
 };
 } // namespace JzRE

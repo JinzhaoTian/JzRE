@@ -55,7 +55,7 @@ void OGLSpotLight::SetQuadratic(F32 quadratic) {
     this->quadratic = quadratic;
 }
 
-void OGLSpotLight::ApplyLight(SharedPtr<OGLShader> shader, I32 index) const {
+void OGLSpotLight::ApplyLight(std::shared_ptr<OGLShader> shader, I32 index) const {
     shader->SetUniform("spotLights[" + std::to_string(index) + "].position", position);
     shader->SetUniform("spotLights[" + std::to_string(index) + "].direction", direction);
     shader->SetUniform("spotLights[" + std::to_string(index) + "].color", color);

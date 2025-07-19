@@ -13,7 +13,7 @@ void OGLDirectionalLight::SetDirection(const glm::vec3 &direction) {
     this->direction = direction;
 }
 
-void OGLDirectionalLight::ApplyLight(SharedPtr<OGLShader> shader, I32 index) const {
+void OGLDirectionalLight::ApplyLight(std::shared_ptr<OGLShader> shader, I32 index) const {
     shader->SetUniform("directionalLight[" + std::to_string(index) + "].direction", direction);
     shader->SetUniform("directionalLight[" + std::to_string(index) + "].color", color);
 }

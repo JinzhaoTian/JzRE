@@ -5,17 +5,17 @@
 namespace JzRE {
 class OGLUI {
 public:
-    OGLUI(RawPtr<GLFWwindow> window);
+    OGLUI(GLFWwindow* window);
     ~OGLUI();
 
     void Render();
 
-    void SetCallbackOpenFile(Callback<String> callback);
+    void SetCallbackOpenFile(std::function<void(String)> callback);
 
 private:
     I32 dialogWidth = 600;
     I32 dialogHeight = 450;
 
-    Callback<String> callbackOpenFile;
+    std::function<void(String)> callbackOpenFile;
 };
 } // namespace JzRE

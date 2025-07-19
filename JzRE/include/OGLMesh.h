@@ -9,13 +9,13 @@ namespace JzRE {
 class OGLMesh {
 public:
     // mesh Data
-    List<OGLVertex> vertices;
-    List<U32> indices;
-    List<SharedPtr<OGLTexture>> textures;
+    std::vector<OGLVertex> vertices;
+    std::vector<U32> indices;
+    std::vector<std::shared_ptr<OGLTexture>> textures;
 
-    OGLMesh(List<OGLVertex> vertices, List<U32> indices, List<SharedPtr<OGLTexture>> textures);
+    OGLMesh(std::vector<OGLVertex> vertices, std::vector<U32> indices, std::vector<std::shared_ptr<OGLTexture>> textures);
 
-    void Draw(SharedPtr<OGLShader> shader);
+    void Draw(std::shared_ptr<OGLShader> shader);
 
 private:
     GLuint VAO, VBO, EBO;

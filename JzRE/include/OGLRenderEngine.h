@@ -28,11 +28,11 @@ private:
 
     Bool isRunning;
 
-    SharedPtr<OGLRenderWindow> window;
-    SharedPtr<OGLRenderer> renderer;
-    SharedPtr<OGLScene> scene;
-    SharedPtr<OGLCamera> camera;
-    SharedPtr<OGLUI> simpleUI;
+    std::shared_ptr<OGLRenderWindow> window;
+    std::shared_ptr<OGLRenderer> renderer;
+    std::shared_ptr<OGLScene> scene;
+    std::shared_ptr<OGLCamera> camera;
+    std::shared_ptr<OGLUI> simpleUI;
 
     Bool InitScene();
     void ProcessInput();

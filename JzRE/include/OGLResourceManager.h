@@ -9,11 +9,11 @@ class OGLResourceManager {
 public:
     static OGLResourceManager &getInstance();
 
-    SharedPtr<OGLTexture> LoadTexture(const String &textureName, const String &texturePath);
-    SharedPtr<OGLTexture> GetTexture(const String &textureName);
+    std::shared_ptr<OGLTexture> LoadTexture(const String &textureName, const String &texturePath);
+    std::shared_ptr<OGLTexture> GetTexture(const String &textureName);
 
-    SharedPtr<OGLShader> LoadShader(const String &shaderName, const String &vertexPath, const String &fragmentPath);
-    SharedPtr<OGLShader> GetShader(const String &shaderName);
+    std::shared_ptr<OGLShader> LoadShader(const String &shaderName, const String &vertexPath, const String &fragmentPath);
+    std::shared_ptr<OGLShader> GetShader(const String &shaderName);
 
     // 清理资源
     void Clear();
@@ -25,7 +25,7 @@ private:
     OGLResourceManager(const OGLResourceManager &) = delete;
     OGLResourceManager &operator=(const OGLResourceManager &) = delete;
 
-    UnorderedMap<String, SharedPtr<OGLTexture>> textures;
-    UnorderedMap<String, SharedPtr<OGLShader>> shaders;
+    std::unordered_map<String, std::shared_ptr<OGLTexture>> textures;
+    std::unordered_map<String, std::shared_ptr<OGLShader>> shaders;
 };
 } // namespace JzRE

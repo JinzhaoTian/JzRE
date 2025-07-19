@@ -10,29 +10,29 @@ OGLRenderEngine::~OGLRenderEngine() {
 }
 
 Bool OGLRenderEngine::Initialize() {
-    this->window = CreateSharedPtr<OGLRenderWindow>(this->wndWidth, this->wndHeight, this->title);
+    this->window = std::make_shared<OGLRenderWindow>(this->wndWidth, this->wndHeight, this->title);
     if (this->window == nullptr) {
         return false;
     }
 
-    this->renderer = CreateSharedPtr<OGLRenderer>(this->window, this->wndWidth, this->wndHeight);
+    this->renderer = std::make_shared<OGLRenderer>(this->window, this->wndWidth, this->wndHeight);
     if (this->renderer == nullptr) {
         return false;
     }
 
     OGLInput::Initialize(this->window->GetGLFWwindow());
 
-    this->simpleUI = CreateSharedPtr<OGLUI>(this->window->GetGLFWwindow());
+    this->simpleUI = std::make_shared<OGLUI>(this->window->GetGLFWwindow());
     if (this->simpleUI == nullptr) {
         return false;
     }
 
-    this->camera = CreateSharedPtr<OGLCamera>(this->wndWidth, this->wndHeight, glm::vec3(0.0f, 0.0f, 3.0f));
+    this->camera = std::make_shared<OGLCamera>(this->wndWidth, this->wndHeight, glm::vec3(0.0f, 0.0f, 3.0f));
     if (this->camera == nullptr) {
         return false;
     }
 
-    this->scene = CreateSharedPtr<OGLScene>();
+    this->scene = std::make_shared<OGLScene>();
     if (this->scene == nullptr) {
         return false;
     }
@@ -45,7 +45,7 @@ Bool OGLRenderEngine::Initialize() {
     this->scene->SetCamera(this->camera);
 
     this->simpleUI->SetCallbackOpenFile([&](const String &filePath) {
-        auto model = CreateSharedPtr<OGLModel>(filePath, false);
+        auto model = std::make_shared<OGLModel>(filePath, false);
         this->scene->AddModel(model);
     });
 
@@ -100,7 +100,7 @@ void OGLRenderEngine::ProcessInput() {
 }
 
 Bool OGLRenderEngine::InitScene() {
-    auto light = CreateSharedPtr<OGLDirectionalLight>(glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.5f, 0.5f, 0.5f));
+    auto light = std::make_shared<OGLDirectionalLight>(glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.5f, 0.5f, 0.5f));
     scene->AddLight(light);
 
     return true;

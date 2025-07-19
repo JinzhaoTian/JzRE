@@ -10,24 +10,24 @@
 namespace JzRE {
 class OGLRenderer {
 public:
-    OGLRenderer(SharedPtr<OGLRenderWindow> wnd, I32 width, I32 height);
+    OGLRenderer(std::shared_ptr<OGLRenderWindow> wnd, I32 width, I32 height);
     ~OGLRenderer();
 
-    void RenderScene(SharedPtr<OGLScene> scene);
+    void RenderScene(std::shared_ptr<OGLScene> scene);
 
 private:
     GLuint framebuffer;
     GLuint textureColorbuffer;
     GLuint rboDepthStencil;
 
-    SharedPtr<OGLShader> shader;
+    std::shared_ptr<OGLShader> shader;
     Bool AddShader(const String &name, const String &vertexPath, const String &fragmentPath);
 
     void Clear();
     Bool CreateFramebuffer(I32 width, I32 height);
     void CleanFramebuffer();
 
-    static RawPtr<OGLRenderer> instance;
-    static void callback_framebuffer_size(RawPtr<GLFWwindow> window, int width, int height);
+    static OGLRenderer* instance;
+    static void callback_framebuffer_size(GLFWwindow* window, int width, int height);
 };
 } // namespace JzRE

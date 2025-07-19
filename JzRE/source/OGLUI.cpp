@@ -1,7 +1,7 @@
 #include "OGLUI.h"
 
 namespace JzRE {
-OGLUI::OGLUI(RawPtr<GLFWwindow> window) {
+OGLUI::OGLUI(GLFWwindow* window) {
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -86,7 +86,7 @@ void OGLUI::Render() {
     // ImGui::UpdatePlatformWindows(); // Not available in this ImGui version
 }
 
-void OGLUI::SetCallbackOpenFile(Callback<String> callback) {
+void OGLUI::SetCallbackOpenFile(std::function<void(String)> callback) {
     this->callbackOpenFile = callback;
 }
 

@@ -10,6 +10,9 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# set export compile commands
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 # Find packages using vcpkg
 find_package(glfw3 CONFIG REQUIRED)
 find_package(glad CONFIG REQUIRED)

@@ -27,7 +27,7 @@ public:
     F32 GetQuadratic() const;
     void SetQuadratic(F32 quadratic);
 
-    void ApplyLight(SharedPtr<OGLShader> shader, I32 index) const override;
+    void ApplyLight(std::shared_ptr<OGLShader> shader, I32 index) const override;
 
 private:
     glm::vec3 direction;

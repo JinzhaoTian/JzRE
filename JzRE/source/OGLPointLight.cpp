@@ -29,7 +29,7 @@ void OGLPointLight::SetQuadratic(F32 quadratic) {
     this->quadratic = quadratic;
 }
 
-void OGLPointLight::ApplyLight(SharedPtr<OGLShader> shader, I32 index) const {
+void OGLPointLight::ApplyLight(std::shared_ptr<OGLShader> shader, I32 index) const {
     shader->SetUniform("pointLights[" + std::to_string(index) + "].position", position);
     shader->SetUniform("pointLights[" + std::to_string(index) + "].color", color);
     shader->SetUniform("pointLights[" + std::to_string(index) + "].constant", constant);

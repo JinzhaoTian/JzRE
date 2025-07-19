@@ -2,7 +2,7 @@
 
 namespace JzRE {
 
-RawPtr<GLFWwindow> OGLInput::window = nullptr;
+GLFWwindow* OGLInput::window = nullptr;
 F32 OGLInput::lastX = 0.0;
 F32 OGLInput::lastY = 0.0;
 F32 OGLInput::deltaX = 0.0;
@@ -11,10 +11,10 @@ F32 OGLInput::offsetX = 0.0;
 F32 OGLInput::offsetY = 0.0;
 Bool OGLInput::firstMouse = true;
 
-UnorderedMap<int, bool> OGLInput::keys;
-UnorderedMap<int, bool> OGLInput::mouseButtons;
+std::unordered_map<int, bool> OGLInput::keys;
+std::unordered_map<int, bool> OGLInput::mouseButtons;
 
-void OGLInput::Initialize(RawPtr<GLFWwindow> window) {
+void OGLInput::Initialize(GLFWwindow* window) {
     OGLInput::window = window;
 
     // callback: mouse
@@ -39,7 +39,7 @@ Bool OGLInput::IsMouseButtonPressed(I32 button) {
 glm::vec2 OGLInput::GetMousePosition() {
     F64 xpos, ypos;
     glfwGetCursorPos(window, &xpos, &ypos);
-    return glm::vec2(StaticCast<F32>(xpos), StaticCast<F32>(ypos));
+    return glm::vec2(static_cast<F32>(xpos), static_cast<F32>(ypos));
 }
 
 glm::vec2 OGLInput::GetMouseMovement() {
@@ -50,9 +50,9 @@ glm::vec2 OGLInput::GetMouseScroll() {
     return glm::vec2(offsetX, offsetY);
 }
 
-void OGLInput::callback_mouse_cursor_pos(RawPtr<GLFWwindow> window, F64 xposin, F64 yposin) {
-    F32 xpos = StaticCast<F32>(xposin);
-    F32 ypos = StaticCast<F32>(yposin);
+void OGLInput::callback_mouse_cursor_pos(GLFWwindow* window, F64 xposin, F64 yposin) {
+    F32 xpos = static_cast<F32>(xposin);
+    F32 ypos = static_cast<F32>(yposin);
 
     if (firstMouse) {
         lastX = xpos;
@@ -67,12 +67,12 @@ void OGLInput::callback_mouse_cursor_pos(RawPtr<GLFWwindow> window, F64 xposin, 
     lastY = ypos;
 }
 
-void OGLInput::callback_mouse_scroll(RawPtr<GLFWwindow> window, F64 xoffset, F64 yoffset) {
-    offsetX = StaticCast<F32>(xoffset);
-    offsetY = StaticCast<F32>(yoffset);
+void OGLInput::callback_mouse_scroll(GLFWwindow* window, F64 xoffset, F64 yoffset) {
+    offsetX = static_cast<F32>(xoffset);
+    offsetY = static_cast<F32>(yoffset);
 }
 
-void OGLInput::callback_mouse_button(RawPtr<GLFWwindow> window, I32 button, I32 action, I32 mods) {
+void OGLInput::callback_mouse_button(GLFWwindow* window, I32 button, I32 action, I32 mods) {
     if (action == GLFW_PRESS) {
         mouseButtons[button] = true;
     } else if (action == GLFW_RELEASE) {
@@ -80,7 +80,7 @@ void OGLInput::callback_mouse_button(RawPtr<GLFWwindow> window, I32 button, I32 
     }
 }
 
-void OGLInput::callback_keyboard(RawPtr<GLFWwindow> window, I32 key, I32 scancode, I32 action, I32 mode) {
+void OGLInput::callback_keyboard(GLFWwindow* window, I32 key, I32 scancode, I32 action, I32 mode) {
     if (action == GLFW_PRESS) {
         keys[key] = true;
     } else if (action == GLFW_RELEASE) {

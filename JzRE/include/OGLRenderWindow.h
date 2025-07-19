@@ -9,7 +9,7 @@ public:
     OGLRenderWindow(I32 width, I32 height, const String &title);
     ~OGLRenderWindow();
 
-    RawPtr<GLFWwindow> GetGLFWwindow();
+    GLFWwindow* GetGLFWwindow();
     I32 GetWindowWidth();
     I32 GetWindowHeight();
 
@@ -19,7 +19,7 @@ public:
     void SwapFramebuffer();
 
 private:
-    RawPtr<GLFWwindow> hwnd;
+    GLFWwindow* hwnd;
 
     I32 wndWidth, wndHeight;
     String title;

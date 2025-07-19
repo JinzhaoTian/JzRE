@@ -11,7 +11,7 @@ public:
     const glm::vec3 &GetDirection() const;
     void SetDirection(const glm::vec3 &direction);
 
-    void ApplyLight(SharedPtr<OGLShader> shader, I32 index) const override;
+    void ApplyLight(std::shared_ptr<OGLShader> shader, I32 index) const override;
 
 private:
     glm::vec3 direction;
