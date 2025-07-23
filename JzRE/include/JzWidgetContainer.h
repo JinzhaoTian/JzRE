@@ -74,11 +74,11 @@ public:
     /**
      * Returns the widgets and their memory management mode
      */
-    List<Pair<RawPtr<JzWidget>, EMemoryMode>> &GetWidgets();
+    std::vector<std::pair<JzWidget *, EMemoryMode>> &GetWidgets();
 
 private:
-    List<Pair<RawPtr<JzWidget>, EMemoryMode>> m_widgets;
-    bool                                      m_reverseDrawOrder = false;
+    std::vector<std::pair<JzWidget *, EMemoryMode>> m_widgets;
+    Bool                                            m_reverseDrawOrder = false;
 };
 
 } // namespace JzRE

@@ -10,7 +10,7 @@ void JzRE::JzWindow::MakeCurrentContext() const
     glfwMakeContextCurrent(m_glfwWindow);
 }
 
-JzRE::RawPtr<GLFWwindow> JzRE::JzWindow::GetGLFWWindow() const
+GLFWwindow *JzRE::JzWindow::GetGLFWWindow() const
 {
     return m_glfwWindow;
 }

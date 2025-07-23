@@ -76,7 +76,7 @@ public:
      *
      * @return EJzVector2
      */
-    Pair<F64, F64> GetMousePosition() const;
+    std::pair<F64, F64> GetMousePosition() const;
 
     /**
      * @brief Clear the events
@@ -97,6 +97,7 @@ private:
     ListenerID m_mouseButtonPressedListenerID;
     ListenerID m_mouseButtonReleasedListenerID;
 
-    UnorderedMap<EJzKey, EJzKeyState>                 m_keyStates;
-    UnorderedMap<EJzMouseButton, EJzMouseButtonState> m_mouseButtonStates;
+    std::unordered_map<EJzKey, EJzKeyState>                 m_keyStates;
+    std::unordered_map<EJzMouseButton, EJzMouseButtonState> m_mouseButtonStates;
 };
+} // namespace JzRE

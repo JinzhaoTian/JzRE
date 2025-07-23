@@ -64,6 +64,6 @@ public:
     JzEvent<const String &> OnSceneChanged;
 
 private:
-    UniquePtr<JzScene> m_currentScene = nullptr;
+    std::unique_ptr<JzScene> m_currentScene = nullptr;
 };
 } // namespace JzRE

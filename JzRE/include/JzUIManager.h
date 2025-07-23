@@ -12,7 +12,7 @@ public:
     /**
      * @brief Constructor
      */
-    JzUIManager(RawPtr<GLFWwindow> glfwWindow, const String &glslVersion = "#version 150");
+    JzUIManager(GLFWwindow* glfwWindow, const String &glslVersion = "#version 150");
 
     /**
      * @brief Destructor

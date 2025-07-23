@@ -22,5 +22,5 @@ void JzRE::JzDevice::PollEvents() const
 
 JzRE::F32 JzRE::JzDevice::GetElapsedTime() const
 {
-    return JzRE::StaticCast<JzRE::F32>(glfwGetTime());
+    return static_cast<JzRE::F32>(glfwGetTime());
 }

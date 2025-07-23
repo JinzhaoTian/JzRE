@@ -29,9 +29,9 @@ public:
     /**
      * @brief Get the GLFW window
      *
-     * @return RawPtr<GLFWwindow>
+     * @return GLFWwindow*
      */
-    RawPtr<GLFWwindow> GetGLFWWindow() const;
+    GLFWwindow *GetGLFWWindow() const;
 
     /**
      * @brief Swap the buffers
@@ -65,7 +65,7 @@ public:
     JzEvent<> WindowClosedEvent;
 
 private:
-    const JzDevice    &m_device;
-    RawPtr<GLFWwindow> m_glfwWindow;
+    const JzDevice &m_device;
+    GLFWwindow     *m_glfwWindow;
 };
 } // namespace JzRE

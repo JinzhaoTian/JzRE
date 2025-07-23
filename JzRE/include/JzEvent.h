@@ -72,8 +72,8 @@ public:
     void Invoke(ArgsTypes... args);
 
 private:
-    UnorderedMap<ListenerID, Callback> m_listeners;
-    ListenerID                         m_availableListenerID = 0;
+    std::unordered_map<ListenerID, Callback> m_listeners;
+    ListenerID                               m_availableListenerID = 0;
 };
 } // namespace JzRE
 

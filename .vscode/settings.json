@@ -1,4 +1,5 @@
 {
+    "editor.formatOnSave": true,
     "cmake.configureSettings": {
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
     },

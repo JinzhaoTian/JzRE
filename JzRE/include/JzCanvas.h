@@ -41,7 +41,7 @@ public:
     void RemoveAllPanels();
 
 private:
-    Bool                                  m_isDockspace;
-    List<std::reference_wrapper<JzPanel>> m_panels;
+    Bool                                         m_isDockspace;
+    std::vector<std::reference_wrapper<JzPanel>> m_panels;
 };
 } // namespace JzRE

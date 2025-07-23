@@ -10,7 +10,7 @@ JzRE::JzContext::JzContext(const String &projectPath, const String &projectName)
     deviceSettings.contextVersionMajor = 4;
     deviceSettings.contextVersionMinor = 3;
 
-    device = JzRE::CreateUniquePtr<JzRE::JzDevice>(deviceSettings);
+    device = std::make_unique<JzRE::JzDevice>(deviceSettings);
 
     /* Window */
     windowSettings.x      = 100;
@@ -18,17 +18,17 @@ JzRE::JzContext::JzContext(const String &projectPath, const String &projectName)
     windowSettings.width  = 1280;
     windowSettings.height = 720;
 
-    window = JzRE::CreateUniquePtr<JzRE::JzWindow>(*device, windowSettings);
+    window = std::make_unique<JzRE::JzWindow>(*device, windowSettings);
 
     /* Input Manager */
-    inputManager = JzRE::CreateUniquePtr<JzRE::JzInputManager>(*window);
+    inputManager = std::make_unique<JzRE::JzInputManager>(*window);
 
     window->MakeCurrentContext();
 
     device->SetVsync(true);
 
     /* UI Manager */
-    uiManager = JzRE::CreateUniquePtr<JzRE::JzUIManager>(window->GetGLFWWindow());
+    uiManager = std::make_unique<JzRE::JzUIManager>(window->GetGLFWWindow());
     uiManager->SetDocking(true);
 }
 

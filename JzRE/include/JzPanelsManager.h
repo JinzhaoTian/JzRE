@@ -35,11 +35,11 @@ public:
     void CreatePanel(const String &id, Args &&...args)
     {
         if constexpr (std::is_base_of<JzPanelWindow, T>::value) {
-            m_panels.emplace(id, MakeUnique<T>(id, std::forward<Args>(args)...));
+            m_panels.emplace(id, std::make_unique<T>(id, std::forward<Args>(args)...));
             T &instance = *static_cast<T *>(m_panels.at(id).get());
             GetPanelAs<JzMenuBar>("Menu Bar").RegisterPanel(instance.name, instance);
         } else {
-            m_panels.emplace(id, MakeUnique<T>(id, std::forward<Args>(args)...));
+            m_panels.emplace(id, std::make_unique<T>(id, std::forward<Args>(args)...));
         }
 
         m_canvas.AddPanel(*m_panels.at(id));
@@ -55,11 +55,11 @@ public:
     template <typename T>
     T &GetPanelAs(const String &id)
     {
-        return *StaticCast<RawPtr<T>>(m_panels[id].get());
+        return *static_cast<T *>(m_panels[id].get());
     }
 
 private:
-    UnorderedMap<String, UniquePtr<JzPanel>> m_panels;
-    JzCanvas                                &m_canvas;
+    std::unordered_map<String, std::unique_ptr<JzPanel>> m_panels;
+    JzCanvas                                            &m_canvas;
 };
 } // namespace JzRE

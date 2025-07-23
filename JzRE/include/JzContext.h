@@ -32,10 +32,10 @@ public:
     const String projectPath;
     const String projectName;
 
-    UniquePtr<JzDevice>       device;
-    UniquePtr<JzWindow>       window;
-    UniquePtr<JzInputManager> inputManager;
-    UniquePtr<JzUIManager>    uiManager;
+    std::unique_ptr<JzDevice>       device;
+    std::unique_ptr<JzWindow>       window;
+    std::unique_ptr<JzInputManager> inputManager;
+    std::unique_ptr<JzUIManager>    uiManager;
 
     JzSceneManager sceneManager;
 
