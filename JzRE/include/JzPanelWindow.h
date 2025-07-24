@@ -8,8 +8,10 @@ class JzPanelWindow : public JzPanel {
 public:
     /**
      * @brief Constructor
+     *
+     * @param panelId The ID of the panel window
      */
-    JzPanelWindow();
+    JzPanelWindow(const String &panelId);
 
 protected:
     void _Draw_Impl() override;

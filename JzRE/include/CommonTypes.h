@@ -27,6 +27,7 @@
 #include <algorithm>
 #include <array>
 #include <cassert>
+#include <chrono>
 #include <cmath>
 #include <cstdint>
 #include <cstring>
@@ -45,10 +46,6 @@
 #include <unordered_set>
 #include <utility>
 #include <vector>
-
-#include <chrono>
-
-#define RGBA(r, g, b, a) ((b) | ((g) << 8) | ((r) << 16) | ((a) << 24))
 
 /**
  * JzRE Definitions

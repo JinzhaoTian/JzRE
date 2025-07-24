@@ -12,8 +12,10 @@ class JzMenuBar : public JzPanelMenuBar {
 public:
     /**
      * @brief Constructor
+     *
+     * @param panelId The ID of the menu bar
      */
-    JzMenuBar();
+    JzMenuBar(const String &panelId);
 
     /**
      * @brief Handle the shortcuts

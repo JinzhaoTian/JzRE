@@ -9,8 +9,10 @@ class JzPanel : public IJzDrawable, public JzWidgetContainer {
 public:
     /**
      * @brief Constructor
+     *
+     * @param panelId The ID of the panel
      */
-    JzPanel();
+    JzPanel(const String &panelId);
 
     /**
      * @brief Draw the panel

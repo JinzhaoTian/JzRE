@@ -52,7 +52,9 @@ void JzRE::JzCanvas::AddPanel(JzPanel &panel)
 
 void JzRE::JzCanvas::RemovePanel(JzPanel &panel)
 {
-    m_panels.erase(std::remove(m_panels.begin(), m_panels.end(), std::ref(panel)), m_panels.end());
+    m_panels.erase(std::remove_if(m_panels.begin(), m_panels.end(), [&panel](std::reference_wrapper<JzRE::JzPanel> &p_item) {
+        return &panel == &p_item.get();
+    }));
 }
 
 void JzRE::JzCanvas::RemoveAllPanels()
