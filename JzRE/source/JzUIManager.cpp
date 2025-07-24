@@ -1,6 +1,6 @@
 #include "JzUIManager.h"
 
-JzRE::JzUIManager::JzUIManager(RawPtr<GLFWwindow> glfwWindow, const String &glslVersion)
+JzRE::JzUIManager::JzUIManager(GLFWwindow* glfwWindow, const String &glslVersion)
 {
     ImGui::CreateContext();
 

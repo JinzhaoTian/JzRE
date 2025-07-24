@@ -2,7 +2,7 @@
 
 JzRE::U64 JzRE::JzPanel::__PANEL_ID_INCREMENT = 0;
 
-JzRE::JzPanel::JzPanel(const String &id)
+JzRE::JzPanel::JzPanel()
 {
     m_panelId = "Panel_" + std::to_string(__PANEL_ID_INCREMENT++);
 }
@@ -15,5 +15,5 @@ const JzRE::String &JzRE::JzPanel::GetPanelID() const
 void JzRE::JzPanel::Draw()
 {
     if (enabled)
-        Draw_Impl();
+        _Draw_Impl();
 }
