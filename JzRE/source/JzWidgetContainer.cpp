@@ -1,9 +1,5 @@
 #include "JzWidgetContainer.h"
 
-JzRE::JzWidgetContainer::~JzWidgetContainer()
-{
-}
-
 void JzRE::JzWidgetContainer::RemoveWidget(JzWidget &p_widget)
 {
 }
@@ -32,7 +28,7 @@ void JzRE::JzWidgetContainer::ReverseDrawOrder(bool reversed)
 {
 }
 
-std::vector<std::pair<JzWidget *, EMemoryMode>> &JzRE::JzWidgetContainer::GetWidgets()
+std::vector<std::pair<JzRE::JzWidget *, JzRE::EMemoryMode>> &JzRE::JzWidgetContainer::GetWidgets()
 {
     return m_widgets;
 }

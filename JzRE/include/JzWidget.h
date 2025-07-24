@@ -12,12 +12,21 @@ public:
     /**
      * @brief Constructor
      */
-    JzWidget() = default;
+    JzWidget();
 
     /**
-     * @brief Destructor
+     * @brief Draw the widget on the panel
      */
-    virtual ~JzWidget() = default;
+    virtual void Draw() override;
+
+protected:
+    virtual void _Draw_Impl() = 0;
+
+protected:
+    String m_widgetID = "?";
+
+private:
+    static U64 __WIDGET_ID_INCREMENT;
 };
 
 } // namespace JzRE
