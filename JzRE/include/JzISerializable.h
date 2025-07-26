@@ -6,7 +6,7 @@ namespace JzRE {
 /**
  * @brief Serializable interface
  */
-class IJzSerializable {
+class JzISerializable {
 public:
     /**
      * @brief Serialize the object

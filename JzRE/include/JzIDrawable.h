@@ -4,7 +4,7 @@ namespace JzRE {
 /**
  * @brief Interface for drawable objects
  */
-class IJzDrawable {
+class JzIDrawable {
 public:
     /**
      * @brief Draw the object
@@ -15,6 +15,6 @@ protected:
     /**
      * @brief Destructor
      */
-    virtual ~IJzDrawable() = default;
+    virtual ~JzIDrawable() = default;
 };
 } // namespace JzRE

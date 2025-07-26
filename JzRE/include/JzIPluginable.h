@@ -5,12 +5,12 @@
 
 namespace JzRE {
 
-class IJzPluginable {
+class JzIPluginable {
 public:
     /**
      * Destructor
      */
-    virtual ~IJzPluginable()
+    virtual ~JzIPluginable()
     {
         RemoveAllPlugins();
     }

@@ -1,13 +1,13 @@
 #pragma once
 
 #include "CommonTypes.h"
-#include "IJzDrawable.h"
+#include "JzIDrawable.h"
 
 namespace JzRE {
 /**
  * @brief A widget
  */
-class JzWidget : public IJzDrawable {
+class JzWidget : public JzIDrawable {
 public:
     /**
      * @brief Constructor

@@ -1,13 +1,13 @@
 #pragma once
 
 #include "CommonTypes.h"
-#include "IJzSerializable.h"
+#include "JzISerializable.h"
 
 namespace JzRE {
 /**
  * @brief Scene
  */
-class JzScene : public IJzSerializable {
+class JzScene : public JzISerializable {
 public:
     /**
      * @brief Construct a new JzScene object

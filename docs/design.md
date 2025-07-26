@@ -7,13 +7,13 @@ classDiagram
     direction TB
 
     %% Interfaces
-    class IJzSerializable {
+    class JzISerializable {
         <<Interface>>
         +Serialize(const String &filePath)
         +Deserialize(const String &filePath)
     }
     
-    class IJzDrawable {
+    class JzIDrawable {
         <<Interface>>
         +Draw()
     }
@@ -100,8 +100,8 @@ classDiagram
     JzPanelsManager ..> JzCanvas
 
     %% Interface Implementations
-    IJzSerializable <|.. JzScene
-    IJzDrawable <|.. JzPanel
+    JzISerializable <|.. JzScene
+    JzIDrawable <|.. JzPanel
     JzWidgetContainer <|-- JzPanel
 ```
 
