@@ -74,9 +74,16 @@ public:
     /**
      * @brief Get the mouse position
      *
-     * @return EJzVector2
+     * @return std::pair<F64, F64>
      */
     std::pair<F64, F64> GetMousePosition() const;
+
+    /**
+     * @brief Get the mouse scroll
+     *
+     * @return std::pair<F64, F64>
+     */
+    std::pair<F64, F64> GetMouseScroll() const;
 
     /**
      * @brief Clear the events
@@ -90,14 +97,13 @@ private:
     void OnMouseButtonReleased(I32 button);
 
 private:
-    JzWindow &m_window;
-
-    ListenerID m_keyPressedListenerID;
-    ListenerID m_keyReleasedListenerID;
-    ListenerID m_mouseButtonPressedListenerID;
-    ListenerID m_mouseButtonReleasedListenerID;
-
+    JzWindow                                               &m_window;
+    ListenerID                                              m_keyPressedListenerID;
+    ListenerID                                              m_keyReleasedListenerID;
+    ListenerID                                              m_mouseButtonPressedListenerID;
+    ListenerID                                              m_mouseButtonReleasedListenerID;
     std::unordered_map<EJzKey, EJzKeyState>                 m_keyStates;
     std::unordered_map<EJzMouseButton, EJzMouseButtonState> m_mouseButtonStates;
+    std::pair<F64, F64>                                     m_mouseScroll;
 };
 } // namespace JzRE

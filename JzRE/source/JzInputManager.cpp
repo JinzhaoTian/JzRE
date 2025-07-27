@@ -68,6 +68,11 @@ std::pair<JzRE::F64, JzRE::F64> JzRE::JzInputManager::GetMousePosition() const
     return mousePosition;
 }
 
+std::pair<JzRE::F64, JzRE::F64> JzRE::JzInputManager::GetMouseScroll() const
+{
+    return m_mouseScroll;
+}
+
 void JzRE::JzInputManager::ClearEvents()
 {
     m_keyStates.clear();

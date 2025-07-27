@@ -36,6 +36,7 @@ public:
 
     JzSceneManager sceneManager;
 
+    JzDeviceSettings deviceSettings;
     JzWindowSettings windowSettings;
 };
 } // namespace JzRE
