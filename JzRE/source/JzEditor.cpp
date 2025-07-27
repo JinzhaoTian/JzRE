@@ -38,7 +38,7 @@ void JzRE::JzEditor::PostUpdate()
 void JzRE::JzEditor::SetUI()
 {
     m_panelsManager.CreatePanel<JzMenuBar>("Menu Bar");
-    // m_panelsManager.CreatePanel<JzAssetBrowser>("Asset Browser");
+    m_panelsManager.CreatePanel<JzAssetBrowser>("Asset Browser", true);
     // m_panelsManager.CreatePanel<JzSceneView>("Scene View");
     // m_panelsManager.CreatePanel<JzAssetView>("Asset View");
 

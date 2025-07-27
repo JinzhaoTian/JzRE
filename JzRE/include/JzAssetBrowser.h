@@ -4,17 +4,17 @@
 #include "JzPanelWindow.h"
 
 namespace JzRE {
-    /**
-     * @brief Asset browser panel
-     */
-class JzAssetBrowser : JzPanelWindow {
+/**
+ * @brief Asset browser panel
+ */
+class JzAssetBrowser : public JzPanelWindow {
 public:
     /**
      * @brief Constructor
      *
      * @param title The title of the asset browser panel
      */
-    JzAssetBrowser(const String &title);
+    JzAssetBrowser(const String &name, Bool is_opened);
 
     /**
      * @brief Fill the asset browser panel
