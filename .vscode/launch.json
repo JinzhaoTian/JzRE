@@ -15,7 +15,7 @@
             "preLaunchTask": "CMake: Build"
         },
         {
-            "name": "JzRE Release",
+            "name": "JzRE Debug (Clean + Build)",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/JzRE",
@@ -24,7 +24,8 @@
             "cwd": "${workspaceFolder}",
             "environment": [],
             "externalConsole": false,
-            "MIMode": "lldb"
+            "MIMode": "lldb",
+            "preLaunchTask": "CMake: Clean & Build"
         }
     ]
 }

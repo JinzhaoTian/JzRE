@@ -70,6 +70,25 @@
             },
             "problemMatcher": [],
             "detail": "Clean build artifacts"
+        },
+        {
+            "label": "CMake: Clean & Build",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "CMake: Clean",
+                "CMake: Build"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "detail": "Clean build artifacts and then build project"
         }
     ]
 }
