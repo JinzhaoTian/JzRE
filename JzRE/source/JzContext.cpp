@@ -1,8 +1,6 @@
 #include "JzContext.h"
 
-JzRE::JzContext::JzContext(const String &projectPath, const String &projectName) :
-    projectPath(projectPath),
-    projectName(projectName),
+JzRE::JzContext::JzContext() :
     sceneManager()
 {
     /* Device */

@@ -21,7 +21,7 @@ public:
      * @param projectPath
      * @param projectName
      */
-    JzContext(const String &projectPath, const String &projectName);
+    JzContext();
 
     /**
      * @brief Destroy the Context object
@@ -29,9 +29,6 @@ public:
     ~JzContext();
 
 public:
-    const String projectPath;
-    const String projectName;
-
     std::unique_ptr<JzDevice>       device;
     std::unique_ptr<JzWindow>       window;
     std::unique_ptr<JzInputManager> inputManager;

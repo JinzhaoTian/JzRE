@@ -1,7 +1,7 @@
 #include "JzRenderEngine.h"
 
 JzRE::JzRenderEngine::JzRenderEngine() :
-    m_context("", ""),
+    m_context(),
     m_editor(m_context) { }
 
 JzRE::JzRenderEngine::~JzRenderEngine() { }
