@@ -18,6 +18,13 @@ classDiagram
         +Draw()
     }
 
+    class JzIPluginable{
+        <<Interface>>
+        +AddPlugin()
+        +GetPlugin()
+        +ExecutePlugins()
+    }
+
     %% Core Engine Classes
     class JzRenderEngine {
     }
@@ -53,6 +60,18 @@ classDiagram
     
     class JzPanel {
     }
+
+    class JzPanelMenuBar {
+    }
+
+    class JzMenuBar {
+    }
+
+    class JzPanelWindow { }
+
+    class JzPanelTransformable { }
+
+    class JzAssetBrowser { }
     
     class JzWidget {
     }
@@ -102,7 +121,13 @@ classDiagram
     %% Interface Implementations
     JzISerializable <|.. JzScene
     JzIDrawable <|.. JzPanel
+    JzIPluginable <|.. JzPanel
     JzWidgetContainer <|-- JzPanel
+    JzPanel <|-- JzPanelMenuBar
+    JzPanelMenuBar <|-- JzMenuBar
+    JzPanel <|-- JzPanelTransformable
+    JzPanelTransformable <|-- JzPanelWindow
+    JzPanelWindow <|-- JzAssetBrowser
 ```
 
 

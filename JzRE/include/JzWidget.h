@@ -2,12 +2,13 @@
 
 #include "CommonTypes.h"
 #include "JzIDrawable.h"
+#include "JzIPluginable.h"
 
 namespace JzRE {
 /**
- * @brief A widget
+ * @brief Base class for all widgets
  */
-class JzWidget : public JzIDrawable {
+class JzWidget : public JzIDrawable, public JzIPluginable {
 public:
     /**
      * @brief Constructor
@@ -20,6 +21,9 @@ public:
     virtual void Draw() override;
 
 protected:
+    /**
+     * @brief Implementation of the Draw method
+     */
     virtual void _Draw_Impl() = 0;
 
 protected:

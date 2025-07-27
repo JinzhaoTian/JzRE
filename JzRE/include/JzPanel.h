@@ -2,17 +2,19 @@
 
 #include "CommonTypes.h"
 #include "JzIDrawable.h"
+#include "JzIPluginable.h"
 #include "JzWidgetContainer.h"
 
 namespace JzRE {
-class JzPanel : public JzIDrawable, public JzWidgetContainer {
+/**
+ * @brief Base class for all panels
+ */
+class JzPanel : public JzIDrawable, public JzIPluginable, public JzWidgetContainer {
 public:
     /**
      * @brief Constructor
-     *
-     * @param panelId The ID of the panel
      */
-    JzPanel(const String &panelId);
+    JzPanel();
 
     /**
      * @brief Draw the panel
@@ -31,10 +33,11 @@ public:
 
 protected:
     /**
-     * @brief Draw the panel
+     * @brief Implementation of the Draw method
      */
     virtual void _Draw_Impl() = 0;
 
+protected:
     String m_panelId;
 
 private:

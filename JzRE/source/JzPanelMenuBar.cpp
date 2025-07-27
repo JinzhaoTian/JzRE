@@ -1,11 +1,9 @@
 #include "JzPanelMenuBar.h"
 
-JzRE::JzPanelMenuBar::JzPanelMenuBar(const String &panelId) :
-    JzPanel(panelId)
-{
-}
-
 void JzRE::JzPanelMenuBar::_Draw_Impl()
 {
-    // Menu bar drawing implementation
+    if (!m_widgets.empty() && ImGui::BeginMainMenuBar()) {
+        DrawWidgets();
+        ImGui::EndMainMenuBar();
+    }
 }

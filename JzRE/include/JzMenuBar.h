@@ -6,16 +6,14 @@
 
 namespace JzRE {
 /**
- * @brief A menu bar
+ * @brief Menu Bar
  */
 class JzMenuBar : public JzPanelMenuBar {
 public:
     /**
      * @brief Constructor
-     *
-     * @param panelId The ID of the menu bar
      */
-    JzMenuBar(const String &panelId);
+    JzMenuBar();
 
     /**
      * @brief Handle the shortcuts
@@ -31,5 +29,7 @@ public:
      * @param panel
      */
     void RegisterPanel(const String &name, JzPanelWindow &panel);
+
+private:
 };
 } // namespace JzRE

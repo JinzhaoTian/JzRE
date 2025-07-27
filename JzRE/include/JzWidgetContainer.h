@@ -6,7 +6,7 @@
 
 namespace JzRE {
 /**
- * @brief A container for widgets
+ * @brief Widgets Container
  */
 class JzWidgetContainer {
 public:
@@ -21,46 +21,56 @@ public:
     virtual ~JzWidgetContainer() = default;
 
     /**
-     * Remove a widget from the container
-     * @param p_widget
+     * @brief Remove a widget from the container
+     *
+     * @param p_widget The widget to remove
      */
     void RemoveWidget(JzWidget &p_widget);
 
     /**
-     * Remove all widgets from the container
+     * @brief Remove all widgets from the container
      */
     void RemoveAllWidgets();
 
     /**
-     * Consider a widget
-     * @param p_manageMemory
+     * @brief Consider a widget
+     *
+     * @param p_widget The widget to consider
+     * @param p_manageMemory The memory management mode
      */
     void ConsiderWidget(JzWidget &p_widget, bool p_manageMemory = true);
 
     /**
-     * Unconsider a widget
-     * @param p_widget
+     * @brief Unconsider a widget
+     *
+     * @param p_widget The widget to unconsider
      */
     void UnconsiderWidget(JzWidget &p_widget);
 
     /**
-     * Collect garbages by removing widgets marked as "Destroyed"
+     * @brief Collect garbages by removing widgets marked as "Destroyed"
      */
     void CollectGarbages();
 
     /**
-     * Draw every widgets
+     * @brief Draw every widgets
      */
     void DrawWidgets();
 
     /**
-     * Allow the user to reverse the draw order of this widget container
+     * @brief Allow the user to reverse the draw order of this widget container
+     *
+     * @param reversed The reversed state
      */
     void ReverseDrawOrder(bool reversed = true);
 
     /**
-     * Create a widget
-     * @param p_args
+     * @brief Create a widget
+     *
+     * @tparam T The type of the widget
+     * @tparam Args The types of the arguments
+     * @param p_args The arguments
+     * @return The widget
      */
     template <typename T, typename... Args>
     T &CreateWidget(Args &&...p_args)
@@ -72,11 +82,13 @@ public:
     }
 
     /**
-     * Returns the widgets and their memory management mode
+     * @brief Returns the widgets and their memory management mode
+     *
+     * @return The widgets and their memory management mode
      */
     std::vector<std::pair<JzWidget *, EMemoryMode>> &GetWidgets();
 
-private:
+protected:
     std::vector<std::pair<JzWidget *, EMemoryMode>> m_widgets;
     Bool                                            m_reverseDrawOrder = false;
 };

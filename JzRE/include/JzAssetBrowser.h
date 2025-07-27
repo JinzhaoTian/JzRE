@@ -1,11 +1,34 @@
 #pragma once
 
 #include "CommonTypes.h"
+#include "JzPanelWindow.h"
 
 namespace JzRE {
-class JzAssetBrowser {
+    /**
+     * @brief Asset browser panel
+     */
+class JzAssetBrowser : JzPanelWindow {
 public:
-    JzAssetBrowser();
-    ~JzAssetBrowser();
+    /**
+     * @brief Constructor
+     *
+     * @param title The title of the asset browser panel
+     */
+    JzAssetBrowser(const String &title);
+
+    /**
+     * @brief Fill the asset browser panel
+     */
+    void Fill();
+
+    /**
+     * @brief Clear the asset browser panel
+     */
+    void Clear();
+
+    /**
+     * @brief Refresh the asset browser panel
+     */
+    void Refresh();
 };
 } // namespace JzRE

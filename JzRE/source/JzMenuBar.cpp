@@ -1,7 +1,6 @@
 #include "JzMenuBar.h"
 
-JzRE::JzMenuBar::JzMenuBar(const String &panelId) :
-    JzPanelMenuBar(panelId) { }
+JzRE::JzMenuBar::JzMenuBar() { }
 
 void JzRE::JzMenuBar::HandleShortcuts(F32 deltaTime) { }
 

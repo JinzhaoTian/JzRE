@@ -4,11 +4,13 @@
 #include "JzPlugin.h"
 
 namespace JzRE {
-
+/**
+ * @brief Interface for plugins
+ */
 class JzIPluginable {
 public:
     /**
-     * Destructor
+     * @brief Destructor
      */
     virtual ~JzIPluginable()
     {
@@ -16,8 +18,12 @@ public:
     }
 
     /**
-     * Add a plugin
-     * @param p_args
+     * @brief Add a plugin
+     *
+     * @tparam T The type of the plugin
+     * @tparam Args The types of the arguments
+     * @param p_args The arguments
+     * @return The plugin
      */
     template <typename T, typename... Args>
     T &AddPlugin(Args &&...p_args)
@@ -30,7 +36,10 @@ public:
     }
 
     /**
-     * Returns the plugin of the given type, or nullptr if not found
+     * @brief Returns the plugin of the given type, or nullptr if not found
+     *
+     * @tparam T The type of the plugin
+     * @return The plugin
      */
     template <typename T>
     T *GetPlugin()
@@ -47,16 +56,18 @@ public:
     }
 
     /**
-     * Execute every plugins
+     * @brief Execute every plugins
+     *
+     * @param context The execution context
      */
-    void ExecutePlugins()
+    void ExecutePlugins(EPluginExecutionContext context)
     {
         for (auto &plugin : m_plugins)
-            plugin->Execute();
+            plugin->Execute(context);
     }
 
     /**
-     * Remove every plugins
+     * @brief Remove every plugins
      */
     void RemoveAllPlugins()
     {
@@ -67,7 +78,7 @@ public:
     }
 
 private:
-    List<RawPtr<JzPlugin>> m_plugins;
+    std::vector<JzPlugin *> m_plugins;
 };
 
 } // namespace JzRE

@@ -27,9 +27,10 @@ public:
     /**
      * @brief Create a panel
      *
-     * @tparam T
-     * @param id
-     * @param args
+     * @tparam T The type of the panel
+     * @tparam Args The types of the arguments
+     * @param id The ID of the panel
+     * @param args The arguments
      */
     template <typename T, typename... Args>
     void CreatePanel(const String &id, Args &&...args)
@@ -39,7 +40,7 @@ public:
             T &instance = *static_cast<T *>(m_panels.at(id).get());
             GetPanelAs<JzMenuBar>("Menu Bar").RegisterPanel(instance.name, instance);
         } else {
-            m_panels.emplace(id, std::make_unique<T>(id, std::forward<Args>(args)...));
+            m_panels.emplace(id, std::make_unique<T>(std::forward<Args>(args)...));
         }
 
         m_canvas.AddPanel(*m_panels.at(id));
@@ -48,9 +49,9 @@ public:
     /**
      * @brief Get a panel as a specific type
      *
-     * @tparam T
-     * @param p_id
-     * @return T&
+     * @tparam T The type of the panel
+     * @param id The ID of the panel
+     * @return The panel
      */
     template <typename T>
     T &GetPanelAs(const String &id)

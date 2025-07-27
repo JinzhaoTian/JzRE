@@ -2,9 +2,9 @@
 
 JzRE::U64 JzRE::JzPanel::__PANEL_ID_INCREMENT = 0;
 
-JzRE::JzPanel::JzPanel(const String &panelId) :
-    m_panelId(panelId)
+JzRE::JzPanel::JzPanel()
 {
+    m_panelId = "##" + std::to_string(__PANEL_ID_INCREMENT++);
 }
 
 const JzRE::String &JzRE::JzPanel::GetPanelID() const
