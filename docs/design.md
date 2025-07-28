@@ -199,8 +199,8 @@ sequenceDiagram
     Panel->>Panel: Add Menu Bar
     Panel->>Panel: Add Views
     Panel->>Panel: Add Panel Windows
-    deactivate Panel
     Panel-->>PanelMgr: Success
+    deactivate Panel
     PanelMgr-->>Editor: Success
     deactivate PanelMgr
 
