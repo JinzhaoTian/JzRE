@@ -39,8 +39,8 @@ void JzRE::JzEditor::SetUI()
 {
     m_panelsManager.CreatePanel<JzMenuBar>("Menu Bar");
     m_panelsManager.CreatePanel<JzAssetBrowser>("Asset Browser", true);
-    // m_panelsManager.CreatePanel<JzSceneView>("Scene View");
-    // m_panelsManager.CreatePanel<JzAssetView>("Asset View");
+    m_panelsManager.CreatePanel<JzSceneView>("Scene View", true);
+    m_panelsManager.CreatePanel<JzAssetView>("Asset View", true);
 
     m_canvas.SetDockspace(true);
     m_context.uiManager->SetCanvas(m_canvas);

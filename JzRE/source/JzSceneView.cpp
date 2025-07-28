@@ -1,17 +1,10 @@
 #include "JzSceneView.h"
 
-JzRE::JzSceneView::JzSceneView()
+JzRE::JzSceneView::JzSceneView(const JzRE::String &name, JzRE::Bool is_opened) :
+    JzRE::JzViewControllable(name, is_opened)
 {
 }
 
-JzRE::JzSceneView::~JzSceneView()
-{
-}
-
-void JzRE::JzSceneView::Update(F32 deltaTime)
-{
-}
-
-void JzRE::JzSceneView::Render()
+void JzRE::JzSceneView::Update(JzRE::F32 deltaTime)
 {
 }

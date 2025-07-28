@@ -12,13 +12,13 @@ classDiagram
         +Serialize(const String &filePath)
         +Deserialize(const String &filePath)
     }
-    
+
     class JzIDrawable {
         <<Interface>>
         +Draw()
     }
 
-    class JzIPluginable{
+    class JzIPluginable {
         <<Interface>>
         +AddPlugin()
         +GetPlugin()
@@ -41,6 +41,11 @@ classDiagram
     class JzInputManager {
     }
 
+    JzRenderEngine *-- JzContext
+    JzContext *-- JzDevice
+    JzContext *-- JzWindow
+    JzContext *-- JzInputManager
+
     %% Editor Related Classes
     class JzEditor {
     }
@@ -50,6 +55,11 @@ classDiagram
     
     class JzPanelsManager {
     }
+
+    JzRenderEngine *-- JzEditor
+    JzEditor *-- JzCanvas
+    JzEditor *-- JzPanelsManager
+    JzEditor ..> JzContext
 
     %% UI Related Classes
     class JzUIManager {
@@ -61,75 +71,68 @@ classDiagram
     class JzPanel {
     }
 
+    class JzWidget {
+    }
+
+    JzContext *-- JzUIManager
+    JzUIManager ..> JzCanvas
+    JzWidgetContainer *.. JzWidget
+
+    %% UI PANEL Related Classes
     class JzPanelMenuBar {
     }
 
     class JzMenuBar {
     }
 
-    class JzPanelWindow { }
-
     class JzPanelTransformable { }
 
+    class JzPanelWindow { }
+
     class JzAssetBrowser { }
-    
-    class JzWidget {
-    }
 
-    %% Scene Related Classes
-    class JzSceneManager {
-    }
-    
-    class JzScene {
-    }
+    class JzView { }
 
-    %% Settings Classes
-    class JzWindowSettings {
-    }
-    
-    class JzDeviceSettings {
-    }
+    class JzViewControllable { }
 
-    %% Composition Relationships
-    JzRenderEngine *-- JzContext
-    JzRenderEngine *-- JzEditor
+    class JzAssetView { }
 
-    JzContext *-- JzDevice
-    JzContext *-- JzWindow
-    JzContext *-- JzWindowSettings
-    JzContext *-- JzInputManager
-    JzContext *-- JzUIManager
-    JzContext *-- JzSceneManager
-
-    JzEditor *-- JzCanvas
-    JzEditor *-- JzPanelsManager
-
-    JzSceneManager *-- JzScene
+    class JzSceneView { }
 
     JzPanelsManager *-- JzPanel
-    JzWidgetContainer *.. JzWidget
-
-    %% Dependency Relationships
-    JzEditor ..> JzContext
-    JzDevice ..> JzDeviceSettings
-    JzWindow ..> JzWindowSettings
-    JzWindow ..> JzDevice
-    JzInputManager ..> JzWindow
-    JzUIManager ..> JzCanvas
-    JzPanelsManager ..> JzCanvas
-
-    %% Interface Implementations
-    JzISerializable <|.. JzScene
+    JzWidgetContainer <|-- JzPanel
     JzIDrawable <|.. JzPanel
     JzIPluginable <|.. JzPanel
-    JzWidgetContainer <|-- JzPanel
+
     JzPanel <|-- JzPanelMenuBar
     JzPanelMenuBar <|-- JzMenuBar
     JzPanel <|-- JzPanelTransformable
     JzPanelTransformable <|-- JzPanelWindow
+    JzPanelWindow <|-- JzView
+    JzView <|-- JzViewControllable
+    JzViewControllable <|-- JzAssetView
+    JzViewControllable <|-- JzSceneView
     JzPanelWindow <|-- JzAssetBrowser
-```
 
+    %% SCENE SYSTEM
+    class JzSceneManager { }
+    class JzScene { }
+
+    JzContext *-- JzSceneManager
+    JzSceneManager *-- JzScene
+    JzISerializable <|.. JzScene
+
+    %% SETTINGS
+    class JzWindowSettings { }
+    class JzDeviceSettings { }
+
+    JzContext *-- JzWindowSettings
+    JzDevice ..> JzDeviceSettings
+    JzWindow ..> JzWindowSettings
+    JzWindow ..> JzDevice
+    JzInputManager ..> JzWindow
+    JzPanelsManager ..> JzCanvas
+```
 
 ## Sequence Diagram
 
@@ -147,7 +150,7 @@ sequenceDiagram
     %% Initialization
     Editor->>Engine: Initialize
     Engine->>Context: Create Context
-    
+
     %% Device Initialization
     Context->>Device: Initialize Device
     Device-->>Context: Device Handle
@@ -163,7 +166,7 @@ sequenceDiagram
 
     %% UI Initialization
     Editor->>Panel: Create Panel
-    
+
     %% 主循环
     loop Render Loop
         Editor->>Window: Handle Input

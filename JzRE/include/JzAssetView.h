@@ -4,10 +4,18 @@
 #include "JzViewControllable.h"
 
 namespace JzRE {
+/**
+ * @brief Asset View
+ */
 class JzAssetView : public JzViewControllable {
 public:
-    JzAssetView();
-    ~JzAssetView();
+    /**
+     * @brief Constructor
+     *
+     * @param name
+     * @param is_opened
+     */
+    JzAssetView(const String &name, Bool is_opened);
 
     /**
      * @brief Update the asset view
