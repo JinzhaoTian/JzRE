@@ -18,7 +18,7 @@ void JzRE::JzWidget::Draw()
 
         if (!tooltip.empty()) {
             if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
-                ImGui::SetTooltip(tooltip.c_str());
+                ImGui::SetTooltip("%s", tooltip.c_str());
             }
         }
 
