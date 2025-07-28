@@ -18,7 +18,7 @@ public:
     /**
      * @brief Destructor
      */
-    virtual ~JzWidgetContainer() = default;
+    virtual ~JzWidgetContainer();
 
     /**
      * @brief Remove a widget from the container
@@ -62,7 +62,7 @@ public:
      *
      * @param reversed The reversed state
      */
-    void ReverseDrawOrder(bool reversed = true);
+    void ReverseDrawOrder(Bool reversed = true);
 
     /**
      * @brief Create a widget

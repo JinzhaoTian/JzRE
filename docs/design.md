@@ -145,42 +145,55 @@ sequenceDiagram
     participant PanelMgr as JzPanelsManager
     participant Panel as JzPanel
 
-    %% Initialization
+    %% Initialization Context
     Engine->>Context: Create Context
+    activate Context
 
-    %% Device Initialization
     Context->>Device: Initialize Device
+    activate Device
     Device-->>Context: Device Handle
+    deactivate Device
+
     Context->>Window: Create Context
+    activate Window
     Window-->>Context: Window Handle
+    deactivate Window
 
     Context->>InputMgr: Create Input Manager
+    activate InputMgr
     InputMgr-->>Context: Input Manager Handle
+    deactivate InputMgr
 
-    %% UI
     Context->>UIMgr: Create JzUIManager
+    activate UIMgr
     UIMgr-->>Context: UI Handle
+    deactivate UIMgr
 
-    %% Scene Initialization
     Context->>SceneMgr: Create JzSceneManager
+    activate SceneMgr
     SceneMgr-->>Context: Scene Manager Handle
+    deactivate SceneMgr
 
     Context-->>Engine: Success
+    deactivate Context
 
     %% UI Initialization
     Engine->>Editor: Create Editor
+    activate Editor
 
-    Editor->>SceneMgr: Load Scene
+    Editor->>SceneMgr: Use JzSceneManager
+    activate SceneMgr
     SceneMgr->>Scene: Load Default Scene
     activate Scene
-    deactivate Scene
     Scene-->>SceneMgr: Scene Reference
+    deactivate Scene
     SceneMgr-->>Editor: Success
+    deactivate  SceneMgr
 
-    Editor->>PanelMgr: Create Panel Manager
-    PanelMgr-->>Editor: Panel Manager Handle
-
-    Editor->>PanelMgr: Set UI
+    Editor->>PanelMgr: Create JzPanelsManager
+    activate PanelMgr
+    PanelMgr-->>Editor: JzPanelsManager Handle
+    Editor->>PanelMgr: Use JzUIManager
     PanelMgr->>Panel: Load Panels
     activate Panel
     Panel->>Panel: Add Menu Bar
@@ -189,32 +202,64 @@ sequenceDiagram
     deactivate Panel
     Panel-->>PanelMgr: Success
     PanelMgr-->>Editor: Success
+    deactivate PanelMgr
 
     Editor-->>Engine: Success
+    deactivate Editor
 
     %% Render Loop
     loop Render Loop
         Engine->>Editor: PreUpdate
-        Editor->>Device: Poll Events
-        Device-->>Editor: Events
+        activate Editor
+        Editor->>Context: Use JzContext
+        activate Context
+        Context->>Device: Poll Events
+        activate Device
+        Device-->>Context: Events
+        deactivate Device
+        Context-->>Editor: Success
+        deactivate Context
         Editor-->>Engine: Success
 
         Engine->>Editor: Update
-        Editor->>InputMgr: Process Input
-        InputMgr-->>Editor: Success
-        Editor->>PanelMgr: Update Panel
+        Editor->>Context: Use JzContext
+        activate Context
+        Context->>InputMgr: Process Input
+        activate InputMgr
+        InputMgr-->>Context: Success
+        deactivate InputMgr
+        Context-->>Editor: Success
+        deactivate Context
+
+        Editor->>PanelMgr: Use JzPanelsManager
+        activate PanelMgr
         PanelMgr-->>Editor: Success
-        Editor->>UIMgr: Update UI
-        UIMgr-->>Editor: Success
+        deactivate PanelMgr
+        Editor->>Context: Use JzContext
+        activate Context
+        Context->>UIMgr: Update UI
+        activate UIMgr
+        UIMgr-->>Context: Success
+        deactivate UIMgr
+        Context-->>Editor: Success
+        deactivate Context
         Editor-->>Engine: Success
 
         Engine->>Editor: PostUpdate
-        Editor->>Context: Process Context
+        Editor->>Context: Use JzContext
+        activate Context
         Context->>Window: Swap Buffers
+        activate Window
         Window-->>Context: Success
+        deactivate Window
         Context->InputMgr: Clear Events
+        activate InputMgr
         InputMgr-->>Context: Success
+        deactivate InputMgr
         Context-->>Editor: Success
+        deactivate Context
         Editor-->>Engine: Success
+
+        deactivate Editor
     end
 ```

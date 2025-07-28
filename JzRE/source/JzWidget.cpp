@@ -9,5 +9,58 @@ JzRE::JzWidget::JzWidget()
 
 void JzRE::JzWidget::Draw()
 {
-    // TODO
+    if (enabled) {
+        if (disabled) {
+            ImGui::BeginDisabled();
+        }
+
+        _Draw_Impl();
+
+        if (!tooltip.empty()) {
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
+                ImGui::SetTooltip(tooltip.c_str());
+            }
+        }
+
+        if (disabled) {
+            ImGui::EndDisabled();
+        }
+
+        if (m_autoExecutePlugins)
+            ExecutePlugins(EPluginExecutionContext::WIDGET);
+
+        if (!lineBreak) {
+            ImGui::SameLine();
+        }
+    }
+}
+
+void JzRE::JzWidget::LinkTo(const JzRE::JzWidget &widget)
+{
+    m_widgetID = widget.m_widgetID;
+}
+
+void JzRE::JzWidget::Destroy()
+{
+    m_destroyed = true;
+}
+
+JzRE::Bool JzRE::JzWidget::IsDestroyed() const
+{
+    return m_destroyed;
+}
+
+void JzRE::JzWidget::SetParent(JzRE::JzWidgetContainer *parent)
+{
+    m_parent = parent;
+}
+
+JzRE::Bool JzRE::JzWidget::JzWidget::HasParent() const
+{
+    return m_parent;
+}
+
+JzRE::JzWidgetContainer *JzRE::JzWidget::JzWidget::GetParent()
+{
+    return m_parent;
 }

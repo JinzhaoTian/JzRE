@@ -1,6 +1,8 @@
 #pragma once
 
 #include "CommonTypes.h"
+#include "JzMenuItem.h"
+#include "JzMenuList.h"
 #include "JzPanelMenuBar.h"
 #include "JzPanelWindow.h"
 
@@ -30,6 +32,23 @@ public:
      */
     void RegisterPanel(const String &name, JzPanelWindow &panel);
 
+    /**
+     * @brief Initialize the settings menu
+     */
+    void InitializeSettingsMenu();
+
 private:
+    void CreateFileMenu();
+    void CreateBuildMenu();
+    void CreateWindowMenu();
+    void CreateActorsMenu();
+    void CreateResourcesMenu();
+    void CreateToolsMenu();
+    void CreateSettingsMenu();
+    void CreateLayoutMenu();
+    void CreateHelpMenu();
+
+    void UpdateToggleableItems();
+    void OpenEveryWindows(Bool state);
 };
 } // namespace JzRE

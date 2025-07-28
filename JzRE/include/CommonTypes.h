@@ -37,8 +37,10 @@
 #include <map>
 #include <memory>
 #include <queue>
+#include <ranges>
 #include <regex>
 #include <set>
+#include <span>
 #include <sstream>
 #include <string>
 #include <type_traits>
