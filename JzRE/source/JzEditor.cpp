@@ -41,6 +41,9 @@ void JzRE::JzEditor::SetUI()
     m_panelsManager.CreatePanel<JzAssetBrowser>("Asset Browser", true);
     m_panelsManager.CreatePanel<JzSceneView>("Scene View", true);
     m_panelsManager.CreatePanel<JzAssetView>("Asset View", true);
+    m_panelsManager.CreatePanel<JzGameView>("Game View", true);
+    m_panelsManager.CreatePanel<JzConsole>("Console", true);
+    m_panelsManager.CreatePanel<JzMaterialEditor>("Material Editor", true);
 
     m_canvas.SetDockspace(true);
     m_context.uiManager->SetCanvas(m_canvas);
@@ -58,20 +61,17 @@ void JzRE::JzEditor::UpdateCurrentEditorMode(JzRE::F32 deltaTime)
 
 void JzRE::JzEditor::RenderViews(JzRE::F32 deltaTime)
 {
-    // auto &assetView = m_panelsManager.GetPanelAs<JzAssetView>("Asset View");
-    // auto &sceneView = m_panelsManager.GetPanelAs<JzSceneView>("Scene View");
+    auto &assetView = m_panelsManager.GetPanelAs<JzAssetView>("Asset View");
+    auto &sceneView = m_panelsManager.GetPanelAs<JzSceneView>("Scene View");
 
-    // assetView.Update(deltaTime);
-    // sceneView.Update(deltaTime);
-
-    // assetView.Render();
-    // sceneView.Render();
+    assetView.Update(deltaTime);
+    sceneView.Update(deltaTime);
 }
 
 void JzRE::JzEditor::UpdateEditorPanels(JzRE::F32 deltaTime)
 {
-    auto &menuBar = m_panelsManager.GetPanelAs<JzMenuBar>("Menu Bar");
-    // auto &sceneView = m_panelsManager.GetPanelAs<JzSceneView>("Scene View");
+    auto &menuBar   = m_panelsManager.GetPanelAs<JzMenuBar>("Menu Bar");
+    auto &sceneView = m_panelsManager.GetPanelAs<JzSceneView>("Scene View");
 
     menuBar.HandleShortcuts(deltaTime);
 }
