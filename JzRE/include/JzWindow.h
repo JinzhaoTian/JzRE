@@ -34,9 +34,23 @@ public:
     GLFWwindow *GetGLFWWindow() const;
 
     /**
+     * @brief Set the title of the window
+     *
+     * @param title
+     */
+    void SetTitle(const String &title);
+
+    /**
      * @brief Swap the buffers
      */
     void SwapBuffers() const;
+
+    /**
+     * @brief Set the should close flag
+     *
+     * @param value
+     */
+    void SetShouldClose(Bool value) const;
 
     /**
      * @brief Check if the window should close

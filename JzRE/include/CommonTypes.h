@@ -25,6 +25,7 @@
  * sys
  */
 #include <algorithm>
+#include <any>
 #include <array>
 #include <cassert>
 #include <chrono>
@@ -44,6 +45,7 @@
 #include <sstream>
 #include <string>
 #include <type_traits>
+#include <typeinfo>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>

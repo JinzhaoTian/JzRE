@@ -45,9 +45,20 @@ GLFWwindow *JzRE::JzWindow::GetGLFWWindow() const
     return m_glfwWindow;
 }
 
+void JzRE::JzWindow::SetTitle(const JzRE::String &title)
+{
+    m_title = title;
+    glfwSetWindowTitle(m_glfwWindow, title.c_str());
+}
+
 void JzRE::JzWindow::SwapBuffers() const
 {
     glfwSwapBuffers(m_glfwWindow);
+}
+
+void JzRE::JzWindow::SetShouldClose(JzRE::Bool value) const
+{
+    glfwSetWindowShouldClose(m_glfwWindow, value);
 }
 
 JzRE::Bool JzRE::JzWindow::ShouldClose() const

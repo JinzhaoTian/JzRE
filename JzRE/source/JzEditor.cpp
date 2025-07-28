@@ -2,7 +2,8 @@
 
 JzRE::JzEditor::JzEditor(JzContext &context) :
     m_context(context),
-    m_panelsManager(m_canvas)
+    m_panelsManager(m_canvas),
+    m_editorActions(m_context, m_panelsManager)
 {
     SetUI();
 
@@ -44,6 +45,9 @@ void JzRE::JzEditor::SetUI()
     m_panelsManager.CreatePanel<JzGameView>("Game View", true);
     m_panelsManager.CreatePanel<JzConsole>("Console", true);
     m_panelsManager.CreatePanel<JzMaterialEditor>("Material Editor", true);
+
+    // Initialize menu bar after service registration
+    m_panelsManager.GetPanelAs<JzMenuBar>("Menu Bar").InitializeSettingsMenu();
 
     m_canvas.SetDockspace(true);
     m_context.uiManager->SetCanvas(m_canvas);

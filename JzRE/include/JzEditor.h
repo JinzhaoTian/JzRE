@@ -5,6 +5,7 @@
 #include "JzCanvas.h"
 #include "JzConsole.h"
 #include "JzContext.h"
+#include "JzEditorActions.h"
 #include "JzGameView.h"
 #include "JzMaterialEditor.h"
 #include "JzMenuBar.h"
@@ -83,5 +84,6 @@ private:
     JzContext      &m_context;
     JzCanvas        m_canvas;
     JzPanelsManager m_panelsManager;
+    JzEditorActions m_editorActions;
 };
 } // namespace JzRE

@@ -9,10 +9,18 @@ AccessModifierOffset: -4
 AlignAfterOpenBracket: Align
 
 # 连续赋值时，对齐所有等号
-AlignConsecutiveAssignments: true
+AlignConsecutiveAssignments:
+  Enabled: true
+  AcrossEmptyLines: false
+  AcrossComments: false
+  AlignCompound: true     # 对齐复合赋值操作符如 +=, -=, *=, /= 等
+  PadOperators: true      # 填充操作符使其对齐
 
 # 连续声明时，对齐所有声明的变量名
-AlignConsecutiveDeclarations: true
+AlignConsecutiveDeclarations:
+  Enabled: true
+  AcrossEmptyLines: false
+  AcrossComments: false
 
 # 右对齐逃脱换行(使用反斜杠换行)的反斜杠
 AlignEscapedNewlines: Right
@@ -63,12 +71,6 @@ BraceWrapping:
   AfterClass: false
   # 控制语句后面
   AfterControlStatement: false
-  # 具体控制每种语句
-  AfterIfStatement: false      # if 语句后不换行
-  AfterWhileStatement: false   # while 语句后不换行
-  AfterForStatement: false     # for 语句后不换行
-  AfterDoStatement: false      # do 语句后不换行
-  AfterSwitchStatement: true   # switch 语句后换行
   # enum定义后面
   AfterEnum: false
   # 函数定义后面

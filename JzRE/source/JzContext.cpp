@@ -19,6 +19,11 @@ JzRE::JzContext::JzContext() :
     /* UI Manager */
     uiManager = std::make_unique<JzRE::JzUIManager>(window->GetGLFWWindow());
     uiManager->SetDocking(true);
+
+    /* Service Providing */
+    JzServiceContainer::Provide<JzWindow>(*window);
+    JzServiceContainer::Provide<JzInputManager>(*inputManager);
+    JzServiceContainer::Provide<JzSceneManager>(sceneManager);
 }
 
 JzRE::JzContext::~JzContext() { }

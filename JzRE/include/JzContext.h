@@ -5,6 +5,7 @@
 #include "JzDeviceSettings.h"
 #include "JzInputManager.h"
 #include "JzSceneManager.h"
+#include "JzServiceContainer.h"
 #include "JzUIManager.h"
 #include "JzWindow.h"
 #include "JzWindowSettings.h"

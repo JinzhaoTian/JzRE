@@ -5,6 +5,8 @@
 #include "JzMenuList.h"
 #include "JzPanelMenuBar.h"
 #include "JzPanelWindow.h"
+#include "JzSeparator.h"
+#include "JzText.h"
 
 namespace JzRE {
 /**
