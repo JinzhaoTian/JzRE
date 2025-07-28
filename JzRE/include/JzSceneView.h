@@ -1,6 +1,9 @@
 #pragma once
 
 #include "CommonTypes.h"
+#include "JzEGizmoOperation.h"
+#include "JzEditorActions.h"
+#include "JzSceneManager.h"
 #include "JzViewControllable.h"
 
 namespace JzRE {
@@ -23,5 +26,19 @@ public:
      * @param deltaTime
      */
     virtual void Update(F32 deltaTime) override;
+
+    JzScene *GetScene();
+
+    void SetGizmoOperation(JzEGizmoOperation operation);
+
+    JzEGizmoOperation GetGizmoOperation() const;
+
+private:
+    virtual void DrawFrame() override;
+    void         HandleActorPicking();
+
+private:
+    JzSceneManager   &m_sceneManager;
+    JzEGizmoOperation m_currentOperation = JzEGizmoOperation::TRANSLATE;
 };
 } // namespace JzRE

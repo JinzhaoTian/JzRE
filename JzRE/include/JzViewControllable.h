@@ -1,6 +1,8 @@
 #pragma once
 
 #include "CommonTypes.h"
+#include "JzCamera.h"
+#include "JzCameraController.h"
 #include "JzView.h"
 
 namespace JzRE {
@@ -22,6 +24,10 @@ public:
      *
      * @param deltaTime
      */
-    virtual void Update(F32 deltaTime) = 0;
+    virtual void Update(F32 deltaTime) override;
+
+protected:
+    JzCamera           m_camera;
+    JzCameraController m_cameraController;
 };
 } // namespace JzRE

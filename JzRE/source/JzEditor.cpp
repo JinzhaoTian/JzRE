@@ -39,12 +39,12 @@ void JzRE::JzEditor::PostUpdate()
 void JzRE::JzEditor::SetUI()
 {
     m_panelsManager.CreatePanel<JzMenuBar>("Menu Bar");
-    m_panelsManager.CreatePanel<JzAssetBrowser>("Asset Browser", true);
+    // m_panelsManager.CreatePanel<JzAssetBrowser>("Asset Browser", true);
     m_panelsManager.CreatePanel<JzSceneView>("Scene View", true);
     m_panelsManager.CreatePanel<JzAssetView>("Asset View", true);
     m_panelsManager.CreatePanel<JzGameView>("Game View", true);
-    m_panelsManager.CreatePanel<JzConsole>("Console", true);
-    m_panelsManager.CreatePanel<JzMaterialEditor>("Material Editor", true);
+    // m_panelsManager.CreatePanel<JzConsole>("Console", true);
+    // m_panelsManager.CreatePanel<JzMaterialEditor>("Material Editor", true);
 
     // Initialize menu bar after service registration
     m_panelsManager.GetPanelAs<JzMenuBar>("Menu Bar").InitializeSettingsMenu();

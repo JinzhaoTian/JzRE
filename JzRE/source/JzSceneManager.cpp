@@ -29,7 +29,7 @@ JzRE::Bool JzRE::JzSceneManager::IsSceneLoaded() const
     return m_currentScene != nullptr;
 }
 
-const JzRE::JzScene &JzRE::JzSceneManager::GetCurrentScene() const
+JzRE::JzScene *JzRE::JzSceneManager::GetCurrentScene() const
 {
-    return *m_currentScene;
+    return m_currentScene.get();
 }

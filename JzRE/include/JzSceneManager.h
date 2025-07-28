@@ -56,7 +56,7 @@ public:
      *
      * @return const JzScene&
      */
-    const JzScene &GetCurrentScene() const;
+    JzScene *GetCurrentScene() const;
 
 public:
     JzEvent<const String &> OnSceneLoaded;

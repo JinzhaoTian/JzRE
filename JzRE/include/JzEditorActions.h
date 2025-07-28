@@ -1,6 +1,8 @@
 #pragma once
 
 #include "JzContext.h"
+#include "JzEGizmoOperation.h"
+#include "JzEvent.h"
 #include "JzPanelsManager.h"
 #include "JzServiceContainer.h"
 
@@ -52,6 +54,9 @@ public:
      * @brief Load an empty scene
      */
     void LoadEmptyScene();
+
+public:
+    JzEvent<JzEGizmoOperation> EditorOperationChanged;
 
 private:
     JzContext       &m_context;

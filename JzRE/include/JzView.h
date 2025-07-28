@@ -17,6 +17,10 @@ public:
      */
     JzView(const String &name, Bool is_opened);
 
+    virtual void Update(F32 deltaTime);
+
+    virtual void DrawFrame();
+
 protected:
     /**
      * @brief Implementation of the Draw method
