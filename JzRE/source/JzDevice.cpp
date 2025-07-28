@@ -1,6 +1,6 @@
 #include "JzDevice.h"
 
-JzRE::JzEvent<JzRE::JzDeviceErrorEnum, JzRE::String> JzRE::JzDevice::ErrorEvent;
+JzRE::JzEvent<JzRE::JzEDeviceErrorCode, JzRE::String> JzRE::JzDevice::ErrorEvent;
 
 JzRE::JzDevice::JzDevice(const JzDeviceSettings &deviceSettings)
 {
@@ -56,7 +56,7 @@ JzRE::F32 JzRE::JzDevice::GetElapsedTime() const
 void JzRE::JzDevice::BindErrorCallback()
 {
     auto errorCallback = [](JzRE::I32 p_code, const char *p_description) {
-        ErrorEvent.Invoke(static_cast<JzRE::JzDeviceErrorEnum>(p_code), p_description);
+        ErrorEvent.Invoke(static_cast<JzRE::JzEDeviceErrorCode>(p_code), p_description);
     };
 
     glfwSetErrorCallback(errorCallback);

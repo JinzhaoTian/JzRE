@@ -28,7 +28,7 @@ void JzRE::JzWidgetContainer::ReverseDrawOrder(bool reversed)
 {
 }
 
-std::vector<std::pair<JzRE::JzWidget *, JzRE::EMemoryMode>> &JzRE::JzWidgetContainer::GetWidgets()
+std::vector<std::pair<JzRE::JzWidget *, JzRE::JzEMemoryMode>> &JzRE::JzWidgetContainer::GetWidgets()
 {
     return m_widgets;
 }

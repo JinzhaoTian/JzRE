@@ -2,7 +2,7 @@
 
 namespace JzRE {
 
-enum class EMemoryMode {
+enum class JzEMemoryMode {
     INTERNAL_MANAGMENT,
     EXTERNAL_MANAGMENT
 };

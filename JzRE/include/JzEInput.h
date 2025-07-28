@@ -4,7 +4,7 @@ namespace JzRE {
 /**
  * @brief Key enum
  */
-enum class EJzKey {
+enum class JzEInputKey {
     KEY_UNKNOWN       = -1,
     KEY_SPACE         = 32,
     KEY_APOSTROPHE    = 39,
@@ -131,7 +131,7 @@ enum class EJzKey {
 /**
  * @brief Key state enum
  */
-enum class EJzKeyState {
+enum class JzEInputKeyState {
     KEY_UP   = 0,
     KEY_DOWN = 1
 };
@@ -139,7 +139,7 @@ enum class EJzKeyState {
 /**
  * @brief Mouse button enum
  */
-enum class EJzMouseButton {
+enum class JzEInputMouseButton {
     MOUSE_BUTTON_1      = 0,
     MOUSE_BUTTON_2      = 1,
     MOUSE_BUTTON_3      = 2,
@@ -156,7 +156,7 @@ enum class EJzMouseButton {
 /**
  * @brief Mouse button state enum
  */
-enum class EJzMouseButtonState {
+enum class JzEInputMouseButtonState {
     MOUSE_UP   = 0,
     MOUSE_DOWN = 1
 };

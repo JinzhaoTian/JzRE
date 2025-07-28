@@ -4,7 +4,7 @@ namespace JzRE {
 /**
  * @brief Device error Code
  */
-enum class JzDeviceErrorEnum {
+enum class JzEDeviceErrorCode {
     NOT_INITIALIZED     = 0x00010001,
     NO_CURRENT_CONTEXT  = 0x00010002,
     INVALID_ENUM        = 0x00010003,

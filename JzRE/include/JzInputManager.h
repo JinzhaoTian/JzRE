@@ -1,8 +1,8 @@
 #pragma once
 
 #include "CommonTypes.h"
+#include "JzEInput.h"
 #include "JzEvent.h"
-#include "JzInputEnums.h"
 #include "JzWindow.h"
 
 namespace JzRE {
@@ -27,17 +27,17 @@ public:
      * @brief Get the key state
      *
      * @param key
-     * @return EJzKeyState
+     * @return JzEInputKeyState
      */
-    EJzKeyState GetKeyState(EJzKey key) const;
+    JzEInputKeyState GetKeyState(JzEInputKey key) const;
 
     /**
      * @brief Get the mouse button state
      *
      * @param button
-     * @return EJzMouseButtonState
+     * @return JzEInputMouseButtonState
      */
-    EJzMouseButtonState GetMouseButtonState(EJzMouseButton button) const;
+    JzEInputMouseButtonState GetMouseButtonState(JzEInputMouseButton button) const;
 
     /**
      * @brief Check if a key is pressed
@@ -45,7 +45,7 @@ public:
      * @param key
      * @return Bool
      */
-    Bool IsKeyPressed(EJzKey key) const;
+    Bool IsKeyPressed(JzEInputKey key) const;
 
     /**
      * @brief Check if a key is released
@@ -53,7 +53,7 @@ public:
      * @param key
      * @return Bool
      */
-    Bool IsKeyReleased(EJzKey key) const;
+    Bool IsKeyReleased(JzEInputKey key) const;
 
     /**
      * @brief Check if a mouse button is pressed
@@ -61,7 +61,7 @@ public:
      * @param button
      * @return Bool
      */
-    Bool IsMouseButtonPressed(EJzMouseButton button) const;
+    Bool IsMouseButtonPressed(JzEInputMouseButton button) const;
 
     /**
      * @brief Check if a mouse button is released
@@ -69,7 +69,7 @@ public:
      * @param button
      * @return Bool
      */
-    Bool IsMouseButtonReleased(EJzMouseButton button) const;
+    Bool IsMouseButtonReleased(JzEInputMouseButton button) const;
 
     /**
      * @brief Get the mouse position
@@ -97,13 +97,13 @@ private:
     void OnMouseButtonReleased(I32 button);
 
 private:
-    JzWindow                                               &m_window;
-    ListenerID                                              m_keyPressedListenerID;
-    ListenerID                                              m_keyReleasedListenerID;
-    ListenerID                                              m_mouseButtonPressedListenerID;
-    ListenerID                                              m_mouseButtonReleasedListenerID;
-    std::unordered_map<EJzKey, EJzKeyState>                 m_keyStates;
-    std::unordered_map<EJzMouseButton, EJzMouseButtonState> m_mouseButtonStates;
-    std::pair<F64, F64>                                     m_mouseScroll;
+    JzWindow                                                         &m_window;
+    ListenerID                                                        m_keyPressedListenerID;
+    ListenerID                                                        m_keyReleasedListenerID;
+    ListenerID                                                        m_mouseButtonPressedListenerID;
+    ListenerID                                                        m_mouseButtonReleasedListenerID;
+    std::unordered_map<JzEInputKey, JzEInputKeyState>                 m_keyStates;
+    std::unordered_map<JzEInputMouseButton, JzEInputMouseButtonState> m_mouseButtonStates;
+    std::pair<F64, F64>                                               m_mouseScroll;
 };
 } // namespace JzRE

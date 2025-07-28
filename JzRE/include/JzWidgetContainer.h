@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CommonTypes.h"
-#include "JzMemoryModeEnum.h"
+#include "JzEMemoryMode.h"
 #include "JzWidget.h"
 
 namespace JzRE {
@@ -75,7 +75,7 @@ public:
     template <typename T, typename... Args>
     T &CreateWidget(Args &&...p_args)
     {
-        m_widgets.emplace_back(new T(p_args...), EMemoryMode::INTERNAL_MANAGMENT);
+        m_widgets.emplace_back(new T(p_args...), JzEMemoryMode::INTERNAL_MANAGMENT);
         T &instance = *reinterpret_cast<T *>(m_widgets.back().first);
         instance.SetParent(this);
         return instance;
@@ -86,11 +86,11 @@ public:
      *
      * @return The widgets and their memory management mode
      */
-    std::vector<std::pair<JzWidget *, EMemoryMode>> &GetWidgets();
+    std::vector<std::pair<JzWidget *, JzEMemoryMode>> &GetWidgets();
 
 protected:
-    std::vector<std::pair<JzWidget *, EMemoryMode>> m_widgets;
-    Bool                                            m_reverseDrawOrder = false;
+    std::vector<std::pair<JzWidget *, JzEMemoryMode>> m_widgets;
+    Bool                                              m_reverseDrawOrder = false;
 };
 
 } // namespace JzRE

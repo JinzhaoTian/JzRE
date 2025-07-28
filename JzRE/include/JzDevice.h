@@ -1,8 +1,8 @@
 #pragma once
 
 #include "CommonTypes.h"
-#include "JzDeviceErrorEnum.h"
 #include "JzDeviceSettings.h"
+#include "JzEDevice.h"
 #include "JzEvent.h"
 
 namespace JzRE {
@@ -42,7 +42,7 @@ public:
     F32 GetElapsedTime() const;
 
 public:
-    static JzEvent<JzDeviceErrorEnum, String> ErrorEvent;
+    static JzEvent<JzEDeviceErrorCode, String> ErrorEvent;
 
 private:
     void BindErrorCallback();

@@ -17,48 +17,48 @@ JzRE::JzInputManager::~JzInputManager()
     m_window.MouseButtonReleasedEvent.RemoveListener(m_mouseButtonReleasedListenerID);
 }
 
-JzRE::EJzKeyState JzRE::JzInputManager::GetKeyState(EJzKey key) const
+JzRE::JzEInputKeyState JzRE::JzInputManager::GetKeyState(JzEInputKey key) const
 {
     switch (glfwGetKey(m_window.GetGLFWWindow(), static_cast<I32>(key))) {
         case GLFW_PRESS:
-            return EJzKeyState::KEY_DOWN;
+            return JzEInputKeyState::KEY_DOWN;
         case GLFW_RELEASE:
-            return EJzKeyState::KEY_UP;
+            return JzEInputKeyState::KEY_UP;
         default:
-            return EJzKeyState::KEY_UP;
+            return JzEInputKeyState::KEY_UP;
     }
 }
 
-JzRE::EJzMouseButtonState JzRE::JzInputManager::GetMouseButtonState(EJzMouseButton button) const
+JzRE::JzEInputMouseButtonState JzRE::JzInputManager::GetMouseButtonState(JzEInputMouseButton button) const
 {
     switch (glfwGetMouseButton(m_window.GetGLFWWindow(), static_cast<I32>(button))) {
         case GLFW_PRESS:
-            return EJzMouseButtonState::MOUSE_DOWN;
+            return JzEInputMouseButtonState::MOUSE_DOWN;
         case GLFW_RELEASE:
-            return EJzMouseButtonState::MOUSE_UP;
+            return JzEInputMouseButtonState::MOUSE_UP;
         default:
-            return EJzMouseButtonState::MOUSE_UP;
+            return JzEInputMouseButtonState::MOUSE_UP;
     }
 }
 
-JzRE::Bool JzRE::JzInputManager::IsKeyPressed(EJzKey key) const
+JzRE::Bool JzRE::JzInputManager::IsKeyPressed(JzEInputKey key) const
 {
-    return m_keyStates.find(key) != m_keyStates.end() && m_keyStates.at(key) == EJzKeyState::KEY_DOWN;
+    return m_keyStates.find(key) != m_keyStates.end() && m_keyStates.at(key) == JzEInputKeyState::KEY_DOWN;
 }
 
-JzRE::Bool JzRE::JzInputManager::IsKeyReleased(EJzKey key) const
+JzRE::Bool JzRE::JzInputManager::IsKeyReleased(JzEInputKey key) const
 {
-    return m_keyStates.find(key) != m_keyStates.end() && m_keyStates.at(key) == EJzKeyState::KEY_UP;
+    return m_keyStates.find(key) != m_keyStates.end() && m_keyStates.at(key) == JzEInputKeyState::KEY_UP;
 }
 
-JzRE::Bool JzRE::JzInputManager::IsMouseButtonPressed(EJzMouseButton button) const
+JzRE::Bool JzRE::JzInputManager::IsMouseButtonPressed(JzEInputMouseButton button) const
 {
-    return m_mouseButtonStates.find(button) != m_mouseButtonStates.end() && m_mouseButtonStates.at(button) == EJzMouseButtonState::MOUSE_DOWN;
+    return m_mouseButtonStates.find(button) != m_mouseButtonStates.end() && m_mouseButtonStates.at(button) == JzEInputMouseButtonState::MOUSE_DOWN;
 }
 
-JzRE::Bool JzRE::JzInputManager::IsMouseButtonReleased(EJzMouseButton button) const
+JzRE::Bool JzRE::JzInputManager::IsMouseButtonReleased(JzEInputMouseButton button) const
 {
-    return m_mouseButtonStates.find(button) != m_mouseButtonStates.end() && m_mouseButtonStates.at(button) == EJzMouseButtonState::MOUSE_UP;
+    return m_mouseButtonStates.find(button) != m_mouseButtonStates.end() && m_mouseButtonStates.at(button) == JzEInputMouseButtonState::MOUSE_UP;
 }
 
 std::pair<JzRE::F64, JzRE::F64> JzRE::JzInputManager::GetMousePosition() const
@@ -81,20 +81,20 @@ void JzRE::JzInputManager::ClearEvents()
 
 void JzRE::JzInputManager::OnKeyPressed(I32 key)
 {
-    m_keyStates[static_cast<EJzKey>(key)] = EJzKeyState::KEY_DOWN;
+    m_keyStates[static_cast<JzEInputKey>(key)] = JzEInputKeyState::KEY_DOWN;
 }
 
 void JzRE::JzInputManager::OnKeyReleased(I32 key)
 {
-    m_keyStates[static_cast<EJzKey>(key)] = EJzKeyState::KEY_UP;
+    m_keyStates[static_cast<JzEInputKey>(key)] = JzEInputKeyState::KEY_UP;
 }
 
 void JzRE::JzInputManager::OnMouseButtonPressed(I32 button)
 {
-    m_mouseButtonStates[static_cast<EJzMouseButton>(button)] = EJzMouseButtonState::MOUSE_DOWN;
+    m_mouseButtonStates[static_cast<JzEInputMouseButton>(button)] = JzEInputMouseButtonState::MOUSE_DOWN;
 }
 
 void JzRE::JzInputManager::OnMouseButtonReleased(I32 button)
 {
-    m_mouseButtonStates[static_cast<EJzMouseButton>(button)] = EJzMouseButtonState::MOUSE_UP;
+    m_mouseButtonStates[static_cast<JzEInputMouseButton>(button)] = JzEInputMouseButtonState::MOUSE_UP;
 }
