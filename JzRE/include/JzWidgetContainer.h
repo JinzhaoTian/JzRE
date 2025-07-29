@@ -38,7 +38,7 @@ public:
      * @param p_widget The widget to consider
      * @param p_manageMemory The memory management mode
      */
-    void ConsiderWidget(JzWidget &p_widget, bool p_manageMemory = true);
+    void ConsiderWidget(JzWidget &widget, Bool manageMemory = true);
 
     /**
      * @brief Unconsider a widget

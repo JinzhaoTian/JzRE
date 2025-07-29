@@ -29,13 +29,8 @@ public:
 
     JzScene *GetScene();
 
-    void SetGizmoOperation(JzEGizmoOperation operation);
-
-    JzEGizmoOperation GetGizmoOperation() const;
-
 private:
     virtual void DrawFrame() override;
-    void         HandleActorPicking();
 
 private:
     JzSceneManager   &m_sceneManager;
