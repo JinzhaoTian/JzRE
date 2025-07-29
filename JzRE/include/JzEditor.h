@@ -7,6 +7,7 @@
 #include "JzContext.h"
 #include "JzEditorActions.h"
 #include "JzGameView.h"
+#include "JzHierarchy.h"
 #include "JzMaterialEditor.h"
 #include "JzMenuBar.h"
 #include "JzPanelsManager.h"
