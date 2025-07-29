@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CommonTypes.h"
+#include "JzCamera.h"
 #include "JzISerializable.h"
 
 namespace JzRE {
@@ -18,6 +19,8 @@ public:
      * @brief Destroy the JzScene object
      */
     ~JzScene();
+
+    JzCamera *FindMainCamera() const;
 
     /**
      * @brief Serialize the scene
