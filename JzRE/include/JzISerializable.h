@@ -21,5 +21,10 @@ public:
      * @param filePath
      */
     virtual void Deserialize(const String &filePath) = 0;
+
+    /**
+     * @brief Destructor
+     */
+    virtual ~JzISerializable() = default;
 };
 } // namespace JzRE

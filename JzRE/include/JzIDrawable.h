@@ -11,7 +11,6 @@ public:
      */
     virtual void Draw() = 0;
 
-protected:
     /**
      * @brief Destructor
      */

@@ -6,6 +6,8 @@
 #include "JzPanelsManager.h"
 #include "JzServiceContainer.h"
 
+namespace JzRE {
+
 #define EDITOR_EXEC(action) \
     JzRE::JzServiceContainer::Get<JzRE::JzEditorActions>().action
 #define EDITOR_BIND(method, ...) \
@@ -17,7 +19,6 @@
 #define EDITOR_PANEL(type, id) \
     JzRE::JzServiceContainer::Get<JzRE::JzEditorActions>().GetPanelsManager().GetPanelAs<type>(id)
 
-namespace JzRE {
 /**
  * @brief Editor actions
  */
