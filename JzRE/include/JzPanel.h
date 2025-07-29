@@ -33,7 +33,7 @@ public:
 
 protected:
     /**
-     * @brief Implementation of the Draw method
+     * @brief Draw Interface
      */
     virtual void _Draw_Impl() = 0;
 
