@@ -14,11 +14,48 @@ JzRE::JzMenuBar::JzMenuBar()
     CreateHelpMenu();
 }
 
-void JzRE::JzMenuBar::HandleShortcuts(F32 deltaTime) { }
+void JzRE::JzMenuBar::HandleShortcuts(F32 deltaTime)
+{
+    auto &inputManager = *EDITOR_CONTEXT(inputManager);
 
-void JzRE::JzMenuBar::RegisterPanel(const String &name, JzPanelWindow &panel) { }
+    if (inputManager.GetKeyState(JzEInputKey::KEY_LEFT_CONTROL) == JzEInputKeyState::KEY_DOWN) {
+        if (inputManager.IsKeyPressed(JzEInputKey::KEY_N))
+            EDITOR_EXEC(LoadEmptyScene());
 
-void JzRE::JzMenuBar::InitializeSettingsMenu() { }
+        if (inputManager.IsKeyPressed(JzEInputKey::KEY_S)) {
+            if (inputManager.GetKeyState(JzEInputKey::KEY_LEFT_SHIFT) == JzEInputKeyState::KEY_UP) {
+                // EDITOR_EXEC(SaveSceneChanges());
+            } else {
+                // EDITOR_EXEC(SaveAs());
+            }
+        }
+    }
+}
+
+void JzRE::JzMenuBar::RegisterPanel(const String &name, JzPanelWindow &panel)
+{
+    auto &menuItem              = m_windowMenu->CreateWidget<JzMenuItem>(name, "", true, true);
+    menuItem.ValueChangedEvent += std::bind(&JzPanelWindow::SetOpened, &panel, std::placeholders::_1);
+
+    m_panels.emplace(name, std::make_pair(std::ref(panel), std::ref(menuItem)));
+}
+
+void JzRE::JzMenuBar::InitializeSettingsMenu()
+{
+    auto &themeButton = m_settingsMenu->CreateWidget<JzMenuList>("Editor Theme");
+    themeButton.CreateWidget<JzText>("Some themes may require a restart");
+
+    auto &cameraPositionMenu  = m_settingsMenu->CreateWidget<JzMenuList>("Reset Camera");
+    auto &viewColors          = m_settingsMenu->CreateWidget<JzMenuList>("View Colors");
+    auto &sceneViewBackground = viewColors.CreateWidget<JzMenuList>("Scene View Background");
+    auto &sceneViewGrid       = viewColors.CreateWidget<JzMenuList>("Scene View Grid");
+    sceneViewGrid.CreateWidget<JzMenuItem>("Reset");
+
+    auto &assetViewBackground = viewColors.CreateWidget<JzMenuList>("Asset View Background");
+    assetViewBackground.CreateWidget<JzMenuItem>("Reset");
+
+    auto &consoleSettingsMenu = m_settingsMenu->CreateWidget<JzMenuList>("Console Settings");
+}
 
 void JzRE::JzMenuBar::CreateFileMenu()
 {
@@ -27,19 +64,43 @@ void JzRE::JzMenuBar::CreateFileMenu()
     fileMenu.CreateWidget<JzMenuItem>("Exit", "ALT + F4").ClickedEvent      += [] { EDITOR_CONTEXT(window)->SetShouldClose(true); };
 }
 
-void JzRE::JzMenuBar::CreateBuildMenu() { }
+void JzRE::JzMenuBar::CreateBuildMenu()
+{
+    auto &buildMenu = CreateWidget<JzMenuList>("Build");
+}
 
-void JzRE::JzMenuBar::CreateWindowMenu() { }
+void JzRE::JzMenuBar::CreateWindowMenu()
+{
+    m_windowMenu                                                      = &CreateWidget<JzMenuList>("Window");
+    m_windowMenu->CreateWidget<JzMenuItem>("Close all").ClickedEvent += std::bind(&JzMenuBar::OpenEveryWindows, this, false);
+    m_windowMenu->CreateWidget<JzMenuItem>("Open all").ClickedEvent  += std::bind(&JzMenuBar::OpenEveryWindows, this, true);
+    m_windowMenu->CreateWidget<JzSeparator>();
+
+    /* When the menu is opened, we update which window is marked as "Opened" or "Closed" */
+    m_windowMenu->clickedEvent += std::bind(&JzMenuBar::UpdateToggleableItems, this);
+}
 
 void JzRE::JzMenuBar::CreateActorsMenu() { }
 
-void JzRE::JzMenuBar::CreateResourcesMenu() { }
+void JzRE::JzMenuBar::CreateResourcesMenu()
+{
+    auto &resourcesMenu = CreateWidget<JzMenuList>("Resources");
+}
 
-void JzRE::JzMenuBar::CreateToolsMenu() { }
+void JzRE::JzMenuBar::CreateToolsMenu()
+{
+    auto &toolsMenu = CreateWidget<JzMenuList>("Tools");
+}
 
-void JzRE::JzMenuBar::CreateSettingsMenu() { }
+void JzRE::JzMenuBar::CreateSettingsMenu()
+{
+    m_settingsMenu = &CreateWidget<JzMenuList>("Settings");
+}
 
-void JzRE::JzMenuBar::CreateLayoutMenu() { }
+void JzRE::JzMenuBar::CreateLayoutMenu()
+{
+    auto &layoutMenu = CreateWidget<JzMenuList>("Layout");
+}
 
 void JzRE::JzMenuBar::CreateHelpMenu()
 {
@@ -47,6 +108,14 @@ void JzRE::JzMenuBar::CreateHelpMenu()
     helpMenu.CreateWidget<JzText>("JzRE: " + std::string("test"));
 }
 
-void JzRE::JzMenuBar::UpdateToggleableItems() { }
+void JzRE::JzMenuBar::UpdateToggleableItems()
+{
+    for (auto &[name, panel] : m_panels)
+        panel.second.get().checked = panel.first.get().IsOpened();
+}
 
-void JzRE::JzMenuBar::OpenEveryWindows(JzRE::Bool state) { }
+void JzRE::JzMenuBar::OpenEveryWindows(JzRE::Bool state)
+{
+    for (auto &[name, panel] : m_panels)
+        panel.first.get().SetOpened(state);
+}

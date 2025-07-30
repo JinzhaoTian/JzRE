@@ -52,5 +52,11 @@ private:
 
     void UpdateToggleableItems();
     void OpenEveryWindows(Bool state);
+
+private:
+    std::unordered_map<std::string, std::pair<std::reference_wrapper<JzPanelWindow>, std::reference_wrapper<JzMenuItem>>> m_panels;
+
+    JzMenuList *m_settingsMenu = nullptr;
+    JzMenuList *m_windowMenu   = nullptr;
 };
 } // namespace JzRE
