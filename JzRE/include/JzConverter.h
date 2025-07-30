@@ -21,6 +21,6 @@ public:
      * Convert the given ImVec2 to FVector2
      * @param p_value
      */
-    static JzVec2 ToFVector2(const ImVec2 &value);
+    static JzVec2 ToJzVec2(const ImVec2 &value);
 };
 } // namespace JzRE
