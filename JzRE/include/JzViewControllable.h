@@ -26,6 +26,16 @@ public:
      */
     virtual void Update(F32 deltaTime) override;
 
+    virtual void InitFrame() override;
+
+    virtual void ResetCameraTransform();
+
+    JzCameraController &GetCameraController();
+
+    virtual JzCamera *GetCamera() override;
+
+    void ResetClearColor();
+
 protected:
     JzCamera           m_camera;
     JzCameraController m_cameraController;

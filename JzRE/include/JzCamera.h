@@ -16,6 +16,8 @@ public:
 
     F32 GetFar() const;
 
+    void SetClearColor();
+
 private:
     F32 m_fov;
     F32 m_size;

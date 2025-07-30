@@ -27,10 +27,17 @@ public:
      */
     virtual void Update(F32 deltaTime) override;
 
-    JzScene *GetScene();
+    virtual void InitFrame() override;
+
+    void SetGizmoOperation(JzEGizmoOperation operation);
+
+    JzEGizmoOperation GetGizmoOperation() const;
+
+    JzScene *GetScene() override;
 
 private:
     virtual void DrawFrame() override;
+    void         HandleActorPicking();
 
 private:
     JzSceneManager   &m_sceneManager;

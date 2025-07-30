@@ -1,7 +1,9 @@
 #pragma once
 
 #include "CommonTypes.h"
+#include "JzCamera.h"
 #include "JzPanelWindow.h"
+#include "JzScene.h"
 
 namespace JzRE {
 /**
@@ -17,9 +19,19 @@ public:
      */
     JzView(const String &name, Bool is_opened);
 
+    void Render();
+
     virtual void Update(F32 deltaTime);
 
+    virtual void InitFrame();
+
     virtual void DrawFrame();
+
+    std::pair<U16, U16> GetSafeSize() const;
+
+    virtual JzCamera *GetCamera() = 0;
+
+    virtual JzScene *GetScene() = 0;
 
 protected:
     /**
