@@ -105,8 +105,8 @@ void JzRE::JzPanelWindow::_Draw_Impl()
         if (!scrollable) windowFlags |= ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar;
         if (!titleBar) windowFlags |= ImGuiWindowFlags_NoTitleBar;
 
-        ImVec2 minSizeConstraint /*= Internal::Converter::ToImVec2(minSize)*/;
-        ImVec2 maxSizeConstraint /*= Internal::Converter::ToImVec2(maxSize)*/;
+        ImVec2 minSizeConstraint = JzConverter::ToImVec2(minSize);
+        ImVec2 maxSizeConstraint = JzConverter::ToImVec2(maxSize);
 
         /* Cancel constraint if x or y is <= 0.f */
         if (minSizeConstraint.x <= 0.f || minSizeConstraint.y <= 0.f)

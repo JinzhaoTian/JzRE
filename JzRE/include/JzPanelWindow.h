@@ -1,7 +1,9 @@
 #pragma once
 
+#include "JzConverter.h"
 #include "JzEvent.h"
 #include "JzPanelTransformable.h"
+#include "JzVector.h"
 
 namespace JzRE {
 /**
@@ -103,6 +105,9 @@ protected:
 
 public:
     String name;
+
+    JzVec2 minSize = {0.f, 0.f};
+    JzVec2 maxSize = {0.f, 0.f};
 
     Bool resizable                = true;
     Bool closable                 = false;
