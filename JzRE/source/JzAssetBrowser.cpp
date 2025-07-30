@@ -1,9 +1,36 @@
 #include "JzAssetBrowser.h"
 
-JzRE::JzAssetBrowser::JzAssetBrowser(const JzRE::String &name, JzRE::Bool is_opened) { }
+JzRE::JzAssetBrowser::JzAssetBrowser(const JzRE::String &name, JzRE::Bool is_opened) :
+    JzPanelWindow(name, is_opened)
+{
+    auto &refreshButton         = CreateWidget<JzButton>("Rescan assets");
+    refreshButton.ClickedEvent += std::bind(&JzAssetBrowser::Refresh, this);
+    refreshButton.lineBreak     = false;
 
-void JzRE::JzAssetBrowser::Fill() { }
+    auto &importButton = CreateWidget<JzButton>("Import asset");
 
-void JzRE::JzAssetBrowser::Clear() { }
+    m_assetList = &CreateWidget<JzGroup>();
 
-void JzRE::JzAssetBrowser::Refresh() { }
+    Fill();
+}
+
+void JzRE::JzAssetBrowser::Fill()
+{
+    // to fill fake data
+    m_assetList->CreateWidget<JzSeparator>();
+
+    m_assetList->CreateWidget<JzSeparator>();
+
+    m_assetList->CreateWidget<JzSeparator>();
+}
+
+void JzRE::JzAssetBrowser::Clear()
+{
+    m_assetList->RemoveAllWidgets();
+}
+
+void JzRE::JzAssetBrowser::Refresh()
+{
+    Clear();
+    Fill();
+}

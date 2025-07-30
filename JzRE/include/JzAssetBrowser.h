@@ -1,7 +1,10 @@
 #pragma once
 
 #include "CommonTypes.h"
+#include "JzButton.h"
+#include "JzGroup.h"
 #include "JzPanelWindow.h"
+#include "JzSeparator.h"
 
 namespace JzRE {
 /**
@@ -30,5 +33,8 @@ public:
      * @brief Refresh the asset browser panel
      */
     void Refresh();
+
+private:
+    JzGroup *m_assetList;
 };
 } // namespace JzRE

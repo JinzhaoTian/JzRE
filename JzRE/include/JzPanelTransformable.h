@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CommonTypes.h"
+#include "JzEAlignment.h"
 #include "JzPanel.h"
 
 namespace JzRE {
@@ -12,7 +13,8 @@ public:
     /**
      * @brief Constructor
      */
-    JzPanelTransformable();
+    JzPanelTransformable(JzEHorizontalAlignment defaultHorizontalAlignment = JzEHorizontalAlignment::LEFT,
+                         JzEVerticalAlignment   defaultVerticalAlignment   = JzEVerticalAlignment::TOP);
 
     /**
      * @brief Set the position of the panel
@@ -42,12 +44,12 @@ public:
     /**
      * @brief Get the horizontal alignment of the panel
      */
-    void GetHorizontalAlignment();
+    JzEHorizontalAlignment GetHorizontalAlignment() const;
 
     /**
      * @brief Get the vertical alignment of the panel
      */
-    void GetVerticalAlignment();
+    JzEVerticalAlignment GetVerticalAlignment() const;
 
 protected:
     /**
@@ -60,11 +62,22 @@ protected:
      */
     virtual void _Draw_Impl() = 0;
 
+private:
+    void UpdatePosition();
+    void UpdateSize();
+
 public:
     Bool autoSize = true;
 
 protected:
-    Bool m_firstFrame = true;
+    JzEHorizontalAlignment m_defaultHorizontalAlignment;
+    JzEVerticalAlignment   m_defaultVerticalAlignment;
+    JzEHorizontalAlignment m_horizontalAlignment = JzEHorizontalAlignment::LEFT;
+    JzEVerticalAlignment   m_verticalAlignment   = JzEVerticalAlignment::TOP;
+    Bool                   m_firstFrame          = true;
+    Bool                   m_positionChanged     = false;
+    Bool                   m_sizeChanged         = false;
+    Bool                   m_alignmentChanged    = false;
 };
 
 } // namespace JzRE
