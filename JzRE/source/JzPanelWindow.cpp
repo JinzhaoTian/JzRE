@@ -141,7 +141,7 @@ void JzRE::JzPanelWindow::_Draw_Impl()
                 m_mustScrollToTop = false;
             }
 
-            ExecutePlugins(EPluginExecutionContext::PANEL);
+            ExecutePlugins(JzEPluginExecutionContext::PANEL);
             DrawWidgets();
         }
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CommonTypes.h"
+#include "JzEPlugin.h"
 #include "JzPlugin.h"
 
 namespace JzRE {
@@ -82,7 +83,7 @@ public:
      *
      * @param p_context
      */
-    virtual void Execute(EPluginExecutionContext p_context) override { }
+    virtual void Execute(JzEPluginExecutionContext p_context) override { }
 
 private:
     Bool                   m_valueChanged = false;

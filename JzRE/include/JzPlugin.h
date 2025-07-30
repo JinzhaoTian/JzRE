@@ -1,20 +1,8 @@
 #pragma once
 
-namespace JzRE {
-/**
- * @brief Plugin execution context
- */
-enum class EPluginExecutionContext {
-    /**
-     * @brief Widget context
-     */
-    WIDGET,
-    /**
-     * @brief Panel context
-     */
-    PANEL
-};
+#include "JzEPlugin.h"
 
+namespace JzRE {
 /**
  * @brief Base class for all plugins
  */
@@ -30,7 +18,7 @@ public:
      *
      * @param context The execution context
      */
-    virtual void Execute(EPluginExecutionContext context) = 0;
+    virtual void Execute(JzEPluginExecutionContext context) = 0;
 
     /**
      * @brief User data

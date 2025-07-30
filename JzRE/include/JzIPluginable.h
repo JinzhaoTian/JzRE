@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CommonTypes.h"
+#include "JzEPlugin.h"
 #include "JzPlugin.h"
 
 namespace JzRE {
@@ -60,7 +61,7 @@ public:
      *
      * @param context The execution context
      */
-    void ExecutePlugins(EPluginExecutionContext context)
+    void ExecutePlugins(JzEPluginExecutionContext context)
     {
         for (auto &plugin : m_plugins)
             plugin->Execute(context);

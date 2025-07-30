@@ -27,7 +27,7 @@ void JzRE::JzWidget::Draw()
         }
 
         if (m_autoExecutePlugins)
-            ExecutePlugins(EPluginExecutionContext::WIDGET);
+            ExecutePlugins(JzEPluginExecutionContext::WIDGET);
 
         if (!lineBreak) {
             ImGui::SameLine();
