@@ -63,7 +63,6 @@ set_target_properties(JzRE PROPERTIES
 target_link_libraries(JzRE PRIVATE
     ${PLATFORM_LIBS}
     ${OPENGL_LIBS}
-    glfw
     glad::glad
     glm::glm
     imgui::imgui

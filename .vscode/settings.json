@@ -1,7 +1,5 @@
 {
-    "cmake.configureSettings": {
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
-    },
+    "editor.formatOnSave": true,
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
     "C_Cpp.default.compileCommands": "${workspaceFolder}/build/compile_commands.json",
     "C_Cpp.intelliSenseEngine": "default",

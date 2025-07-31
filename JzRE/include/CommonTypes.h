@@ -25,8 +25,10 @@
  * sys
  */
 #include <algorithm>
+#include <any>
 #include <array>
 #include <cassert>
+#include <chrono>
 #include <cmath>
 #include <cstdint>
 #include <cstring>
@@ -36,20 +38,22 @@
 #include <map>
 #include <memory>
 #include <queue>
+#include <ranges>
 #include <regex>
 #include <set>
+#include <span>
 #include <sstream>
 #include <string>
 #include <type_traits>
+#include <typeinfo>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <vector>
 
-#include <chrono>
-
-#define RGBA(r, g, b, a) ((b) | ((g) << 8) | ((r) << 16) | ((a) << 24))
-
+/**
+ * JzRE Definitions
+ */
 namespace JzRE {
 
 using U8  = uint8_t;
