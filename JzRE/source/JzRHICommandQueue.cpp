@@ -48,9 +48,9 @@ void JzRE::JzRHICommandQueue::ExecuteAll()
 
 void JzRE::JzRHICommandQueue::Wait()
 {
-    while (isExecuting) {
-        std::this_thread::sleep_for(std::chrono::microseconds(100));
-    }
+    // while (isExecuting) {
+    //     std::this_thread::sleep_for(std::chrono::microseconds(100));
+    // }
 }
 
 void JzRE::JzRHICommandQueue::SetThreadCount(JzRE::U32 threadCount)

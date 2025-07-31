@@ -11,7 +11,7 @@ namespace JzRE {
  */
 class JzRHIShader : public JzRHIResource {
 public:
-    JzRHIShader(const ShaderDesc &desc) :
+    JzRHIShader(const JzShaderDesc &desc) :
         JzRHIResource(desc.debugName), desc(desc) { }
     virtual ~JzRHIShader() = default;
 

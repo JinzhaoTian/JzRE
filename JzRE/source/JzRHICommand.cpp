@@ -1,4 +1,5 @@
 #include "JzRHICommand.h"
+#include "JzRHIContext.h"
 
 // 具体命令实现
 JzRE::JzRHIClearCommand::JzRHIClearCommand(const JzClearParams &params) :
@@ -65,7 +66,7 @@ void JzRE::JzRHIBindVertexArrayCommand::Execute()
 }
 
 JzRE::JzRHIBindTextureCommand::JzRHIBindTextureCommand(std::shared_ptr<JzRE::JzRHITexture> texture, U32 slot) :
-    RHICommand(JzERHICommandType::BindTexture), texture(texture), slot(slot)
+    JzRHICommand(JzERHICommandType::BindTexture), texture(texture), slot(slot)
 {
 }
 

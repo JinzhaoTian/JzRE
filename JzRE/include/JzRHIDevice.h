@@ -1,7 +1,10 @@
 #pragma once
 
 #include "CommonTypes.h"
+#include "JzRHICommandBuffer.h"
 #include "JzRHIETypes.h"
+#include "JzRHIFramebuffer.h"
+#include "JzRHIShader.h"
 
 namespace JzRE {
 /**
@@ -13,7 +16,7 @@ public:
     JzRHIDevice(JzERHIType rhiType) :
         rhiType(rhiType) { }
 
-    virtual ~RHIDevice() = default;
+    virtual ~JzRHIDevice() = default;
 
     // 设备信息
     JzERHIType GetRHIType() const
@@ -25,10 +28,10 @@ public:
     virtual String GetDriverVersion() const = 0;
 
     // 资源创建接口
-    virtual std::shared_ptr<JzRHIBuffer>      CreateBuffer(const BufferDesc &desc)            = 0;
-    virtual std::shared_ptr<JzRHITexture>     CreateTexture(const TextureDesc &desc)          = 0;
-    virtual std::shared_ptr<JzRHIShader>      CreateShader(const ShaderDesc &desc)            = 0;
-    virtual std::shared_ptr<JzRHIPipeline>    CreatePipeline(const PipelineDesc &desc)        = 0;
+    virtual std::shared_ptr<JzRHIBuffer>      CreateBuffer(const JzBufferDesc &desc)          = 0;
+    virtual std::shared_ptr<JzRHITexture>     CreateTexture(const JzTextureDesc &desc)        = 0;
+    virtual std::shared_ptr<JzRHIShader>      CreateShader(const JzShaderDesc &desc)          = 0;
+    virtual std::shared_ptr<JzRHIPipeline>    CreatePipeline(const JzPipelineDesc &desc)      = 0;
     virtual std::shared_ptr<JzRHIFramebuffer> CreateFramebuffer(const String &debugName = "") = 0;
     virtual std::shared_ptr<JzRHIVertexArray> CreateVertexArray(const String &debugName = "") = 0;
 
@@ -44,7 +47,7 @@ public:
     // 渲染状态管理
     virtual void SetRenderState(const JzRenderState &state) = 0;
     virtual void SetViewport(const JzViewport &viewport)    = 0;
-    virtual void SetScissor(constJz ScissorRect &scissor)   = 0;
+    virtual void SetScissor(const JzScissorRect &scissor)   = 0;
 
     // 绘制接口
     virtual void Clear(const JzClearParams &params)             = 0;

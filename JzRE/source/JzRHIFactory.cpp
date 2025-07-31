@@ -1,6 +1,6 @@
 #include "JzRHIFactory.h"
-#include "JzOpenGLRHI.h"
-#include "JzVulkanRHI.h"
+#include "JzOpenGLDevice.h"
+#include "JzVulkanDevice.h"
 
 // RHIFactory实现
 std::unique_ptr<JzRE::JzRHIDevice> JzRE::JzRHIFactory::CreateDevice(JzRE::JzERHIType rhiType)

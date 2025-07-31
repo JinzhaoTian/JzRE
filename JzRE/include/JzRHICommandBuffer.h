@@ -3,6 +3,7 @@
 #include "CommonTypes.h"
 #include "JzRHICommand.h"
 #include "JzRHIETypes.h"
+#include "JzRHIFramebuffer.h"
 
 namespace JzRE {
 /**

@@ -1,4 +1,5 @@
 #include "JzRHIContext.h"
+#include "JzRHIFactory.h"
 
 // RHIContext实现
 JzRE::JzRHIContext &JzRE::JzRHIContext::GetInstance()

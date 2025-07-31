@@ -176,7 +176,7 @@ struct JzRenderState {
 /**
  * 缓冲区描述
  */
-struct BufferDesc {
+struct JzBufferDesc {
     JzEBufferType  type;
     JzEBufferUsage usage;
     Size           size;
@@ -187,7 +187,7 @@ struct BufferDesc {
 /**
  * 纹理描述
  */
-struct TextureDesc {
+struct JzTextureDesc {
     JzETextureType   type      = JzETextureType::Texture2D;
     JzETextureFormat format    = JzETextureFormat::RGBA8;
     U32              width     = 1;
@@ -207,20 +207,20 @@ struct TextureDesc {
 /**
  * 着色器描述
  */
-struct ShaderDesc {
-    EShaderType type;
-    String      source;
-    String      entryPoint = "main";
-    String      debugName;
+struct JzShaderDesc {
+    JzEShaderType type;
+    String        source;
+    String        entryPoint = "main";
+    String        debugName;
 };
 
 /**
  * 渲染管线描述
  */
-struct PipelineDesc {
-    std::vector<ShaderDesc> shaders;
-    RenderState             renderState;
-    String                  debugName;
+struct JzPipelineDesc {
+    std::vector<JzShaderDesc> shaders;
+    JzRenderState             renderState;
+    String                    debugName;
 };
 
 } // namespace JzRE

@@ -1,8 +1,11 @@
 #pragma once
 
 #include "CommonTypes.h"
+#include "JzRHIETypes.h"
+#include "JzRHIPipeline.h"
 #include "JzRHIResource.h"
-#include "JzRHITypes.h"
+#include "JzRHITexture.h"
+#include "JzRHIVertexArray.h"
 
 namespace JzRE {
 
@@ -76,7 +79,7 @@ struct JzDrawParams {
 /**
  * 索引绘制参数
  */
-struct DrawIndexedParams {
+struct JzDrawIndexedParams {
     JzEPrimitiveType primitiveType = JzEPrimitiveType::Triangles;
     U32              indexCount    = 0;
     U32              instanceCount = 1;
@@ -113,13 +116,13 @@ public:
     void Execute() override;
 
 private:
-    ClearParams params;
+    JzClearParams params;
 };
 
 class JzRHIDrawCommand : public JzRHICommand {
 public:
     JzRHIDrawCommand(const JzDrawParams &params);
-    void JzExecute() override;
+    void Execute() override;
 
 private:
     JzDrawParams params;

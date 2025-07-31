@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CommonTypes.h"
+#include "JzRHIBuffer.h"
 #include "JzRHIETypes.h"
 #include "JzRHIResource.h"
 

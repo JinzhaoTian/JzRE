@@ -1,6 +1,10 @@
 #pragma once
 
 #include "CommonTypes.h"
+#include "JzOpenGLFramebuffer.h"
+#include "JzOpenGLPipeline.h"
+#include "JzOpenGLVertexArray.h"
+#include "JzRHI.h"
 #include "JzRHIDevice.h"
 
 namespace JzRE {

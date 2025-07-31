@@ -1,5 +1,7 @@
 #pragma once
 
+#include "CommonTypes.h"
+
 namespace JzRE {
 
 /**

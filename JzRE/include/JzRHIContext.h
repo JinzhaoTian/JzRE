@@ -1,17 +1,18 @@
 #pragma once
 
 #include "CommonTypes.h"
+#include "JzRHICommandQueue.h"
 #include "JzRHIDevice.h"
-#include "JzRHITypes.h"
+#include "JzRHIETypes.h"
 
 namespace JzRE {
 
 /**
  * RHI便利宏定义
  */
-#define JZ_RHI_DEVICE() JzRHIContext::GetInstance().GetDevice()
-#define JZ_RHI_COMMAND_QUEUE() JzRHIContext::GetInstance().GetCommandQueue()
-#define JZ_RHI_TYPE() JzRHIContext::GetInstance().GetRHIType()
+#define RHI_DEVICE() JzRHIContext::GetInstance().GetDevice()
+#define RHI_COMMAND_QUEUE() JzRHIContext::GetInstance().GetCommandQueue()
+#define RHI_TYPE() JzRHIContext::GetInstance().GetRHIType()
 
 /**
  * RHI上下文管理器
