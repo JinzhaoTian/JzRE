@@ -1,9 +1,6 @@
 #pragma once
 
-#include <atomic>
-#include <functional>
-#include <mutex>
-#include <thread>
+#include "CommonTypes.h"
 #include "JzRHIResource.h"
 #include "JzRHITypes.h"
 
@@ -108,62 +105,6 @@ protected:
 };
 
 /**
- * RHI命令缓冲
- * 支持命令的记录和回放，为多线程渲染提供基础
- */
-class JzRHICommandBuffer {
-public:
-    JzRHICommandBuffer(const String &debugName = "");
-    ~JzRHICommandBuffer();
-
-    // 命令记录接口
-    void Clear(const JzClearParams &params);
-    void Draw(const JzDrawParams &params);
-    void DrawIndexed(const JzDrawIndexedParams &params);
-    void BindPipeline(std::shared_ptr<JzRHIPipeline> pipeline);
-    void BindVertexArray(std::shared_ptr<JzRHIVertexArray> vertexArray);
-    void BindTexture(std::shared_ptr<JzRHITexture> texture, U32 slot);
-    void SetViewport(const JzViewport &viewport);
-    void SetScissor(const JzScissorRect &scissor);
-    void BeginRenderPass(std::shared_ptr<JzRHIFramebuffer> framebuffer);
-    void EndRenderPass();
-
-    // 命令缓冲管理
-    void Begin();
-    void End();
-    void Reset();
-    void Execute();
-
-    // 多线程支持
-    Bool IsRecording() const
-    {
-        return isRecording;
-    }
-    Bool IsEmpty() const
-    {
-        return commands.empty();
-    }
-    Size GetCommandCount() const
-    {
-        return commands.size();
-    }
-
-    const String &GetDebugName() const
-    {
-        return debugName;
-    }
-
-private:
-    String                                     debugName;
-    std::vector<std::unique_ptr<JzRHICommand>> commands;
-    std::atomic<Bool>                          isRecording{false};
-    mutable std::mutex                         commandMutex;
-
-    template <typename T, typename... Args>
-    void AddCommand(Args &&...args);
-};
-
-/**
  * 具体命令实现
  */
 class JzRHIClearCommand : public JzRHICommand {
@@ -228,35 +169,6 @@ public:
 
 private:
     JzViewport viewport;
-};
-
-/**
- * 命令队列管理器
- * 支持多线程命令提交和执行
- */
-class JzRHICommandQueue {
-public:
-    JzRHICommandQueue();
-    ~JzRHICommandQueue();
-
-    // 命令缓冲管理
-    std::shared_ptr<JzRHICommandBuffer> CreateCommandBuffer(const String &debugName = "");
-    void                                SubmitCommandBuffer(std::shared_ptr<JzRHICommandBuffer> commandBuffer);
-    void                                ExecuteAll();
-    void                                Wait();
-
-    // 多线程支持
-    void SetThreadCount(U32 threadCount);
-    U32  GetThreadCount() const
-    {
-        return threadCount;
-    }
-
-private:
-    std::vector<std::shared_ptr<JzRHICommandBuffer>> pendingCommandBuffers;
-    std::mutex                                       queueMutex;
-    std::atomic<U32>                                 threadCount{1};
-    std::atomic<Bool>                                isExecuting{false};
 };
 
 } // namespace JzRE
