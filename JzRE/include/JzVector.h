@@ -7,32 +7,32 @@ namespace JzRE {
 template <typename T>
 concept VectorValueType = std::is_arithmetic_v<T>;
 
-template <Size N, typename T = F32>
+template <U16 N, typename T = F32>
 class JzVector {
 public:
     // constructors
     inline JzVector(const T &value)
     {
-        for (Size i = 0; i < N; ++i) {
+        for (U16 i = 0; i < N; ++i) {
             m_Data[i] = value;
         }
     }
 
-    template <Size M, VectorValueType... Args>
+    template <U16 M, VectorValueType... Args>
     inline JzVector(const JzVector<M> &other, Args... args)
     {
         if constexpr (sizeof...(args) == 0) {
-            std::memcpy(m_Data, other.m_Data, std::clamp(M, Size(0), N) * sizeof(T));
+            std::memcpy(m_Data, other.m_Data, std::clamp(M, U16(0), N) * sizeof(T));
         } else if constexpr ((M + sizeof...(args)) >= N) {
-            std::memcpy(m_Data, other.m_Data, std::clamp(M, Size(0), N) * sizeof(T));
+            std::memcpy(m_Data, other.m_Data, std::clamp(M, U16(0), N) * sizeof(T));
             T data[] = {args...};
             std::memcpy(m_Data + M, data, sizeof(data));
         } else {
-            std::memcpy(m_Data, other.m_Data, std::clamp(M, Size(0), N) * sizeof(T));
+            std::memcpy(m_Data, other.m_Data, std::clamp(M, U16(0), N) * sizeof(T));
             T data[] = {args...};
             std::memcpy(m_Data + M, data, sizeof(data));
 
-            for (Size i = M + sizeof...(args); i < N; ++i) {
+            for (U16 i = M + sizeof...(args); i < N; ++i) {
                 m_Data[i] = T();
             }
         }
@@ -43,7 +43,7 @@ public:
     {
         static_assert(sizeof...(args) <= N, "Invalid number of arguments");
         if constexpr (sizeof...(args) == 0) {
-            for (Size i = 0; i < N; ++i) {
+            for (U16 i = 0; i < N; ++i) {
                 m_Data[i] = T();
             }
         } else {
@@ -69,12 +69,12 @@ public:
         return *this;
     }
 
-    inline T &operator[](Size index)
+    inline T &operator[](U16 index)
     {
         return m_Data[index];
     }
 
-    inline const T &operator[](Size index) const
+    inline const T &operator[](U16 index) const
     {
         return m_Data[index];
     }
@@ -82,7 +82,7 @@ public:
     inline JzVector<N, T> operator+(const JzVector<N, T> &other) const
     {
         JzVector<N, T> result;
-        for (Size i = 0; i < N; ++i) {
+        for (U16 i = 0; i < N; ++i) {
             result[i] = m_Data[i] + other[i];
         }
         return result;
@@ -91,7 +91,7 @@ public:
     inline JzVector<N, T> operator-(const JzVector<N, T> &other) const
     {
         JzVector<N, T> result;
-        for (Size i = 0; i < N; ++i) {
+        for (U16 i = 0; i < N; ++i) {
             result[i] = m_Data[i] - other[i];
         }
         return result;
@@ -100,7 +100,7 @@ public:
     inline JzVector<N, T> operator*(const JzVector<N, T> &other) const
     {
         JzVector<N, T> result;
-        for (Size i = 0; i < N; ++i) {
+        for (U16 i = 0; i < N; ++i) {
             result[i] = m_Data[i] * other[i];
         }
         return result;
@@ -109,7 +109,7 @@ public:
     inline JzVector<N, T> operator/(const JzVector<N, T> &other) const
     {
         JzVector<N, T> result;
-        for (Size i = 0; i < N; ++i) {
+        for (U16 i = 0; i < N; ++i) {
             result[i] = m_Data[i] / other[i];
         }
         return result;
@@ -118,7 +118,7 @@ public:
     inline JzVector<N, T> operator*(const T &value) const
     {
         JzVector<N, T> result;
-        for (Size i = 0; i < N; ++i) {
+        for (U16 i = 0; i < N; ++i) {
             result[i] = m_Data[i] * value;
         }
         return result;
@@ -127,7 +127,7 @@ public:
     inline JzVector<N, T> operator/(const T &value) const
     {
         JzVector<N, T> result;
-        for (Size i = 0; i < N; ++i) {
+        for (U16 i = 0; i < N; ++i) {
             result[i] = m_Data[i] / value;
         }
         return result;
@@ -135,7 +135,7 @@ public:
 
     inline JzVector<N, T> &operator+=(const JzVector<N, T> &other)
     {
-        for (Size i = 0; i < N; ++i) {
+        for (U16 i = 0; i < N; ++i) {
             m_Data[i] += other[i];
         }
         return *this;
@@ -143,7 +143,7 @@ public:
 
     inline JzVector<N, T> &operator-=(const JzVector<N, T> &other)
     {
-        for (Size i = 0; i < N; ++i) {
+        for (U16 i = 0; i < N; ++i) {
             m_Data[i] -= other[i];
         }
         return *this;
@@ -151,7 +151,7 @@ public:
 
     inline JzVector<N, T> &operator*=(const JzVector<N, T> &other)
     {
-        for (Size i = 0; i < N; ++i) {
+        for (U16 i = 0; i < N; ++i) {
             m_Data[i] *= other[i];
         }
         return *this;
@@ -159,7 +159,7 @@ public:
 
     inline JzVector<N, T> &operator/=(const JzVector<N, T> &other)
     {
-        for (Size i = 0; i < N; ++i) {
+        for (U16 i = 0; i < N; ++i) {
             m_Data[i] /= other[i];
         }
         return *this;
@@ -167,7 +167,7 @@ public:
 
     inline JzVector<N, T> &operator*=(const T &value)
     {
-        for (Size i = 0; i < N; ++i) {
+        for (U16 i = 0; i < N; ++i) {
             m_Data[i] *= value;
         }
         return *this;
@@ -175,7 +175,7 @@ public:
 
     inline JzVector<N, T> &operator/=(const T &value)
     {
-        for (Size i = 0; i < N; ++i) {
+        for (U16 i = 0; i < N; ++i) {
             m_Data[i] /= value;
         }
         return *this;
@@ -183,7 +183,7 @@ public:
 
     inline bool operator==(const JzVector<N, T> &other) const
     {
-        for (Size i = 0; i < N; ++i) {
+        for (U16 i = 0; i < N; ++i) {
             if ((m_Data[i] - other[i]) > std::numeric_limits<T>::epsilon()) {
                 return false;
             }
@@ -194,7 +194,7 @@ public:
     inline JzVector<N, T> operator-() const
     {
         JzVector<N, T> result;
-        for (Size i = 0; i < N; ++i) {
+        for (U16 i = 0; i < N; ++i) {
             result[i] = -m_Data[i];
         }
         return result;
@@ -208,7 +208,7 @@ public:
     inline T Length() const
     {
         T result = 0;
-        for (Size i = 0; i < N; ++i) {
+        for (U16 i = 0; i < N; ++i) {
             result += m_Data[i] * m_Data[i];
         }
         return static_cast<T>(std::sqrt(result));
@@ -217,7 +217,7 @@ public:
     inline T LengthSquared() const
     {
         T result = 0;
-        for (Size i = 0; i < N; ++i) {
+        for (U16 i = 0; i < N; ++i) {
             result += m_Data[i] * m_Data[i];
         }
         return result;
@@ -226,7 +226,7 @@ public:
     inline T Dot(const JzVector<N, T> &other) const
     {
         T result = 0;
-        for (Size i = 0; i < N; ++i) {
+        for (U16 i = 0; i < N; ++i) {
             result += m_Data[i] * other[i];
         }
         return result;
@@ -235,7 +235,7 @@ public:
     inline JzVector<N, T> Pow(F32 power) const
     {
         JzVector<N, T> result;
-        for (Size i = 0; i < N; ++i) {
+        for (U16 i = 0; i < N; ++i) {
             result[i] = std::pow(m_Data[i], power);
         }
         return result;
@@ -267,7 +267,7 @@ public:
 
     inline const JzVector &negate()
     {
-        for (Size index = 0; index < N; ++index)
+        for (U16 index = 0; index < N; ++index)
             m_Data[index] = -m_Data[index];
         return *this;
     }

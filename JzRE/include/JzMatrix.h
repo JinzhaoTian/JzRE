@@ -5,13 +5,13 @@
 
 namespace JzRE {
 
-template <Size M, Size N, typename T = F32>
+template <U16 M, U16 N, typename T = F32>
 class JzMatrix {
 public:
     inline JzMatrix()
     {
-        for (Size i = 0; i < M; ++i) {
-            for (Size j = 0; j < N; ++j) {
+        for (U16 i = 0; i < M; ++i) {
+            for (U16 j = 0; j < N; ++j) {
                 At(i, j) = T(0);
             }
         }
@@ -19,8 +19,8 @@ public:
 
     inline JzMatrix(const T &value)
     {
-        for (Size i = 0; i < M; ++i) {
-            for (Size j = 0; j < N; ++j) {
+        for (U16 i = 0; i < M; ++i) {
+            for (U16 j = 0; j < N; ++j) {
                 At(i, j) = value;
             }
         }
@@ -44,8 +44,8 @@ public:
 
     inline JzMatrix<M, N, T> &operator+=(const JzMatrix<M, N, T> &other)
     {
-        for (Size i = 0; i < M; ++i) {
-            for (Size j = 0; j < N; ++j) {
+        for (U16 i = 0; i < M; ++i) {
+            for (U16 j = 0; j < N; ++j) {
                 At(i, j) += other.At(i, j);
             }
         }
@@ -54,8 +54,8 @@ public:
 
     inline JzMatrix<M, N, T> &operator-=(const JzMatrix<M, N, T> &other)
     {
-        for (Size i = 0; i < M; ++i) {
-            for (Size j = 0; j < N; ++j) {
+        for (U16 i = 0; i < M; ++i) {
+            for (U16 j = 0; j < N; ++j) {
                 At(i, j) -= other.At(i, j);
             }
         }
@@ -64,8 +64,8 @@ public:
 
     inline JzMatrix<M, N, T> &operator*=(const T &value)
     {
-        for (Size i = 0; i < M; ++i) {
-            for (Size j = 0; j < N; ++j) {
+        for (U16 i = 0; i < M; ++i) {
+            for (U16 j = 0; j < N; ++j) {
                 m_Data[i][j] *= value;
             }
         }
@@ -74,8 +74,8 @@ public:
 
     inline JzMatrix<M, N, T> &operator/=(const T &value)
     {
-        for (Size i = 0; i < M; ++i) {
-            for (Size j = 0; j < N; ++j) {
+        for (U16 i = 0; i < M; ++i) {
+            for (U16 j = 0; j < N; ++j) {
                 At(i, j) /= value;
             }
         }
@@ -113,40 +113,40 @@ public:
     inline JzMatrix<N, M, T> Transpose() const
     {
         JzMatrix<N, M, T> result;
-        for (Size i = 0; i < M; ++i) {
-            for (Size j = 0; j < N; ++j) {
+        for (U16 i = 0; i < M; ++i) {
+            for (U16 j = 0; j < N; ++j) {
                 result.At(j, i) = At(i, j);
             }
         }
         return result;
     }
 
-    inline const T &At(Size i, Size j) const
+    inline const T &At(U16 i, U16 j) const
     {
         return m_Data[i * N + j];
     }
 
-    inline T &At(Size i, Size j)
+    inline T &At(U16 i, U16 j)
     {
         return m_Data[i * N + j];
     }
 
-    inline const T &operator()(Size i, Size j) const
+    inline const T &operator()(U16 i, U16 j) const
     {
         return At(i, j);
     }
 
-    inline T &operator()(Size i, Size j)
+    inline T &operator()(U16 i, U16 j)
     {
         return At(i, j);
     }
 
-    inline const T *operator[](Size i) const
+    inline const T *operator[](U16 i) const
     {
         return m_Data + i * N;
     }
 
-    inline T *operator[](Size i)
+    inline T *operator[](U16 i)
     {
         return m_Data + i * N;
     }
@@ -218,8 +218,8 @@ public:
     inline JzMat4x4 Mul(const JzMatrix<4, 4, F32> &other) const
     {
         JzMat4x4 result;
-        for (Size i = 0; i < 4; ++i) {
-            for (Size j = 0; j < 4; ++j) {
+        for (U16 i = 0; i < 4; ++i) {
+            for (U16 j = 0; j < 4; ++j) {
                 result.At(i, j) = this->At(i, 0) * other.At(0, j) + this->At(i, 1) * other.At(1, j) + this->At(i, 2) * other.At(2, j) + this->At(i, 3) * other.At(3, j);
             }
         }
@@ -229,7 +229,7 @@ public:
     inline JzVector<4, F32> Mul(const JzVector<4, F32> &v) const
     {
         JzVec4 result;
-        for (Size i = 0; i < 4; ++i) {
+        for (U16 i = 0; i < 4; ++i) {
             result[i] = this->At(i, 0) * v[0] + this->At(i, 1) * v[1] + this->At(i, 2) * v[2] + this->At(i, 3) * v[3];
         }
         return result;
