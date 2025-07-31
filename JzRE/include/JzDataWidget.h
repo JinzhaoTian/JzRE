@@ -8,7 +8,7 @@ namespace JzRE {
 /**
  * @brief Widget for displaying and editing data
  *
- * @tparam T
+ * @tparam T The type of the data
  */
 template <typename T>
 class JzDataWidget : public JzWidget {

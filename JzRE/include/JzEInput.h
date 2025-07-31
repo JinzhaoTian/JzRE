@@ -2,7 +2,7 @@
 
 namespace JzRE {
 /**
- * @brief Key enum
+ * @brief Enums of Keyboard Input Keys
  */
 enum class JzEInputKey {
     KEY_UNKNOWN       = -1,
@@ -129,7 +129,7 @@ enum class JzEInputKey {
 };
 
 /**
- * @brief Key state enum
+ * @brief Enums of Keyboard Input Key States
  */
 enum class JzEInputKeyState {
     KEY_UP   = 0,
@@ -137,7 +137,7 @@ enum class JzEInputKeyState {
 };
 
 /**
- * @brief Mouse button enum
+ * @brief Enums of Mouse Buttons Input Keys
  */
 enum class JzEInputMouseButton {
     MOUSE_BUTTON_1      = 0,
@@ -154,7 +154,7 @@ enum class JzEInputMouseButton {
 };
 
 /**
- * @brief Mouse button state enum
+ * @brief Enums of Mouse Buttons Input Key States
  */
 enum class JzEInputMouseButtonState {
     MOUSE_UP   = 0,

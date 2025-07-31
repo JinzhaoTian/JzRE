@@ -4,6 +4,9 @@
 #include "JzVector.h"
 
 namespace JzRE {
+/**
+ * @brief Converter Of Different Types
+ */
 class JzConverter {
 public:
     /**

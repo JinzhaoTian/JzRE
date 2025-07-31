@@ -5,7 +5,7 @@
 
 namespace JzRE {
 /**
- * @brief Asset View
+ * @brief Asset View Panel Window
  */
 class JzAssetView : public JzViewControllable {
 public:

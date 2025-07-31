@@ -5,7 +5,7 @@
 
 namespace JzRE {
 /**
- * @brief Text widget
+ * @brief Text Widget
  */
 class JzText : public JzDataWidget<JzRE::String> {
 public:

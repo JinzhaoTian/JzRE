@@ -6,7 +6,7 @@
 
 namespace JzRE {
 /**
- * @brief Canvas class
+ * @brief Canvas
  */
 class JzCanvas : public JzIDrawable {
 public:

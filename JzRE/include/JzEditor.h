@@ -16,7 +16,7 @@
 
 namespace JzRE {
 /**
- * @brief Handle the editor's logic
+ * @brief Editor of JzRE
  */
 class JzEditor {
 public:

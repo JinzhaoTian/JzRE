@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CommonTypes.h"
-#include "JzEMemoryMode.h"
+#include "JzEMemory.h"
 #include "JzWidget.h"
 
 namespace JzRE {

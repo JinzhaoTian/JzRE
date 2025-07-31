@@ -4,10 +4,15 @@
 #include "JzVector.h"
 
 namespace JzRE {
-
+/**
+ * @brief Matrix Class
+ */
 template <U16 M, U16 N, typename T = F32>
 class JzMatrix {
 public:
+    /**
+     * @brief Constructor
+     */
     inline JzMatrix()
     {
         for (U16 i = 0; i < M; ++i) {
@@ -17,6 +22,11 @@ public:
         }
     }
 
+    /**
+     * @brief Constructor
+     *
+     * @param value The value to initialize the matrix with
+     */
     inline JzMatrix(const T &value)
     {
         for (U16 i = 0; i < M; ++i) {
@@ -26,11 +36,19 @@ public:
         }
     }
 
+    /**
+     * @brief Constructor
+     *
+     * @param data The data to initialize the matrix with
+     */
     inline JzMatrix(const T *data)
     {
         std::memcpy(m_Data, data, sizeof(m_Data));
     }
 
+    /**
+     * @brief Copy Constructor
+     */
     inline JzMatrix(const JzMatrix &other)
     {
         std::memcpy(m_Data, other.m_Data, sizeof(m_Data));

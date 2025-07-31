@@ -2,7 +2,7 @@
 
 namespace JzRE {
 /**
- * @brief Interface for drawable objects
+ * @brief Interface for Drawable Objects
  */
 class JzIDrawable {
 public:

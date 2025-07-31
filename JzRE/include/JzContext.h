@@ -12,7 +12,7 @@
 
 namespace JzRE {
 /**
- * @brief Context of the render engine
+ * @brief Context of JzRE
  */
 class JzContext {
 public:

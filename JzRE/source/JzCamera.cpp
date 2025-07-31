@@ -22,6 +22,4 @@ JzRE::F32 JzRE::JzCamera::GetFar() const
     return m_far;
 }
 
-void JzRE::JzCamera::SetClearColor()
-{
-}
+void JzRE::JzCamera::SetClearColor() { }

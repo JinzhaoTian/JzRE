@@ -7,7 +7,7 @@
 
 namespace JzRE {
 /**
- * @brief Input manager class
+ * @brief Input Manager Class of JzRE
  */
 class JzInputManager {
 public:

@@ -7,7 +7,7 @@ void JzRE::JzMenuList::_Draw_Impl()
 {
     if (ImGui::BeginMenu(name.c_str(), !locked)) {
         if (!m_opened) {
-            clickedEvent.Invoke();
+            ClickedEvent.Invoke();
             m_opened = true;
         }
 

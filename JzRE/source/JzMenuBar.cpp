@@ -77,7 +77,7 @@ void JzRE::JzMenuBar::CreateWindowMenu()
     m_windowMenu->CreateWidget<JzSeparator>();
 
     /* When the menu is opened, we update which window is marked as "Opened" or "Closed" */
-    m_windowMenu->clickedEvent += std::bind(&JzMenuBar::UpdateToggleableItems, this);
+    m_windowMenu->ClickedEvent += std::bind(&JzMenuBar::UpdateToggleableItems, this);
 }
 
 void JzRE::JzMenuBar::CreateActorsMenu() { }

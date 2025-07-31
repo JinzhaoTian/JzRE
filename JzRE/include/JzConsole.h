@@ -9,7 +9,7 @@
 
 namespace JzRE {
 /**
- * @brief Console
+ * @brief Console Panel Window
  */
 class JzConsole : public JzPanelWindow {
 public:
@@ -21,10 +21,19 @@ public:
      */
     JzConsole(const String &name, Bool is_opened);
 
+    /**
+     * @brief Clear Content
+     */
     void Clear();
 
+    /**
+     * @brief Filter logs
+     */
     void FilterLogs();
 
+    /**
+     * @brief
+     */
     void TruncateLogs();
 
 private:

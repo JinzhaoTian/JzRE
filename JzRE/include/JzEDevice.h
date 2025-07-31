@@ -2,7 +2,7 @@
 
 namespace JzRE {
 /**
- * @brief Device error Code
+ * @brief Enums of Device Error Codes
  */
 enum class JzEDeviceErrorCode {
     NOT_INITIALIZED     = 0x00010001,

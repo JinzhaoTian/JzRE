@@ -7,14 +7,34 @@
 #include "JzWidgetContainer.h"
 
 namespace JzRE {
+/**
+ * @brief Tree Node Widget
+ */
 class JzTreeNode : public JzDataWidget<JzRE::String>, public JzWidgetContainer {
 public:
+    /**
+     * @brief Constructor
+     *
+     * @param p_name The name of the tree node
+     * @param arrowClickToOpen Whether to open the tree node when the arrow is clicked
+     */
     JzTreeNode(const String &p_name = "", Bool arrowClickToOpen = false);
 
+    /**
+     * @brief Open the tree node
+     */
     void Open();
 
+    /**
+     * @brief Close the tree node
+     */
     void Close();
 
+    /**
+     * @brief Check if the tree node is opened
+     *
+     * @return True if the tree node is opened, false otherwise
+     */
     Bool IsOpened() const;
 
 protected:

@@ -8,14 +8,29 @@
 #include "JzWidgetContainer.h"
 
 namespace JzRE {
+/**
+ * @brief Hierarchy Panel Window
+ */
 class JzHierarchy : public JzPanelWindow {
 public:
+    /**
+     * @brief Constructor
+     */
     JzHierarchy(const String &name, Bool is_opened);
 
+    /**
+     * @brief Clear Content
+     */
     void Clear();
 
+    /**
+     * @brief Clear Select Status
+     */
     void UnselectActorsWidgets();
 
+    /**
+     * @brief Select
+     */
     void SelectActorByWidget(JzTreeNode &widget);
 
 public:

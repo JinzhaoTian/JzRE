@@ -6,7 +6,7 @@
 
 namespace JzRE {
 /**
- * @brief Menu list class
+ * @brief Menu List Widget
  */
 class JzMenuList : public JzGroup {
 public:
@@ -27,7 +27,7 @@ protected:
 public:
     String    name;
     Bool      locked;
-    JzEvent<> clickedEvent;
+    JzEvent<> ClickedEvent;
 
 private:
     Bool m_opened;

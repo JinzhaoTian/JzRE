@@ -8,7 +8,7 @@
 
 namespace JzRE {
 /**
- * @brief Panels manager class
+ * @brief Panels Manager of JzRE
  */
 class JzPanelsManager {
 public:

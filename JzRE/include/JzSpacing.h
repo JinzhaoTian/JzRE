@@ -4,7 +4,9 @@
 #include "JzWidget.h"
 
 namespace JzRE {
-
+/**
+ * @brief Spacing Widget
+ */
 class JzSpacing : public JzWidget {
 public:
     /**

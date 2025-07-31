@@ -6,9 +6,9 @@
 
 namespace JzRE {
 /**
- * @brief Plugin Data dispatcher class
+ * @brief Plugin Data Dispatcher
  *
- * @tparam T
+ * @tparam T The type of the data
  */
 template <typename T>
 class JzDataDispatcher : public JzPlugin {

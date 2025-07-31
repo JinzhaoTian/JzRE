@@ -7,7 +7,7 @@
 
 namespace JzRE {
 /**
- * @brief Window class
+ * @brief Window of JzRE
  */
 class JzWindow {
 public:

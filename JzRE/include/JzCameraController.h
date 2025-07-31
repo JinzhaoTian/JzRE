@@ -8,12 +8,29 @@
 #include "JzWindow.h"
 
 namespace JzRE {
+/**
+ * @brief Camera Controller
+ */
 class JzCameraController {
 public:
+    /**
+     * @brief Constructor
+     *
+     * @param view The view
+     * @param camera The camera
+     */
     JzCameraController(JzView &view, JzCamera &camera);
 
+    /**
+     * @brief Handle the inputs
+     *
+     * @param deltaTime The delta time
+     */
     void HandleInputs(F32 deltaTime);
 
+    /**
+     * @brief Check if the right mouse is pressed
+     */
     Bool IsRightMousePressed() const;
 
 private:

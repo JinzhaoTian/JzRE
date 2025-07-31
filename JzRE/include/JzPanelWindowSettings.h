@@ -3,6 +3,9 @@
 #include "CommonTypes.h"
 
 namespace JzRE {
+/**
+ * @brief Settings of Panel Window
+ */
 struct JzPanelWindowSettings {
     Bool closable                 = false;
     Bool resizable                = true;

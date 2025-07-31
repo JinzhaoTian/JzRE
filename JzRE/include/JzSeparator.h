@@ -5,7 +5,7 @@
 
 namespace JzRE {
 /**
- * @brief Separator widget
+ * @brief Separator Widget
  */
 class JzSeparator : public JzWidget {
 protected:

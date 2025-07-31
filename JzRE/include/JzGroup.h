@@ -6,7 +6,7 @@
 
 namespace JzRE {
 /**
- * @brief Group widget class
+ * @brief Group Widget
  */
 class JzGroup : public JzWidget, public JzWidgetContainer {
 protected:

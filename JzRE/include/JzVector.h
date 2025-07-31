@@ -4,13 +4,23 @@
 
 namespace JzRE {
 
+/**
+ * @brief Concept of Vector Value Type
+ */
 template <typename T>
 concept VectorValueType = std::is_arithmetic_v<T>;
 
+/**
+ * @brief Vector Class
+ */
 template <U16 N, typename T = F32>
 class JzVector {
 public:
-    // constructors
+    /**
+     * @brief Constructor
+     *
+     * @param value The value to initialize the vector with
+     */
     inline JzVector(const T &value)
     {
         for (U16 i = 0; i < N; ++i) {
@@ -18,6 +28,14 @@ public:
         }
     }
 
+    /**
+     * @brief Constructor
+     *
+     * @tparam M The size of the vector
+     * @tparam Args The arguments to initialize the vector with
+     * @param other The other vector to initialize the vector with
+     * @param args The arguments to initialize the vector with
+     */
     template <U16 M, VectorValueType... Args>
     inline JzVector(const JzVector<M> &other, Args... args)
     {
@@ -38,6 +56,12 @@ public:
         }
     }
 
+    /**
+     * @brief Constructor
+     *
+     * @tparam Args The arguments to initialize the vector with
+     * @param args The arguments to initialize the vector with
+     */
     template <VectorValueType... Args>
     inline JzVector(Args... args)
     {
@@ -52,11 +76,22 @@ public:
         }
     }
 
+    /**
+     * @brief Constructor
+     *
+     * @param values The values to initialize the vector with
+     */
     inline JzVector(const T *values)
     {
         std::memcpy(m_Data, values, N * sizeof(T));
     }
 
+    /**
+     * @brief Constructor
+     *
+     * @tparam U The type of the source vector
+     * @param source_ The source vector to initialize the vector with
+     */
     template <typename U>
     inline JzVector(const JzVector<N, U> &source_)
     {

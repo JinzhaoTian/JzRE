@@ -5,10 +5,18 @@
 #include "JzWidget.h"
 
 namespace JzRE {
-
+/**
+ * @brief Button Widget
+ */
 class JzButton : public JzWidget {
 public:
-    JzButton(const String &label = "",  Bool p_disabled = false);
+    /**
+     * @brief Constructor
+     *
+     * @param label The label of the button
+     * @param p_disabled Whether the button is disabled
+     */
+    JzButton(const String &label = "", Bool p_disabled = false);
 
 protected:
     /**
@@ -17,6 +25,9 @@ protected:
     void _Draw_Impl() override;
 
 public:
+    /**
+     * @brief Event triggered when the button is clicked
+     */
     JzEvent<> ClickedEvent;
 
 public:

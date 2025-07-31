@@ -4,7 +4,7 @@
 
 namespace JzRE {
 /**
- * @brief Serializable interface
+ * @brief Interface for Serializable Objects
  */
 class JzISerializable {
 public:

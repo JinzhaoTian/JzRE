@@ -7,7 +7,7 @@
 
 namespace JzRE {
 /**
- * OS-based Device
+ * @brief Device of JzRE
  */
 class JzDevice {
 public:

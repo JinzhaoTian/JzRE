@@ -5,7 +5,7 @@
 
 namespace JzRE {
 /**
- * @brief Material Editor
+ * @brief Material Edit Panel Window
  */
 class JzMaterialEditor : public JzPanelWindow {
 public:

@@ -6,7 +6,7 @@
 
 namespace JzRE {
 /**
- * @brief Scene manager
+ * @brief Scene Manager of JzRE
  */
 class JzSceneManager {
 public:

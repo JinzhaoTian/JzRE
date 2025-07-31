@@ -4,7 +4,7 @@
 
 namespace JzRE {
 /**
- * @brief Window settings
+ * @brief Window Settings
  */
 struct JzWindowSettings {
     /**

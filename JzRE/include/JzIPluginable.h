@@ -6,7 +6,7 @@
 
 namespace JzRE {
 /**
- * @brief Interface for plugins
+ * @brief Interface for Pluginable Objects
  */
 class JzIPluginable {
 public:

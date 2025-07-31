@@ -7,7 +7,7 @@
 
 namespace JzRE {
 /**
- * @brief All view controllable classes inherit from this class
+ * @brief Controllable View
  */
 class JzViewControllable : public JzView {
 public:
@@ -26,14 +26,33 @@ public:
      */
     virtual void Update(F32 deltaTime) override;
 
+    /**
+     * @brief Initialize the frame
+     */
     virtual void InitFrame() override;
 
+    /**
+     * @brief Reset the camera transform
+     */
     virtual void ResetCameraTransform();
 
+    /**
+     * @brief Get the camera controller
+     *
+     * @return The camera controller
+     */
     JzCameraController &GetCameraController();
 
+    /**
+     * @brief Get the camera
+     *
+     * @return The camera
+     */
     virtual JzCamera *GetCamera() override;
 
+    /**
+     * @brief Reset the clear color
+     */
     void ResetClearColor();
 
 protected:

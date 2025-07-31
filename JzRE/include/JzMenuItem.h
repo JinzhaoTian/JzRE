@@ -6,7 +6,7 @@
 
 namespace JzRE {
 /**
- * @brief Menu item class
+ * @brief Menu Item Widget
  */
 class JzMenuItem : public JzDataWidget<Bool> {
 public:

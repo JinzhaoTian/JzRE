@@ -8,7 +8,7 @@
 
 namespace JzRE {
 /**
- * @brief Asset browser panel
+ * @brief Asset Browser Panel Window
  */
 class JzAssetBrowser : public JzPanelWindow {
 public:

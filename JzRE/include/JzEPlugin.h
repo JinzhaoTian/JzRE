@@ -2,7 +2,7 @@
 
 namespace JzRE {
 /**
- * @brief Plugin execution context
+ * @brief Enums of Plugin Execution Context
  */
 enum class JzEPluginExecutionContext {
     /**

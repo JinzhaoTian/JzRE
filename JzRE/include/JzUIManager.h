@@ -5,7 +5,7 @@
 
 namespace JzRE {
 /**
- * @brief UI Manager
+ * @brief UI Manager of JzRE
  */
 class JzUIManager {
 public:
@@ -44,12 +44,24 @@ public:
      */
     void RemoveCanvas();
 
+    /**
+     * @brief Enable editor layout save
+     */
     void EnableEditorLayoutSave(Bool value);
 
+    /**
+     * @brief Check if editor layout save is enabled
+     */
     Bool IsEditorLayoutSaveEnabled() const;
 
+    /**
+     * @brief Set editor layout save filename
+     */
     void SetEditorLayoutSaveFilename(const String &filename);
 
+    /**
+     * @brief Reset layout
+     */
     void ResetLayout(const String &configPath) const;
 
 private:

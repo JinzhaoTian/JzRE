@@ -4,7 +4,7 @@
 
 namespace JzRE {
 /**
- * @brief Clock class
+ * @brief Clock
  */
 class JzClock {
 public:

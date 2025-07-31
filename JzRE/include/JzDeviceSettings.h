@@ -4,7 +4,7 @@
 
 namespace JzRE {
 /**
- * @brief Device settings
+ * @brief Device Settings
  */
 struct JzDeviceSettings {
     Bool debug               = false; // Debug context

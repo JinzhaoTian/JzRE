@@ -4,12 +4,15 @@
 
 namespace JzRE {
 /**
- * @brief Service locator
+ * @brief Service Container
  */
 class JzServiceContainer {
 public:
     /**
      * @brief Provide a service
+     *
+     * @tparam T The type of the service
+     * @param p_service The service to provide
      */
     template <typename T>
     static void Provide(T &p_service)
@@ -19,6 +22,9 @@ public:
 
     /**
      * @brief Get a service
+     *
+     * @tparam T The type of the service
+     * @return The service
      */
     template <typename T>
     static T &Get()

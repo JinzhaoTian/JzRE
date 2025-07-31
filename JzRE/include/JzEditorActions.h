@@ -1,7 +1,7 @@
 #pragma once
 
 #include "JzContext.h"
-#include "JzEGizmoOperation.h"
+#include "JzEGizmo.h"
 #include "JzEvent.h"
 #include "JzPanelsManager.h"
 #include "JzServiceContainer.h"
@@ -20,7 +20,7 @@ namespace JzRE {
     JzRE::JzServiceContainer::Get<JzRE::JzEditorActions>().GetPanelsManager().GetPanelAs<type>(id)
 
 /**
- * @brief Editor actions
+ * @brief Editor Actions of JzRE, used to handle the editor's logic
  */
 class JzEditorActions {
 public:
