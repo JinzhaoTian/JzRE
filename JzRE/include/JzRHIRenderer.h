@@ -1,8 +1,8 @@
 #pragma once
 
-#include "RHI.h"
-#include "OGLScene.h"
+#include "JzRHI.h"
 #include "OGLRenderWindow.h"
+#include "OGLScene.h"
 
 namespace JzRE {
 
@@ -10,10 +10,10 @@ namespace JzRE {
  * 基于RHI的渲染器
  * 替换原有的OGLRenderer，提供跨平台渲染支持
  */
-class RHIRenderer {
+class JzRHIRenderer {
 public:
-    RHIRenderer(std::shared_ptr<OGLRenderWindow> wnd, I32 width, I32 height);
-    ~RHIRenderer();
+    JzRHIRenderer(std::shared_ptr<OGLRenderWindow> wnd, I32 width, I32 height);
+    ~JzRHIRenderer();
 
     // 主要渲染接口
     void RenderScene(std::shared_ptr<OGLScene> scene);
@@ -21,30 +21,36 @@ public:
     void Shutdown();
 
     // 渲染模式切换
-    void SetUseCommandBuffer(Bool useCommandBuffer) { this->useCommandBuffer = useCommandBuffer; }
-    Bool IsUsingCommandBuffer() const { return useCommandBuffer; }
+    void SetUseCommandBuffer(Bool useCommandBuffer)
+    {
+        this->useCommandBuffer = useCommandBuffer;
+    }
+    Bool IsUsingCommandBuffer() const
+    {
+        return useCommandBuffer;
+    }
 
     // 多线程渲染支持
     void SetThreadCount(U32 threadCount);
-    U32 GetThreadCount() const;
+    U32  GetThreadCount() const;
 
     // 统计信息
-    const RHIStats& GetStats() const;
-    void ResetStats();
+    const JzRHIStats &GetStats() const;
+    void              ResetStats();
 
 private:
-    I32 width, height;
+    I32                              width, height;
     std::shared_ptr<OGLRenderWindow> window;
-    
+
     // RHI资源
-    std::shared_ptr<RHIFramebuffer> framebuffer;
-    std::shared_ptr<RHITexture> colorTexture;
-    std::shared_ptr<RHITexture> depthTexture;
-    std::shared_ptr<RHIPipeline> defaultPipeline;
-    
+    std::shared_ptr<JzRHIFramebuffer> framebuffer;
+    std::shared_ptr<JzRHITexture>     colorTexture;
+    std::shared_ptr<JzRHITexture>     depthTexture;
+    std::shared_ptr<JzRHIPipeline>    defaultPipeline;
+
     // 渲染模式
     Bool useCommandBuffer = true;
-    Bool isInitialized = false;
+    Bool isInitialized    = false;
 
     // 初始化相关
     Bool CreateFramebuffer();
@@ -53,10 +59,10 @@ private:
 
     // 立即模式渲染
     void RenderImmediate(std::shared_ptr<OGLScene> scene);
-    
+
     // 命令缓冲模式渲染
     void RenderWithCommandBuffer(std::shared_ptr<OGLScene> scene);
-    
+
     // 辅助函数
     void SetupViewport();
     void ClearBuffers();
@@ -66,12 +72,12 @@ private:
  * RHI渲染引擎
  * 替换原有的OGLRenderEngine，使用RHI接口
  */
-class RHIRenderEngine {
+class JzRHIRenderEngine {
 public:
-    RHIRenderEngine();
-    ~RHIRenderEngine();
+    JzRHIRenderEngine();
+    ~JzRHIRenderEngine();
 
-    Bool Initialize(ERHIType rhiType = ERHIType::Unknown);
+    Bool Initialize(JzERHIType rhiType = JzERHIType::Unknown);
     void Run();
     void Shutdown();
 
@@ -80,27 +86,27 @@ public:
     void SetThreadCount(U32 threadCount);
 
 private:
-    const I32 wndWidth = 1200;
-    const I32 wndHeight = 800;
-    const String title = "JzRE - RHI Rendering Engine";
+    const I32    wndWidth  = 1200;
+    const I32    wndHeight = 800;
+    const String title     = "JzRE - RHI Rendering Engine";
 
     Bool isRunning;
     Bool isInitialized;
 
     // 引擎组件
     std::shared_ptr<OGLRenderWindow> window;
-    std::shared_ptr<RHIRenderer> renderer;
-    std::shared_ptr<OGLScene> scene;
-    std::shared_ptr<OGLCamera> camera;
+    std::shared_ptr<JzRHIRenderer>   renderer;
+    std::shared_ptr<OGLScene>        scene;
+    std::shared_ptr<OGLCamera>       camera;
 
     Bool InitScene();
     void ProcessInput();
     void UpdateStats();
-    
+
     // 性能监控
     std::chrono::high_resolution_clock::time_point lastFrameTime;
-    F32 frameTime = 0.0f;
-    U32 frameCount = 0;
+    F32                                            frameTime  = 0.0f;
+    U32                                            frameCount = 0;
 };
 
-} // namespace JzRE 
+} // namespace JzRE

@@ -7,7 +7,7 @@ namespace JzRE {
 /**
  * 支持的图形API类型
  */
-enum class ERHIType : U8 {
+enum class JzERHIType : U8 {
     Unknown = 0,
     OpenGL,
     Vulkan,
@@ -19,7 +19,7 @@ enum class ERHIType : U8 {
 /**
  * 缓冲区类型
  */
-enum class EBufferType : U8 {
+enum class JzEBufferType : U8 {
     Vertex,
     Index,
     Uniform,
@@ -29,7 +29,7 @@ enum class EBufferType : U8 {
 /**
  * 缓冲区使用方式
  */
-enum class EBufferUsage : U8 {
+enum class JzEBufferUsage : U8 {
     StaticDraw,
     DynamicDraw,
     StreamDraw
@@ -38,7 +38,7 @@ enum class EBufferUsage : U8 {
 /**
  * 纹理类型
  */
-enum class ETextureType : U8 {
+enum class JzETextureType : U8 {
     Texture1D,
     Texture2D,
     Texture3D,
@@ -49,7 +49,7 @@ enum class ETextureType : U8 {
 /**
  * 纹理格式
  */
-enum class ETextureFormat : U8 {
+enum class JzETextureFormat : U8 {
     Unknown,
     R8,
     RG8,
@@ -72,7 +72,7 @@ enum class ETextureFormat : U8 {
 /**
  * 纹理过滤方式
  */
-enum class ETextureFilter : U8 {
+enum class JzETextureFilter : U8 {
     Nearest,
     Linear,
     NearestMipmapNearest,
@@ -84,7 +84,7 @@ enum class ETextureFilter : U8 {
 /**
  * 纹理包装方式
  */
-enum class ETextureWrap : U8 {
+enum class JzETextureWrap : U8 {
     Repeat,
     MirroredRepeat,
     ClampToEdge,
@@ -94,7 +94,7 @@ enum class ETextureWrap : U8 {
 /**
  * 着色器类型
  */
-enum class EShaderType : U8 {
+enum class JzEShaderType : U8 {
     Vertex,
     Fragment,
     Geometry,
@@ -106,7 +106,7 @@ enum class EShaderType : U8 {
 /**
  * 图元类型
  */
-enum class EPrimitiveType : U8 {
+enum class JzEPrimitiveType : U8 {
     Points,
     Lines,
     LineStrip,
@@ -118,7 +118,7 @@ enum class EPrimitiveType : U8 {
 /**
  * 混合模式
  */
-enum class EBlendMode : U8 {
+enum class JzEBlendMode : U8 {
     None,
     Alpha,
     Additive,
@@ -128,7 +128,7 @@ enum class EBlendMode : U8 {
 /**
  * 深度测试函数
  */
-enum class EDepthFunc : U8 {
+enum class JzEDepthFunc : U8 {
     Never,
     Less,
     Equal,
@@ -142,7 +142,7 @@ enum class EDepthFunc : U8 {
 /**
  * 面剔除模式
  */
-enum class ECullMode : U8 {
+enum class JzECullMode : U8 {
     None,
     Front,
     Back,
@@ -152,56 +152,56 @@ enum class ECullMode : U8 {
 /**
  * 多重采样抗锯齿级别
  */
-enum class EMSAALevel : U8 {
+enum class JzEMSAALevel : U8 {
     None = 0,
-    X2 = 2,
-    X4 = 4,
-    X8 = 8,
-    X16 = 16
+    X2   = 2,
+    X4   = 4,
+    X8   = 8,
+    X16  = 16
 };
 
 /**
  * 渲染状态描述
  */
-struct RenderState {
-    EBlendMode blendMode = EBlendMode::None;
-    EDepthFunc depthFunc = EDepthFunc::Less;
-    ECullMode cullMode = ECullMode::Back;
-    Bool depthTest = true;
-    Bool depthWrite = true;
-    Bool wireframe = false;
-    EMSAALevel msaaLevel = EMSAALevel::None;
+struct JzRenderState {
+    JzEBlendMode blendMode  = JzEBlendMode::None;
+    JzEDepthFunc depthFunc  = JzEDepthFunc::Less;
+    JzECullMode  cullMode   = JzECullMode::Back;
+    Bool         depthTest  = true;
+    Bool         depthWrite = true;
+    Bool         wireframe  = false;
+    JzEMSAALevel msaaLevel  = JzEMSAALevel::None;
 };
 
 /**
  * 缓冲区描述
  */
 struct BufferDesc {
-    EBufferType type;
-    EBufferUsage usage;
-    Size size;
-    const void* data = nullptr;
-    String debugName;
+    JzEBufferType  type;
+    JzEBufferUsage usage;
+    Size           size;
+    const void    *data = nullptr;
+    String         debugName;
 };
 
 /**
  * 纹理描述
  */
 struct TextureDesc {
-    ETextureType type = ETextureType::Texture2D;
-    ETextureFormat format = ETextureFormat::RGBA8;
-    U32 width = 1;
-    U32 height = 1;
-    U32 depth = 1;
-    U32 mipLevels = 1;
-    U32 arraySize = 1;
-    ETextureFilter minFilter = ETextureFilter::Linear;
-    ETextureFilter magFilter = ETextureFilter::Linear;
-    ETextureWrap wrapS = ETextureWrap::Repeat;
-    ETextureWrap wrapT = ETextureWrap::Repeat;
-    ETextureWrap wrapR = ETextureWrap::Repeat;
-    const void* data = nullptr;
-    String debugName;
+    JzETextureType   type      = JzETextureType::Texture2D;
+    JzETextureFormat format    = JzETextureFormat::RGBA8;
+    U32              width     = 1;
+    U32              height    = 1;
+    U32              depth     = 1;
+    U32              mipLevels = 1;
+    U32              arraySize = 1;
+    JzETextureFilter minFilter = JzETextureFilter::Linear;
+    JzETextureFilter magFilter = JzETextureFilter::Linear;
+    JzETextureWrap   wrapS     = JzETextureWrap::Repeat;
+    JzETextureWrap   wrapT     = JzETextureWrap::Repeat;
+    JzETextureWrap   wrapR     = JzETextureWrap::Repeat;
+    const void      *data      = nullptr;
+    String           debugName;
 };
 
 /**
@@ -209,9 +209,9 @@ struct TextureDesc {
  */
 struct ShaderDesc {
     EShaderType type;
-    String source;
-    String entryPoint = "main";
-    String debugName;
+    String      source;
+    String      entryPoint = "main";
+    String      debugName;
 };
 
 /**
@@ -219,8 +219,8 @@ struct ShaderDesc {
  */
 struct PipelineDesc {
     std::vector<ShaderDesc> shaders;
-    RenderState renderState;
-    String debugName;
+    RenderState             renderState;
+    String                  debugName;
 };
 
-} // namespace JzRE 
+} // namespace JzRE
