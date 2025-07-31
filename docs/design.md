@@ -62,9 +62,12 @@ classDiagram
 
     class JzWidget { }
 
+    class JzDataWidget { }
+
     JzContext *-- JzUIManager
     JzUIManager ..> JzCanvas
     JzWidgetContainer *.. JzWidget
+    JzWidget <|-- JzDataWidget
 
     %% UI PANEL Related Classes
     class JzPanelMenuBar { }
@@ -109,6 +112,14 @@ classDiagram
     JzPanelWindow <|-- JzConsole
     JzPanelWindow <|-- JzMaterialEditor
 
+    %% Plugin
+    class JzPlugin { }
+
+    class JzDataDispatcher { }
+
+    JzPlugin <|-- JzDataDispatcher
+    JzDataWidget *-- JzDataDispatcher
+
     %% SCENE SYSTEM
     class JzSceneManager { }
     class JzScene { }
@@ -146,39 +157,39 @@ sequenceDiagram
     participant Panel as JzPanel
 
     %% Initialization Context
-    Engine->>Context: Create Context
+    Engine->>Context: Create JzContext
     activate Context
 
-    Context->>Device: Initialize Device
+    Context->>Device: Initialize JzDevice
     activate Device
-    Device-->>Context: Device Handle
+    Device-->>Context: JzDevice Handle
     deactivate Device
 
-    Context->>Window: Create Context
+    Context->>Window: Create JzWindow
     activate Window
-    Window-->>Context: Window Handle
+    Window-->>Context: JzWindow Handle
     deactivate Window
 
-    Context->>InputMgr: Create Input Manager
+    Context->>InputMgr: Create JzInputManager
     activate InputMgr
-    InputMgr-->>Context: Input Manager Handle
+    InputMgr-->>Context: JzInputManager Handle
     deactivate InputMgr
 
     Context->>UIMgr: Create JzUIManager
     activate UIMgr
-    UIMgr-->>Context: UI Handle
+    UIMgr-->>Context: JzUIManager Handle
     deactivate UIMgr
 
     Context->>SceneMgr: Create JzSceneManager
     activate SceneMgr
-    SceneMgr-->>Context: Scene Manager Handle
+    SceneMgr-->>Context: JzSceneManager Handle
     deactivate SceneMgr
 
     Context-->>Engine: Success
     deactivate Context
 
     %% UI Initialization
-    Engine->>Editor: Create Editor
+    Engine->>Editor: Create JzEditor
     activate Editor
 
     Editor->>SceneMgr: Use JzSceneManager
@@ -193,7 +204,7 @@ sequenceDiagram
     Editor->>PanelMgr: Create JzPanelsManager
     activate PanelMgr
     PanelMgr-->>Editor: JzPanelsManager Handle
-    Editor->>PanelMgr: Use JzUIManager
+    Editor->>PanelMgr: Use JzPanelsManager
     PanelMgr->>Panel: Load Panels
     activate Panel
     Panel->>Panel: Add Menu Bar

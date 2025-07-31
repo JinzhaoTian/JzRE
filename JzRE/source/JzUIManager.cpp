@@ -1,6 +1,6 @@
 #include "JzUIManager.h"
 
-JzRE::JzUIManager::JzUIManager(GLFWwindow* glfwWindow, const String &glslVersion)
+JzRE::JzUIManager::JzUIManager(GLFWwindow *glfwWindow, const String &glslVersion)
 {
     ImGui::CreateContext();
 
@@ -55,4 +55,29 @@ void JzRE::JzUIManager::SetCanvas(JzCanvas &canvas)
 void JzRE::JzUIManager::RemoveCanvas()
 {
     m_canvas = nullptr;
+}
+
+void JzRE::JzUIManager::EnableEditorLayoutSave(JzRE::Bool value)
+{
+    if (value)
+        ImGui::GetIO().IniFilename = m_layoutSaveFilename.c_str();
+    else
+        ImGui::GetIO().IniFilename = nullptr;
+}
+
+JzRE::Bool JzRE::JzUIManager::IsEditorLayoutSaveEnabled() const
+{
+    return ImGui::GetIO().IniFilename != nullptr;
+}
+
+void JzRE::JzUIManager::SetEditorLayoutSaveFilename(const JzRE::String &filename)
+{
+    m_layoutSaveFilename = filename;
+    if (IsEditorLayoutSaveEnabled())
+        ImGui::GetIO().IniFilename = m_layoutSaveFilename.c_str();
+}
+
+void JzRE::JzUIManager::ResetLayout(const JzRE::String &configPath) const
+{
+    ImGui::LoadIniSettingsFromDisk(configPath.c_str());
 }

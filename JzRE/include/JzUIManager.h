@@ -12,7 +12,7 @@ public:
     /**
      * @brief Constructor
      */
-    JzUIManager(GLFWwindow* glfwWindow, const String &glslVersion = "#version 150");
+    JzUIManager(GLFWwindow *glfwWindow, const String &glslVersion = "#version 150");
 
     /**
      * @brief Destructor
@@ -44,8 +44,17 @@ public:
      */
     void RemoveCanvas();
 
+    void EnableEditorLayoutSave(Bool value);
+
+    Bool IsEditorLayoutSaveEnabled() const;
+
+    void SetEditorLayoutSaveFilename(const String &filename);
+
+    void ResetLayout(const String &configPath) const;
+
 private:
     Bool      m_dockingState;
-    JzCanvas *m_canvas = nullptr;
+    JzCanvas *m_canvas             = nullptr;
+    String    m_layoutSaveFilename = "imgui.ini";
 };
 } // namespace JzRE
