@@ -10,6 +10,7 @@
 #include "JzHierarchy.h"
 #include "JzMaterialEditor.h"
 #include "JzMenuBar.h"
+#include "JzPanelWindowSettings.h"
 #include "JzPanelsManager.h"
 #include "JzSceneView.h"
 

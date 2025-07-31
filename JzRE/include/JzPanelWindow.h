@@ -110,16 +110,16 @@ public:
     JzVec2 maxSize = {0.f, 0.f};
 
     Bool resizable                = true;
-    Bool closable                 = false;
+    Bool closable                 = true;
     Bool movable                  = true;
     Bool scrollable               = true;
-    Bool dockable                 = false;
+    Bool dockable                 = true;
     Bool hideBackground           = false;
     Bool forceHorizontalScrollbar = false;
     Bool forceVerticalScrollbar   = false;
     Bool allowHorizontalScrollbar = false;
     Bool bringToFrontOnFocus      = true;
-    Bool collapsable              = false;
+    Bool collapsable              = true;
     Bool allowInputs              = true;
     Bool titleBar                 = true;
 
