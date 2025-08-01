@@ -1,4 +1,4 @@
-#include "JzRHI.h"
+#include "JzRHIStats.h"
 
 // RHIStats实现
 void JzRE::JzRHIStats::Reset()

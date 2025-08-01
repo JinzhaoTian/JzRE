@@ -4,8 +4,9 @@
 #include "JzOpenGLFramebuffer.h"
 #include "JzOpenGLPipeline.h"
 #include "JzOpenGLVertexArray.h"
-#include "JzRHI.h"
+#include "JzRHICapabilities.h"
 #include "JzRHIDevice.h"
+#include "JzRHIStats.h"
 
 namespace JzRE {
 /**

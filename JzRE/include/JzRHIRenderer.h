@@ -1,6 +1,6 @@
 #pragma once
 
-#include "JzRHI.h"
+#include "JzRHIStats.h"
 #include "OGLRenderWindow.h"
 #include "OGLScene.h"
 
