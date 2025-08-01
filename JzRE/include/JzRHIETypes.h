@@ -161,6 +161,66 @@ enum class JzEMSAALevel : U8 {
 };
 
 /**
+ * @brief Viewport description
+ */
+struct JzViewport {
+    F32 x      = 0.0f;
+    F32 y      = 0.0f;
+    F32 width  = 800.0f;
+    F32 height = 600.0f;
+    F32 minDepth = 0.0f;
+    F32 maxDepth = 1.0f;
+};
+
+/**
+ * @brief Scissor rectangle description
+ */
+struct JzScissorRect {
+    I32 x      = 0;
+    I32 y      = 0;
+    U32 width  = 800;
+    U32 height = 600;
+};
+
+/**
+ * @brief Clear parameters
+ */
+struct JzClearParams {
+    Bool clearColor   = true;
+    Bool clearDepth   = true;
+    Bool clearStencil = false;
+    F32  colorR       = 0.0f;
+    F32  colorG       = 0.0f;
+    F32  colorB       = 0.0f;
+    F32  colorA       = 1.0f;
+    F32  depth        = 1.0f;
+    U32  stencil      = 0;
+};
+
+/**
+ * @brief Draw parameters
+ */
+struct JzDrawParams {
+    JzEPrimitiveType primitiveType = JzEPrimitiveType::Triangles;
+    U32              vertexCount   = 0;
+    U32              instanceCount = 1;
+    U32              firstVertex   = 0;
+    U32              firstInstance = 0;
+};
+
+/**
+ * @brief Draw indexed parameters
+ */
+struct JzDrawIndexedParams {
+    JzEPrimitiveType primitiveType = JzEPrimitiveType::Triangles;
+    U32              indexCount    = 0;
+    U32              instanceCount = 1;
+    U32              firstIndex    = 0;
+    I32              vertexOffset  = 0;
+    U32              firstInstance = 0;
+};
+
+/**
  * @brief Render state description
  */
 struct JzRenderState {

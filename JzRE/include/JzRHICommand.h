@@ -29,66 +29,6 @@ enum class JzERHICommandType : U8 {
 };
 
 /**
- * @brief Viewport information
- */
-struct JzViewport {
-    F32 x        = 0.0f;
-    F32 y        = 0.0f;
-    F32 width    = 0.0f;
-    F32 height   = 0.0f;
-    F32 minDepth = 0.0f;
-    F32 maxDepth = 1.0f;
-};
-
-/**
- * @brief Scissor rectangle
- */
-struct JzScissorRect {
-    I32 x      = 0;
-    I32 y      = 0;
-    I32 width  = 0;
-    I32 height = 0;
-};
-
-/**
- * @brief Clear parameters
- */
-struct JzClearParams {
-    Bool clearColor   = false;
-    Bool clearDepth   = false;
-    Bool clearStencil = false;
-    F32  colorR       = 0.0f;
-    F32  colorG       = 0.0f;
-    F32  colorB       = 0.0f;
-    F32  colorA       = 1.0f;
-    F32  depth        = 1.0f;
-    I32  stencil      = 0;
-};
-
-/**
- * @brief Draw parameters
- */
-struct JzDrawParams {
-    JzEPrimitiveType primitiveType = JzEPrimitiveType::Triangles;
-    U32              vertexCount   = 0;
-    U32              instanceCount = 1;
-    U32              firstVertex   = 0;
-    U32              firstInstance = 0;
-};
-
-/**
- * @brief Indexed draw parameters
- */
-struct JzDrawIndexedParams {
-    JzEPrimitiveType primitiveType = JzEPrimitiveType::Triangles;
-    U32              indexCount    = 0;
-    U32              instanceCount = 1;
-    U32              firstIndex    = 0;
-    I32              vertexOffset  = 0;
-    U32              firstInstance = 0;
-};
-
-/**
  * @brief RHI command base class
  */
 class JzRHICommand {

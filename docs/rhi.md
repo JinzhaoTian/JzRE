@@ -28,6 +28,11 @@ JzRE RHI（Render Hardware Interface）是一个现代化的跨平台图形API�
 - 插件式后端
 - 统一的资源抽象
 
+🚀 **运行时API切换**
+- 支持运行时在不同图形API间无缝切换
+- 智能状态保持和资源迁移
+- 完备的错误处理和回退机制
+
 ## 项目结构
 
 ```
@@ -225,3 +230,183 @@ RHI架构支持轻松扩展：
 ---
 
 **JzRE RHI - 让跨平台渲染变得简单而高效** 🎮✨ 
+
+## 运行时API切换
+
+JzRE RHI的一个重要特性是支持运行时在不同图形API之间进行切换，这对于：
+- **兼容性测试**：在不同API间切换以测试兼容性
+- **性能优化**：根据硬件特性选择最佳API
+- **用户偏好**：允许用户选择首选的图形API
+- **动态适配**：根据运行时环境自动选择合适的API
+
+### 1. 基本切换操作
+
+```cpp
+#include "JzRHIContext.h"
+using namespace JzRE;
+
+// 获取RHI上下文
+auto& rhiContext = JzRHIContext::GetInstance();
+
+// 检查是否可以切换到目标API
+if (rhiContext.CanSwitchRHI(JzERHIType::Vulkan)) {
+    std::cout << "可以切换到Vulkan" << std::endl;
+    
+    // 执行切换
+    Bool success = rhiContext.SwitchRHI(JzERHIType::Vulkan);
+    if (success) {
+        std::cout << "切换成功!" << std::endl;
+    } else {
+        std::cout << "切换失败" << std::endl;
+    }
+} else {
+    std::cout << "无法切换到Vulkan" << std::endl;
+}
+```
+
+### 2. 注册切换回调
+
+```cpp
+// 注册切换完成时的回调
+rhiContext.RegisterSwitchCallback("MyApp", [](JzERHIType oldType, JzERHIType newType) {
+    std::cout << "API已从 " << static_cast<int>(oldType) 
+              << " 切换到 " << static_cast<int>(newType) << std::endl;
+    
+    // 在这里可以处理切换后的逻辑
+    // 例如：更新UI显示、重新配置渲染管线等
+});
+```
+
+### 3. 自定义资源迁移
+
+```cpp
+// 注册资源迁移回调
+rhiContext.RegisterMigrationCallback("CustomTextures", 
+    [](const JzRHIStateSnapshot& snapshot, std::shared_ptr<JzRHIDevice> newDevice) -> Bool {
+        
+    // 自定义纹理迁移逻辑
+    for (const auto& textureSnapshot : snapshot.textures) {
+        if (textureSnapshot.debugName.find("CustomTexture") != String::npos) {
+            // 处理自定义纹理的迁移
+            auto newTexture = newDevice->CreateTexture(textureSnapshot.textureDesc);
+            // ... 更多自定义逻辑
+        }
+    }
+    
+    return true; // 迁移成功
+});
+```
+
+### 4. 错误处理和回退
+
+```cpp
+// 设置备用API（当主要API切换失败时的回退选项）
+rhiContext.SetFallbackRHI(JzERHIType::OpenGL);
+
+// 检查当前状态
+if (rhiContext.IsSwitchingRHI()) {
+    std::cout << "正在切换API中..." << std::endl;
+    // 避免在切换过程中进行其他操作
+}
+
+// 获取备用API类型
+JzERHIType fallback = rhiContext.GetFallbackRHI();
+std::cout << "备用API: " << JzRHIFactory::GetRHITypeName(fallback) << std::endl;
+```
+
+### 5. 最佳实践
+
+#### 选择合适的切换时机
+```cpp
+// ✅ 好的做法：在帧间隙切换
+void OnFrameEnd() {
+    if (needToSwitchAPI) {
+        rhiContext.SwitchRHI(targetAPIType);
+        needToSwitchAPI = false;
+    }
+}
+
+// ❌ 避免：在渲染过程中切换
+void OnRender() {
+    device->BeginFrame();
+    // 不要在这里切换API
+    // rhiContext.SwitchRHI(...); // 错误！
+    device->EndFrame();
+}
+```
+
+#### 资源生命周期管理
+```cpp
+class ResourceManager {
+private:
+    std::unordered_map<String, std::shared_ptr<JzRHIBuffer>> buffers;
+    
+public:
+    void RegisterWithRHI() {
+        // 注册资源迁移回调
+        auto& rhiContext = JzRHIContext::GetInstance();
+        rhiContext.RegisterMigrationCallback("ResourceManager", 
+            [this](const JzRHIStateSnapshot& snapshot, std::shared_ptr<JzRHIDevice> newDevice) -> Bool {
+                return MigrateResources(snapshot, newDevice);
+            });
+    }
+    
+    Bool MigrateResources(const JzRHIStateSnapshot& snapshot, std::shared_ptr<JzRHIDevice> newDevice) {
+        // 实现具体的资源迁移逻辑
+        buffers.clear(); // 清理旧资源
+        
+        for (const auto& bufferSnapshot : snapshot.buffers) {
+            auto newBuffer = newDevice->CreateBuffer(bufferSnapshot.bufferDesc);
+            if (newBuffer && !bufferSnapshot.data.empty()) {
+                newBuffer->UpdateData(bufferSnapshot.data.data(), bufferSnapshot.data.size());
+                buffers[bufferSnapshot.debugName] = newBuffer;
+            }
+        }
+        
+        return true;
+    }
+};
+```
+
+#### 状态同步
+```cpp
+class RenderStateManager {
+public:
+    void OnRHISwitch(JzERHIType oldType, JzERHIType newType) {
+        // 重新应用渲染状态
+        auto device = JzRHIContext::GetInstance().GetDevice();
+        device->SetRenderState(currentRenderState);
+        device->SetViewport(currentViewport);
+        
+        // 重新绑定资源
+        RebindResources();
+    }
+    
+private:
+    JzRenderState currentRenderState;
+    JzViewport currentViewport;
+    
+    void RebindResources() {
+        // 重新绑定所有活跃的资源
+    }
+};
+```
+
+### 6. 性能考虑
+
+1. **切换开销**：API切换有一定开销，不建议频繁切换
+2. **资源大小**：大量纹理和模型会增加迁移时间
+3. **内存使用**：切换过程中可能短暂使用双倍显存
+4. **线程安全**：切换过程中避免多线程访问RHI资源
+
+### 7. 支持的切换场景
+
+| 切换场景 | 支持程度 | 说明 |
+|---------|---------|------|
+| OpenGL ↔ Vulkan | ✅ 完全支持 | 最常用的切换组合 |
+| OpenGL ↔ D3D11 | ✅ 完全支持 | Windows平台 |
+| Vulkan ↔ D3D12 | ✅ 完全支持 | 现代API间切换 |
+| 任意 ↔ Metal | ✅ 完全支持 | macOS/iOS平台 |
+| 跨平台切换 | ⚠️ 有限支持 | 取决于目标平台支持 |
+
+通过这种设计，JzRE提供了业界领先的运行时图形API切换能力，既保证了性能，又提供了最大的灵活性。 

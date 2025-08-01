@@ -6,6 +6,7 @@ using namespace JzRE;
 
 /**
  * @brief RHI Usage Example: Demonstrates how to use the new RHI system for cross-platform rendering
+ * including runtime API switching capabilities
  */
 int main()
 {
@@ -63,176 +64,112 @@ int main()
     auto indexBuffer = device->CreateBuffer(indexBufferDesc);
     std::cout << "Create index buffer: " << indexBuffer->GetDebugName() << std::endl;
 
-    // Create texture
-    JzTextureDesc textureDesc;
-    textureDesc.type      = JzETextureType::Texture2D;
-    textureDesc.format    = JzETextureFormat::RGBA8;
-    textureDesc.width     = 256;
-    textureDesc.height    = 256;
-    textureDesc.debugName = "TestTexture";
-
-    auto texture = device->CreateTexture(textureDesc);
-    std::cout << "Create texture: " << texture->GetDebugName()
-              << " (" << texture->GetWidth() << "x" << texture->GetHeight() << ")" << std::endl;
-
-    // Create shader
-    JzShaderDesc vertexShaderDesc;
-    vertexShaderDesc.type      = JzEShaderType::Vertex;
-    vertexShaderDesc.source    = R"(
-        #version 330 core
-        layout (location = 0) in vec3 aPos;
-        void main() {
-            gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
+    // 3. 新增：演示运行时RHI切换
+    std::cout << "\n=== Runtime RHI Switching Demo ===" << std::endl;
+    
+    // 注册切换回调
+    rhiContext.RegisterSwitchCallback("MainCallback", [](JzERHIType oldType, JzERHIType newType) {
+        std::cout << "RHI切换回调: " << static_cast<int>(oldType) << " -> " << static_cast<int>(newType) << std::endl;
+    });
+    
+    // 注册资源迁移回调（简化示例）
+    rhiContext.RegisterMigrationCallback("Buffer", [](const JzRHIStateSnapshot& snapshot, std::shared_ptr<JzRHIDevice> device) -> Bool {
+        std::cout << "保存缓冲区资源..." << std::endl;
+        // 这里应该实际保存缓冲区数据到snapshot
+        return true;
+    });
+    
+    // 设置备用RHI
+    rhiContext.SetFallbackRHI(JzERHIType::OpenGL);
+    
+    std::cout << "当前RHI: " << JzRHIFactory::GetRHITypeName(rhiContext.GetRHIType()) << std::endl;
+    
+    // 尝试切换到不同的RHI（如果可用）
+    for (auto targetType : supportedTypes) {
+        if (targetType != rhiContext.GetRHIType()) {
+            std::cout << "\n尝试切换到: " << JzRHIFactory::GetRHITypeName(targetType) << std::endl;
+            
+            if (rhiContext.CanSwitchRHI(targetType)) {
+                Bool switchResult = rhiContext.SwitchRHI(targetType);
+                
+                if (switchResult) {
+                    std::cout << "✅ 切换成功!" << std::endl;
+                    
+                    // 验证切换后仍可创建资源
+                    auto newDevice = rhiContext.GetDevice();
+                    auto testBuffer = newDevice->CreateBuffer(vertexBufferDesc);
+                    if (testBuffer) {
+                        std::cout << "✅ 新设备资源创建测试通过" << std::endl;
+                    }
+                    
+                    // 演示完成后切换回原来的RHI
+                    // （实际应用中可能不需要）
+                    
+                } else {
+                    std::cout << "❌ 切换失败" << std::endl;
+                }
+            } else {
+                std::cout << "⚠️ 无法切换到此RHI类型" << std::endl;
+            }
+            
+            break; // 只演示一次切换
         }
-    )";
-    vertexShaderDesc.debugName = "BasicVertexShader";
-
-    JzShaderDesc fragmentShaderDesc;
-    fragmentShaderDesc.type      = JzEShaderType::Fragment;
-    fragmentShaderDesc.source    = R"(
-        #version 330 core
-        out vec4 FragColor;
-        void main() {
-            FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
+    }
+    
+    // 4. 新增：性能和状态监控
+    std::cout << "\n=== RHI State Monitoring ===" << std::endl;
+    std::cout << "当前RHI类型: " << JzRHIFactory::GetRHITypeName(rhiContext.GetRHIType()) << std::endl;
+    std::cout << "是否正在切换: " << (rhiContext.IsSwitchingRHI() ? "是" : "否") << std::endl;
+    std::cout << "备用RHI类型: " << JzRHIFactory::GetRHITypeName(rhiContext.GetFallbackRHI()) << std::endl;
+    
+    // 5. 新增：交互式切换演示
+    std::cout << "\n=== Interactive Switching Demo ===" << std::endl;
+    std::cout << "支持的RHI类型:" << std::endl;
+    
+    for (size_t i = 0; i < supportedTypes.size(); ++i) {
+        std::cout << i + 1 << ". " << JzRHIFactory::GetRHITypeName(supportedTypes[i]);
+        if (supportedTypes[i] == rhiContext.GetRHIType()) {
+            std::cout << " (当前)";
         }
-    )";
-    fragmentShaderDesc.debugName = "BasicFragmentShader";
-
-    auto vertexShader   = device->CreateShader(vertexShaderDesc);
-    auto fragmentShader = device->CreateShader(fragmentShaderDesc);
-    std::cout << "Create shader: " << vertexShader->GetDebugName()
-              << " & " << fragmentShader->GetDebugName() << std::endl;
-
-    // Create pipeline
-    JzPipelineDesc pipelineDesc;
-    pipelineDesc.shaders               = {vertexShaderDesc, fragmentShaderDesc};
-    pipelineDesc.renderState.depthTest = true;
-    pipelineDesc.renderState.cullMode  = JzECullMode::Back;
-    pipelineDesc.debugName             = "BasicPipeline";
-
-    auto pipeline = device->CreatePipeline(pipelineDesc);
-    std::cout << "Create pipeline: " << pipeline->GetDebugName() << std::endl;
-
-    // Create vertex array object
-    auto vertexArray = device->CreateVertexArray("TriangleVAO");
-    vertexArray->BindVertexBuffer(vertexBuffer);
-    vertexArray->BindIndexBuffer(indexBuffer);
-    vertexArray->SetVertexAttribute(0, 3, 3 * sizeof(F32), 0);
-    std::cout << "Create vertex array object: " << vertexArray->GetDebugName() << std::endl;
-
-    // 3. Immediate Rendering Mode Example
-    std::cout << "\n=== Immediate Rendering Mode Example ===" << std::endl;
-
-    device->BeginFrame();
-
-    // Clear screen
-    JzClearParams clearParams;
-    clearParams.clearColor = true;
-    clearParams.clearDepth = true;
-    clearParams.colorR     = 0.2f;
-    clearParams.colorG     = 0.3f;
-    clearParams.colorB     = 0.3f;
-    clearParams.colorA     = 1.0f;
-    device->Clear(clearParams);
-
-    // Set viewport
-    JzViewport viewport;
-    viewport.x      = 0.0f;
-    viewport.y      = 0.0f;
-    viewport.width  = 800.0f;
-    viewport.height = 600.0f;
-    device->SetViewport(viewport);
-
-    // Bind resources and draw
-    device->BindPipeline(pipeline);
-    device->BindVertexArray(vertexArray);
-    device->BindTexture(texture, 0);
-
-    JzDrawIndexedParams drawParams;
-    drawParams.indexCount    = 3;
-    drawParams.primitiveType = JzEPrimitiveType::Triangles;
-    device->DrawIndexed(drawParams);
-
-    device->EndFrame();
-    std::cout << "Immediate rendering mode: triangle drawing completed" << std::endl;
-
-    // 4. Command Buffer Mode Example
-    std::cout << "\n=== Command Buffer Mode Example ===" << std::endl;
-
-    auto commandBuffer = device->CreateCommandBuffer("ExampleCommandBuffer");
-    commandBuffer->Begin();
-
-    // Record rendering commands
-    commandBuffer->Clear(clearParams);
-    commandBuffer->SetViewport(viewport);
-    commandBuffer->BindPipeline(pipeline);
-    commandBuffer->BindVertexArray(vertexArray);
-    commandBuffer->BindTexture(texture, 0);
-    commandBuffer->DrawIndexed(drawParams);
-
-    commandBuffer->End();
-
-    // Execute command buffer
-    device->ExecuteCommandBuffer(commandBuffer);
-    std::cout << "Command buffer mode: executed " << commandBuffer->GetCommandCount() << " commands" << std::endl;
-
-    // 5. Multithreading Rendering Example
-    std::cout << "\n=== Multithreading Rendering Example ===" << std::endl;
-
-    if (device->SupportsMultithreading()) {
-        std::cout << "Device supports multithreading rendering" << std::endl;
-
-        // Set thread count
-        rhiContext.SetThreadCount(4);
-        std::cout << "Set rendering thread count: " << rhiContext.GetThreadCount() << std::endl;
-
-        // Create multiple command buffers for parallel recording
-        auto commandQueue = rhiContext.GetCommandQueue();
-
-        for (U32 i = 0; i < 3; ++i) {
-            auto cmd = commandQueue->CreateCommandBuffer("ParallelCommand" + std::to_string(i));
-            cmd->Begin();
-            cmd->Clear(clearParams);
-            cmd->SetViewport(viewport);
-            cmd->BindPipeline(pipeline);
-            cmd->BindVertexArray(vertexArray);
-            cmd->DrawIndexed(drawParams);
-            cmd->End();
-
-            commandQueue->SubmitCommandBuffer(cmd);
+        std::cout << std::endl;
+    }
+    
+    std::cout << "\n输入数字选择要切换的RHI (0退出): ";
+    int choice;
+    while (std::cin >> choice && choice != 0) {
+        if (choice > 0 && choice <= static_cast<int>(supportedTypes.size())) {
+            JzERHIType selectedType = supportedTypes[choice - 1];
+            
+            if (rhiContext.CanSwitchRHI(selectedType)) {
+                std::cout << "正在切换到: " << JzRHIFactory::GetRHITypeName(selectedType) << std::endl;
+                
+                if (rhiContext.SwitchRHI(selectedType)) {
+                    std::cout << "✅ 切换成功!" << std::endl;
+                } else {
+                    std::cout << "❌ 切换失败!" << std::endl;
+                }
+            } else {
+                std::cout << "⚠️ 无法切换到选定的RHI类型" << std::endl;
+            }
+        } else {
+            std::cout << "无效选择" << std::endl;
         }
-
-        commandQueue->ExecuteAll();
-        commandQueue->Wait();
-        std::cout << "Multithreading rendering: completed parallel execution of 3 command buffers" << std::endl;
-    } else {
-        std::cout << "Device does not support multithreading rendering" << std::endl;
+        
+        std::cout << "当前RHI: " << JzRHIFactory::GetRHITypeName(rhiContext.GetRHIType()) << std::endl;
+        std::cout << "输入数字选择要切换的RHI (0退出): ";
     }
 
-    // 6. Performance Statistics Example
-    std::cout << "\n=== Performance Statistics Example ===" << std::endl;
-    // Note: This requires OpenGLDevice implementation of GetStats method
-    std::cout << "Current RHI type: " << JzRHIFactory::GetRHITypeName(device->GetRHIType()) << std::endl;
-    std::cout << "Device name: " << device->GetDeviceName() << std::endl;
-    std::cout << "Vendor name: " << device->GetVendorName() << std::endl;
-
-    // 7. Resource Cleanup
-    std::cout << "\n=== Resource Cleanup ===" << std::endl;
-
-    // RHI resources will be automatically released, but we can manually clean up
-    vertexBuffer.reset();
-    indexBuffer.reset();
-    texture.reset();
-    vertexArray.reset();
-    pipeline.reset();
-    commandBuffer.reset();
-
-    std::cout << "Resource cleanup completed" << std::endl;
-
-    // 8. Close RHI system
+    // 6. 清理资源
+    std::cout << "\n=== Cleanup ===" << std::endl;
+    
+    // 取消注册回调
+    rhiContext.UnregisterSwitchCallback("MainCallback");
+    rhiContext.UnregisterMigrationCallback("Buffer");
+    
+    // 关闭RHI系统
     rhiContext.Shutdown();
-    std::cout << "\n=== RHI system closed ===" << std::endl;
-
+    
+    std::cout << "RHI示例程序结束" << std::endl;
     return 0;
 }
 
