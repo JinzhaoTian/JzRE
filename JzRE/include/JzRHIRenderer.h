@@ -8,7 +8,6 @@
 #include "OGLScene.h"
 
 namespace JzRE {
-
 /**
  * @brief RHI Renderer, providing cross-platform rendering support
  */

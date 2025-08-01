@@ -1,16 +1,18 @@
 #pragma once
 
 #include "CommonTypes.h"
-#include "JzRHITypes.h"
+#include "JzRHICommandBuffer.h"
+#include "JzRHIETypes.h"
+#include "JzRenderTask.h"
 
 namespace JzRE {
 /**
- * 命令缓冲任务
+ * @brief Command Buffer Task
  */
 class JzCommandBufferTask : public JzRenderTask {
 public:
     JzCommandBufferTask(std::shared_ptr<JzRHICommandBuffer> commandBuffer, U32 priority = 0);
-    void JzExecute() override;
+    void Execute() override;
 
 private:
     std::shared_ptr<JzRHICommandBuffer> commandBuffer;

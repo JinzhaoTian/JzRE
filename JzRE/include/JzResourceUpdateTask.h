@@ -4,7 +4,6 @@
 #include "JzRenderTask.h"
 
 namespace JzRE {
-
 /**
  * @brief Resource Update Task
  */

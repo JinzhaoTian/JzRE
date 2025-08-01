@@ -4,7 +4,6 @@
 #include "JzRHIETypes.h"
 
 namespace JzRE {
-
 /**
  * @brief RHI Resource Base Class
  */
