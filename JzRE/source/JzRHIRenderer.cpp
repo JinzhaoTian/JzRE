@@ -30,10 +30,7 @@ JzRE::U32 JzRE::JzRHIRenderer::GetThreadCount() const
     return 1;
 }
 
-const JzRE::JzRHIStats &JzRE::JzRHIRenderer::GetStats() const
-{
-    return JzRHIStats{};
-}
+const JzRE::JzRHIStats &JzRE::JzRHIRenderer::GetStats() const { }
 
 void JzRE::JzRHIRenderer::ResetStats() { }
 
