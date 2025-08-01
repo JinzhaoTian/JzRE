@@ -1,4 +1,4 @@
-# JzRE RHI - 跨平台渲染硬件接口
+# JzRE RHI
 
 ## 简介
 
