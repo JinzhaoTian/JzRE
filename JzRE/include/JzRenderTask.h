@@ -5,7 +5,7 @@
 
 namespace JzRE {
 /**
- * 渲染任务类型
+ * @brief Render Task Type
  */
 enum class JzERenderTaskType : U8 {
     CommandBuffer,
@@ -15,7 +15,7 @@ enum class JzERenderTaskType : U8 {
 };
 
 /**
- * 渲染任务基类
+ * @brief Render Task Base Class
  */
 class JzRenderTask {
 public:

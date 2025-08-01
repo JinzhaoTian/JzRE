@@ -5,7 +5,7 @@
 
 namespace JzRE {
 /**
- * RHI帧缓冲接口
+ * @brief Interface of RHI Framebuffer
  */
 class JzRHIFramebuffer : public JzRHIResource {
 public:

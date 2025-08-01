@@ -24,8 +24,7 @@ void BeginProfileRegion(const String &name);
 void EndProfileRegion();
 
 /**
- * 多线程渲染管理器
- * 协调多线程渲染流程，管理线程间同步
+ * @brief Multithreaded Render Manager, coordinates the multithreaded rendering process, manages thread synchronization
  */
 class JzMultithreadedRenderManager {
 public:

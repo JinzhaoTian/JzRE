@@ -3,10 +3,8 @@
 #include "JzRHIBuffer.h"
 
 namespace JzRE {
-
 /**
- * Vulkan缓冲区实现（存根）
- * 未来可扩展为完整的Vulkan实现
+ * @brief Vulkan Buffer Implementation (Stub)
  */
 class JzVulkanBuffer : public JzRHIBuffer {
 public:

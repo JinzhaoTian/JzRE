@@ -5,7 +5,7 @@
 namespace JzRE {
 
 /**
- * 支持的图形API类型
+ * @brief Supported graphics API types
  */
 enum class JzERHIType : U8 {
     Unknown = 0,
@@ -17,7 +17,7 @@ enum class JzERHIType : U8 {
 };
 
 /**
- * 缓冲区类型
+ * @brief Buffer type
  */
 enum class JzEBufferType : U8 {
     Vertex,
@@ -27,7 +27,7 @@ enum class JzEBufferType : U8 {
 };
 
 /**
- * 缓冲区使用方式
+ * @brief Buffer usage
  */
 enum class JzEBufferUsage : U8 {
     StaticDraw,
@@ -36,7 +36,7 @@ enum class JzEBufferUsage : U8 {
 };
 
 /**
- * 纹理类型
+ * @brief Texture type
  */
 enum class JzETextureType : U8 {
     Texture1D,
@@ -47,7 +47,7 @@ enum class JzETextureType : U8 {
 };
 
 /**
- * 纹理格式
+ * @brief Texture format
  */
 enum class JzETextureFormat : U8 {
     Unknown,
@@ -70,7 +70,7 @@ enum class JzETextureFormat : U8 {
 };
 
 /**
- * 纹理过滤方式
+ * @brief Texture filter
  */
 enum class JzETextureFilter : U8 {
     Nearest,
@@ -82,7 +82,7 @@ enum class JzETextureFilter : U8 {
 };
 
 /**
- * 纹理包装方式
+ * @brief Texture wrap
  */
 enum class JzETextureWrap : U8 {
     Repeat,
@@ -92,7 +92,7 @@ enum class JzETextureWrap : U8 {
 };
 
 /**
- * 着色器类型
+ * @brief Shader type
  */
 enum class JzEShaderType : U8 {
     Vertex,
@@ -104,7 +104,7 @@ enum class JzEShaderType : U8 {
 };
 
 /**
- * 图元类型
+ * @brief Primitive type
  */
 enum class JzEPrimitiveType : U8 {
     Points,
@@ -116,7 +116,7 @@ enum class JzEPrimitiveType : U8 {
 };
 
 /**
- * 混合模式
+ * @brief Blend mode
  */
 enum class JzEBlendMode : U8 {
     None,
@@ -126,7 +126,7 @@ enum class JzEBlendMode : U8 {
 };
 
 /**
- * 深度测试函数
+ * @brief Depth test function
  */
 enum class JzEDepthFunc : U8 {
     Never,
@@ -140,7 +140,7 @@ enum class JzEDepthFunc : U8 {
 };
 
 /**
- * 面剔除模式
+ * @brief Face culling mode
  */
 enum class JzECullMode : U8 {
     None,
@@ -150,7 +150,7 @@ enum class JzECullMode : U8 {
 };
 
 /**
- * 多重采样抗锯齿级别
+ * @brief MSAA level
  */
 enum class JzEMSAALevel : U8 {
     None = 0,
@@ -161,7 +161,7 @@ enum class JzEMSAALevel : U8 {
 };
 
 /**
- * 渲染状态描述
+ * @brief Render state description
  */
 struct JzRenderState {
     JzEBlendMode blendMode  = JzEBlendMode::None;
@@ -174,7 +174,7 @@ struct JzRenderState {
 };
 
 /**
- * 缓冲区描述
+ * @brief Buffer description
  */
 struct JzBufferDesc {
     JzEBufferType  type;
@@ -185,7 +185,7 @@ struct JzBufferDesc {
 };
 
 /**
- * 纹理描述
+ * @brief Texture description
  */
 struct JzTextureDesc {
     JzETextureType   type      = JzETextureType::Texture2D;
@@ -205,7 +205,7 @@ struct JzTextureDesc {
 };
 
 /**
- * 着色器描述
+ * @brief Shader description
  */
 struct JzShaderDesc {
     JzEShaderType type;
@@ -215,7 +215,7 @@ struct JzShaderDesc {
 };
 
 /**
- * 渲染管线描述
+ * @brief Pipeline description
  */
 struct JzPipelineDesc {
     std::vector<JzShaderDesc> shaders;

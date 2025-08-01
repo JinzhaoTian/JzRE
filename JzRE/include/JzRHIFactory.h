@@ -6,8 +6,7 @@
 
 namespace JzRE {
 /**
- * RHI工厂类
- * 负责创建不同图形API的RHI设备
+ * @brief RHI Factory
  */
 class JzRHIFactory {
 public:

@@ -8,8 +8,7 @@
 
 namespace JzRE {
 /**
- * RHI设备接口
- * 提供跨平台的图形设备抽象
+ * @brief Interface of RHI Device
  */
 class JzRHIDevice {
 public:

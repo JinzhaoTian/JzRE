@@ -5,10 +5,8 @@
 #include "JzRHIETypes.h"
 
 namespace JzRE {
-
 /**
- * 命令队列管理器
- * 支持多线程命令提交和执行
+ * @brief RHI Command Queue, Supports multi-threaded command submission and execution
  */
 class JzRHICommandQueue {
 public:

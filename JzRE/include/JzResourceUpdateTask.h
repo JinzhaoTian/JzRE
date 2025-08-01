@@ -6,7 +6,7 @@
 namespace JzRE {
 
 /**
- * 资源更新任务
+ * @brief Resource Update Task
  */
 class JzResourceUpdateTask : public JzRenderTask {
 public:

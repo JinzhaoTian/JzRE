@@ -6,7 +6,7 @@
 
 namespace JzRE {
 /**
- * OpenGL缓冲区实现
+ * @brief OpenGL Buffer Implementation
  */
 class JzOpenGLBuffer : public JzRHIBuffer {
 public:

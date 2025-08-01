@@ -6,7 +6,7 @@
 
 namespace JzRE {
 /**
- * OpenGL顶点数组对象实现
+ * @brief OpenGL Vertex Array Object Implementation
  */
 class JzOpenGLVertexArray : public JzRHIVertexArray {
 public:

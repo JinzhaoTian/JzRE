@@ -7,9 +7,8 @@
 #include "JzRHIShader.h"
 
 namespace JzRE {
-
 /**
- * Vulkan设备实现（存根）
+ * @brief Vulkan Device Implementation (Stub)
  */
 class JzVulkanDevice : public JzRHIDevice {
 public:

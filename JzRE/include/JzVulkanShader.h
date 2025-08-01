@@ -4,7 +4,7 @@
 
 namespace JzRE {
 /**
- * Vulkan着色器实现（存根）
+ * @brief Vulkan Shader Implementation (Stub)
  */
 class JzVulkanShader : public JzRHIShader {
 public:

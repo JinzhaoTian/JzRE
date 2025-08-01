@@ -7,7 +7,7 @@
 
 namespace JzRE {
 /**
- * OpenGL渲染管线实现
+ * @brief OpenGL Pipeline Implementation
  */
 class JzOpenGLPipeline : public JzRHIPipeline {
 public:

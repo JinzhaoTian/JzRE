@@ -8,15 +8,14 @@
 namespace JzRE {
 
 /**
- * RHI便利宏定义
+ * @brief RHI Macro Definitions
  */
 #define RHI_DEVICE() JzRHIContext::GetInstance().GetDevice()
 #define RHI_COMMAND_QUEUE() JzRHIContext::GetInstance().GetCommandQueue()
 #define RHI_TYPE() JzRHIContext::GetInstance().GetRHIType()
 
 /**
- * RHI上下文管理器
- * 管理RHI设备的生命周期和全局状态
+ * @brief RHI Context
  */
 class JzRHIContext {
 public:
@@ -29,7 +28,7 @@ public:
 
     // 获取当前设备
     std::shared_ptr<JzRHIDevice> GetDevice() const;
-    JzERHIType GetRHIType() const;
+    JzERHIType                   GetRHIType() const;
 
     // 命令队列管理
     std::shared_ptr<JzRHICommandQueue> GetCommandQueue() const;

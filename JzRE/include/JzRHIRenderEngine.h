@@ -6,8 +6,7 @@
 
 namespace JzRE {
 /**
- * RHI渲染引擎
- * 替换原有的OGLRenderEngine，使用RHI接口
+ * @brief RHI Render Engine, using RHI interfaces
  */
 class JzRHIRenderEngine {
 public:

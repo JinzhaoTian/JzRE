@@ -4,7 +4,7 @@
 
 namespace JzRE {
 /**
- * Vulkan纹理实现（存根）
+ * @brief Vulkan Texture Implementation (Stub)
  */
 class JzVulkanTexture : public JzRHITexture {
 public:

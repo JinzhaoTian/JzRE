@@ -4,7 +4,7 @@
 
 namespace JzRE {
 /**
- * Vulkan渲染管线实现（存根）
+ * @brief Vulkan Pipeline Implementation (Stub)
  */
 class JzVulkanPipeline : public JzRHIPipeline {
 public:

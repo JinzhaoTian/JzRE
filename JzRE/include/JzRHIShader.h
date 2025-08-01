@@ -5,9 +5,8 @@
 #include "JzRHIResource.h"
 
 namespace JzRE {
-
 /**
- * RHI着色器接口
+ * @brief Interface of RHI Shader
  */
 class JzRHIShader : public JzRHIResource {
 public:

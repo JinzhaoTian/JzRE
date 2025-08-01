@@ -4,9 +4,8 @@
 #include "JzRHIVertexArray.h"
 
 namespace JzRE {
-
 /**
- * Vulkan顶点数组对象实现（存根）
+ * @brief Vulkan Vertex Array Object Implementation (Stub)
  */
 class JzVulkanVertexArray : public JzRHIVertexArray {
 public:

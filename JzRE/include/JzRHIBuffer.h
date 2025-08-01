@@ -6,7 +6,7 @@
 
 namespace JzRE {
 /**
- * RHI缓冲区接口
+ * @brief Interface of RHI buffer
  */
 class JzRHIBuffer : public JzRHIResource {
 public:
@@ -17,11 +17,11 @@ public:
     virtual void *MapBuffer()                                              = 0;
     virtual void  UnmapBuffer()                                            = 0;
 
-    JzEBufferType GetType() const;
+    JzEBufferType  GetType() const;
     JzEBufferUsage GetUsage() const;
-    Size GetSize() const;
+    Size           GetSize() const;
 
 protected:
     JzBufferDesc desc;
 };
-}
+} // namespace JzRE

@@ -6,9 +6,8 @@
 #include "JzRHITexture.h"
 
 namespace JzRE {
-
 /**
- * OpenGL帧缓冲实现
+ * @brief OpenGL Framebuffer Implementation
  */
 class JzOpenGLFramebuffer : public JzRHIFramebuffer {
 public:

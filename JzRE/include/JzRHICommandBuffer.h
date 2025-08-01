@@ -7,8 +7,7 @@
 
 namespace JzRE {
 /**
- * RHI命令缓冲
- * 支持命令的记录和回放，为多线程渲染提供基础
+ * @brief RHI Command Buffer, Supports command recording and playback, providing a basis for multi-threaded rendering
  */
 class JzRHICommandBuffer {
 public:

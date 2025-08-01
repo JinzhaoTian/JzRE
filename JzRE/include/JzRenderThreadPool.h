@@ -7,10 +7,8 @@
 #include "JzTaskComparator.h"
 
 namespace JzRE {
-
 /**
- * 渲染线程池
- * 管理多个渲染线程，支持任务调度和负载均衡
+ * @brief Render Thread Pool, manages multiple render threads, supports task scheduling and load balancing
  */
 class JzRenderThreadPool {
 public:

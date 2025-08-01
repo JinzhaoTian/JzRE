@@ -1,17 +1,16 @@
 #pragma once
 
-#include "JzRHIStats.h"
 #include "JzRHIFramebuffer.h"
-#include "JzRHITexture.h"
 #include "JzRHIPipeline.h"
+#include "JzRHIStats.h"
+#include "JzRHITexture.h"
 #include "OGLRenderWindow.h"
 #include "OGLScene.h"
 
 namespace JzRE {
 
 /**
- * 基于RHI的渲染器
- * 替换原有的OGLRenderer，提供跨平台渲染支持
+ * @brief RHI Renderer, providing cross-platform rendering support
  */
 class JzRHIRenderer {
 public:

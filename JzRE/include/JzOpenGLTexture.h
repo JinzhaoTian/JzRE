@@ -6,7 +6,7 @@
 
 namespace JzRE {
 /**
- * OpenGL纹理实现
+ * @brief OpenGL Texture Implementation
  */
 class JzOpenGLTexture : public JzRHITexture {
 public:

@@ -10,7 +10,7 @@
 namespace JzRE {
 
 /**
- * RHI命令类型
+ * @brief RHI command type
  */
 enum class JzERHICommandType : U8 {
     Clear,
@@ -29,7 +29,7 @@ enum class JzERHICommandType : U8 {
 };
 
 /**
- * 视口信息
+ * @brief Viewport information
  */
 struct JzViewport {
     F32 x        = 0.0f;
@@ -41,7 +41,7 @@ struct JzViewport {
 };
 
 /**
- * 剪裁矩形
+ * @brief Scissor rectangle
  */
 struct JzScissorRect {
     I32 x      = 0;
@@ -51,7 +51,7 @@ struct JzScissorRect {
 };
 
 /**
- * 清除参数
+ * @brief Clear parameters
  */
 struct JzClearParams {
     Bool clearColor   = false;
@@ -66,7 +66,7 @@ struct JzClearParams {
 };
 
 /**
- * 绘制参数
+ * @brief Draw parameters
  */
 struct JzDrawParams {
     JzEPrimitiveType primitiveType = JzEPrimitiveType::Triangles;
@@ -77,7 +77,7 @@ struct JzDrawParams {
 };
 
 /**
- * 索引绘制参数
+ * @brief Indexed draw parameters
  */
 struct JzDrawIndexedParams {
     JzEPrimitiveType primitiveType = JzEPrimitiveType::Triangles;
@@ -89,7 +89,7 @@ struct JzDrawIndexedParams {
 };
 
 /**
- * RHI命令基类
+ * @brief RHI command base class
  */
 class JzRHICommand {
 public:
@@ -97,14 +97,14 @@ public:
     virtual ~JzRHICommand() = default;
 
     JzERHICommandType GetType() const;
-    virtual void Execute() = 0;
+    virtual void      Execute() = 0;
 
 protected:
     JzERHICommandType type;
 };
 
 /**
- * 具体命令实现
+ * @brief Specific command implementation
  */
 class JzRHIClearCommand : public JzRHICommand {
 public:
@@ -115,6 +115,9 @@ private:
     JzClearParams params;
 };
 
+/**
+ * @brief Draw command implementation
+ */
 class JzRHIDrawCommand : public JzRHICommand {
 public:
     JzRHIDrawCommand(const JzDrawParams &params);
@@ -124,6 +127,9 @@ private:
     JzDrawParams params;
 };
 
+/**
+ * @brief Indexed draw command implementation
+ */
 class JzRHIDrawIndexedCommand : public JzRHICommand {
 public:
     JzRHIDrawIndexedCommand(const JzDrawIndexedParams &params);
@@ -133,6 +139,9 @@ private:
     JzDrawIndexedParams params;
 };
 
+/**
+ * @brief Bind pipeline command implementation
+ */
 class JzRHIBindPipelineCommand : public JzRHICommand {
 public:
     JzRHIBindPipelineCommand(std::shared_ptr<JzRHIPipeline> pipeline);
@@ -142,6 +151,9 @@ private:
     std::shared_ptr<JzRHIPipeline> pipeline;
 };
 
+/**
+ * @brief Bind vertex array command implementation
+ */
 class JzRHIBindVertexArrayCommand : public JzRHICommand {
 public:
     JzRHIBindVertexArrayCommand(std::shared_ptr<JzRHIVertexArray> vertexArray);
@@ -151,6 +163,9 @@ private:
     std::shared_ptr<JzRHIVertexArray> vertexArray;
 };
 
+/**
+ * @brief Bind texture command implementation
+ */
 class JzRHIBindTextureCommand : public JzRHICommand {
 public:
     JzRHIBindTextureCommand(std::shared_ptr<JzRHITexture> texture, U32 slot);
@@ -161,6 +176,9 @@ private:
     U32                           slot;
 };
 
+/**
+ * @brief Set viewport command implementation
+ */
 class JzRHISetViewportCommand : public JzRHICommand {
 public:
     JzRHISetViewportCommand(const JzViewport &viewport);

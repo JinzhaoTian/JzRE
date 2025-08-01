@@ -1,6 +1,6 @@
 #include "JzRHIFactory.h"
 #include "JzOpenGLDevice.h"
-#include "JzVulkanDevice.h"
+// #include "JzVulkanDevice.h"
 
 // RHIFactory实现
 std::unique_ptr<JzRE::JzRHIDevice> JzRE::JzRHIFactory::CreateDevice(JzRE::JzERHIType rhiType)
@@ -12,8 +12,8 @@ std::unique_ptr<JzRE::JzRHIDevice> JzRE::JzRHIFactory::CreateDevice(JzRE::JzERHI
     switch (rhiType) {
         case JzERHIType::OpenGL:
             return std::make_unique<JzOpenGLDevice>();
-        case JzERHIType::Vulkan:
-            return std::make_unique<JzVulkanDevice>();
+        // case JzERHIType::Vulkan:
+        //     return std::make_unique<JzVulkanDevice>();
         default:
             std::cerr << "不支持的RHI类型: " << static_cast<int>(rhiType) << std::endl;
             return nullptr;
@@ -41,7 +41,7 @@ JzRE::JzERHIType JzRE::JzRHIFactory::GetDefaultRHIType()
     auto supportedTypes = GetSupportedRHITypes();
 
     // 优先选择Vulkan，回退到OpenGL
-    for (auto type : {JzERHIType::Vulkan, JzERHIType::OpenGL}) {
+    for (auto type : {/*JzERHIType::Vulkan,*/ JzERHIType::OpenGL}) {
         for (auto supported : supportedTypes) {
             if (type == supported) {
                 return type;

@@ -4,7 +4,7 @@
 
 namespace JzRE {
 /**
- * RHI统计信息
+ * @brief RHI Statistics
  */
 struct JzRHIStats {
     // 绘制调用统计

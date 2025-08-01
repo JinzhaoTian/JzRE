@@ -3,9 +3,8 @@
 #include "CommonTypes.h"
 
 namespace JzRE {
-
 /**
- * RHI能力查询接口
+ * @brief Interface of RHI Capabilities
  */
 struct JzRHICapabilities {
     // 纹理支持

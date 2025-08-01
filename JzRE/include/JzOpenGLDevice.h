@@ -10,7 +10,7 @@
 
 namespace JzRE {
 /**
- * OpenGL设备实现
+ * @brief OpenGL Device Implementation
  */
 class JzOpenGLDevice : public JzRHIDevice {
 public:

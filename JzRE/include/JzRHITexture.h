@@ -6,7 +6,7 @@
 
 namespace JzRE {
 /**
- * RHI纹理接口
+ * @brief Interface of RHI Texture
  */
 class JzRHITexture : public JzRHIResource {
 public:

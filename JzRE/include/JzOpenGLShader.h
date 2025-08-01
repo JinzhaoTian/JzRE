@@ -6,7 +6,7 @@
 
 namespace JzRE {
 /**
- * OpenGL着色器实现
+ * @brief OpenGL Shader Implementation
  */
 class JzOpenGLShader : public JzRHIShader {
 public:

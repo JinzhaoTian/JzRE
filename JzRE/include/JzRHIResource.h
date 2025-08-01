@@ -6,7 +6,7 @@
 namespace JzRE {
 
 /**
- * RHI资源基类
+ * @brief RHI Resource Base Class
  */
 class JzRHIResource {
 public:

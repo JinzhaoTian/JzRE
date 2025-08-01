@@ -6,8 +6,7 @@
 
 namespace JzRE {
 /**
- * 渲染线程上下文
- * 为每个线程维护独立的OpenGL上下文
+ * @brief Render Thread Context, maintains an independent OpenGL context for each thread
  */
 class JzRenderThreadContext {
 public:
@@ -20,7 +19,7 @@ public:
     void SwapBuffers();
     void Cleanup();
 
-    U32 GetThreadId() const;
+    U32  GetThreadId() const;
     Bool IsInitialized() const;
 
 private:
@@ -31,4 +30,4 @@ private:
     // GLFWwindow* sharedContext = nullptr;
     // 具体实现依赖于窗口系统
 };
-}
+} // namespace JzRE

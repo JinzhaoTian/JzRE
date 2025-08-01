@@ -5,7 +5,7 @@
 
 namespace JzRE {
 /**
- * Vulkan帧缓冲实现（存根）
+ * @brief Vulkan Framebuffer Implementation (Stub)
  */
 class JzVulkanFramebuffer : public JzRHIFramebuffer {
 public:

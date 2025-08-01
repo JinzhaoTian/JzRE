@@ -6,7 +6,7 @@
 
 namespace JzRE {
 /**
- * RHI渲染管线接口
+ * @brief Interface of RHI Pipeline
  */
 class JzRHIPipeline : public JzRHIResource {
 public:

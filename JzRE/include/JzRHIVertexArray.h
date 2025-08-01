@@ -7,7 +7,7 @@
 
 namespace JzRE {
 /**
- * RHI顶点数组对象接口
+ * @brief Interface of RHI Vertex Array Object
  */
 class JzRHIVertexArray : public JzRHIResource {
 public:
