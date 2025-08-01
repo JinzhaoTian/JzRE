@@ -27,6 +27,7 @@
 #include <algorithm>
 #include <any>
 #include <array>
+#include <atomic>
 #include <cassert>
 #include <chrono>
 #include <cmath>
