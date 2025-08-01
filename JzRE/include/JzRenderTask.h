@@ -2,7 +2,6 @@
 
 #include "CommonTypes.h"
 #include "JzRHICommand.h"
-#include "JzRHITypes.h"
 
 namespace JzRE {
 /**

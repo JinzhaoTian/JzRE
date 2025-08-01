@@ -1,7 +1,10 @@
 #pragma once
 
 #include "CommonTypes.h"
-#include "JzRHITypes.h"
+#include "JzRHICommandBuffer.h"
+#include "JzRHIETypes.h"
+#include "JzRenderTask.h"
+#include "JzTaskComparator.h"
 
 namespace JzRE {
 
@@ -56,8 +59,8 @@ private:
     std::atomic<Bool> isRunning{false};
     std::atomic<Bool> shouldStop{false};
 
-    std::vector<std::thread>                                                                                       workers;
-    std::priority_queue<std::shared_ptr<JzRenderTask>, std::vector<std::shared_ptr<JzRenderTask>>, TaskComparator> tasks;
+    std::vector<std::thread>                                                                                         workers;
+    std::priority_queue<std::shared_ptr<JzRenderTask>, std::vector<std::shared_ptr<JzRenderTask>>, JzTaskComparator> tasks;
 
     mutable std::mutex      taskMutex;
     std::condition_variable taskCondition;
@@ -67,4 +70,4 @@ private:
 
     void WorkerThread(U32 threadId);
 };
-}
+} // namespace JzRE

@@ -1,7 +1,11 @@
 #pragma once
 
 #include "CommonTypes.h"
+#include "JzRHIBuffer.h"
+#include "JzRHICommandBuffer.h"
 #include "JzRHIETypes.h"
+#include "JzRenderThreadContext.h"
+#include "JzRenderThreadPool.h"
 
 namespace JzRE {
 /**
