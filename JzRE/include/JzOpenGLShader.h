@@ -13,25 +13,17 @@ public:
     JzOpenGLShader(const JzShaderDesc &desc);
     ~JzOpenGLShader() override;
 
-    GLuint GetHandle() const
-    {
-        return handle;
-    }
-    Bool IsCompiled() const
-    {
-        return isCompiled;
-    }
-    const String &GetCompileLog() const
-    {
-        return compileLog;
-    }
+    GLuint        GetHandle() const;
+    Bool          IsCompiled() const;
+    const String &GetCompileLog() const;
+
+private:
+    static GLenum ConvertShaderType(JzEShaderType type);
+    Bool          CompileShader();
 
 private:
     GLuint handle     = 0;
     Bool   isCompiled = false;
     String compileLog;
-
-    static GLenum ConvertShaderType(JzEShaderType type);
-    Bool          CompileShader();
 };
 } // namespace JzRE

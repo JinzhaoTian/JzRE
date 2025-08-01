@@ -15,15 +15,11 @@ public:
     JzOpenGLFramebuffer(const String &debugName = "");
     ~JzOpenGLFramebuffer() override;
 
-    void AttachColorTexture(std::shared_ptr<JzRHITexture> texture, U32 attachmentIndex = 0) override;
-    void AttachDepthTexture(std::shared_ptr<JzRHITexture> texture) override;
-    void AttachDepthStencilTexture(std::shared_ptr<JzRHITexture> texture) override;
-    Bool IsComplete() const override;
-
-    GLuint GetHandle() const
-    {
-        return handle;
-    }
+    void   AttachColorTexture(std::shared_ptr<JzRHITexture> texture, U32 attachmentIndex = 0) override;
+    void   AttachDepthTexture(std::shared_ptr<JzRHITexture> texture) override;
+    void   AttachDepthStencilTexture(std::shared_ptr<JzRHITexture> texture) override;
+    Bool   IsComplete() const override;
+    GLuint GetHandle() const;
 
 private:
     GLuint                                     handle = 0;

@@ -17,10 +17,7 @@ public:
     void *MapBuffer() override;
     void  UnmapBuffer() override;
 
-    GLuint GetHandle() const
-    {
-        return handle;
-    }
+    GLuint GetHandle() const;
 
 private:
     GLuint handle = 0;

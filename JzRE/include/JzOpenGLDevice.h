@@ -64,14 +64,17 @@ public:
     void MakeContextCurrent(U32 threadIndex = 0) override;
 
     // OpenGL特定功能
-    const JzRHICapabilities &GetCapabilities() const
-    {
-        return capabilities;
-    }
-    JzRHIStats &GetStats()
-    {
-        return stats;
-    }
+    const JzRHICapabilities &GetCapabilities() const;
+    JzRHIStats              &GetStats();
+
+private:
+    void InitializeCapabilities();
+    void ApplyRenderState(const JzRenderState &state);
+
+    static GLenum ConvertPrimitiveType(JzEPrimitiveType type);
+    static GLenum ConvertBlendMode(JzEBlendMode mode);
+    static GLenum ConvertDepthFunc(JzEDepthFunc func);
+    static GLenum ConvertCullMode(JzECullMode mode);
 
 private:
     JzRHICapabilities capabilities;
@@ -81,14 +84,5 @@ private:
     std::shared_ptr<JzOpenGLPipeline>    currentPipeline;
     std::shared_ptr<JzOpenGLVertexArray> currentVertexArray;
     std::shared_ptr<JzOpenGLFramebuffer> currentFramebuffer;
-
-    void InitializeCapabilities();
-    void ApplyRenderState(const JzRenderState &state);
-
-    static GLenum ConvertPrimitiveType(JzEPrimitiveType type);
-    static GLenum ConvertBlendMode(JzEBlendMode mode);
-    static GLenum ConvertDepthFunc(JzEDepthFunc func);
-    static GLenum ConvertCullMode(JzECullMode mode);
 };
-
 } // namespace JzRE

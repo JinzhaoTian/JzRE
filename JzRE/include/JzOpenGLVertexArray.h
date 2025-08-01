@@ -17,10 +17,7 @@ public:
     void BindIndexBuffer(std::shared_ptr<JzRHIBuffer> buffer) override;
     void SetVertexAttribute(U32 index, U32 size, U32 stride, U32 offset) override;
 
-    GLuint GetHandle() const
-    {
-        return handle;
-    }
+    GLuint GetHandle() const;
 
 private:
     GLuint                                    handle = 0;

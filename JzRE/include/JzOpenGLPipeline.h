@@ -14,18 +14,9 @@ public:
     JzOpenGLPipeline(const JzPipelineDesc &desc);
     ~JzOpenGLPipeline() override;
 
-    GLuint GetProgram() const
-    {
-        return program;
-    }
-    Bool IsLinked() const
-    {
-        return isLinked;
-    }
-    const String &GetLinkLog() const
-    {
-        return linkLog;
-    }
+    GLuint        GetProgram() const;
+    Bool          IsLinked() const;
+    const String &GetLinkLog() const;
 
     // Uniform设置接口
     void SetUniform(const String &name, I32 value);
@@ -37,14 +28,15 @@ public:
     void SetUniform(const String &name, const glm::mat4 &value);
 
 private:
+    Bool  LinkProgram();
+    GLint GetUniformLocation(const String &name);
+
+private:
     GLuint                                       program  = 0;
     Bool                                         isLinked = false;
     String                                       linkLog;
     std::vector<std::shared_ptr<JzOpenGLShader>> shaders;
     std::unordered_map<String, GLint>            uniformLocations;
-
-    Bool  LinkProgram();
-    GLint GetUniformLocation(const String &name);
 };
 
 } // namespace JzRE
