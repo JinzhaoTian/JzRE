@@ -1,6 +1,8 @@
 #pragma once
 
 #include "CommonTypes.h"
+#include "JzRHIETypes.h"
+#include "JzRHIRenderer.h"
 
 namespace JzRE {
 /**
@@ -21,6 +23,11 @@ public:
     void SetThreadCount(U32 threadCount);
 
 private:
+    Bool InitScene();
+    void ProcessInput();
+    void UpdateStats();
+
+private:
     const I32    wndWidth  = 1200;
     const I32    wndHeight = 800;
     const String title     = "JzRE - RHI Rendering Engine";
@@ -33,10 +40,6 @@ private:
     std::shared_ptr<JzRHIRenderer> renderer;
     // std::shared_ptr<OGLScene>        scene;
     // std::shared_ptr<OGLCamera>       camera;
-
-    Bool InitScene();
-    void ProcessInput();
-    void UpdateStats();
 
     // 性能监控
     std::chrono::high_resolution_clock::time_point lastFrameTime;

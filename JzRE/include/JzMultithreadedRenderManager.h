@@ -4,10 +4,25 @@
 #include "JzRHIBuffer.h"
 #include "JzRHICommandBuffer.h"
 #include "JzRHIETypes.h"
+#include "JzRHIStats.h"
 #include "JzRenderThreadContext.h"
 #include "JzRenderThreadPool.h"
 
 namespace JzRE {
+
+// 获取推荐的线程数量
+U32 GetRecommendedThreadCount();
+
+// 检查多线程渲染支持
+Bool IsMultithreadedRenderingSupported();
+
+// 线程亲和性设置
+void SetThreadAffinity(std::thread &thread, U32 coreId);
+
+// 性能分析
+void BeginProfileRegion(const String &name);
+void EndProfileRegion();
+
 /**
  * 多线程渲染管理器
  * 协调多线程渲染流程，管理线程间同步
@@ -20,10 +35,7 @@ public:
     // 管理器生命周期
     Bool Initialize(U32 threadCount = 0);
     void Shutdown();
-    Bool IsInitialized() const
-    {
-        return isInitialized;
-    }
+    Bool IsInitialized() const;
 
     // 渲染流程控制
     void BeginFrame();
@@ -41,18 +53,17 @@ public:
     // 配置
     void SetThreadCount(U32 threadCount);
     U32  GetThreadCount() const;
-    void SetVSyncEnabled(Bool enabled)
-    {
-        vsyncEnabled = enabled;
-    }
+    void SetVSyncEnabled(Bool enabled);
 
     // 性能监控
     const JzRHIStats &GetRenderStats() const;
-    F32               GetAverageFrameTime() const
-    {
-        return averageFrameTime;
-    }
-    F32 GetThreadUtilization() const;
+    F32               GetAverageFrameTime() const;
+    F32               GetThreadUtilization() const;
+
+private:
+    void CreateThreadContexts(U32 threadCount);
+    void DestroyThreadContexts();
+    void WaitForFrameCompletion();
 
 private:
     Bool isInitialized    = false;
@@ -71,10 +82,6 @@ private:
     // 性能统计
     JzRHIStats                                     renderStats;
     std::chrono::high_resolution_clock::time_point frameStartTime;
-
-    void CreateThreadContexts(U32 threadCount);
-    void DestroyThreadContexts();
-    void WaitForFrameCompletion();
 };
 
 } // namespace JzRE

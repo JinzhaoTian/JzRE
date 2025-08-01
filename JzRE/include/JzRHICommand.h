@@ -93,14 +93,10 @@ struct JzDrawIndexedParams {
  */
 class JzRHICommand {
 public:
-    JzRHICommand(JzERHICommandType type) :
-        type(type) { }
+    JzRHICommand(JzERHICommandType type);
     virtual ~JzRHICommand() = default;
 
-    JzERHICommandType GetType() const
-    {
-        return type;
-    }
+    JzERHICommandType GetType() const;
     virtual void Execute() = 0;
 
 protected:

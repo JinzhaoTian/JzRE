@@ -25,26 +25,14 @@ public:
     // 设备管理
     Bool Initialize(JzERHIType rhiType = JzERHIType::Unknown);
     void Shutdown();
-    Bool IsInitialized() const
-    {
-        return device != nullptr;
-    }
+    Bool IsInitialized() const;
 
     // 获取当前设备
-    std::shared_ptr<JzRHIDevice> GetDevice() const
-    {
-        return device;
-    }
-    JzERHIType GetRHIType() const
-    {
-        return device ? device->GetRHIType() : JzERHIType::Unknown;
-    }
+    std::shared_ptr<JzRHIDevice> GetDevice() const;
+    JzERHIType GetRHIType() const;
 
     // 命令队列管理
-    std::shared_ptr<JzRHICommandQueue> GetCommandQueue() const
-    {
-        return commandQueue;
-    }
+    std::shared_ptr<JzRHICommandQueue> GetCommandQueue() const;
 
     // 多线程支持
     void SetThreadCount(U32 threadCount);
@@ -56,6 +44,7 @@ private:
     JzRHIContext(const JzRHIContext &)            = delete;
     JzRHIContext &operator=(const JzRHIContext &) = delete;
 
+private:
     std::shared_ptr<JzRHIDevice>       device;
     std::shared_ptr<JzRHICommandQueue> commandQueue;
 };

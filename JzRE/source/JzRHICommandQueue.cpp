@@ -57,3 +57,8 @@ void JzRE::JzRHICommandQueue::SetThreadCount(JzRE::U32 threadCount)
 {
     this->threadCount = std::max(1u, threadCount);
 }
+
+JzRE::U32 JzRE::JzRHICommandQueue::GetThreadCount() const
+{
+    return threadCount;
+}

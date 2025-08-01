@@ -31,6 +31,7 @@
 #include <cassert>
 #include <chrono>
 #include <cmath>
+#include <condition_variable>
 #include <cstdint>
 #include <cstring>
 #include <fstream>
@@ -45,6 +46,7 @@
 #include <span>
 #include <sstream>
 #include <string>
+#include <thread>
 #include <type_traits>
 #include <typeinfo>
 #include <unordered_map>

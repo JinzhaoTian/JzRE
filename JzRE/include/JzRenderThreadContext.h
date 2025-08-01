@@ -2,6 +2,7 @@
 #pragma once
 
 #include "CommonTypes.h"
+#include "JzRHIETypes.h"
 
 namespace JzRE {
 /**
@@ -19,14 +20,8 @@ public:
     void SwapBuffers();
     void Cleanup();
 
-    U32 GetThreadId() const
-    {
-        return threadId;
-    }
-    Bool IsInitialized() const
-    {
-        return isInitialized;
-    }
+    U32 GetThreadId() const;
+    Bool IsInitialized() const;
 
 private:
     U32  threadId;

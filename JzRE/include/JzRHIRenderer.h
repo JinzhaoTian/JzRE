@@ -1,6 +1,9 @@
 #pragma once
 
 #include "JzRHIStats.h"
+#include "JzRHIFramebuffer.h"
+#include "JzRHITexture.h"
+#include "JzRHIPipeline.h"
 #include "OGLRenderWindow.h"
 #include "OGLScene.h"
 
@@ -21,14 +24,8 @@ public:
     void Shutdown();
 
     // 渲染模式切换
-    void SetUseCommandBuffer(Bool useCommandBuffer)
-    {
-        this->useCommandBuffer = useCommandBuffer;
-    }
-    Bool IsUsingCommandBuffer() const
-    {
-        return useCommandBuffer;
-    }
+    void SetUseCommandBuffer(Bool useCommandBuffer);
+    Bool IsUsingCommandBuffer() const;
 
     // 多线程渲染支持
     void SetThreadCount(U32 threadCount);
@@ -39,19 +36,6 @@ public:
     void              ResetStats();
 
 private:
-    I32                              width, height;
-    std::shared_ptr<OGLRenderWindow> window;
-
-    // RHI资源
-    std::shared_ptr<JzRHIFramebuffer> framebuffer;
-    std::shared_ptr<JzRHITexture>     colorTexture;
-    std::shared_ptr<JzRHITexture>     depthTexture;
-    std::shared_ptr<JzRHIPipeline>    defaultPipeline;
-
-    // 渲染模式
-    Bool useCommandBuffer = true;
-    Bool isInitialized    = false;
-
     // 初始化相关
     Bool CreateFramebuffer();
     Bool CreateDefaultPipeline();
@@ -66,6 +50,20 @@ private:
     // 辅助函数
     void SetupViewport();
     void ClearBuffers();
+
+private:
+    I32                              width, height;
+    std::shared_ptr<OGLRenderWindow> window;
+
+    // RHI资源
+    std::shared_ptr<JzRHIFramebuffer> framebuffer;
+    std::shared_ptr<JzRHITexture>     colorTexture;
+    std::shared_ptr<JzRHITexture>     depthTexture;
+    std::shared_ptr<JzRHIPipeline>    defaultPipeline;
+
+    // 渲染模式
+    Bool useCommandBuffer = true;
+    Bool isInitialized    = false;
 };
 
 } // namespace JzRE

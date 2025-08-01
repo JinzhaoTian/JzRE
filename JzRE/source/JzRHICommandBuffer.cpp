@@ -101,6 +101,26 @@ void JzRE::JzRHICommandBuffer::Execute()
     }
 }
 
+JzRE::Bool JzRE::JzRHICommandBuffer::IsRecording() const
+{
+    return isRecording;
+}
+
+JzRE::Bool JzRE::JzRHICommandBuffer::IsEmpty() const
+{
+    return commands.empty();
+}
+
+JzRE::Size JzRE::JzRHICommandBuffer::GetCommandCount() const
+{
+    return commands.size();
+}
+
+const JzRE::String &JzRE::JzRHICommandBuffer::GetDebugName() const
+{
+    return debugName;
+}
+
 template <typename T, typename... Args>
 void JzRE::JzRHICommandBuffer::AddCommand(Args &&...args)
 {

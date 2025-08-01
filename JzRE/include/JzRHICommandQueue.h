@@ -23,10 +23,7 @@ public:
 
     // 多线程支持
     void SetThreadCount(U32 threadCount);
-    U32  GetThreadCount() const
-    {
-        return threadCount;
-    }
+    U32  GetThreadCount() const;
 
 private:
     std::vector<std::shared_ptr<JzRHICommandBuffer>> pendingCommandBuffers;

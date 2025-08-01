@@ -34,31 +34,19 @@ public:
     void Execute();
 
     // 多线程支持
-    Bool IsRecording() const
-    {
-        return isRecording;
-    }
-    Bool IsEmpty() const
-    {
-        return commands.empty();
-    }
-    Size GetCommandCount() const
-    {
-        return commands.size();
-    }
+    Bool          IsRecording() const;
+    Bool          IsEmpty() const;
+    Size          GetCommandCount() const;
+    const String &GetDebugName() const;
 
-    const String &GetDebugName() const
-    {
-        return debugName;
-    }
+private:
+    template <typename T, typename... Args>
+    void AddCommand(Args &&...args);
 
 private:
     String                                     debugName;
     std::vector<std::unique_ptr<JzRHICommand>> commands;
     std::atomic<Bool>                          isRecording{false};
     mutable std::mutex                         commandMutex;
-
-    template <typename T, typename... Args>
-    void AddCommand(Args &&...args);
 };
 } // namespace JzRE

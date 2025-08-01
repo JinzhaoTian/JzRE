@@ -20,10 +20,7 @@ public:
     // 线程池管理
     void Start();
     void Stop();
-    Bool IsRunning() const
-    {
-        return isRunning;
-    }
+    Bool IsRunning() const;
 
     // 任务提交
     void SubmitTask(std::shared_ptr<JzRenderTask> task);
@@ -36,22 +33,16 @@ public:
 
     // 线程池配置
     void SetThreadCount(U32 threadCount);
-    U32  GetThreadCount() const
-    {
-        return threadCount;
-    }
-    U32 GetActiveThreadCount() const
-    {
-        return activeThreads;
-    }
+    U32  GetThreadCount() const;
+    U32  GetActiveThreadCount() const;
 
     // 统计信息
     Size GetPendingTaskCount() const;
-    Size GetCompletedTaskCount() const
-    {
-        return completedTasks;
-    }
+    Size GetCompletedTaskCount() const;
     void ResetStats();
+
+private:
+    void WorkerThread(U32 threadId);
 
 private:
     U32               threadCount;
@@ -67,7 +58,5 @@ private:
     std::condition_variable completionCondition;
 
     std::atomic<Size> completedTasks{0};
-
-    void WorkerThread(U32 threadId);
 };
 } // namespace JzRE

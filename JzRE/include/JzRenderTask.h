@@ -19,19 +19,12 @@ enum class JzERenderTaskType : U8 {
  */
 class JzRenderTask {
 public:
-    JzRenderTask(JzERenderTaskType type, U32 priority = 0) :
-        type(type), priority(priority) { }
+    JzRenderTask(JzERenderTaskType type, U32 priority = 0);
     virtual ~JzRenderTask() = default;
 
-    JzERenderTaskType GetType() const
-    {
-        return type;
-    }
-    U32 GetPriority() const
-    {
-        return priority;
-    }
-    virtual void Execute() = 0;
+    JzERenderTaskType GetType() const;
+    U32               GetPriority() const;
+    virtual void      Execute() = 0;
 
 protected:
     JzERenderTaskType type;

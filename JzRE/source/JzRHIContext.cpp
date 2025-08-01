@@ -44,6 +44,26 @@ void JzRE::JzRHIContext::Shutdown()
     }
 }
 
+JzRE::Bool JzRE::JzRHIContext::IsInitialized() const
+{
+    return device != nullptr;
+}
+
+std::shared_ptr<JzRE::JzRHIDevice> JzRE::JzRHIContext::GetDevice() const
+{
+    return device;
+}
+
+JzRE::JzERHIType JzRE::JzRHIContext::GetRHIType() const
+{
+    return device ? device->GetRHIType() : JzERHIType::Unknown;
+}
+
+std::shared_ptr<JzRE::JzRHICommandQueue> JzRE::JzRHIContext::GetCommandQueue() const
+{
+    return commandQueue;
+}
+
 void JzRE::JzRHIContext::SetThreadCount(JzRE::U32 threadCount)
 {
     if (commandQueue) {

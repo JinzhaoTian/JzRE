@@ -1,6 +1,14 @@
 #include "JzRHICommand.h"
 #include "JzRHIContext.h"
 
+JzRE::JzRHICommand::JzRHICommand(JzRE::JzERHICommandType type) :
+    type(type) { }
+
+JzRE::JzERHICommandType JzRE::JzRHICommand::GetType() const
+{
+    return type;
+}
+
 // 具体命令实现
 JzRE::JzRHIClearCommand::JzRHIClearCommand(const JzClearParams &params) :
     JzRHICommand(JzERHICommandType::Clear), params(params) { }
