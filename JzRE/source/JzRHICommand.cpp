@@ -2,7 +2,7 @@
 #include "JzRHIContext.h"
 
 JzRE::JzRHIClearCommand::JzRHIClearCommand(const JzClearParams &params) :
-    JzRHICommand(JzERHICommandType::Clear), m_params(params) { }
+    JzRHICommand(JzRHIECommandType::Clear), m_params(params) { }
 
 void JzRE::JzRHIClearCommand::Execute()
 {
@@ -13,7 +13,7 @@ void JzRE::JzRHIClearCommand::Execute()
 }
 
 JzRE::JzRHIDrawCommand::JzRHIDrawCommand(const JzRE::JzDrawParams &params) :
-    JzRHICommand(JzERHICommandType::Draw), m_params(params) { }
+    JzRHICommand(JzRHIECommandType::Draw), m_params(params) { }
 
 void JzRE::JzRHIDrawCommand::Execute()
 {
@@ -24,7 +24,7 @@ void JzRE::JzRHIDrawCommand::Execute()
 }
 
 JzRE::JzRHIDrawIndexedCommand::JzRHIDrawIndexedCommand(const JzRE::JzDrawIndexedParams &params) :
-    JzRHICommand(JzERHICommandType::DrawIndexed), m_params(params) { }
+    JzRHICommand(JzRHIECommandType::DrawIndexed), m_params(params) { }
 
 void JzRE::JzRHIDrawIndexedCommand::Execute()
 {
@@ -35,7 +35,7 @@ void JzRE::JzRHIDrawIndexedCommand::Execute()
 }
 
 JzRE::JzRHIBindPipelineCommand::JzRHIBindPipelineCommand(std::shared_ptr<JzRE::JzRHIPipeline> pipeline) :
-    JzRHICommand(JzERHICommandType::BindPipeline), m_pipeline(pipeline) { }
+    JzRHICommand(JzRHIECommandType::BindPipeline), m_pipeline(pipeline) { }
 
 void JzRE::JzRHIBindPipelineCommand::Execute()
 {
@@ -46,7 +46,7 @@ void JzRE::JzRHIBindPipelineCommand::Execute()
 }
 
 JzRE::JzRHIBindVertexArrayCommand::JzRHIBindVertexArrayCommand(std::shared_ptr<JzRE::JzRHIVertexArray> vertexArray) :
-    JzRHICommand(JzERHICommandType::BindVertexArray), m_vertexArray(vertexArray) { }
+    JzRHICommand(JzRHIECommandType::BindVertexArray), m_vertexArray(vertexArray) { }
 
 void JzRE::JzRHIBindVertexArrayCommand::Execute()
 {
@@ -57,7 +57,7 @@ void JzRE::JzRHIBindVertexArrayCommand::Execute()
 }
 
 JzRE::JzRHIBindTextureCommand::JzRHIBindTextureCommand(std::shared_ptr<JzRE::JzRHITexture> texture, U32 slot) :
-    JzRHICommand(JzERHICommandType::BindTexture), m_texture(texture), m_slot(slot) { }
+    JzRHICommand(JzRHIECommandType::BindTexture), m_texture(texture), m_slot(slot) { }
 
 void JzRE::JzRHIBindTextureCommand::Execute()
 {
@@ -68,7 +68,7 @@ void JzRE::JzRHIBindTextureCommand::Execute()
 }
 
 JzRE::JzRHISetViewportCommand::JzRHISetViewportCommand(const JzRE::JzViewport &viewport) :
-    JzRHICommand(JzERHICommandType::SetViewport), m_viewport(viewport) { }
+    JzRHICommand(JzRHIECommandType::SetViewport), m_viewport(viewport) { }
 
 void JzRE::JzRHISetViewportCommand::Execute()
 {
@@ -79,7 +79,7 @@ void JzRE::JzRHISetViewportCommand::Execute()
 }
 
 JzRE::JzRHISetScissorCommand::JzRHISetScissorCommand(const JzRE::JzScissorRect &scissor) :
-    JzRHICommand(JzERHICommandType::SetScissor), m_scissorRect(scissor) { }
+    JzRHICommand(JzRHIECommandType::SetScissor), m_scissorRect(scissor) { }
 
 void JzRE::JzRHISetScissorCommand::Execute()
 {
@@ -90,7 +90,7 @@ void JzRE::JzRHISetScissorCommand::Execute()
 }
 
 JzRE::JzRHIBeginRenderPassCommand::JzRHIBeginRenderPassCommand(std::shared_ptr<JzRE::JzRHIFramebuffer> framebuffer) :
-    JzRHICommand(JzERHICommandType::BeginRenderPass), m_framebuffer(framebuffer) { }
+    JzRHICommand(JzRHIECommandType::BeginRenderPass), m_framebuffer(framebuffer) { }
 
 void JzRE::JzRHIBeginRenderPassCommand::Execute()
 {
@@ -98,7 +98,7 @@ void JzRE::JzRHIBeginRenderPassCommand::Execute()
 }
 
 JzRE::JzRHIEndRenderPassCommand::JzRHIEndRenderPassCommand() :
-    JzRHICommand(JzERHICommandType::EndRenderPass) { }
+    JzRHICommand(JzRHIECommandType::EndRenderPass) { }
 
 void JzRE::JzRHIEndRenderPassCommand::Execute()
 {
@@ -106,7 +106,7 @@ void JzRE::JzRHIEndRenderPassCommand::Execute()
 }
 
 JzRE::JzRHIUpdateBufferCommand::JzRHIUpdateBufferCommand(std::shared_ptr<JzRE::JzRHIBuffer> buffer, const void *data, JzRE::U64 size) :
-    JzRHICommand(JzERHICommandType::UpdateBuffer), m_buffer(buffer), m_data(data), m_size(size) { }
+    JzRHICommand(JzRHIECommandType::UpdateBuffer), m_buffer(buffer), m_data(data), m_size(size) { }
 
 void JzRE::JzRHIUpdateBufferCommand::Execute()
 {

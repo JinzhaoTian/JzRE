@@ -1,17 +1,13 @@
 #pragma once
 
+#include "CommonTypes.h"
+
 namespace JzRE {
 /**
  * @brief Enums of Plugin Execution Context
  */
-enum class JzEPluginExecutionContext {
-    /**
-     * @brief Widget context
-     */
+enum class JzEPluginExecutionContext : U8 {
     WIDGET,
-    /**
-     * @brief Panel context
-     */
     PANEL
 };
-}
+} // namespace JzRE

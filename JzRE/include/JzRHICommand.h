@@ -11,9 +11,9 @@
 namespace JzRE {
 
 /**
- * @brief RHI command type
+ * @brief Enums of RHI command type
  */
-enum class JzERHICommandType : U8 {
+enum class JzRHIECommandType : U8 {
     Clear,
     Draw,
     DrawIndexed,
@@ -38,7 +38,7 @@ public:
      * @brief Constructor
      * @param type The type of the command
      */
-    JzRHICommand(JzERHICommandType type) :
+    JzRHICommand(JzRHIECommandType type) :
         type(type) { }
 
     /**
@@ -50,7 +50,7 @@ public:
      * @brief Get the type of the command
      * @return The type of the command
      */
-    JzERHICommandType GetType() const
+    JzRHIECommandType GetType() const
     {
         return type;
     }
@@ -61,7 +61,7 @@ public:
     virtual void Execute() = 0;
 
 protected:
-    JzERHICommandType type;
+    JzRHIECommandType type;
 };
 
 /**

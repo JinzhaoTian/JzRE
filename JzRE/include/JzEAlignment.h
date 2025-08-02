@@ -1,10 +1,12 @@
 #pragma once
 
+#include "CommonTypes.h"
+
 namespace JzRE {
 /**
  * @brief Enums of Horizontal Alignment
  */
-enum class JzEHorizontalAlignment {
+enum class JzEHorizontalAlignment : U8 {
     LEFT,
     CENTER,
     RIGHT
@@ -13,7 +15,7 @@ enum class JzEHorizontalAlignment {
 /**
  * @brief Enums of Vertical Alignment
  */
-enum class JzEVerticalAlignment {
+enum class JzEVerticalAlignment : U8 {
     TOP,
     MIDDLE,
     BOTTOM
