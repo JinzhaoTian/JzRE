@@ -4,6 +4,10 @@
 #include "JzDevice.h"
 #include "JzDeviceSettings.h"
 #include "JzInputManager.h"
+#include "JzRHICommandQueue.h"
+#include "JzRHIDevice.h"
+#include "JzRHIETypes.h"
+#include "JzRHIFactory.h"
 #include "JzSceneManager.h"
 #include "JzServiceContainer.h"
 #include "JzUIManager.h"
@@ -18,16 +22,27 @@ class JzContext {
 public:
     /**
      * @brief Construct a new Context object
-     *
-     * @param projectPath
-     * @param projectName
      */
-    JzContext();
+    JzContext(JzERHIType rhiType = JzERHIType::Unknown);
+
+    JzContext(const JzContext &) = delete;
+
+    JzContext &operator=(const JzContext &) = delete;
 
     /**
      * @brief Destroy the Context object
      */
-    ~JzContext();
+    virtual ~JzContext();
+
+    std::shared_ptr<JzRHIDevice> GetDevice() const;
+
+    JzERHIType GetRHIType() const;
+
+    std::shared_ptr<JzRHICommandQueue> GetCommandQueue() const;
+
+    void SetThreadCount(U32 threadCount);
+
+    U32 GetThreadCount() const;
 
 public:
     std::unique_ptr<JzDevice>       device;
@@ -39,5 +54,9 @@ public:
 
     JzDeviceSettings deviceSettings;
     JzWindowSettings windowSettings;
+
+private:
+    std::shared_ptr<JzRHIDevice>       m_device;
+    std::shared_ptr<JzRHICommandQueue> m_commandQueue;
 };
 } // namespace JzRE
