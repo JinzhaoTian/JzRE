@@ -2,6 +2,7 @@
 
 #include "CommonTypes.h"
 #include "JzRHIBuffer.h"
+#include "JzRHIDesc.h"
 #include "JzRHIETypes.h"
 #include "JzRHIResource.h"
 

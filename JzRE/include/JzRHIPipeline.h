@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CommonTypes.h"
+#include "JzRHIDesc.h"
 #include "JzRHIETypes.h"
 #include "JzRHIResource.h"
 
@@ -34,4 +35,4 @@ public:
 protected:
     JzPipelineDesc desc;
 };
-}
+} // namespace JzRE

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CommonTypes.h"
+#include "JzRHIDesc.h"
 #include "JzRHITexture.h"
 
 namespace JzRE {

@@ -164,10 +164,10 @@ enum class JzEMSAALevel : U8 {
  * @brief Viewport description
  */
 struct JzViewport {
-    F32 x      = 0.0f;
-    F32 y      = 0.0f;
-    F32 width  = 800.0f;
-    F32 height = 600.0f;
+    F32 x        = 0.0f;
+    F32 y        = 0.0f;
+    F32 width    = 800.0f;
+    F32 height   = 600.0f;
     F32 minDepth = 0.0f;
     F32 maxDepth = 1.0f;
 };
@@ -231,56 +231,6 @@ struct JzRenderState {
     Bool         depthWrite = true;
     Bool         wireframe  = false;
     JzEMSAALevel msaaLevel  = JzEMSAALevel::None;
-};
-
-/**
- * @brief Buffer description
- */
-struct JzBufferDesc {
-    JzEBufferType  type;
-    JzEBufferUsage usage;
-    Size           size;
-    const void    *data = nullptr;
-    String         debugName;
-};
-
-/**
- * @brief Texture description
- */
-struct JzTextureDesc {
-    JzETextureType   type      = JzETextureType::Texture2D;
-    JzETextureFormat format    = JzETextureFormat::RGBA8;
-    U32              width     = 1;
-    U32              height    = 1;
-    U32              depth     = 1;
-    U32              mipLevels = 1;
-    U32              arraySize = 1;
-    JzETextureFilter minFilter = JzETextureFilter::Linear;
-    JzETextureFilter magFilter = JzETextureFilter::Linear;
-    JzETextureWrap   wrapS     = JzETextureWrap::Repeat;
-    JzETextureWrap   wrapT     = JzETextureWrap::Repeat;
-    JzETextureWrap   wrapR     = JzETextureWrap::Repeat;
-    const void      *data      = nullptr;
-    String           debugName;
-};
-
-/**
- * @brief Shader description
- */
-struct JzShaderDesc {
-    JzEShaderType type;
-    String        source;
-    String        entryPoint = "main";
-    String        debugName;
-};
-
-/**
- * @brief Pipeline description
- */
-struct JzPipelineDesc {
-    std::vector<JzShaderDesc> shaders;
-    JzRenderState             renderState;
-    String                    debugName;
 };
 
 } // namespace JzRE
