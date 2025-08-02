@@ -6,24 +6,56 @@
 
 namespace JzRE {
 /**
- * @brief OpenGL Shader Implementation
+ * @brief OpenGL Implementation of RHI Shader
  */
 class JzOpenGLShader : public JzRHIShader {
 public:
+    /**
+     * @brief Constructor
+     * @param desc The description of the shader
+     */
     JzOpenGLShader(const JzShaderDesc &desc);
+
+    /**
+     * @brief Destructor
+     */
     ~JzOpenGLShader() override;
 
-    GLuint        GetHandle() const;
-    Bool          IsCompiled() const;
+    /**
+     * @brief Get the handle of the shader
+     * @return The handle of the shader
+     */
+    GLuint GetHandle() const;
+
+    /**
+     * @brief Check if the shader is compiled
+     * @return True if the shader is compiled, false otherwise
+     */
+    Bool IsCompiled() const;
+
+    /**
+     * @brief Get the compile log
+     * @return The compile log
+     */
     const String &GetCompileLog() const;
 
 private:
+    /**
+     * @brief Convert shader type to OpenGL shader type
+     * @param type The shader type
+     * @return The OpenGL shader type
+     */
     static GLenum ConvertShaderType(JzEShaderType type);
-    Bool          CompileShader();
+
+    /**
+     * @brief Compile the shader
+     * @return True if the shader is compiled, false otherwise
+     */
+    Bool CompileShader();
 
 private:
-    GLuint handle     = 0;
-    Bool   isCompiled = false;
-    String compileLog;
+    GLuint m_handle     = 0;
+    Bool   m_isCompiled = false;
+    String m_compileLog;
 };
 } // namespace JzRE

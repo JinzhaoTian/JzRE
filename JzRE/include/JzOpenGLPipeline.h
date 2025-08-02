@@ -7,36 +7,108 @@
 
 namespace JzRE {
 /**
- * @brief OpenGL Pipeline Implementation
+ * @brief OpenGL Implementation of RHI Pipeline
  */
 class JzOpenGLPipeline : public JzRHIPipeline {
 public:
+    /**
+     * @brief Constructor
+     * @param desc The description of the pipeline
+     */
     JzOpenGLPipeline(const JzPipelineDesc &desc);
+
+    /**
+     * @brief Destructor
+     */
     ~JzOpenGLPipeline() override;
 
-    GLuint        GetProgram() const;
-    Bool          IsLinked() const;
+    /**
+     * @brief Get the program handle
+     * @return The program handle
+     */
+    GLuint GetProgram() const;
+
+    /**
+     * @brief Check if the pipeline is linked
+     * @return True if the pipeline is linked, false otherwise
+     */
+    Bool IsLinked() const;
+
+    /**
+     * @brief Get the link log
+     * @return The link log
+     */
     const String &GetLinkLog() const;
 
-    // Uniform设置接口
+    /**
+     * @brief Set a uniform value
+     * @param name The name of the uniform
+     * @param value The value to set
+     */
     void SetUniform(const String &name, I32 value);
+
+    /**
+     * @brief Set a uniform value
+     * @param name The name of the uniform
+     * @param value The value to set
+     */
     void SetUniform(const String &name, F32 value);
+
+    /**
+     * @brief Set a uniform value
+     * @param name The name of the uniform
+     * @param value The value to set
+     */
     void SetUniform(const String &name, const glm::vec2 &value);
+
+    /**
+     * @brief Set a uniform value
+     * @param name The name of the uniform
+     * @param value The value to set
+     */
     void SetUniform(const String &name, const glm::vec3 &value);
+
+    /**
+     * @brief Set a uniform value
+     * @param name The name of the uniform
+     * @param value The value to set
+     */
     void SetUniform(const String &name, const glm::vec4 &value);
+
+    /**
+     * @brief Set a uniform value
+     * @param name The name of the uniform
+     * @param value The value to set
+     */
     void SetUniform(const String &name, const glm::mat3 &value);
+
+    /**
+     * @brief Set a uniform value
+     * @param name The name of the uniform
+     * @param value The value to set
+     */
     void SetUniform(const String &name, const glm::mat4 &value);
 
 private:
-    Bool  LinkProgram();
+    /**
+     * @brief Link the program
+     * @return True if the program is linked, false otherwise
+     */
+    Bool LinkProgram();
+
+    /**
+     * @brief Get the uniform location
+     * @param name The name of the uniform
+     * @return The uniform location
+     */
     GLint GetUniformLocation(const String &name);
 
 private:
-    GLuint                                       program  = 0;
-    Bool                                         isLinked = false;
-    String                                       linkLog;
-    std::vector<std::shared_ptr<JzOpenGLShader>> shaders;
-    std::unordered_map<String, GLint>            uniformLocations;
+    GLuint                                       m_program  = 0;
+    Bool                                         m_isLinked = false;
+    String                                       m_linkLog;
+    std::vector<std::shared_ptr<JzOpenGLShader>> m_shaders;
+    std::unordered_map<String, GLint>            m_uniformLocations;
 };
 
 } // namespace JzRE

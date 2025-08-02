@@ -6,7 +6,7 @@
 
 namespace JzRE {
 /**
- * @brief Interface of RHI buffer
+ * @brief Interface of RHI Buffer
  */
 class JzRHIBuffer : public JzRHIResource {
 public:
