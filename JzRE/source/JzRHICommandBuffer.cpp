@@ -2,13 +2,73 @@
 
 // RHICommandBuffer实现
 JzRE::JzRHICommandBuffer::JzRHICommandBuffer(const JzRE::String &debugName) :
-    debugName(debugName)
+    m_debugName(debugName), m_isRecording(false)
 {
 }
 
 JzRE::JzRHICommandBuffer::~JzRHICommandBuffer()
 {
     Reset();
+}
+
+void JzRE::JzRHICommandBuffer::Begin()
+{
+    std::lock_guard<std::mutex> lock(m_commandMutex);
+    if (m_isRecording) {
+        std::cerr << "Command buffer is recording" << std::endl;
+        return;
+    }
+    m_isRecording = true;
+    Reset();
+}
+
+void JzRE::JzRHICommandBuffer::End()
+{
+    std::lock_guard<std::mutex> lock(m_commandMutex);
+    if (!m_isRecording) {
+        std::cerr << "Command buffer is not recording" << std::endl;
+        return;
+    }
+    m_isRecording = false;
+}
+
+void JzRE::JzRHICommandBuffer::Reset()
+{
+    std::lock_guard<std::mutex> lock(m_commandMutex);
+    m_commands.clear();
+}
+
+void JzRE::JzRHICommandBuffer::Execute()
+{
+    std::lock_guard<std::mutex> lock(m_commandMutex);
+    if (m_isRecording) {
+        std::cerr << "Cannot execute command buffer that is recording" << std::endl;
+        return;
+    }
+
+    for (auto &command : m_commands) {
+        command->Execute();
+    }
+}
+
+JzRE::Bool JzRE::JzRHICommandBuffer::IsRecording() const
+{
+    return m_isRecording;
+}
+
+JzRE::Bool JzRE::JzRHICommandBuffer::IsEmpty() const
+{
+    return m_commands.empty();
+}
+
+JzRE::Size JzRE::JzRHICommandBuffer::GetCommandCount() const
+{
+    return m_commands.size();
+}
+
+const JzRE::String &JzRE::JzRHICommandBuffer::GetDebugName() const
+{
+    return m_debugName;
 }
 
 void JzRE::JzRHICommandBuffer::Clear(const JzRE::JzClearParams &params)
@@ -48,87 +108,27 @@ void JzRE::JzRHICommandBuffer::SetViewport(const JzRE::JzViewport &viewport)
 
 void JzRE::JzRHICommandBuffer::SetScissor(const JzRE::JzScissorRect &scissor)
 {
-    // TODO: 实现剪裁矩形命令
+    AddCommand<JzRHISetScissorCommand>(scissor);
 }
 
 void JzRE::JzRHICommandBuffer::BeginRenderPass(std::shared_ptr<JzRE::JzRHIFramebuffer> framebuffer)
 {
-    // TODO: 实现渲染通道开始命令
+    AddCommand<JzRHIBeginRenderPassCommand>(framebuffer);
 }
 
 void JzRE::JzRHICommandBuffer::EndRenderPass()
 {
-    // TODO: 实现渲染通道结束命令
-}
-
-void JzRE::JzRHICommandBuffer::Begin()
-{
-    std::lock_guard<std::mutex> lock(commandMutex);
-    if (isRecording) {
-        std::cerr << "命令缓冲已经在记录中" << std::endl;
-        return;
-    }
-    isRecording = true;
-    Reset();
-}
-
-void JzRE::JzRHICommandBuffer::End()
-{
-    std::lock_guard<std::mutex> lock(commandMutex);
-    if (!isRecording) {
-        std::cerr << "命令缓冲没有在记录中" << std::endl;
-        return;
-    }
-    isRecording = false;
-}
-
-void JzRE::JzRHICommandBuffer::Reset()
-{
-    std::lock_guard<std::mutex> lock(commandMutex);
-    commands.clear();
-}
-
-void JzRE::JzRHICommandBuffer::Execute()
-{
-    std::lock_guard<std::mutex> lock(commandMutex);
-    if (isRecording) {
-        std::cerr << "不能执行正在记录的命令缓冲" << std::endl;
-        return;
-    }
-
-    for (auto &command : commands) {
-        command->Execute();
-    }
-}
-
-JzRE::Bool JzRE::JzRHICommandBuffer::IsRecording() const
-{
-    return isRecording;
-}
-
-JzRE::Bool JzRE::JzRHICommandBuffer::IsEmpty() const
-{
-    return commands.empty();
-}
-
-JzRE::Size JzRE::JzRHICommandBuffer::GetCommandCount() const
-{
-    return commands.size();
-}
-
-const JzRE::String &JzRE::JzRHICommandBuffer::GetDebugName() const
-{
-    return debugName;
+    AddCommand<JzRHIEndRenderPassCommand>();
 }
 
 template <typename T, typename... Args>
 void JzRE::JzRHICommandBuffer::AddCommand(Args &&...args)
 {
-    if (!isRecording) {
-        std::cerr << "命令缓冲没有在记录状态" << std::endl;
+    if (!m_isRecording) {
+        std::cerr << "Command buffer is not recording" << std::endl;
         return;
     }
 
-    std::lock_guard<std::mutex> lock(commandMutex);
-    commands.push_back(std::make_unique<T>(std::forward<Args>(args)...));
+    std::lock_guard<std::mutex> lock(m_commandMutex);
+    m_commands.push_back(std::make_unique<T>(std::forward<Args>(args)...));
 }

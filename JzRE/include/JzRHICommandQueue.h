@@ -10,18 +10,49 @@ namespace JzRE {
  */
 class JzRHICommandQueue {
 public:
+    /**
+     * @brief Constructor
+     */
     JzRHICommandQueue();
+
+    /**
+     * @brief Destructor
+     */
     ~JzRHICommandQueue();
 
-    // 命令缓冲管理
+    /**
+     * @brief Create a command buffer
+     * @param debugName The debug name of the command buffer
+     * @return The created command buffer
+     */
     std::shared_ptr<JzRHICommandBuffer> CreateCommandBuffer(const String &debugName = "");
-    void                                SubmitCommandBuffer(std::shared_ptr<JzRHICommandBuffer> commandBuffer);
-    void                                ExecuteAll();
-    void                                Wait();
 
-    // 多线程支持
+    /**
+     * @brief Submit a command buffer
+     * @param commandBuffer The command buffer to submit
+     */
+    void SubmitCommandBuffer(std::shared_ptr<JzRHICommandBuffer> commandBuffer);
+
+    /**
+     * @brief Execute all command buffers
+     */
+    void ExecuteAll();
+
+    /**
+     * @brief Wait for all command buffers to be executed
+     */
+    void Wait();
+
+    /**
+     * @brief Set the thread count
+     * @param threadCount The thread count
+     */
     void SetThreadCount(U32 threadCount);
-    U32  GetThreadCount() const;
+
+    /**
+     * @brief Get the thread count
+     */
+    U32 GetThreadCount() const;
 
 private:
     std::vector<std::shared_ptr<JzRHICommandBuffer>> pendingCommandBuffers;
