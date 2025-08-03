@@ -161,6 +161,25 @@ enum class JzEMSAALevel : U8 {
 };
 
 /**
+ * @brief Render mode
+ */
+enum class JzERenderMode : U8 {
+    Immediate,
+    CommandBuffer
+};
+
+/**
+ * @brief Render pass type
+ */
+enum class JzERenderPassType : U8 {
+    BasePass,
+    ShadowPass,
+    PostProcess,
+    UI,
+    Debug
+};
+
+/**
  * @brief Viewport description
  */
 struct JzViewport {
