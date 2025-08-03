@@ -1,19 +1,19 @@
 #pragma once
 
 #include "CommonTypes.h"
-#include "OGLVertex.h"
-#include "OGLTexture.h"
+#include "JzVertex.h"
 #include "OGLShader.h"
+#include "OGLTexture.h"
 
 namespace JzRE {
-class OGLMesh {
+class JzMesh {
 public:
     // mesh Data
-    std::vector<OGLVertex> vertices;
-    std::vector<U32> indices;
+    std::vector<JzVertex>                    vertices;
+    std::vector<U32>                         indices;
     std::vector<std::shared_ptr<OGLTexture>> textures;
 
-    OGLMesh(std::vector<OGLVertex> vertices, std::vector<U32> indices, std::vector<std::shared_ptr<OGLTexture>> textures);
+    JzMesh(std::vector<JzVertex> vertices, std::vector<U32> indices, std::vector<std::shared_ptr<OGLTexture>> textures);
 
     void Draw(std::shared_ptr<OGLShader> shader);
 

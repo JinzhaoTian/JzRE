@@ -2,14 +2,17 @@
 
 namespace JzRE {
 OGLRenderEngine::OGLRenderEngine() :
-    isRunning(false) {
+    isRunning(false)
+{
 }
 
-OGLRenderEngine::~OGLRenderEngine() {
+OGLRenderEngine::~OGLRenderEngine()
+{
     Shutdown();
 }
 
-Bool OGLRenderEngine::Initialize() {
+Bool OGLRenderEngine::Initialize()
+{
     this->window = std::make_shared<OGLRenderWindow>(this->wndWidth, this->wndHeight, this->title);
     if (this->window == nullptr) {
         return false;
@@ -45,7 +48,7 @@ Bool OGLRenderEngine::Initialize() {
     this->scene->SetCamera(this->camera);
 
     this->simpleUI->SetCallbackOpenFile([&](const String &filePath) {
-        auto model = std::make_shared<OGLModel>(filePath, false);
+        auto model = std::make_shared<JzModel>(filePath, false);
         this->scene->AddModel(model);
     });
 
@@ -53,14 +56,15 @@ Bool OGLRenderEngine::Initialize() {
     return true;
 }
 
-void OGLRenderEngine::Run() {
+void OGLRenderEngine::Run()
+{
     auto previousTime = std::chrono::high_resolution_clock::now();
 
     // render loop
     while (this->isRunning && !this->window->ShouldClose()) {
         auto currentTime = std::chrono::high_resolution_clock::now();
-        F32 deltaTime = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - previousTime).count();
-        previousTime = currentTime;
+        F32  deltaTime   = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - previousTime).count();
+        previousTime     = currentTime;
 
         this->window->PollEvents();
 
@@ -75,11 +79,13 @@ void OGLRenderEngine::Run() {
     }
 }
 
-void OGLRenderEngine::Shutdown() {
+void OGLRenderEngine::Shutdown()
+{
     OGLResourceManager::getInstance().Clear();
 }
 
-void OGLRenderEngine::ProcessInput() {
+void OGLRenderEngine::ProcessInput()
+{
     if (OGLInput::IsKeyPressed(GLFW_KEY_ESCAPE)) {
         glfwSetWindowShouldClose(this->window->GetGLFWwindow(), true);
     }
@@ -99,7 +105,8 @@ void OGLRenderEngine::ProcessInput() {
     this->camera->ProcessMouseScroll(OGLInput::GetMouseScroll());
 }
 
-Bool OGLRenderEngine::InitScene() {
+Bool OGLRenderEngine::InitScene()
+{
     auto light = std::make_shared<OGLDirectionalLight>(glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.5f, 0.5f, 0.5f));
     scene->AddLight(light);
 
