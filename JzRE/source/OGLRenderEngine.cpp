@@ -25,11 +25,6 @@ Bool OGLRenderEngine::Initialize()
 
     OGLInput::Initialize(this->window->GetGLFWwindow());
 
-    this->simpleUI = std::make_shared<OGLUI>(this->window->GetGLFWwindow());
-    if (this->simpleUI == nullptr) {
-        return false;
-    }
-
     this->camera = std::make_shared<JzCamera>();
     if (this->camera == nullptr) {
         return false;
@@ -46,11 +41,6 @@ Bool OGLRenderEngine::Initialize()
     }
 
     this->scene->SetCamera(this->camera);
-
-    this->simpleUI->SetCallbackOpenFile([&](const String &filePath) {
-        auto model = std::make_shared<JzModel>(filePath, false);
-        this->scene->AddModel(model);
-    });
 
     this->isRunning = true;
     return true;
@@ -72,8 +62,6 @@ void OGLRenderEngine::Run()
 
         this->scene->Update(deltaTime);
         this->renderer->RenderScene(this->scene);
-
-        this->simpleUI->Render();
 
         this->window->SwapFramebuffer();
     }

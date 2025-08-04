@@ -8,7 +8,6 @@
 #include "OGLInput.h"
 #include "OGLRenderWindow.h"
 #include "OGLRenderer.h"
-#include "OGLUI.h"
 
 namespace JzRE {
 class OGLRenderEngine {
@@ -32,7 +31,6 @@ private:
     std::shared_ptr<OGLRenderer>     renderer;
     std::shared_ptr<JzScene>         scene;
     std::shared_ptr<JzCamera>        camera;
-    std::shared_ptr<OGLUI>           simpleUI;
 
     Bool InitScene();
     void ProcessInput();
