@@ -4,8 +4,8 @@
 #include "JzRHIPipeline.h"
 #include "JzRHIStats.h"
 #include "JzRHITexture.h"
+#include "JzScene.h"
 #include "OGLRenderWindow.h"
-#include "OGLScene.h"
 
 namespace JzRE {
 /**
@@ -17,7 +17,7 @@ public:
     ~JzRHIRenderer();
 
     // 主要渲染接口
-    void RenderScene(std::shared_ptr<OGLScene> scene);
+    void RenderScene(std::shared_ptr<JzScene> scene);
     Bool Initialize();
     void Shutdown();
 
@@ -40,10 +40,10 @@ private:
     void CleanupResources();
 
     // 立即模式渲染
-    void RenderImmediate(std::shared_ptr<OGLScene> scene);
+    void RenderImmediate(std::shared_ptr<JzScene> scene);
 
     // 命令缓冲模式渲染
-    void RenderWithCommandBuffer(std::shared_ptr<OGLScene> scene);
+    void RenderWithCommandBuffer(std::shared_ptr<JzScene> scene);
 
     // 辅助函数
     void SetupViewport();

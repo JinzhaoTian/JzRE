@@ -4,16 +4,16 @@
 #include "OGLShader.h"
 
 namespace JzRE {
-class OGLLight {
+class JzLight {
 public:
 public:
-    OGLLight(const glm::vec3 &position, const glm::vec3 &color);
-    virtual ~OGLLight() = default;
+    JzLight(const glm::vec3 &position, const glm::vec3 &color);
+    virtual ~JzLight() = default;
 
-    void SetPosition(const glm::vec3 &position);
+    void             SetPosition(const glm::vec3 &position);
     const glm::vec3 &GetPosition() const;
 
-    void SetColor(const glm::vec3 &color);
+    void             SetColor(const glm::vec3 &color);
     const glm::vec3 &GetColor() const;
 
     virtual void ApplyLight(std::shared_ptr<OGLShader> shader, int index) const = 0;

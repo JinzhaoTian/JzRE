@@ -35,7 +35,7 @@ Bool OGLRenderEngine::Initialize()
         return false;
     }
 
-    this->scene = std::make_shared<OGLScene>();
+    this->scene = std::make_shared<JzScene>();
     if (this->scene == nullptr) {
         return false;
     }

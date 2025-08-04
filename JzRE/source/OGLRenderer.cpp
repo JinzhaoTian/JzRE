@@ -30,15 +30,11 @@ OGLRenderer::~OGLRenderer()
     this->CleanFramebuffer();
 }
 
-void OGLRenderer::RenderScene(std::shared_ptr<OGLScene> scene)
+void OGLRenderer::RenderScene(std::shared_ptr<JzScene> scene)
 {
     this->Clear();
 
     this->shader->Use();
-
-    // camera properties
-    if (scene->GetCamera()) {
-    }
 
     // light properties
     for (Size i = 0; i < scene->GetLights().size(); ++i) {

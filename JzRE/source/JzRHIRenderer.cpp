@@ -4,7 +4,7 @@ JzRE::JzRHIRenderer::JzRHIRenderer(std::shared_ptr<JzRE::OGLRenderWindow> wnd, I
 
 JzRE::JzRHIRenderer::~JzRHIRenderer() { }
 
-void JzRE::JzRHIRenderer::RenderScene(std::shared_ptr<JzRE::OGLScene> scene) { }
+void JzRE::JzRHIRenderer::RenderScene(std::shared_ptr<JzRE::JzScene> scene) { }
 
 JzRE::Bool JzRE::JzRHIRenderer::Initialize()
 {
@@ -46,9 +46,9 @@ JzRE::Bool JzRE::JzRHIRenderer::CreateDefaultPipeline()
 
 void JzRE::JzRHIRenderer::CleanupResources() { }
 
-void JzRE::JzRHIRenderer::RenderImmediate(std::shared_ptr<JzRE::OGLScene> scene) { }
+void JzRE::JzRHIRenderer::RenderImmediate(std::shared_ptr<JzRE::JzScene> scene) { }
 
-void JzRE::JzRHIRenderer::RenderWithCommandBuffer(std::shared_ptr<JzRE::OGLScene> scene) { }
+void JzRE::JzRHIRenderer::RenderWithCommandBuffer(std::shared_ptr<JzRE::JzScene> scene) { }
 
 void JzRE::JzRHIRenderer::SetupViewport() { }
 

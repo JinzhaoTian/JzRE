@@ -3,11 +3,11 @@
 #include "CommonTypes.h"
 #include "JzCamera.h"
 #include "JzModel.h"
+#include "JzScene.h"
 #include "OGLDirectionalLight.h"
 #include "OGLInput.h"
 #include "OGLRenderWindow.h"
 #include "OGLRenderer.h"
-#include "OGLScene.h"
 #include "OGLUI.h"
 
 namespace JzRE {
@@ -30,7 +30,7 @@ private:
 
     std::shared_ptr<OGLRenderWindow> window;
     std::shared_ptr<OGLRenderer>     renderer;
-    std::shared_ptr<OGLScene>        scene;
+    std::shared_ptr<JzScene>         scene;
     std::shared_ptr<JzCamera>        camera;
     std::shared_ptr<OGLUI>           simpleUI;
 
