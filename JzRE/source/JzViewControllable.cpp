@@ -41,5 +41,5 @@ JzRE::JzCamera *JzRE::JzViewControllable::GetCamera()
 
 void JzRE::JzViewControllable::ResetClearColor()
 {
-    m_camera.SetClearColor();
+    m_camera.SetClearColor({});
 }

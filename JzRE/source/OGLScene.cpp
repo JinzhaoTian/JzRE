@@ -41,12 +41,12 @@ std::vector<std::shared_ptr<OGLLight>> OGLScene::GetLights() const
     return this->lights;
 }
 
-void OGLScene::SetCamera(std::shared_ptr<OGLCamera> camera)
+void OGLScene::SetCamera(std::shared_ptr<JzRE::JzCamera> camera)
 {
     this->camera = camera;
 }
 
-std::shared_ptr<OGLCamera> OGLScene::GetCamera() const
+std::shared_ptr<JzCamera> OGLScene::GetCamera() const
 {
     return camera;
 }

@@ -30,7 +30,7 @@ Bool OGLRenderEngine::Initialize()
         return false;
     }
 
-    this->camera = std::make_shared<OGLCamera>(this->wndWidth, this->wndHeight, glm::vec3(0.0f, 0.0f, 3.0f));
+    this->camera = std::make_shared<JzCamera>();
     if (this->camera == nullptr) {
         return false;
     }
@@ -89,20 +89,6 @@ void OGLRenderEngine::ProcessInput()
     if (OGLInput::IsKeyPressed(GLFW_KEY_ESCAPE)) {
         glfwSetWindowShouldClose(this->window->GetGLFWwindow(), true);
     }
-
-    if (OGLInput::IsKeyPressed(GLFW_KEY_SPACE)) {
-        this->camera->ResetPosition(glm::vec3(0.0f, 0.0f, 3.0f));
-    }
-
-    if (OGLInput::IsMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT)) {
-        this->camera->ProcessMouseMovement(OGLInput::GetMouseMovement());
-    }
-
-    if (OGLInput::IsMouseButtonPressed(GLFW_MOUSE_BUTTON_RIGHT)) {
-        this->camera->ProcessKeyboardMovement(OGLInput::GetMouseMovement());
-    }
-
-    this->camera->ProcessMouseScroll(OGLInput::GetMouseScroll());
 }
 
 Bool OGLRenderEngine::InitScene()

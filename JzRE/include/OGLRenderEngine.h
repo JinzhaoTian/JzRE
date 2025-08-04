@@ -1,8 +1,8 @@
 #pragma once
 
 #include "CommonTypes.h"
+#include "JzCamera.h"
 #include "JzModel.h"
-#include "OGLCamera.h"
 #include "OGLDirectionalLight.h"
 #include "OGLInput.h"
 #include "OGLRenderWindow.h"
@@ -31,7 +31,7 @@ private:
     std::shared_ptr<OGLRenderWindow> window;
     std::shared_ptr<OGLRenderer>     renderer;
     std::shared_ptr<OGLScene>        scene;
-    std::shared_ptr<OGLCamera>       camera;
+    std::shared_ptr<JzCamera>        camera;
     std::shared_ptr<OGLUI>           simpleUI;
 
     Bool InitScene();

@@ -2,9 +2,10 @@
 
 namespace JzRE {
 
-OGLRenderer* OGLRenderer::instance = nullptr;
+OGLRenderer *OGLRenderer::instance = nullptr;
 
-OGLRenderer::OGLRenderer(std::shared_ptr<OGLRenderWindow> wnd, I32 width, I32 height) {
+OGLRenderer::OGLRenderer(std::shared_ptr<OGLRenderWindow> wnd, I32 width, I32 height)
+{
     instance = this;
 
     // callback: frame buffer size
@@ -24,20 +25,19 @@ OGLRenderer::OGLRenderer(std::shared_ptr<OGLRenderWindow> wnd, I32 width, I32 he
     }
 }
 
-OGLRenderer::~OGLRenderer() {
+OGLRenderer::~OGLRenderer()
+{
     this->CleanFramebuffer();
 }
 
-void OGLRenderer::RenderScene(std::shared_ptr<OGLScene> scene) {
+void OGLRenderer::RenderScene(std::shared_ptr<OGLScene> scene)
+{
     this->Clear();
 
     this->shader->Use();
 
     // camera properties
     if (scene->GetCamera()) {
-        this->shader->SetUniform("view", scene->GetCamera()->GetViewMatrix());
-        this->shader->SetUniform("projection", scene->GetCamera()->GetProjectionMatrix());
-        this->shader->SetUniform("viewPos", scene->GetCamera()->GetCameraPosition());
     }
 
     // light properties
@@ -52,18 +52,21 @@ void OGLRenderer::RenderScene(std::shared_ptr<OGLScene> scene) {
     }
 }
 
-Bool OGLRenderer::AddShader(const String &name, const String &vertexPath, const String &fragmentPath) {
+Bool OGLRenderer::AddShader(const String &name, const String &vertexPath, const String &fragmentPath)
+{
     this->shader = OGLResourceManager::getInstance()
                        .LoadShader(name, vertexPath, fragmentPath);
     return true;
 }
 
-void OGLRenderer::Clear() {
+void OGLRenderer::Clear()
+{
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-Bool OGLRenderer::CreateFramebuffer(I32 width, I32 height) {
+Bool OGLRenderer::CreateFramebuffer(I32 width, I32 height)
+{
     // create framebuffer object
     glGenFramebuffers(1, &framebuffer);
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
@@ -93,7 +96,8 @@ Bool OGLRenderer::CreateFramebuffer(I32 width, I32 height) {
     return true;
 }
 
-void OGLRenderer::CleanFramebuffer() {
+void OGLRenderer::CleanFramebuffer()
+{
     if (framebuffer) {
         glDeleteFramebuffers(1, &framebuffer);
         framebuffer = 0;
@@ -108,8 +112,9 @@ void OGLRenderer::CleanFramebuffer() {
     }
 }
 
-void OGLRenderer::callback_framebuffer_size(GLFWwindow* window, int width, int height) {
-    auto wnd = static_cast<OGLRenderWindow*>(glfwGetWindowUserPointer(window));
+void OGLRenderer::callback_framebuffer_size(GLFWwindow *window, int width, int height)
+{
+    auto wnd = static_cast<OGLRenderWindow *>(glfwGetWindowUserPointer(window));
     wnd->ResizeWindow(width, height);
 
     instance->CleanFramebuffer();
