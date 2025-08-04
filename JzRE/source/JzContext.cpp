@@ -3,6 +3,7 @@
 JzRE::JzContext::JzContext(JzERHIType rhiType) :
     sceneManager()
 {
+    /* Device */
     auto devicePtr = JzRHIFactory::CreateDevice(rhiType);
     if (!devicePtr) {
         return;
@@ -12,7 +13,6 @@ JzRE::JzContext::JzContext(JzERHIType rhiType) :
 
     m_commandQueue = std::make_shared<JzRHICommandQueue>();
 
-    /* Device */
     device = std::make_unique<JzRE::JzDevice>(deviceSettings);
 
     /* Window */

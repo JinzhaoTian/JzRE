@@ -52,16 +52,46 @@ public:
      */
     void AddDefaultAtmosphere();
 
+    /**
+     * @brief Add a model to the scene
+     *
+     * @param object The model to add
+     */
     void AddModel(std::shared_ptr<JzModel> object);
 
+    /**
+     * @brief Remove a model from the scene
+     *
+     *  @param object The model to remove
+     */
     void RemoveModel(std::shared_ptr<JzModel> object);
 
+    /**
+     * @brief Get the models in the scene
+     *
+     * @return The models in the scene
+     */
     std::vector<std::shared_ptr<JzModel>> GetModels() const;
 
+    /**
+     * @brief Add a light to the scene
+     *
+     * @param light The light to add
+     */
     void AddLight(std::shared_ptr<JzLight> light);
 
+    /**
+     * @brief Remove a light from the scene
+     *
+     *  @param light The light to remove
+     */
     void RemoveLight(std::shared_ptr<JzLight> light);
 
+    /**
+     * @brief Get the lights in the scene
+     *
+     * @return The lights in the scene
+     */
     std::vector<std::shared_ptr<JzLight>> GetLights() const;
 
     /**
@@ -71,8 +101,18 @@ public:
      */
     void Update(F32 deltaTime);
 
+    /**
+     * @brief Find the main camera in the scene
+     *
+     * @return The main camera
+     */
     JzCamera *FindMainCamera() const;
 
+    /**
+     * @brief Set the camera in the scene
+     *
+     *  @param camera The camera to set
+     */
     void SetCamera(std::shared_ptr<JzCamera> camera);
 
     /**

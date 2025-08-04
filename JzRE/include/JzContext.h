@@ -25,8 +25,14 @@ public:
      */
     JzContext(JzERHIType rhiType = JzERHIType::Unknown);
 
+    /**
+     * @brief Delete copy constructor
+     */
     JzContext(const JzContext &) = delete;
 
+    /**
+     * @brief Delete copy assignment operator
+     */
     JzContext &operator=(const JzContext &) = delete;
 
     /**
@@ -34,14 +40,34 @@ public:
      */
     virtual ~JzContext();
 
+    /**
+     * @brief Get the device
+     * @return The device
+     */
     std::shared_ptr<JzRHIDevice> GetDevice() const;
 
+    /**
+     * @brief Get the RHI type
+     * @return The RHI type
+     */
     JzERHIType GetRHIType() const;
 
+    /**
+     * @brief Get the command queue
+     * @return The command queue
+     */
     std::shared_ptr<JzRHICommandQueue> GetCommandQueue() const;
 
+    /**
+     * @brief Set the thread count
+     * @param threadCount The thread count
+     */
     void SetThreadCount(U32 threadCount);
 
+    /**
+     * @brief Get the thread count
+     * @return The thread count
+     */
     U32 GetThreadCount() const;
 
 public:
