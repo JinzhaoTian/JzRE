@@ -45,6 +45,17 @@ GLFWwindow *JzRE::JzWindow::GetGLFWWindow() const
     return m_glfwWindow;
 }
 
+void *JzRE::JzWindow::GetNativeWindow() const
+{
+#if defined(_WIN32)
+    return glfwGetWin32Window(m_glfwWindow); // HWND
+#elif defined(__APPLE__)
+    return glfwGetCocoaWindow(m_glfwWindow); // NSWindow*
+#elif defined(__linux__)
+    return glfwGetX11Window(m_glfwWindow);
+#endif
+}
+
 void JzRE::JzWindow::SetTitle(const JzRE::String &title)
 {
     m_title = title;

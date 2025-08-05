@@ -48,9 +48,9 @@ public:
     /**
      * @brief Set the camera size
      *
-     * @param size The camera size
+     * @param value The camera size
      */
-    void SetSize(F32 size);
+    void SetSize(F32 value);
 
     /**
      * @brief Get the camera size
@@ -62,9 +62,9 @@ public:
     /**
      * @brief Set the field of view
      *
-     * @param fov The field of view
+     * @param value The field of view
      */
-    void SetFov(F32 fov);
+    void SetFov(F32 value);
 
     /**
      * @brief Get the field of view
@@ -76,9 +76,9 @@ public:
     /**
      * @brief Set the near plane
      *
-     * @param near The near plane
+     * @param value The near plane
      */
-    void SetNear(F32 near);
+    void SetNear(F32 value);
 
     /**
      * @brief Get the near plane
@@ -90,9 +90,9 @@ public:
     /**
      * @brief Set the far plane
      *
-     * @param far The far plane
+     * @param value The far plane
      */
-    void SetFar(F32 far);
+    void SetFar(F32 value);
 
     /**
      * @brief Get the far plane

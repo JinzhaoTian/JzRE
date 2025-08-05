@@ -22,9 +22,9 @@ const JzRE::JzVec4 &JzRE::JzCamera::GetRotation() const
     return m_rotation;
 }
 
-void JzRE::JzCamera::SetSize(JzRE::F32 size)
+void JzRE::JzCamera::SetSize(JzRE::F32 value)
 {
-    m_size = size;
+    m_size = value;
 }
 
 JzRE::F32 JzRE::JzCamera::GetSize() const
@@ -32,9 +32,9 @@ JzRE::F32 JzRE::JzCamera::GetSize() const
     return m_size;
 }
 
-void JzRE::JzCamera::SetFov(JzRE::F32 fov)
+void JzRE::JzCamera::SetFov(JzRE::F32 value)
 {
-    m_fov = fov;
+    m_fov = value;
 }
 
 JzRE::F32 JzRE::JzCamera::GetFov() const
@@ -42,9 +42,9 @@ JzRE::F32 JzRE::JzCamera::GetFov() const
     return m_fov;
 }
 
-void JzRE::JzCamera::SetFar(JzRE::F32 far)
+void JzRE::JzCamera::SetFar(JzRE::F32 value)
 {
-    m_far = far;
+    m_far = value;
 }
 
 JzRE::F32 JzRE::JzCamera::GetFar() const
@@ -52,9 +52,9 @@ JzRE::F32 JzRE::JzCamera::GetFar() const
     return m_far;
 }
 
-void JzRE::JzCamera::SetNear(JzRE::F32 near)
+void JzRE::JzCamera::SetNear(JzRE::F32 value)
 {
-    m_near = near;
+    m_near = value;
 }
 
 JzRE::F32 JzRE::JzCamera::GetNear() const

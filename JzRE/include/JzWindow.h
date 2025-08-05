@@ -34,6 +34,13 @@ public:
     GLFWwindow *GetGLFWWindow() const;
 
     /**
+     * @brief Get Native window Handle
+     *
+     * @return void* platform specific
+     */
+    void *GetNativeWindow() const;
+
+    /**
      * @brief Set the title of the window
      *
      * @param title
