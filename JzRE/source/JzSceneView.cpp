@@ -4,6 +4,8 @@ JzRE::JzSceneView::JzSceneView(const JzRE::String &name, JzRE::Bool is_opened) :
     JzRE::JzViewControllable(name, is_opened),
     m_sceneManager(EDITOR_CONTEXT(sceneManager))
 {
+    m_renderer = std::make_unique<JzRHIRenderer>();
+
     m_camera.SetFar(5000.0f);
 }
 

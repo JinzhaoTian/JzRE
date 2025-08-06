@@ -1,26 +1,19 @@
 #include "JzRHIRenderer.h"
 
-JzRE::JzRHIRenderer::JzRHIRenderer(std::shared_ptr<JzRE::OGLRenderWindow> wnd, I32 width, I32 height) { }
+JzRE::JzRHIRenderer::JzRHIRenderer() { }
 
 JzRE::JzRHIRenderer::~JzRHIRenderer() { }
 
 void JzRE::JzRHIRenderer::RenderScene(std::shared_ptr<JzRE::JzScene> scene) { }
 
-JzRE::Bool JzRE::JzRHIRenderer::Initialize()
+void JzRE::JzRHIRenderer::SetUseCommandList(JzRE::Bool useCommandList)
 {
-    return false;
+    m_useCommandList = useCommandList;
 }
 
-void JzRE::JzRHIRenderer::Shutdown() { }
-
-void JzRE::JzRHIRenderer::SetUseCommandBuffer(JzRE::Bool useCommandBuffer)
+JzRE::Bool JzRE::JzRHIRenderer::IsUsingCommandList() const
 {
-    this->useCommandBuffer = useCommandBuffer;
-}
-
-JzRE::Bool JzRE::JzRHIRenderer::IsUsingCommandBuffer() const
-{
-    return useCommandBuffer;
+    return m_useCommandList;
 }
 
 void JzRE::JzRHIRenderer::SetThreadCount(JzRE::U32 threadCount) { }
@@ -29,10 +22,6 @@ JzRE::U32 JzRE::JzRHIRenderer::GetThreadCount() const
 {
     return 1;
 }
-
-const JzRE::JzRHIStats &JzRE::JzRHIRenderer::GetStats() const { }
-
-void JzRE::JzRHIRenderer::ResetStats() { }
 
 JzRE::Bool JzRE::JzRHIRenderer::CreateFramebuffer()
 {
@@ -48,7 +37,7 @@ void JzRE::JzRHIRenderer::CleanupResources() { }
 
 void JzRE::JzRHIRenderer::RenderImmediate(std::shared_ptr<JzRE::JzScene> scene) { }
 
-void JzRE::JzRHIRenderer::RenderWithCommandBuffer(std::shared_ptr<JzRE::JzScene> scene) { }
+void JzRE::JzRHIRenderer::RenderWithCommandList(std::shared_ptr<JzRE::JzScene> scene) { }
 
 void JzRE::JzRHIRenderer::SetupViewport() { }
 

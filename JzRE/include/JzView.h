@@ -3,6 +3,7 @@
 #include "CommonTypes.h"
 #include "JzCamera.h"
 #include "JzPanelWindow.h"
+#include "JzRHIRenderer.h"
 #include "JzScene.h"
 
 namespace JzRE {
@@ -65,6 +66,9 @@ protected:
      * @brief Implementation of the Draw method
      */
     void _Draw_Impl() override;
+
+protected:
+    std::unique_ptr<JzRHIRenderer> m_renderer;
 };
 
 } // namespace JzRE

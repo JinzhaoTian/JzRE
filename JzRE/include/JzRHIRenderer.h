@@ -5,7 +5,6 @@
 #include "JzRHIStats.h"
 #include "JzRHITexture.h"
 #include "JzScene.h"
-#include "OGLRenderWindow.h"
 
 namespace JzRE {
 /**
@@ -13,55 +12,67 @@ namespace JzRE {
  */
 class JzRHIRenderer {
 public:
-    JzRHIRenderer(std::shared_ptr<OGLRenderWindow> wnd, I32 width, I32 height);
+    /**
+     * @brief Constructor
+     */
+    JzRHIRenderer();
+
+    /**
+     * @brief Destructor
+     */
     ~JzRHIRenderer();
 
-    // 主要渲染接口
+    /**
+     * @brief Render the Scene
+     *
+     * @param scene
+     */
     void RenderScene(std::shared_ptr<JzScene> scene);
-    Bool Initialize();
-    void Shutdown();
 
-    // 渲染模式切换
-    void SetUseCommandBuffer(Bool useCommandBuffer);
-    Bool IsUsingCommandBuffer() const;
+    /**
+     * @brief Set the Use Command List
+     *
+     * @param useCommandList
+     */
+    void SetUseCommandList(Bool useCommandList);
 
-    // 多线程渲染支持
+    /**
+     * @brief Is Using Command List
+     *
+     * @return Bool
+     */
+    Bool IsUsingCommandList() const;
+
+    /**
+     * @brief Set the Thread Count
+     *
+     * @param threadCount
+     */
     void SetThreadCount(U32 threadCount);
-    U32  GetThreadCount() const;
 
-    // 统计信息
-    const JzRHIStats &GetStats() const;
-    void              ResetStats();
+    /**
+     * @brief Get the Thread Count
+     *
+     * @return U32
+     */
+    U32 GetThreadCount() const;
 
 private:
-    // 初始化相关
     Bool CreateFramebuffer();
     Bool CreateDefaultPipeline();
     void CleanupResources();
-
-    // 立即模式渲染
     void RenderImmediate(std::shared_ptr<JzScene> scene);
-
-    // 命令缓冲模式渲染
-    void RenderWithCommandBuffer(std::shared_ptr<JzScene> scene);
-
-    // 辅助函数
+    void RenderWithCommandList(std::shared_ptr<JzScene> scene);
     void SetupViewport();
     void ClearBuffers();
 
 private:
-    I32                              width, height;
-    std::shared_ptr<OGLRenderWindow> window;
-
-    // RHI资源
-    std::shared_ptr<JzRHIFramebuffer> framebuffer;
-    std::shared_ptr<JzRHITexture>     colorTexture;
-    std::shared_ptr<JzRHITexture>     depthTexture;
-    std::shared_ptr<JzRHIPipeline>    defaultPipeline;
-
-    // 渲染模式
-    Bool useCommandBuffer = true;
-    Bool isInitialized    = false;
+    std::shared_ptr<JzRHIFramebuffer> m_framebuffer;
+    std::shared_ptr<JzRHITexture>     m_colorTexture;
+    std::shared_ptr<JzRHITexture>     m_depthTexture;
+    std::shared_ptr<JzRHIPipeline>    m_defaultPipeline;
+    Bool                              m_useCommandList = true;
+    Bool                              m_isInitialized  = false;
 };
 
 } // namespace JzRE
