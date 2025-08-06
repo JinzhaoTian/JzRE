@@ -2,7 +2,6 @@
 #pragma once
 
 #include "CommonTypes.h"
-#include "JzRHIETypes.h"
 
 namespace JzRE {
 /**
@@ -10,16 +9,52 @@ namespace JzRE {
  */
 class JzRenderThreadContext {
 public:
+    /**
+     * @brief Constructor
+     *
+     * @param threadId
+     */
     JzRenderThreadContext(U32 threadId);
+
+    /**
+     * @brief Destructor
+     */
     ~JzRenderThreadContext();
 
-    // 上下文管理
+    /**
+     * @brief Initialize the Render Thread Context
+     *
+     * @return Bool
+     */
     Bool Initialize();
+
+    /**
+     * @brief Make the Render Thread Context Current
+     */
     void MakeCurrent();
+
+    /**
+     * @brief Swap the Buffers of the Render Thread Context
+     */
     void SwapBuffers();
+
+    /**
+     * @brief Cleanup the Render Thread Context
+     */
     void Cleanup();
 
-    U32  GetThreadId() const;
+    /**
+     * @brief Get the Thread Id of the Render Thread Context
+     *
+     * @return U32
+     */
+    U32 GetThreadId() const;
+
+    /**
+     * @brief Get the Thread Id of the Render Thread Context
+     *
+     * @return U32
+     */
     Bool IsInitialized() const;
 
 private:

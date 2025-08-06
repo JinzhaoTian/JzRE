@@ -169,6 +169,16 @@ enum class JzERenderMode : U8 {
 };
 
 /**
+ * @brief Render Task Type
+ */
+enum class JzERenderTaskType : U8 {
+    CommandBuffer,
+    ResourceUpdate,
+    GeometryProcessing,
+    ShaderCompilation
+};
+
+/**
  * @brief Render pass type
  */
 enum class JzERenderPassType : U8 {
