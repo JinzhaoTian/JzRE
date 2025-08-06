@@ -9,27 +9,13 @@
 #include "JzRenderThreadPool.h"
 
 namespace JzRE {
-
-// 获取推荐的线程数量
-U32 GetRecommendedThreadCount();
-
-// 检查多线程渲染支持
-Bool IsMultithreadedRenderingSupported();
-
-// 线程亲和性设置
-void SetThreadAffinity(std::thread &thread, U32 coreId);
-
-// 性能分析
-void BeginProfileRegion(const String &name);
-void EndProfileRegion();
-
 /**
- * @brief Multithreaded Render Manager, coordinates the multithreaded rendering process, manages thread synchronization
+ * @brief RHI Render Command Manager, coordinates the multithreaded rendering process, manages thread synchronization
  */
-class JzMultithreadedRenderManager {
+class JzRHICommandManager {
 public:
-    JzMultithreadedRenderManager();
-    ~JzMultithreadedRenderManager();
+    JzRHICommandManager();
+    ~JzRHICommandManager();
 
     // 管理器生命周期
     Bool Initialize(U32 threadCount = 0);
