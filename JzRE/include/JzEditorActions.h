@@ -16,6 +16,8 @@ namespace JzRE {
     JzRE::JzServiceContainer::Get<JzRE::JzEditorActions>().target
 #define EDITOR_CONTEXT(instance) \
     JzRE::JzServiceContainer::Get<JzRE::JzEditorActions>().GetContext().instance
+#define JzRE_DEVICE() \
+    JzRE::JzServiceContainer::Get<JzRE::JzEditorActions>().GetContext().GetDevice()
 #define EDITOR_PANEL(type, id) \
     JzRE::JzServiceContainer::Get<JzRE::JzEditorActions>().GetPanelsManager().GetPanelAs<type>(id)
 

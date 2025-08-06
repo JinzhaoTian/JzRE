@@ -64,7 +64,7 @@ JzRE::Bool JzRE::JzPanelWindow::IsAppearing() const
 JzRE::Bool JzRE::JzPanelWindow::IsVisible() const
 {
     // TODO
-    return false;
+    return true;
 }
 
 void JzRE::JzPanelWindow::ScrollToBottom()

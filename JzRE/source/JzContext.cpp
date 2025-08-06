@@ -6,6 +6,8 @@ JzRE::JzContext::JzContext(JzERHIType rhiType) :
     /* Window */
     window = std::make_unique<JzRE::JzWindow>(rhiType, windowSettings);
 
+    window->MakeCurrentContext();
+
     /* Device */
     auto devicePtr = JzRHIFactory::CreateDevice(rhiType);
     if (!devicePtr) {
@@ -18,8 +20,6 @@ JzRE::JzContext::JzContext(JzERHIType rhiType) :
 
     /* Input Manager */
     inputManager = std::make_unique<JzRE::JzInputManager>(*window);
-
-    window->MakeCurrentContext();
 
     /* UI Manager */
     uiManager = std::make_unique<JzRE::JzUIManager>(window->GetGLFWWindow());

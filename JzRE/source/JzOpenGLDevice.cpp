@@ -5,6 +5,11 @@
 JzRE::JzOpenGLDevice::JzOpenGLDevice() :
     JzRE::JzRHIDevice(JzERHIType::OpenGL)
 {
+    if (!gladLoadGL()) {
+        std::cerr << "Failed to initialize OpenGL context" << std::endl;
+        return;
+    }
+
     InitializeCapabilities();
 }
 

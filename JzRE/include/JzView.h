@@ -2,6 +2,7 @@
 
 #include "CommonTypes.h"
 #include "JzCamera.h"
+#include "JzEditorActions.h"
 #include "JzPanelWindow.h"
 #include "JzRHIRenderer.h"
 #include "JzScene.h"
