@@ -15,7 +15,7 @@ JzRE::Bool JzRE::JzRenderThreadPool::IsRunning() const
 
 void JzRE::JzRenderThreadPool::SubmitTask(std::shared_ptr<JzRE::JzRenderTask> task) { }
 
-void JzRE::JzRenderThreadPool::SubmitCommandBuffer(std::shared_ptr<JzRE::JzRHICommandBuffer> commandBuffer, U32 priority) { }
+void JzRE::JzRenderThreadPool::SubmitCommandList(std::shared_ptr<JzRE::JzRHICommandList> commandList, U32 priority) { }
 
 void JzRE::JzRenderThreadPool::SubmitResourceUpdate(std::function<void()> updateFunc, U32 priority) { }
 

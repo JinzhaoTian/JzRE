@@ -2,7 +2,7 @@
 
 #include "CommonTypes.h"
 #include "JzRHIBuffer.h"
-#include "JzRHICommandBuffer.h"
+#include "JzRHICommandList.h"
 #include "JzRHIETypes.h"
 #include "JzRHIStats.h"
 #include "JzRenderThreadContext.h"
@@ -42,7 +42,7 @@ public:
     void Present();
 
     // 命令提交
-    void SubmitCommandBuffer(std::shared_ptr<JzRHICommandBuffer> commandBuffer);
+    void SubmitCommandList(std::shared_ptr<JzRHICommandList> commandList);
     void SubmitRenderPass(std::function<void()> renderFunc);
 
     // 资源操作

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CommonTypes.h"
-#include "JzRHICommandBuffer.h"
+#include "JzRHICommandList.h"
 #include "JzRHIETypes.h"
 
 namespace JzRE {
@@ -21,17 +21,19 @@ public:
     ~JzRHICommandQueue();
 
     /**
-     * @brief Create a command buffer
-     * @param debugName The debug name of the command buffer
-     * @return The created command buffer
+     * @brief Create a command list
+     * 
+     * @param debugName The debug name of the command list
+     * @return The created command list
      */
-    std::shared_ptr<JzRHICommandBuffer> CreateCommandBuffer(const String &debugName = "");
+    std::shared_ptr<JzRHICommandList> CreateCommandList(const String &debugName = "");
 
     /**
-     * @brief Submit a command buffer
-     * @param commandBuffer The command buffer to submit
+     * @brief Submit a command list
+     * 
+     * @param commandList The command list to submit
      */
-    void SubmitCommandBuffer(std::shared_ptr<JzRHICommandBuffer> commandBuffer);
+    void SubmitCommandList(std::shared_ptr<JzRHICommandList> commandList);
 
     /**
      * @brief Execute all command buffers
@@ -45,6 +47,7 @@ public:
 
     /**
      * @brief Set the thread count
+     * 
      * @param threadCount The thread count
      */
     void SetThreadCount(U32 threadCount);
@@ -55,9 +58,9 @@ public:
     U32 GetThreadCount() const;
 
 private:
-    std::vector<std::shared_ptr<JzRHICommandBuffer>> pendingCommandBuffers;
-    std::mutex                                       queueMutex;
-    std::atomic<U32>                                 threadCount{1};
-    std::atomic<Bool>                                isExecuting{false};
+    std::vector<std::shared_ptr<JzRHICommandList>> pendingCommandLists;
+    std::mutex                                     queueMutex;
+    std::atomic<U32>                               threadCount{1};
+    std::atomic<Bool>                              isExecuting{false};
 };
 } // namespace JzRE

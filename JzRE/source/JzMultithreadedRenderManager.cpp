@@ -19,7 +19,7 @@ void JzRE::JzMultithreadedRenderManager::EndFrame() { }
 
 void JzRE::JzMultithreadedRenderManager::Present() { }
 
-void JzRE::JzMultithreadedRenderManager::SubmitCommandBuffer(std::shared_ptr<JzRE::JzRHICommandBuffer> commandBuffer) { }
+void JzRE::JzMultithreadedRenderManager::SubmitCommandList(std::shared_ptr<JzRE::JzRHICommandList> commandList) { }
 
 void JzRE::JzMultithreadedRenderManager::SubmitRenderPass(std::function<void()> renderFunc) { }
 

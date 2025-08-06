@@ -1,17 +1,17 @@
-#include "JzRHICommandBuffer.h"
+#include "JzRHICommandList.h"
 
 // RHICommandBuffer实现
-JzRE::JzRHICommandBuffer::JzRHICommandBuffer(const JzRE::String &debugName) :
+JzRE::JzRHICommandList::JzRHICommandList(const JzRE::String &debugName) :
     m_debugName(debugName), m_isRecording(false)
 {
 }
 
-JzRE::JzRHICommandBuffer::~JzRHICommandBuffer()
+JzRE::JzRHICommandList::~JzRHICommandList()
 {
     Reset();
 }
 
-void JzRE::JzRHICommandBuffer::Begin()
+void JzRE::JzRHICommandList::Begin()
 {
     std::lock_guard<std::mutex> lock(m_commandMutex);
     if (m_isRecording) {
@@ -22,7 +22,7 @@ void JzRE::JzRHICommandBuffer::Begin()
     Reset();
 }
 
-void JzRE::JzRHICommandBuffer::End()
+void JzRE::JzRHICommandList::End()
 {
     std::lock_guard<std::mutex> lock(m_commandMutex);
     if (!m_isRecording) {
@@ -32,13 +32,13 @@ void JzRE::JzRHICommandBuffer::End()
     m_isRecording = false;
 }
 
-void JzRE::JzRHICommandBuffer::Reset()
+void JzRE::JzRHICommandList::Reset()
 {
     std::lock_guard<std::mutex> lock(m_commandMutex);
     m_commands.clear();
 }
 
-void JzRE::JzRHICommandBuffer::Execute()
+void JzRE::JzRHICommandList::Execute()
 {
     std::lock_guard<std::mutex> lock(m_commandMutex);
     if (m_isRecording) {
@@ -51,78 +51,78 @@ void JzRE::JzRHICommandBuffer::Execute()
     }
 }
 
-JzRE::Bool JzRE::JzRHICommandBuffer::IsRecording() const
+JzRE::Bool JzRE::JzRHICommandList::IsRecording() const
 {
     return m_isRecording;
 }
 
-JzRE::Bool JzRE::JzRHICommandBuffer::IsEmpty() const
+JzRE::Bool JzRE::JzRHICommandList::IsEmpty() const
 {
     return m_commands.empty();
 }
 
-JzRE::Size JzRE::JzRHICommandBuffer::GetCommandCount() const
+JzRE::Size JzRE::JzRHICommandList::GetCommandCount() const
 {
     return m_commands.size();
 }
 
-const JzRE::String &JzRE::JzRHICommandBuffer::GetDebugName() const
+const JzRE::String &JzRE::JzRHICommandList::GetDebugName() const
 {
     return m_debugName;
 }
 
-void JzRE::JzRHICommandBuffer::Clear(const JzRE::JzClearParams &params)
+void JzRE::JzRHICommandList::Clear(const JzRE::JzClearParams &params)
 {
     AddCommand<JzRHIClearCommand>(params);
 }
 
-void JzRE::JzRHICommandBuffer::Draw(const JzRE::JzDrawParams &params)
+void JzRE::JzRHICommandList::Draw(const JzRE::JzDrawParams &params)
 {
     AddCommand<JzRHIDrawCommand>(params);
 }
 
-void JzRE::JzRHICommandBuffer::DrawIndexed(const JzRE::JzDrawIndexedParams &params)
+void JzRE::JzRHICommandList::DrawIndexed(const JzRE::JzDrawIndexedParams &params)
 {
     AddCommand<JzRHIDrawIndexedCommand>(params);
 }
 
-void JzRE::JzRHICommandBuffer::BindPipeline(std::shared_ptr<JzRE::JzRHIPipeline> pipeline)
+void JzRE::JzRHICommandList::BindPipeline(std::shared_ptr<JzRE::JzRHIPipeline> pipeline)
 {
     AddCommand<JzRHIBindPipelineCommand>(pipeline);
 }
 
-void JzRE::JzRHICommandBuffer::BindVertexArray(std::shared_ptr<JzRE::JzRHIVertexArray> vertexArray)
+void JzRE::JzRHICommandList::BindVertexArray(std::shared_ptr<JzRE::JzRHIVertexArray> vertexArray)
 {
     AddCommand<JzRHIBindVertexArrayCommand>(vertexArray);
 }
 
-void JzRE::JzRHICommandBuffer::BindTexture(std::shared_ptr<JzRE::JzRHITexture> texture, U32 slot)
+void JzRE::JzRHICommandList::BindTexture(std::shared_ptr<JzRE::JzRHITexture> texture, U32 slot)
 {
     AddCommand<JzRHIBindTextureCommand>(texture, slot);
 }
 
-void JzRE::JzRHICommandBuffer::SetViewport(const JzRE::JzViewport &viewport)
+void JzRE::JzRHICommandList::SetViewport(const JzRE::JzViewport &viewport)
 {
     AddCommand<JzRHISetViewportCommand>(viewport);
 }
 
-void JzRE::JzRHICommandBuffer::SetScissor(const JzRE::JzScissorRect &scissor)
+void JzRE::JzRHICommandList::SetScissor(const JzRE::JzScissorRect &scissor)
 {
     AddCommand<JzRHISetScissorCommand>(scissor);
 }
 
-void JzRE::JzRHICommandBuffer::BeginRenderPass(std::shared_ptr<JzRE::JzRHIFramebuffer> framebuffer)
+void JzRE::JzRHICommandList::BeginRenderPass(std::shared_ptr<JzRE::JzRHIFramebuffer> framebuffer)
 {
     AddCommand<JzRHIBeginRenderPassCommand>(framebuffer);
 }
 
-void JzRE::JzRHICommandBuffer::EndRenderPass()
+void JzRE::JzRHICommandList::EndRenderPass()
 {
     AddCommand<JzRHIEndRenderPassCommand>();
 }
 
 template <typename T, typename... Args>
-void JzRE::JzRHICommandBuffer::AddCommand(Args &&...args)
+void JzRE::JzRHICommandList::AddCommand(Args &&...args)
 {
     if (!m_isRecording) {
         std::cerr << "Command buffer is not recording" << std::endl;

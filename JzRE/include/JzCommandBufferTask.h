@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CommonTypes.h"
-#include "JzRHICommandBuffer.h"
+#include "JzRHICommandList.h"
 #include "JzRHIETypes.h"
 #include "JzRenderTask.h"
 
@@ -11,11 +11,11 @@ namespace JzRE {
  */
 class JzCommandBufferTask : public JzRenderTask {
 public:
-    JzCommandBufferTask(std::shared_ptr<JzRHICommandBuffer> commandBuffer, U32 priority = 0);
+    JzCommandBufferTask(std::shared_ptr<JzRHICommandList> commandList, U32 priority = 0);
     void Execute() override;
 
 private:
-    std::shared_ptr<JzRHICommandBuffer> commandBuffer;
+    std::shared_ptr<JzRHICommandList> commandList;
 };
 
 } // namespace JzRE

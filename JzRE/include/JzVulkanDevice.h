@@ -1,6 +1,6 @@
 #pragma once
 
-#include "JzRHICommandBuffer.h"
+#include "JzRHICommandList.h"
 #include "JzRHIDevice.h"
 #include "JzRHIETypes.h"
 #include "JzRHIFramebuffer.h"
@@ -29,8 +29,8 @@ public:
     std::shared_ptr<JzRHIVertexArray> CreateVertexArray(const String &debugName = "") override;
 
     // 命令系统
-    std::shared_ptr<JzRHICommandBuffer> CreateCommandBuffer(const String &debugName = "") override;
-    void                                ExecuteCommandBuffer(std::shared_ptr<JzRHICommandBuffer> commandBuffer) override;
+    std::shared_ptr<JzRHICommandList> CreateCommandList(const String &debugName = "") override;
+    void                              ExecuteCommandList(std::shared_ptr<JzRHICommandList> commandList) override;
 
     // 立即渲染模式
     void BeginFrame() override;

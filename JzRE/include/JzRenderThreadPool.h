@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CommonTypes.h"
-#include "JzRHICommandBuffer.h"
+#include "JzRHICommandList.h"
 #include "JzRHIETypes.h"
 #include "JzRenderTask.h"
 #include "JzTaskComparator.h"
@@ -22,7 +22,7 @@ public:
 
     // 任务提交
     void SubmitTask(std::shared_ptr<JzRenderTask> task);
-    void SubmitCommandBuffer(std::shared_ptr<JzRHICommandBuffer> commandBuffer, U32 priority = 0);
+    void SubmitCommandList(std::shared_ptr<JzRHICommandList> commandList, U32 priority = 0);
     void SubmitResourceUpdate(std::function<void()> updateFunc, U32 priority = 1);
 
     // 同步操作

@@ -7,19 +7,19 @@ JzRE::JzRHICommandQueue::~JzRHICommandQueue()
     Wait();
 }
 
-std::shared_ptr<JzRE::JzRHICommandBuffer> JzRE::JzRHICommandQueue::CreateCommandBuffer(const JzRE::String &debugName)
+std::shared_ptr<JzRE::JzRHICommandList> JzRE::JzRHICommandQueue::CreateCommandList(const JzRE::String &debugName)
 {
-    return std::make_shared<JzRE::JzRHICommandBuffer>(debugName);
+    return std::make_shared<JzRE::JzRHICommandList>(debugName);
 }
 
-void JzRE::JzRHICommandQueue::SubmitCommandBuffer(std::shared_ptr<JzRE::JzRHICommandBuffer> commandBuffer)
+void JzRE::JzRHICommandQueue::SubmitCommandList(std::shared_ptr<JzRE::JzRHICommandList> commandList)
 {
-    if (!commandBuffer || commandBuffer->IsEmpty()) {
+    if (!commandList || commandList->IsEmpty()) {
         return;
     }
 
     std::lock_guard<std::mutex> lock(queueMutex);
-    pendingCommandBuffers.push_back(commandBuffer);
+    pendingCommandLists.push_back(commandList);
 }
 
 void JzRE::JzRHICommandQueue::ExecuteAll()
@@ -30,11 +30,11 @@ void JzRE::JzRHICommandQueue::ExecuteAll()
 
     isExecuting = true;
 
-    std::vector<std::shared_ptr<JzRHICommandBuffer>> commandBuffersToExecute;
+    std::vector<std::shared_ptr<JzRHICommandList>> commandBuffersToExecute;
     {
         std::lock_guard<std::mutex> lock(queueMutex);
-        commandBuffersToExecute = pendingCommandBuffers;
-        pendingCommandBuffers.clear();
+        commandBuffersToExecute = pendingCommandLists;
+        pendingCommandLists.clear();
     }
 
     // 单线程执行所有命令缓冲

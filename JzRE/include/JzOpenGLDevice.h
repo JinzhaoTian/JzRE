@@ -94,19 +94,19 @@ public:
     std::shared_ptr<JzRHIVertexArray> CreateVertexArray(const String &debugName = "") override;
 
     /**
-     * @brief Create a Command Buffer
+     * @brief Create a Command List
      *
      * @param debugName Debug Name
-     * @return std::shared_ptr<JzRHICommandBuffer>
+     * @return std::shared_ptr<JzRHICommandList>
      */
-    std::shared_ptr<JzRHICommandBuffer> CreateCommandBuffer(const String &debugName = "") override;
+    std::shared_ptr<JzRHICommandList> CreateCommandList(const String &debugName = "") override;
 
     /**
-     * @brief Execute a Command Buffer
+     * @brief Execute a Command List
      *
-     * @param commandBuffer Command Buffer
+     * @param commandList Command List
      */
-    void ExecuteCommandBuffer(std::shared_ptr<JzRHICommandBuffer> commandBuffer) override;
+    void ExecuteCommandList(std::shared_ptr<JzRHICommandList> commandList) override;
 
     /**
      * @brief Begin a Frame

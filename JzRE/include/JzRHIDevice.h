@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CommonTypes.h"
-#include "JzRHICommandBuffer.h"
+#include "JzRHICommandList.h"
 #include "JzRHIDesc.h"
 #include "JzRHIETypes.h"
 #include "JzRHIFramebuffer.h"
@@ -106,19 +106,19 @@ public:
     virtual std::shared_ptr<JzRHIVertexArray> CreateVertexArray(const String &debugName = "") = 0;
 
     /**
-     * @brief Create a Command Buffer
+     * @brief Create a Command List
      *
      * @param debugName Debug Name
-     * @return std::shared_ptr<JzRHICommandBuffer>
+     * @return std::shared_ptr<JzRHICommandList>
      */
-    virtual std::shared_ptr<JzRHICommandBuffer> CreateCommandBuffer(const String &debugName = "") = 0;
+    virtual std::shared_ptr<JzRHICommandList> CreateCommandList(const String &debugName = "") = 0;
 
     /**
-     * @brief Execute a Command Buffer
+     * @brief Execute a Command List
      *
-     * @param commandBuffer Command Buffer
+     * @param commandBuffer Command List
      */
-    virtual void ExecuteCommandBuffer(std::shared_ptr<JzRHICommandBuffer> commandBuffer) = 0;
+    virtual void ExecuteCommandList(std::shared_ptr<JzRHICommandList> commandList) = 0;
 
     /**
      * @brief Begin a Frame

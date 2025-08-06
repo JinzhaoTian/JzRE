@@ -66,15 +66,15 @@ std::shared_ptr<JzRE::JzRHIVertexArray> JzRE::JzOpenGLDevice::CreateVertexArray(
     return std::make_shared<JzOpenGLVertexArray>(debugName);
 }
 
-std::shared_ptr<JzRE::JzRHICommandBuffer> JzRE::JzOpenGLDevice::CreateCommandBuffer(const JzRE::String &debugName)
+std::shared_ptr<JzRE::JzRHICommandList> JzRE::JzOpenGLDevice::CreateCommandList(const JzRE::String &debugName)
 {
-    return std::make_shared<JzRHICommandBuffer>(debugName);
+    return std::make_shared<JzRHICommandList>(debugName);
 }
 
-void JzRE::JzOpenGLDevice::ExecuteCommandBuffer(std::shared_ptr<JzRE::JzRHICommandBuffer> commandBuffer)
+void JzRE::JzOpenGLDevice::ExecuteCommandList(std::shared_ptr<JzRE::JzRHICommandList> commandList)
 {
-    if (commandBuffer && !commandBuffer->IsEmpty()) {
-        commandBuffer->Execute();
+    if (commandList && !commandList->IsEmpty()) {
+        commandList->Execute();
     }
 }
 
