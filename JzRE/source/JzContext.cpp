@@ -3,6 +3,9 @@
 JzRE::JzContext::JzContext(JzERHIType rhiType) :
     sceneManager()
 {
+    /* Window */
+    window = std::make_unique<JzRE::JzWindow>(rhiType, windowSettings);
+
     /* Device */
     auto devicePtr = JzRHIFactory::CreateDevice(rhiType);
     if (!devicePtr) {
@@ -13,17 +16,10 @@ JzRE::JzContext::JzContext(JzERHIType rhiType) :
 
     m_commandQueue = std::make_shared<JzRHICommandQueue>();
 
-    device = std::make_unique<JzRE::JzDevice>(deviceSettings);
-
-    /* Window */
-    window = std::make_unique<JzRE::JzWindow>(*device, windowSettings);
-
     /* Input Manager */
     inputManager = std::make_unique<JzRE::JzInputManager>(*window);
 
     window->MakeCurrentContext();
-
-    device->SetVsync(true);
 
     /* UI Manager */
     uiManager = std::make_unique<JzRE::JzUIManager>(window->GetGLFWWindow());

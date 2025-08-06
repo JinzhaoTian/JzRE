@@ -3,6 +3,7 @@
 #include "CommonTypes.h"
 #include "JzDevice.h"
 #include "JzEvent.h"
+#include "JzRHIETypes.h"
 #include "JzWindowSettings.h"
 
 namespace JzRE {
@@ -14,7 +15,7 @@ public:
     /**
      * @brief Constructor
      */
-    JzWindow(const JzDevice &device, const JzWindowSettings &windowSettings);
+    JzWindow(JzERHIType rhiType, const JzWindowSettings &windowSettings);
 
     /**
      * @brief Destructor
@@ -119,7 +120,7 @@ public:
 private:
     static std::unordered_map<GLFWwindow *, JzWindow *> __WINDOWS_MAP;
 
-    const JzDevice     &m_device;
+    JzERHIType          m_rhiType;
     GLFWwindow         *m_glfwWindow;
     String              m_title;
     std::pair<U16, U16> m_size;

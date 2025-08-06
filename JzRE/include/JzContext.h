@@ -23,7 +23,7 @@ public:
     /**
      * @brief Construct a new Context object
      */
-    JzContext(JzERHIType rhiType = JzERHIType::Unknown);
+    JzContext(JzERHIType rhiType = JzERHIType::OpenGL);
 
     /**
      * @brief Delete copy constructor

@@ -2,8 +2,8 @@
 
 std::unordered_map<GLFWwindow *, JzRE::JzWindow *> JzRE::JzWindow::__WINDOWS_MAP;
 
-JzRE::JzWindow::JzWindow(const JzDevice &device, const JzWindowSettings &windowSettings) :
-    m_device(device),
+JzRE::JzWindow::JzWindow(JzRE::JzERHIType rhiType, const JzRE::JzWindowSettings &windowSettings) :
+    m_rhiType(rhiType),
     m_title(windowSettings.title),
     m_size{windowSettings.width, windowSettings.height},
     m_position{windowSettings.x, windowSettings.y},
@@ -79,6 +79,14 @@ JzRE::Bool JzRE::JzWindow::ShouldClose() const
 
 void JzRE::JzWindow::CreateGlfwWindow(const JzRE::JzWindowSettings &windowSettings)
 {
+    I32 initCode = glfwInit();
+    if (initCode == GLFW_FALSE) {
+        throw std::runtime_error("Failed to Init GLFW");
+        glfwTerminate();
+    }
+
+    glfwDefaultWindowHints();
+
     GLFWmonitor *selectedMonitor = nullptr;
 
     if (m_fullscreen)
@@ -92,6 +100,34 @@ void JzRE::JzWindow::CreateGlfwWindow(const JzRE::JzWindowSettings &windowSettin
     glfwWindowHint(GLFW_VISIBLE, windowSettings.isVisible);
     glfwWindowHint(GLFW_AUTO_ICONIFY, windowSettings.autoIconify);
     glfwWindowHint(GLFW_SAMPLES, windowSettings.samples);
+
+    switch (m_rhiType) {
+        case JzERHIType::OpenGL:
+            glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+            glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+            break;
+
+        case JzERHIType::Vulkan:
+            glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+            break;
+
+        case JzERHIType::D3D11:
+            break;
+
+        case JzERHIType::D3D12:
+            break;
+
+        case JzERHIType::Metal:
+            glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+#ifdef __APPLE__
+            // macOS特定：启用透明框架以支持Metal层
+            glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE);
+#endif
+            break;
+    }
 
     m_glfwWindow = glfwCreateWindow(
         static_cast<I32>(m_size.first),
