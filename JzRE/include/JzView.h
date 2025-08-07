@@ -3,7 +3,9 @@
 #include "CommonTypes.h"
 #include "JzCamera.h"
 #include "JzEditorActions.h"
+#include "JzImage.h"
 #include "JzPanelWindow.h"
+#include "JzRHIFramebuffer.h"
 #include "JzRHIRenderer.h"
 #include "JzScene.h"
 
@@ -69,7 +71,10 @@ protected:
     void _Draw_Impl() override;
 
 protected:
-    std::unique_ptr<JzRHIRenderer> m_renderer;
+    JzImage                          *m_image;
+    std::shared_ptr<JzRHITexture>     m_texture;
+    std::shared_ptr<JzRHIFramebuffer> m_framebuffer;
+    std::unique_ptr<JzRHIRenderer>    m_renderer;
 };
 
 } // namespace JzRE

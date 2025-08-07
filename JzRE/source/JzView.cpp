@@ -3,6 +3,23 @@
 JzRE::JzView::JzView(const JzRE::String &name, JzRE::Bool is_opened) :
     JzRE::JzPanelWindow(name, is_opened)
 {
+    auto device   = JzRE_DEVICE();
+    m_framebuffer = device->CreateFramebuffer();
+
+    // Create texture
+    JzTextureDesc textureDesc;
+    textureDesc.type      = JzETextureType::Texture2D;
+    textureDesc.format    = JzETextureFormat::RGBA8;
+    textureDesc.width     = 256;
+    textureDesc.height    = 256;
+    textureDesc.debugName = "TestScene";
+    m_texture             = device->CreateTexture(textureDesc);
+
+    m_framebuffer->AttachColorTexture(m_texture);
+
+    U32 texId = 0; // TODO texture handle
+
+    m_image    = &CreateWidget<JzImage>(texId, JzVec2{0.f, 0.f});
     scrollable = false;
 }
 
