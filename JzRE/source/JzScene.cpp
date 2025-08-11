@@ -23,6 +23,8 @@ void JzRE::JzScene::AddDefaultAtmosphere() { }
 void JzRE::JzScene::AddModel(std::shared_ptr<JzRE::JzModel> model)
 {
     this->m_models.push_back(model);
+
+    // TODO setup model
 }
 
 void JzRE::JzScene::RemoveModel(std::shared_ptr<JzRE::JzModel> model)

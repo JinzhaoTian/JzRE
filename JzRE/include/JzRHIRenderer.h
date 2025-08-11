@@ -27,7 +27,7 @@ public:
      *
      * @param scene
      */
-    void RenderScene(std::shared_ptr<JzScene> scene);
+    void RenderScene(JzScene* scene);
 
     /**
      * @brief Set the Use Command List

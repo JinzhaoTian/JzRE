@@ -5,7 +5,7 @@ JzMesh::JzMesh(std::vector<JzVertex> vertices, std::vector<U32> indices, std::ve
     vertices(vertices), indices(indices), textures(textures)
 {
     // now that we have all the required data, set the vertex buffers and its attribute pointers.
-    SetupMesh();
+    // SetupMesh();
 }
 
 void JzMesh::Draw(std::shared_ptr<OGLShader> shader)

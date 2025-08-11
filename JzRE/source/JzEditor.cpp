@@ -12,7 +12,7 @@ JzRE::JzEditor::JzEditor(JzContext &context) :
 
 JzRE::JzEditor::~JzEditor()
 {
-    m_context.sceneManager.UnloadScene();
+    m_context.sceneManager.UnloadCurrentScene();
 }
 
 void JzRE::JzEditor::PreUpdate()

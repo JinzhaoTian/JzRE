@@ -4,7 +4,12 @@ JzRE::JzRHIRenderer::JzRHIRenderer() { }
 
 JzRE::JzRHIRenderer::~JzRHIRenderer() { }
 
-void JzRE::JzRHIRenderer::RenderScene(std::shared_ptr<JzRE::JzScene> scene) { }
+void JzRE::JzRHIRenderer::RenderScene(JzRE::JzScene *scene)
+{
+    for (const auto model : scene->GetModels()) {
+        // model->Draw();
+    }
+}
 
 void JzRE::JzRHIRenderer::SetUseCommandList(JzRE::Bool useCommandList)
 {

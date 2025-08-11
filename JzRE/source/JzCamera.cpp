@@ -1,6 +1,12 @@
 #include "JzCamera.h"
 
-JzRE::JzCamera::JzCamera() { }
+JzRE::JzCamera::JzCamera() :
+    m_projectionMode(JzEProjectionMode::PERSPECTIVE),
+    m_fov(60.0f),
+    m_size(5.0f),
+    m_near(0.1f),
+    m_far(1000.f),
+    m_clearColor(0.f, 0.f, 0.f) { }
 
 void JzRE::JzCamera::SetPosition(const JzRE::JzVec3 &position)
 {

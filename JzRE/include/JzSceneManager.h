@@ -26,6 +26,11 @@ public:
     void Update();
 
     /**
+     * @brief Load empty scene
+     */
+    void LoadEmptyScene();
+
+    /**
      * @brief Load the default scene
      */
     void LoadDefaultScene();
@@ -42,7 +47,7 @@ public:
      *
      * @return const String&
      */
-    void UnloadScene();
+    void UnloadCurrentScene();
 
     /**
      * @brief Check if the scene is loaded
@@ -59,8 +64,8 @@ public:
     JzScene *GetCurrentScene() const;
 
 public:
-    JzEvent<const String &> OnSceneLoaded;
-    JzEvent<const String &> OnSceneUnloaded;
+    JzEvent<>               OnSceneLoaded;
+    JzEvent<>               OnSceneUnloaded;
     JzEvent<const String &> OnSceneChanged;
 
 private:
