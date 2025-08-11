@@ -51,7 +51,7 @@ void JzRE::JzSceneView::InitFrame()
 void JzRE::JzSceneView::DrawFrame()
 {
     JzViewControllable::DrawFrame();
-    HandleActorPicking();
+    // HandleActorPicking();
 }
 
 void JzRE::JzSceneView::SetGizmoOperation(JzRE::JzEGizmoOperation operation)

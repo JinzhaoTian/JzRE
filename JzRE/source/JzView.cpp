@@ -31,14 +31,66 @@ void JzRE::JzView::Render()
     auto camera                = GetCamera();
     auto scene                 = GetScene();
 
-    if (winWidth > 0 && winHeight > 0 /* && camera && scene*/) {
+    if (winWidth > 0 && winHeight > 0 && camera && scene) {
         auto device = JzRE_DEVICE();
 
+        // 开始帧（RHI）
         device->BeginFrame();
 
-        m_renderer->RenderScene(scene); // TODO render scene
+        // 尺寸变更则重建离屏纹理并重新挂载到帧缓冲（RHI）
+        if (!m_texture || m_texture->GetWidth() != winWidth || m_texture->GetHeight() != winHeight) {
+            JzTextureDesc textureDesc;
+            textureDesc.type      = JzETextureType::Texture2D;
+            textureDesc.format    = JzETextureFormat::RGBA8;
+            textureDesc.width     = winWidth;
+            textureDesc.height    = winHeight;
+            textureDesc.mipLevels = 1;
+            textureDesc.debugName = "ViewColor";
+            m_texture             = device->CreateTexture(textureDesc);
 
+            if (m_framebuffer) {
+                m_framebuffer->AttachColorTexture(m_texture);
+            }
+        }
+
+        // 绑定离屏帧缓冲并设置视口（RHI）
+        device->BindFramebuffer(m_framebuffer);
+
+        JzViewport viewport;
+        viewport.x      = 0.0f;
+        viewport.y      = 0.0f;
+        viewport.width  = static_cast<F32>(winWidth);
+        viewport.height = static_cast<F32>(winHeight);
+        viewport.minDepth = 0.0f;
+        viewport.maxDepth = 1.0f;
+        device->SetViewport(viewport);
+
+        // 清屏（RHI）
+        JzClearParams clearParams;
+        clearParams.clearColor = true;
+        clearParams.clearDepth = true;
+        clearParams.clearStencil = false;
+        clearParams.colorR = 0.1f;
+        clearParams.colorG = 0.1f;
+        clearParams.colorB = 0.1f;
+        clearParams.colorA = 1.0f;
+        clearParams.depth  = 1.0f;
+        clearParams.stencil = 0;
+        device->Clear(clearParams);
+
+        // 场景渲染（RHI）
+        m_renderer->RenderScene(scene);
+
+        // 解绑离屏帧缓冲（回到默认帧缓冲）（RHI）
+        device->BindFramebuffer(nullptr);
+
+        // 结束帧（RHI）
         device->EndFrame();
+
+        // 更新展示用控件尺寸（非图形 API 调用）
+        if (m_image) {
+            m_image->size = JzVec2{static_cast<F32>(winWidth), static_cast<F32>(winHeight)};
+        }
     }
 }
 

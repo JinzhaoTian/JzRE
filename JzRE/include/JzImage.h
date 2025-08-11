@@ -7,14 +7,15 @@
 
 namespace JzRE {
 /**
- * @brief Separator Widget
+ * @brief Image Widget
  */
 class JzImage : public JzWidget {
 public:
     /**
      * Constructor
-     * @param p_textureID
-     * @parma p_size
+     *
+     * @param p_textureId
+     * @param p_size
      */
     JzImage(U32 p_textureId, const JzVec2 &p_size);
 
