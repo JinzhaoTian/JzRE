@@ -74,7 +74,7 @@ void JzRE::JzView::Render()
         clearParams.clearColor   = true;
         clearParams.clearDepth   = true;
         clearParams.clearStencil = false;
-        clearParams.colorR       = 0.1f;
+        clearParams.colorR       = 1.0f;
         clearParams.colorG       = 0.1f;
         clearParams.colorB       = 0.1f;
         clearParams.colorA       = 1.0f;

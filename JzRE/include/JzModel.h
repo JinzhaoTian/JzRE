@@ -20,6 +20,13 @@ public:
     JzModel(const String &path, Bool gamma = false);
 
     /**
+     * @brief Constructor for programmatically created models
+     *
+     * @param meshes The meshes to add to the model
+     */
+    JzModel(std::vector<JzMesh> meshes);
+
+    /**
      * @brief Destructor
      */
     ~JzModel();

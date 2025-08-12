@@ -53,11 +53,16 @@ public:
     void AddDefaultAtmosphere();
 
     /**
+     * @brief Add a default smodel to the scene
+     */
+    void AddDefaultModel();
+
+    /**
      * @brief Add a model to the scene
      *
-     * @param object The model to add
+     * @param model The model to add
      */
-    void AddModel(std::shared_ptr<JzModel> object);
+    void AddModel(std::shared_ptr<JzModel> model);
 
     /**
      * @brief Remove a model from the scene

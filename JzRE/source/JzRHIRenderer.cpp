@@ -109,15 +109,45 @@ JzRE::Bool JzRE::JzRHIRenderer::CreateDefaultPipeline()
         return false;
     }
 
-    // 简单的GLSL默认着色器（OpenGL 路径）。其他后端尚未实现时将忽略创建失败。
-    const char *vsSrc = R"( #version 330 core
-                            layout(location = 0) in vec3 aPos;
-                            void main() { gl_Position = vec4(aPos, 1.0); }
-                            )";
-    const char *fsSrc = R"( #version 330 core
-                            out vec4 FragColor;
-                            void main() { FragColor = vec4(1.0, 1.0, 1.0, 1.0); }
-                            )";
+    const char *vsSrc = R"(
+        #version 330 core
+
+        layout (location = 0) in vec3 aPos;
+        layout (location = 1) in vec3 aNormal;
+        layout (location = 2) in vec2 aTexCoords;
+
+        out vec3 FragPos;
+        out vec3 Normal;
+        out vec2 TexCoords;
+
+        uniform mat4 model;
+        uniform mat4 view;
+        uniform mat4 projection;
+
+        void main()
+        {
+            FragPos = vec3(model * vec4(aPos, 1.0));
+            Normal = mat3(transpose(inverse(model))) * aNormal;  
+            TexCoords = aTexCoords;
+            
+            gl_Position = projection * view * vec4(FragPos, 1.0);
+        }
+    )";
+
+    const char *fsSrc = R"( 
+        #version 330 core
+
+        in vec3 FragPos;
+        in vec3 Normal;
+        in vec2 TexCoords;
+
+        out vec4 FragColor;
+
+        void main()
+        {
+            FragColor = vec4(0.1, 1.0, 0.1, 1.0);
+        }
+    )";
 
     JzShaderDesc vsDesc{};
     vsDesc.type       = JzEShaderType::Vertex;
@@ -161,6 +191,11 @@ void JzRE::JzRHIRenderer::RenderImmediate(std::shared_ptr<JzRE::JzScene> scene)
     if (m_defaultPipeline) {
         device->BindPipeline(m_defaultPipeline);
     }
+
+    JzMat4 modelMatrix = JzMat4x4::Identity();
+    m_defaultPipeline->SetUniform("model", modelMatrix);
+    m_defaultPipeline->SetUniform("view", modelMatrix);
+    m_defaultPipeline->SetUniform("projection", modelMatrix);
 
     // 遍历场景模型进行绘制
     for (const auto &model : scene->GetModels()) {

@@ -12,6 +12,12 @@ JzModel::JzModel(const String &path, Bool gamma) :
     LoadModel(path);
 }
 
+JzModel::JzModel(std::vector<JzMesh> meshes) :
+    meshes(std::move(meshes)), gammaCorrection(false)
+{
+    // No need to load from file for programmatically created models
+}
+
 JzModel::~JzModel()
 {
     // RHI resources will be automatically cleaned up by shared_ptr

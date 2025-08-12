@@ -1,9 +1,11 @@
 #pragma once
 
 #include "CommonTypes.h"
+#include "JzMatrix.h"
 #include "JzRHIDesc.h"
 #include "JzRHIETypes.h"
 #include "JzRHIResource.h"
+#include "JzVector.h"
 
 namespace JzRE {
 /**
@@ -31,6 +33,62 @@ public:
     {
         return desc.renderState;
     }
+
+    /**
+     * @brief Set a uniform value
+     *
+     * @param name The name of the uniform
+     * @param value The value to set
+     */
+    virtual void SetUniform(const String &name, I32 value) = 0;
+
+    /**
+     * @brief Set a uniform value
+     *
+     * @param name The name of the uniform
+     * @param value The value to set
+     */
+    virtual void SetUniform(const String &name, F32 value) = 0;
+
+    /**
+     * @brief Set a uniform value
+     *
+     * @param name The name of the uniform
+     * @param value The value to set
+     */
+    virtual void SetUniform(const String &name, const JzVec2 &value) = 0;
+
+    /**
+     * @brief Set a uniform value
+     *
+     * @param name The name of the uniform
+     * @param value The value to set
+     */
+    virtual void SetUniform(const String &name, const JzVec3 &value) = 0;
+
+    /**
+     * @brief Set a uniform value
+     *
+     * @param name The name of the uniform
+     * @param value The value to set
+     */
+    virtual void SetUniform(const String &name, const JzVec4 &value) = 0;
+
+    /**
+     * @brief Set a uniform value
+     *
+     * @param name The name of the uniform
+     * @param value The value to set
+     */
+    virtual void SetUniform(const String &name, const JzMat3 &value) = 0;
+
+    /**
+     * @brief Set a uniform value
+     *
+     * @param name The name of the uniform
+     * @param value The value to set
+     */
+    virtual void SetUniform(const String &name, const JzMat4 &value) = 0;
 
 protected:
     JzPipelineDesc desc;

@@ -17,7 +17,7 @@ void JzRE::JzSceneManager::Update()
 void JzRE::JzSceneManager::LoadEmptyScene()
 {
     UnloadCurrentScene();
-    
+
     m_currentScene.reset(new JzScene());
 
     OnSceneLoaded.Invoke();
@@ -31,6 +31,8 @@ void JzRE::JzSceneManager::LoadDefaultScene()
     m_currentScene->AddDefaultReflections();
     m_currentScene->AddDefaultPostProcessStack();
     m_currentScene->AddDefaultAtmosphere();
+
+    m_currentScene->AddDefaultModel(); // for test
 
     OnSceneLoaded.Invoke();
 }

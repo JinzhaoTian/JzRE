@@ -131,7 +131,7 @@ private:
     std::shared_ptr<JzRHITexture>     m_colorTexture;
     std::shared_ptr<JzRHITexture>     m_depthTexture;
     std::shared_ptr<JzRHIPipeline>    m_defaultPipeline;
-    Bool                              m_useCommandList = true;
+    Bool                              m_useCommandList = false;
     Bool                              m_isInitialized  = false;
 };
 

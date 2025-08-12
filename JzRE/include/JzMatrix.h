@@ -173,7 +173,7 @@ public:
 
     // 4*4 matrices only
 
-protected:
+    // protected:
     T m_Data[M * N];
 };
 

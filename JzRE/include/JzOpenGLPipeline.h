@@ -13,6 +13,7 @@ class JzOpenGLPipeline : public JzRHIPipeline {
 public:
     /**
      * @brief Constructor
+     *
      * @param desc The description of the pipeline
      */
     JzOpenGLPipeline(const JzPipelineDesc &desc);
@@ -24,70 +25,80 @@ public:
 
     /**
      * @brief Get the program handle
+     *
      * @return The program handle
      */
     GLuint GetProgram() const;
 
     /**
      * @brief Check if the pipeline is linked
+     *
      * @return True if the pipeline is linked, false otherwise
      */
     Bool IsLinked() const;
 
     /**
      * @brief Get the link log
+     *
      * @return The link log
      */
     const String &GetLinkLog() const;
 
     /**
      * @brief Set a uniform value
+     *
      * @param name The name of the uniform
      * @param value The value to set
      */
-    void SetUniform(const String &name, I32 value);
+    void SetUniform(const String &name, I32 value) override;
 
     /**
      * @brief Set a uniform value
+     *
      * @param name The name of the uniform
      * @param value The value to set
      */
-    void SetUniform(const String &name, F32 value);
+    void SetUniform(const String &name, F32 value) override;
 
     /**
      * @brief Set a uniform value
+     *
      * @param name The name of the uniform
      * @param value The value to set
      */
-    void SetUniform(const String &name, const glm::vec2 &value);
+    void SetUniform(const String &name, const JzVec2 &value) override;
 
     /**
      * @brief Set a uniform value
+     *
      * @param name The name of the uniform
      * @param value The value to set
      */
-    void SetUniform(const String &name, const glm::vec3 &value);
+    void SetUniform(const String &name, const JzVec3 &value) override;
 
     /**
      * @brief Set a uniform value
+     *
      * @param name The name of the uniform
      * @param value The value to set
      */
-    void SetUniform(const String &name, const glm::vec4 &value);
+    void SetUniform(const String &name, const JzVec4 &value) override;
 
     /**
      * @brief Set a uniform value
+     *
      * @param name The name of the uniform
      * @param value The value to set
      */
-    void SetUniform(const String &name, const glm::mat3 &value);
+    void SetUniform(const String &name, const JzMat3 &value) override;
 
     /**
      * @brief Set a uniform value
+     *
      * @param name The name of the uniform
      * @param value The value to set
      */
-    void SetUniform(const String &name, const glm::mat4 &value);
+    void SetUniform(const String &name, const JzMat4 &value) override;
 
 private:
     /**
