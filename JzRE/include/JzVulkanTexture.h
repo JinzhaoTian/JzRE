@@ -13,6 +13,10 @@ public:
 
     void UpdateData(const void *data, U32 mipLevel = 0, U32 arrayIndex = 0) override;
     void GenerateMipmaps() override;
+    U32  GetHandle() const override
+    {
+        return 0;
+    } // Stub implementation
 
 private:
     // VkImage image;

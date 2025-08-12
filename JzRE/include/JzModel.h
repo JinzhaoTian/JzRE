@@ -2,11 +2,12 @@
 
 #include "CommonTypes.h"
 #include "JzMesh.h"
-#include "OGLResourceManager.h"
+#include "JzRHIPipeline.h"
+#include "JzRHITexture.h"
 
 namespace JzRE {
 /**
- * @brief Model class
+ * @brief Model class - Platform-independent model using RHI
  */
 class JzModel {
 public:
@@ -19,20 +20,61 @@ public:
     JzModel(const String &path, Bool gamma = false);
 
     /**
-     * @brief Draw the model
-     * @param shader The shader to use
+     * @brief Destructor
      */
-    void Draw(std::shared_ptr<OGLShader> shader);
+    ~JzModel();
+
+    /**
+     * @brief Draw the model using RHI
+     * 
+     * @param pipeline The pipeline to use for rendering
+     */
+    void Draw(std::shared_ptr<JzRHIPipeline> pipeline);
+
+    /**
+     * @brief Get all meshes in this model
+     * 
+     * @return Reference to mesh vector
+     */
+    const std::vector<JzMesh> &GetMeshes() const
+    {
+        return meshes;
+    }
+
+    /**
+     * @brief Get the directory path of the model
+     * 
+     * @return The directory path
+     */
+    const String &GetDirectory() const
+    {
+        return directory;
+    }
+
+    /**
+     * @brief Check if gamma correction is enabled
+     * 
+     * @return True if gamma correction is enabled
+     */
+    Bool IsGammaCorrectionEnabled() const
+    {
+        return gammaCorrection;
+    }
 
 private:
-    void                                     LoadModel(const String &path);
-    void                                     ProcessNode(aiNode *node, const aiScene *scene);
-    JzMesh                                   ProcessMesh(aiMesh *mesh, const aiScene *scene);
-    std::vector<std::shared_ptr<OGLTexture>> LoadMaterialTextures(aiMaterial *mat, aiTextureType type, String typeName);
+    void                                       LoadModel(const String &path);
+    void                                       ProcessNode(aiNode *node, const aiScene *scene);
+    JzMesh                                     ProcessMesh(aiMesh *mesh, const aiScene *scene);
+    std::vector<std::shared_ptr<JzRHITexture>> LoadMaterialTextures(aiMaterial *mat, aiTextureType type, String typeName);
+    std::shared_ptr<JzRHITexture>              LoadTexture(const String &path, const String &typeName);
 
 public:
     std::vector<JzMesh> meshes;
     String              directory;
     Bool                gammaCorrection;
+
+private:
+    // Cache for loaded textures to avoid duplicates
+    std::map<String, std::shared_ptr<JzRHITexture>> m_loadedTextures;
 };
 } // namespace JzRE

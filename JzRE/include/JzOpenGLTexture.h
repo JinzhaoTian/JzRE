@@ -12,6 +12,7 @@ class JzOpenGLTexture : public JzRHITexture {
 public:
     /**
      * @brief Constructor
+     *
      * @param desc The description of the texture
      */
     JzOpenGLTexture(const JzTextureDesc &desc);
@@ -23,6 +24,7 @@ public:
 
     /**
      * @brief Update the data of the texture
+     *
      * @param data The data to update
      * @param mipLevel The mip level to update
      * @param arrayIndex The array index to update
@@ -36,12 +38,14 @@ public:
 
     /**
      * @brief Get the handle of the texture
+     *
      * @return The handle of the texture
      */
-    GLuint GetHandle() const;
+    U32 GetHandle() const override;
 
     /**
      * @brief Get the target of the texture
+     *
      * @return The target of the texture
      */
     GLenum GetTarget() const;
@@ -49,6 +53,7 @@ public:
 private:
     /**
      * @brief Convert texture type to OpenGL texture type
+     *
      * @param type The texture type
      * @return The OpenGL texture type
      */
@@ -56,6 +61,7 @@ private:
 
     /**
      * @brief Convert internal format to OpenGL internal format
+     *
      * @param format The texture format
      * @return The OpenGL internal format
      */
@@ -63,6 +69,7 @@ private:
 
     /**
      * @brief Convert format to OpenGL format
+     *
      * @param format The texture format
      * @return The OpenGL format
      */
@@ -70,6 +77,7 @@ private:
 
     /**
      * @brief Convert type to OpenGL type
+     *
      * @param format The texture format
      * @return The OpenGL type
      */
@@ -77,6 +85,7 @@ private:
 
     /**
      * @brief Convert filter to OpenGL filter
+     *
      * @param filter The texture filter
      * @return The OpenGL filter
      */
@@ -84,6 +93,7 @@ private:
 
     /**
      * @brief Convert wrap to OpenGL wrap
+     *
      * @param wrap The texture wrap
      * @return The OpenGL wrap
      */

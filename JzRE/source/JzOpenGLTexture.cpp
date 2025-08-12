@@ -4,10 +4,10 @@ JzRE::JzOpenGLTexture::JzOpenGLTexture(const JzRE::JzTextureDesc &desc) :
     JzRE::JzRHITexture(desc)
 {
     // Convert texture type to OpenGL texture type
-    m_target = ConvertTextureType(desc.type);
+    m_target         = ConvertTextureType(desc.type);
     m_internalFormat = ConvertInternalFormat(desc.format);
-    m_format = ConvertFormat(desc.format);
-    m_type = ConvertType(desc.format);
+    m_format         = ConvertFormat(desc.format);
+    m_type           = ConvertType(desc.format);
 
     // Generate texture object
     glGenTextures(1, &m_handle);
@@ -97,9 +97,9 @@ void JzRE::JzOpenGLTexture::GenerateMipmaps()
     glBindTexture(m_target, 0);
 }
 
-GLuint JzRE::JzOpenGLTexture::GetHandle() const
+JzRE::U32 JzRE::JzOpenGLTexture::GetHandle() const
 {
-    return m_handle;
+    return static_cast<U32>(m_handle);
 }
 
 GLenum JzRE::JzOpenGLTexture::GetTarget() const

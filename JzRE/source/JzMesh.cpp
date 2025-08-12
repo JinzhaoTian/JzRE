@@ -1,91 +1,118 @@
 #include "JzMesh.h"
+#include "JzEditorActions.h"
+#include "JzRHIDevice.h"
+#include "JzServiceContainer.h"
 
 namespace JzRE {
-JzMesh::JzMesh(std::vector<JzVertex> vertices, std::vector<U32> indices, std::vector<std::shared_ptr<OGLTexture>> textures) :
-    vertices(vertices), indices(indices), textures(textures)
+JzMesh::JzMesh(std::vector<JzVertex> vertices, std::vector<U32> indices, std::vector<std::shared_ptr<JzRHITexture>> textures) :
+    vertices(std::move(vertices)), indices(std::move(indices)), textures(std::move(textures))
 {
-    // now that we have all the required data, set the vertex buffers and its attribute pointers.
-    // SetupMesh();
+    // Setup the mesh when we have all the required data
+    SetupMesh();
 }
 
-void JzMesh::Draw(std::shared_ptr<OGLShader> shader)
+JzMesh::~JzMesh()
 {
-    // bind appropriate textures
-    I32 diffuseCnt = 0, specularCnt = 0, normalCnt = 0, heightCnt = 0;
-    for (U32 i = 0; i < this->textures.size(); i++) {
-        this->textures[i]->Bind(i);
-        shader->SetUniform(this->textures[i]->textureName, static_cast<I32>(i));
+    // RHI resources will be automatically cleaned up by shared_ptr
+}
 
-        String typeName = this->textures[i]->textureName.substr(
-            this->textures[i]->textureName.find_first_of('.') + 1,
-            this->textures[i]->textureName.find_first_of('[') - this->textures[i]->textureName.find_first_of('.') - 1);
-        if (typeName == "diffuse") {
-            diffuseCnt++;
-        } else if (typeName == "specular") {
-            specularCnt++;
-        } else if (typeName == "normal") {
-            normalCnt++;
-        } else if (typeName == "height") {
-            heightCnt++;
-        }
+void JzMesh::Draw(std::shared_ptr<JzRHIPipeline> pipeline)
+{
+    if (!m_isSetup) {
+        SetupMesh();
     }
 
-    shader->SetUniform("numDiffuseTextures", diffuseCnt);
-    shader->SetUniform("numSpecularTextures", specularCnt);
-    shader->SetUniform("numNormalTextures", normalCnt);
-    shader->SetUniform("numHeightTextures", heightCnt);
+    auto device = JzRE_DEVICE();
+    if (!device || !m_vertexArray || indices.empty()) {
+        return;
+    }
 
-    // draw mesh
-    glBindVertexArray(this->VAO);
-    glDrawElements(GL_TRIANGLES, static_cast<U32>(indices.size()), GL_UNSIGNED_INT, 0);
-    glBindVertexArray(0);
+    // Bind textures using RHI
+    for (U32 i = 0; i < this->textures.size(); i++) {
+        device->BindTexture(this->textures[i], i);
+    }
 
-    // always good practice to set everything back to defaults once configured.
-    glActiveTexture(GL_TEXTURE0);
+    // Bind vertex array and pipeline
+    device->BindVertexArray(m_vertexArray);
+    if (pipeline) {
+        device->BindPipeline(pipeline);
+    }
+
+    // Draw indexed using RHI
+    JzDrawIndexedParams drawParams{};
+    drawParams.primitiveType = JzEPrimitiveType::Triangles;
+    drawParams.indexCount    = static_cast<U32>(indices.size());
+    drawParams.instanceCount = 1;
+    drawParams.firstIndex    = 0;
+    drawParams.vertexOffset  = 0;
+    drawParams.firstInstance = 0;
+
+    device->DrawIndexed(drawParams);
 }
 
-// initializes all the buffer objects/arrays
 void JzMesh::SetupMesh()
 {
-    // create buffers/arrays
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
+    if (m_isSetup) {
+        return;
+    }
 
-    glBindVertexArray(VAO);
-    // load data into vertex buffers
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    // A great thing about structs is that their memory layout is sequential for all its items.
-    // The effect is that we can simply pass a pointer to the struct and it translates perfectly to a glm::vec3/2 array which
-    // again translates to 3/2 floats which translates to a byte array.
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(JzVertex), &vertices[0], GL_STATIC_DRAW);
+    auto device = JzRE_DEVICE();
+    if (!device) {
+        return;
+    }
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(U32), &indices[0], GL_STATIC_DRAW);
+    // Create vertex buffer
+    JzBufferDesc vertexBufferDesc{};
+    vertexBufferDesc.type      = JzEBufferType::Vertex;
+    vertexBufferDesc.usage     = JzEBufferUsage::StaticDraw;
+    vertexBufferDesc.size      = vertices.size() * sizeof(JzVertex);
+    vertexBufferDesc.data      = vertices.data();
+    vertexBufferDesc.debugName = "MeshVertexBuffer";
 
-    // set the vertex attribute pointers
-    // vertex Positions
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(JzVertex), (void *)0);
-    // vertex normals
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(JzVertex), (void *)offsetof(JzVertex, Normal));
-    // vertex texture coords
-    glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(JzVertex), (void *)offsetof(JzVertex, TexCoords));
-    // vertex tangent
-    glEnableVertexAttribArray(3);
-    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(JzVertex), (void *)offsetof(JzVertex, Tangent));
-    // vertex bitangent
-    glEnableVertexAttribArray(4);
-    glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(JzVertex), (void *)offsetof(JzVertex, Bitangent));
-    // ids
-    glEnableVertexAttribArray(5);
-    glVertexAttribIPointer(5, 4, GL_INT, sizeof(JzVertex), (void *)offsetof(JzVertex, m_BoneIDs));
+    m_vertexBuffer = device->CreateBuffer(vertexBufferDesc);
+    if (!m_vertexBuffer) {
+        return;
+    }
 
-    // weights
-    glEnableVertexAttribArray(6);
-    glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(JzVertex), (void *)offsetof(JzVertex, m_Weights));
-    glBindVertexArray(0);
+    // Create index buffer
+    JzBufferDesc indexBufferDesc{};
+    indexBufferDesc.type      = JzEBufferType::Index;
+    indexBufferDesc.usage     = JzEBufferUsage::StaticDraw;
+    indexBufferDesc.size      = indices.size() * sizeof(U32);
+    indexBufferDesc.data      = indices.data();
+    indexBufferDesc.debugName = "MeshIndexBuffer";
+
+    m_indexBuffer = device->CreateBuffer(indexBufferDesc);
+    if (!m_indexBuffer) {
+        return;
+    }
+
+    // Create vertex array object
+    m_vertexArray = device->CreateVertexArray("MeshVertexArray");
+    if (!m_vertexArray) {
+        return;
+    }
+
+    // Bind vertex and index buffers to vertex array
+    m_vertexArray->BindVertexBuffer(m_vertexBuffer, 0);
+    m_vertexArray->BindIndexBuffer(m_indexBuffer);
+
+    // Set vertex attributes
+    // Position (location 0): vec3
+    m_vertexArray->SetVertexAttribute(0, 3, sizeof(JzVertex), offsetof(JzVertex, Position));
+    // Normal (location 1): vec3
+    m_vertexArray->SetVertexAttribute(1, 3, sizeof(JzVertex), offsetof(JzVertex, Normal));
+    // TexCoords (location 2): vec2
+    m_vertexArray->SetVertexAttribute(2, 2, sizeof(JzVertex), offsetof(JzVertex, TexCoords));
+    // Tangent (location 3): vec3
+    m_vertexArray->SetVertexAttribute(3, 3, sizeof(JzVertex), offsetof(JzVertex, Tangent));
+    // Bitangent (location 4): vec3
+    m_vertexArray->SetVertexAttribute(4, 3, sizeof(JzVertex), offsetof(JzVertex, Bitangent));
+    // BoneIDs (location 5): ivec4
+    m_vertexArray->SetVertexAttribute(5, 4, sizeof(JzVertex), offsetof(JzVertex, BoneIDs));
+    // Weights (location 6): vec4
+    m_vertexArray->SetVertexAttribute(6, 4, sizeof(JzVertex), offsetof(JzVertex, Weights));
+
+    m_isSetup = true;
 }
 } // namespace JzRE

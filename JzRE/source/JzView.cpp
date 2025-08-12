@@ -17,9 +17,8 @@ JzRE::JzView::JzView(const JzRE::String &name, JzRE::Bool is_opened) :
 
     m_framebuffer->AttachColorTexture(m_texture);
 
-    U32 texId = 0; // TODO texture handle
+    m_image = &CreateWidget<JzImage>(m_texture->GetHandle(), JzVec2{0.f, 0.f});
 
-    m_image    = &CreateWidget<JzImage>(texId, JzVec2{0.f, 0.f});
     scrollable = false;
 }
 
@@ -51,31 +50,36 @@ void JzRE::JzView::Render()
             if (m_framebuffer) {
                 m_framebuffer->AttachColorTexture(m_texture);
             }
+
+            // Update image widget with new texture handle
+            if (m_image && m_texture) {
+                m_image->textureId = m_texture->GetHandle();
+            }
         }
 
         // 绑定离屏帧缓冲并设置视口（RHI）
         device->BindFramebuffer(m_framebuffer);
 
         JzViewport viewport;
-        viewport.x      = 0.0f;
-        viewport.y      = 0.0f;
-        viewport.width  = static_cast<F32>(winWidth);
-        viewport.height = static_cast<F32>(winHeight);
+        viewport.x        = 0.0f;
+        viewport.y        = 0.0f;
+        viewport.width    = static_cast<F32>(winWidth);
+        viewport.height   = static_cast<F32>(winHeight);
         viewport.minDepth = 0.0f;
         viewport.maxDepth = 1.0f;
         device->SetViewport(viewport);
 
         // 清屏（RHI）
         JzClearParams clearParams;
-        clearParams.clearColor = true;
-        clearParams.clearDepth = true;
+        clearParams.clearColor   = true;
+        clearParams.clearDepth   = true;
         clearParams.clearStencil = false;
-        clearParams.colorR = 0.1f;
-        clearParams.colorG = 0.1f;
-        clearParams.colorB = 0.1f;
-        clearParams.colorA = 1.0f;
-        clearParams.depth  = 1.0f;
-        clearParams.stencil = 0;
+        clearParams.colorR       = 0.1f;
+        clearParams.colorG       = 0.1f;
+        clearParams.colorB       = 0.1f;
+        clearParams.colorA       = 1.0f;
+        clearParams.depth        = 1.0f;
+        clearParams.stencil      = 0;
         device->Clear(clearParams);
 
         // 场景渲染（RHI）
@@ -87,9 +91,10 @@ void JzRE::JzView::Render()
         // 结束帧（RHI）
         device->EndFrame();
 
-        // 更新展示用控件尺寸（非图形 API 调用）
-        if (m_image) {
-            m_image->size = JzVec2{static_cast<F32>(winWidth), static_cast<F32>(winHeight)};
+        // 更新展示用控件尺寸和纹理（非图形 API 调用）
+        if (m_image && m_texture) {
+            m_image->size      = JzVec2{static_cast<F32>(winWidth), static_cast<F32>(winHeight)};
+            m_image->textureId = m_texture->GetHandle();
         }
     }
 }

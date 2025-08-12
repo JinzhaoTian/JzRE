@@ -27,7 +27,7 @@ public:
      *
      * @param scene
      */
-    void RenderScene(JzScene* scene);
+    void RenderScene(JzScene *scene);
 
     /**
      * @brief Set the Use Command List
@@ -57,14 +57,74 @@ public:
      */
     U32 GetThreadCount() const;
 
+    /**
+     * @brief Get the current framebuffer
+     *
+     * @return std::shared_ptr<JzRHIFramebuffer>
+     */
+    std::shared_ptr<JzRHIFramebuffer> GetFramebuffer() const;
+
+    /**
+     * @brief Get the default pipeline
+     *
+     * @return std::shared_ptr<JzRHIPipeline>
+     */
+    std::shared_ptr<JzRHIPipeline> GetDefaultPipeline() const;
+
+    /**
+     * @brief Check if renderer is initialized
+     *
+     * @return Bool
+     */
+    Bool IsInitialized() const;
+
+    /**
+     * @brief Force initialization
+     *
+     * @return Bool
+     */
+    Bool Initialize();
+
+    /**
+     * @brief Begin frame rendering
+     */
+    void BeginFrame();
+
+    /**
+     * @brief End frame rendering
+     */
+    void EndFrame();
+
+    /**
+     * @brief Setup viewport based on current framebuffer
+     */
+    void SetupViewport();
+
+    /**
+     * @brief Clear current framebuffer
+     */
+    void ClearBuffers();
+
+    /**
+     * @brief Bind framebuffer for rendering
+     *
+     * @param framebuffer Framebuffer to bind (nullptr for default)
+     */
+    void BindFramebuffer(std::shared_ptr<JzRHIFramebuffer> framebuffer = nullptr);
+
+    /**
+     * @brief Set render state
+     *
+     * @param state Render state to set
+     */
+    void SetRenderState(const JzRenderState &state);
+
 private:
     Bool CreateFramebuffer();
     Bool CreateDefaultPipeline();
     void CleanupResources();
     void RenderImmediate(std::shared_ptr<JzScene> scene);
     void RenderWithCommandList(std::shared_ptr<JzScene> scene);
-    void SetupViewport();
-    void ClearBuffers();
 
 private:
     std::shared_ptr<JzRHIFramebuffer> m_framebuffer;

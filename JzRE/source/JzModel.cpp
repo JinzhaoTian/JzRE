@@ -1,4 +1,9 @@
 #include "JzModel.h"
+#include "JzEditorActions.h"
+#include "JzRHIDevice.h"
+#include "JzServiceContainer.h"
+
+#define JzRE_DEVICE() JzRE::JzServiceContainer::Get<JzRE::JzEditorActions>().GetContext().GetDevice()
 
 namespace JzRE {
 JzModel::JzModel(const String &path, Bool gamma) :
@@ -7,10 +12,17 @@ JzModel::JzModel(const String &path, Bool gamma) :
     LoadModel(path);
 }
 
-void JzModel::Draw(std::shared_ptr<OGLShader> shader)
+JzModel::~JzModel()
 {
-    for (auto &mesh : this->meshes)
-        mesh.Draw(shader);
+    // RHI resources will be automatically cleaned up by shared_ptr
+    m_loadedTextures.clear();
+}
+
+void JzModel::Draw(std::shared_ptr<JzRHIPipeline> pipeline)
+{
+    for (auto &mesh : this->meshes) {
+        mesh.Draw(pipeline);
+    }
 }
 
 void JzModel::LoadModel(const String &path)
@@ -52,50 +64,34 @@ void JzModel::ProcessNode(aiNode *node, const aiScene *scene)
 JzMesh JzModel::ProcessMesh(aiMesh *mesh, const aiScene *scene)
 {
     // data to fill
-    std::vector<JzVertex>                    vertices;
-    std::vector<U32>                         indices;
-    std::vector<std::shared_ptr<OGLTexture>> textures;
+    std::vector<JzVertex>                      vertices;
+    std::vector<U32>                           indices;
+    std::vector<std::shared_ptr<JzRHITexture>> textures;
 
     // walk through each of the mesh's vertices
     for (U32 i = 0; i < mesh->mNumVertices; i++) {
-        JzVertex  vertex;
-        glm::vec3 vector; // we declare a placeholder vector since assimp uses its own vector class that doesn't directly convert to glm's vec3 class so we transfer the data to this placeholder glm::vec3 first.
+        JzVertex vertex;
 
         // positions
-        vector.x        = mesh->mVertices[i].x;
-        vector.y        = mesh->mVertices[i].y;
-        vector.z        = mesh->mVertices[i].z;
-        vertex.Position = vector;
+        vertex.Position = JzVec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z);
 
         // normals
         if (mesh->HasNormals()) {
-            vector.x      = mesh->mNormals[i].x;
-            vector.y      = mesh->mNormals[i].y;
-            vector.z      = mesh->mNormals[i].z;
-            vertex.Normal = vector;
+            vertex.Normal = JzVec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);
         }
 
         // texture coordinates
         if (mesh->mTextureCoords[0]) // does the mesh contain texture coordinates?
         {
-            glm::vec2 vec;
             // a vertex can contain up to 8 different texture coordinates. We thus make the assumption that we won't
             // use models where a vertex can have multiple texture coordinates so we always take the first set (0).
-            vec.x            = mesh->mTextureCoords[0][i].x;
-            vec.y            = mesh->mTextureCoords[0][i].y;
-            vertex.TexCoords = vec;
+            vertex.TexCoords = JzVec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
             // tangent
-            vector.x       = mesh->mTangents[i].x;
-            vector.y       = mesh->mTangents[i].y;
-            vector.z       = mesh->mTangents[i].z;
-            vertex.Tangent = vector;
+            vertex.Tangent = JzVec3(mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z);
             // bitangent
-            vector.x         = mesh->mBitangents[i].x;
-            vector.y         = mesh->mBitangents[i].y;
-            vector.z         = mesh->mBitangents[i].z;
-            vertex.Bitangent = vector;
+            vertex.Bitangent = JzVec3(mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z);
         } else {
-            vertex.TexCoords = glm::vec2(0.0f, 0.0f);
+            vertex.TexCoords = JzVec2(0.0f, 0.0f);
         }
 
         vertices.push_back(std::move(vertex));
@@ -135,18 +131,59 @@ JzMesh JzModel::ProcessMesh(aiMesh *mesh, const aiScene *scene)
     return JzMesh(vertices, indices, textures);
 }
 
-std::vector<std::shared_ptr<OGLTexture>> JzModel::LoadMaterialTextures(aiMaterial *mat, aiTextureType type, String typeName)
+std::vector<std::shared_ptr<JzRHITexture>> JzModel::LoadMaterialTextures(aiMaterial *mat, aiTextureType type, String typeName)
 {
-    std::vector<std::shared_ptr<OGLTexture>> textures;
+    std::vector<std::shared_ptr<JzRHITexture>> textures;
     for (U32 i = 0; i < mat->GetTextureCount(type); i++) {
         aiString str;
         mat->GetTexture(type, i, &str);
         String textureName = typeName + "[" + std::to_string(i) + "]";
         String texturePath = this->directory + '/' + str.C_Str();
-        textures.push_back(OGLResourceManager::getInstance()
-                               .LoadTexture(textureName, texturePath));
+
+        auto texture = LoadTexture(texturePath, textureName);
+        if (texture) {
+            textures.push_back(texture);
+        }
     }
-    return std::move(textures);
+    return textures;
+}
+
+std::shared_ptr<JzRHITexture> JzModel::LoadTexture(const String &path, const String &typeName)
+{
+    // Check if texture is already loaded
+    auto it = m_loadedTextures.find(path);
+    if (it != m_loadedTextures.end()) {
+        return it->second;
+    }
+
+    auto device = JzRE_DEVICE();
+    if (!device) {
+        return nullptr;
+    }
+
+    // Create texture description
+    JzTextureDesc textureDesc{};
+    textureDesc.type      = JzETextureType::Texture2D;
+    textureDesc.format    = JzETextureFormat::RGBA8;
+    textureDesc.minFilter = JzETextureFilter::Linear;
+    textureDesc.magFilter = JzETextureFilter::Linear;
+    textureDesc.wrapS     = JzETextureWrap::Repeat;
+    textureDesc.wrapT     = JzETextureWrap::Repeat;
+    textureDesc.debugName = typeName;
+
+    // Note: In a real implementation, you would load image data from file here
+    // For now, we create the texture without initial data
+    // The specific implementation would depend on your image loading library
+    textureDesc.width  = 1; // Placeholder values
+    textureDesc.height = 1;
+    textureDesc.data   = nullptr; // Would be loaded from file
+
+    auto texture = device->CreateTexture(textureDesc);
+    if (texture) {
+        m_loadedTextures[path] = texture;
+    }
+
+    return texture;
 }
 
 } // namespace JzRE

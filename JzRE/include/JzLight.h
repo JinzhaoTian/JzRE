@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CommonTypes.h"
-#include "OGLShader.h"
+#include "JzRHIShader.h"
 
 namespace JzRE {
 /**
@@ -53,7 +53,7 @@ public:
      * @param shader The shader to apply the light to
      * @param index The index of the light
      */
-    virtual void ApplyLight(std::shared_ptr<OGLShader> shader, int index) const = 0;
+    virtual void ApplyLight(std::shared_ptr<JzRHIShader> shader, int index) const = 0;
 
 protected:
     glm::vec3 position;
