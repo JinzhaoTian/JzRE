@@ -43,7 +43,7 @@ void JzRE::JzEditor::SetUI()
     m_panelsManager.CreatePanel<JzSceneView>("Scene View", true);
     // m_panelsManager.CreatePanel<JzAssetView>("Asset View", true);
     // m_panelsManager.CreatePanel<JzGameView>("Game View", true);
-    m_panelsManager.CreatePanel<JzHierarchy>("Hierarchy", true);
+    // m_panelsManager.CreatePanel<JzHierarchy>("Hierarchy", true);
     m_panelsManager.CreatePanel<JzConsole>("Console", true);
     // m_panelsManager.CreatePanel<JzMaterialEditor>("Material Editor", true);
 

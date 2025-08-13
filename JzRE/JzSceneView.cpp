@@ -36,19 +36,11 @@ JzRE::JzScene *JzRE::JzSceneView::GetScene()
 void JzRE::JzSceneView::InitFrame()
 {
     JzViewControllable::InitFrame();
-
-    // m_renderer->AddDescriptor<Rendering::DebugSceneRenderer::DebugSceneDescriptor>({
-    // 	m_currentOperation,
-    // 	m_highlightedActor,
-    // 	selectedActor,
-    // 	m_highlightedGizmoDirection
-    // });
 }
 
 void JzRE::JzSceneView::DrawFrame()
 {
     JzViewControllable::DrawFrame();
-    // HandleActorPicking();
 }
 
 void JzRE::JzSceneView::SetGizmoOperation(JzRE::JzEGizmoOperation operation)

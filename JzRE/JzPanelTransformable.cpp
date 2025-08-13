@@ -53,19 +53,13 @@ void JzRE::JzPanelTransformable::Update()
     if (!m_firstFrame) {
         if (!autoSize)
             UpdateSize();
+        CopyImGuiSize();
+
         UpdatePosition();
+        CopyImGuiPosition();
     }
 
     m_firstFrame = false;
-}
-
-void JzRE::JzPanelTransformable::UpdateSize()
-{
-    if (m_sizeChanged) {
-        ImVec2 size; // TODO
-        ImGui::SetWindowSize(size, ImGuiCond_Always);
-        m_sizeChanged = false;
-    }
 }
 
 void JzRE::JzPanelTransformable::UpdatePosition()
@@ -77,11 +71,29 @@ void JzRE::JzPanelTransformable::UpdatePosition()
 
     if (m_positionChanged || m_alignmentChanged) {
         JzVec2 offset = CalculatePositionAlignmentOffset(false);
-        JzVec2 offsettedPos(m_position.x() + offset.x(), m_position.y() + offset.y());
-        ImGui::SetWindowPos(JzConverter::ToImVec2(offsettedPos), ImGuiCond_Always);
+        JzVec2 offsetPos(m_position.x() + offset.x(), m_position.y() + offset.y());
+        ImGui::SetWindowPos(JzConverter::ToImVec2(offsetPos), ImGuiCond_Always);
         m_positionChanged  = false;
         m_alignmentChanged = false;
     }
+}
+
+void JzRE::JzPanelTransformable::UpdateSize()
+{
+    if (m_sizeChanged) {
+        ImGui::SetWindowSize(JzConverter::ToImVec2(m_size), ImGuiCond_Always);
+        m_sizeChanged = false;
+    }
+}
+
+void JzRE::JzPanelTransformable::CopyImGuiPosition()
+{
+    m_position = JzConverter::ToJzVec2(ImGui::GetWindowPos());
+}
+
+void JzRE::JzPanelTransformable::CopyImGuiSize()
+{
+    m_size = JzConverter::ToJzVec2(ImGui::GetWindowSize());
 }
 
 JzRE::JzVec2 JzRE::JzPanelTransformable::CalculatePositionAlignmentOffset(JzRE::Bool p_default)

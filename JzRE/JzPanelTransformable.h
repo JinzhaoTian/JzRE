@@ -71,6 +71,8 @@ private:
     JzVec2 CalculatePositionAlignmentOffset(Bool p_default = false);
     void   UpdatePosition();
     void   UpdateSize();
+    void   CopyImGuiPosition();
+    void   CopyImGuiSize();
 
 public:
     Bool autoSize = true;

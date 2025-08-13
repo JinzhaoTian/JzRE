@@ -120,9 +120,9 @@ void JzRE::JzView::DrawFrame()
 
 std::pair<JzRE::U16, JzRE::U16> JzRE::JzView::GetSafeSize() const
 {
-    constexpr float kTitleBarHeight = 25.0f; // <--- this takes into account the imgui window title bar
-    // const auto     &size            = GetSize();
+    constexpr float kTitleBarHeight = 20.0f; // <--- this takes into account the imgui window title bar
+    const auto     &size            = GetSize();
     return {
-        static_cast<JzRE::U16>(480),
-        static_cast<JzRE::U16>(320)};
+        static_cast<JzRE::U16>(size.x()),
+        static_cast<JzRE::U16>(std::max(0.0f, size.y() - kTitleBarHeight))};
 }
