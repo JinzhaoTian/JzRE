@@ -57,6 +57,14 @@ void JzRE::JzMenuBar::InitializeSettingsMenu()
     auto &consoleSettingsMenu = m_settingsMenu->CreateWidget<JzMenuList>("Console Settings");
 }
 
+void JzRE::JzMenuBar::_Draw_Impl()
+{
+    if (!m_widgets.empty() && ImGui::BeginMainMenuBar()) {
+        DrawWidgets();
+        ImGui::EndMainMenuBar();
+    }
+}
+
 void JzRE::JzMenuBar::CreateFileMenu()
 {
     auto &fileMenu                                                           = CreateWidget<JzMenuList>("File");

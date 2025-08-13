@@ -3,7 +3,7 @@
 #include "CommonTypes.h"
 #include "JzMenuItem.h"
 #include "JzMenuList.h"
-#include "JzPanelMenuBar.h"
+#include "JzPanel.h"
 #include "JzPanelWindow.h"
 #include "JzSeparator.h"
 #include "JzText.h"
@@ -12,7 +12,7 @@ namespace JzRE {
 /**
  * @brief Menu Bar
  */
-class JzMenuBar : public JzPanelMenuBar {
+class JzMenuBar : public JzPanel {
 public:
     /**
      * @brief Constructor
@@ -38,6 +38,12 @@ public:
      * @brief Initialize the settings menu
      */
     void InitializeSettingsMenu();
+
+protected:
+    /**
+     * @brief Implementation of the Draw method
+     */
+    void _Draw_Impl() override;
 
 private:
     void CreateFileMenu();

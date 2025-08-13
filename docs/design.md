@@ -70,8 +70,6 @@ classDiagram
     JzWidget <|-- JzDataWidget
 
     %% UI PANEL Related Classes
-    class JzPanelMenuBar { }
-
     class JzMenuBar { }
 
     class JzPanelWindow { }
@@ -97,8 +95,7 @@ classDiagram
     JzIDrawable <|.. JzPanel
     JzIPluginable <|.. JzPanel
 
-    JzPanel <|-- JzPanelMenuBar
-    JzPanelMenuBar <|-- JzMenuBar
+    JzPanel <|-- JzMenuBar
     JzPanel <|-- JzPanelWindow
     JzPanelWindow <|-- JzView
     JzView <|-- JzViewControllable

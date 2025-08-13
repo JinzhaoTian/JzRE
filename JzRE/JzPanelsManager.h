@@ -17,12 +17,13 @@ public:
      *
      * @param canvas
      */
-    JzPanelsManager(JzCanvas &canvas);
+    JzPanelsManager(JzCanvas &canvas) :
+        m_canvas(canvas) { }
 
     /**
      * @brief Destructor
      */
-    ~JzPanelsManager();
+    ~JzPanelsManager() = default;
 
     /**
      * @brief Create a panel
