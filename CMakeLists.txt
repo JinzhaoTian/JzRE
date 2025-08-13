@@ -44,10 +44,10 @@ elseif(UNIX AND NOT APPLE)
 endif()
 
 # set include path
-include_directories(${PROJECT_SOURCE_DIR}/JzRE/include)
+include_directories(${PROJECT_SOURCE_DIR}/JzRE)
 
 # set source files
-file(GLOB JZRE_SOURCES "${PROJECT_SOURCE_DIR}/JzRE/source/*.cpp")
+file(GLOB JZRE_SOURCES "${PROJECT_SOURCE_DIR}/JzRE/*.cpp")
 
 # add exe target
 add_executable(JzRE main.cpp ${JZRE_SOURCES})
