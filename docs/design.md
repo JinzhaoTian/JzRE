@@ -74,8 +74,6 @@ classDiagram
 
     class JzMenuBar { }
 
-    class JzPanelTransformable { }
-
     class JzPanelWindow { }
 
     class JzAssetBrowser { }
@@ -101,8 +99,7 @@ classDiagram
 
     JzPanel <|-- JzPanelMenuBar
     JzPanelMenuBar <|-- JzMenuBar
-    JzPanel <|-- JzPanelTransformable
-    JzPanelTransformable <|-- JzPanelWindow
+    JzPanel <|-- JzPanelWindow
     JzPanelWindow <|-- JzView
     JzView <|-- JzViewControllable
     JzViewControllable <|-- JzAssetView

@@ -87,6 +87,59 @@ JzRE::Bool JzRE::JzPanelWindow::IsScrolledToTop() const
     return m_scrolledToTop;
 }
 
+void JzRE::JzPanelWindow::SetPosition(const JzRE::JzVec2 &position)
+{
+    m_position        = position;
+    m_positionChanged = true;
+}
+
+void JzRE::JzPanelWindow::SetSize(const JzRE::JzVec2 &size)
+{
+    m_size        = size;
+    m_sizeChanged = true;
+}
+
+void JzRE::JzPanelWindow::SetAlignment(JzRE::JzEHorizontalAlignment horizontalAlignment, JzRE::JzEVerticalAlignment verticalAlignment)
+{
+    m_horizontalAlignment = horizontalAlignment;
+    m_verticalAlignment   = verticalAlignment;
+    m_alignmentChanged    = true;
+}
+
+const JzRE::JzVec2 &JzRE::JzPanelWindow::GetPosition() const
+{
+    return m_position;
+}
+
+const JzRE::JzVec2 &JzRE::JzPanelWindow::GetSize() const
+{
+    return m_size;
+}
+
+JzRE::JzEHorizontalAlignment JzRE::JzPanelWindow::GetHorizontalAlignment() const
+{
+    return m_horizontalAlignment;
+}
+
+JzRE::JzEVerticalAlignment JzRE::JzPanelWindow::GetVerticalAlignment() const
+{
+    return m_verticalAlignment;
+}
+
+void JzRE::JzPanelWindow::Update()
+{
+    if (!m_firstFrame) {
+        if (!autoSize)
+            UpdateSize();
+        CopyImGuiSize();
+
+        UpdatePosition();
+        CopyImGuiPosition();
+    }
+
+    m_firstFrame = false;
+}
+
 void JzRE::JzPanelWindow::_Draw_Impl()
 {
     if (m_opened) {
@@ -147,4 +200,69 @@ void JzRE::JzPanelWindow::_Draw_Impl()
 
         ImGui::End();
     }
+}
+
+JzRE::JzVec2 JzRE::JzPanelWindow::CalculatePositionAlignmentOffset(JzRE::Bool p_default)
+{
+    JzVec2 result(0.0f, 0.0f);
+
+    switch (p_default ? m_defaultHorizontalAlignment : m_horizontalAlignment) {
+        case JzEHorizontalAlignment::LEFT:
+            // No offset needed for left alignment
+            break;
+        case JzEHorizontalAlignment::CENTER:
+            result.x() -= m_size.x() / 2.0f;
+            break;
+        case JzEHorizontalAlignment::RIGHT:
+            result.x() -= m_size.x();
+            break;
+    }
+
+    switch (p_default ? m_defaultVerticalAlignment : m_verticalAlignment) {
+        case JzEVerticalAlignment::TOP:
+            // No offset needed for top alignment
+            break;
+        case JzEVerticalAlignment::MIDDLE:
+            result.y() -= m_size.y() / 2.0f;
+            break;
+        case JzEVerticalAlignment::BOTTOM:
+            result.y() -= m_size.y();
+            break;
+    }
+
+    return result;
+}
+
+void JzRE::JzPanelWindow::UpdatePosition()
+{
+    if (m_defaultPosition.x() != -1.f && m_defaultPosition.y() != 1.f) {
+        JzVec2 offsettedDefaultPos = m_defaultPosition + CalculatePositionAlignmentOffset(true);
+        ImGui::SetWindowPos(JzRE::JzConverter::ToImVec2(offsettedDefaultPos), ImGuiCond_Once);
+    }
+
+    if (m_positionChanged || m_alignmentChanged) {
+        JzVec2 offset = CalculatePositionAlignmentOffset(false);
+        JzVec2 offsetPos(m_position.x() + offset.x(), m_position.y() + offset.y());
+        ImGui::SetWindowPos(JzConverter::ToImVec2(offsetPos), ImGuiCond_Always);
+        m_positionChanged  = false;
+        m_alignmentChanged = false;
+    }
+}
+
+void JzRE::JzPanelWindow::UpdateSize()
+{
+    if (m_sizeChanged) {
+        ImGui::SetWindowSize(JzConverter::ToImVec2(m_size), ImGuiCond_Always);
+        m_sizeChanged = false;
+    }
+}
+
+void JzRE::JzPanelWindow::CopyImGuiPosition()
+{
+    m_position = JzConverter::ToJzVec2(ImGui::GetWindowPos());
+}
+
+void JzRE::JzPanelWindow::CopyImGuiSize()
+{
+    m_size = JzConverter::ToJzVec2(ImGui::GetWindowSize());
 }

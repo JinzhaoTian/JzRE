@@ -1,15 +1,16 @@
 #pragma once
 
 #include "JzConverter.h"
+#include "JzEAlignment.h"
 #include "JzEvent.h"
-#include "JzPanelTransformable.h"
+#include "JzPanel.h"
 #include "JzVector.h"
 
 namespace JzRE {
 /**
  * @brief Panel Window
  */
-class JzPanelWindow : public JzPanelTransformable {
+class JzPanelWindow : public JzPanel {
 public:
     /**
      * @brief Constructor
@@ -97,11 +98,58 @@ public:
      */
     Bool IsScrolledToTop() const;
 
+    /**
+     * @brief Set the position of the panel
+     */
+    void SetPosition(const JzVec2 &position);
+
+    /**
+     * @brief Set the size of the panel
+     */
+    void SetSize(const JzVec2 &size);
+
+    /**
+     * @brief Set the alignment of the panel
+     */
+    void SetAlignment(JzEHorizontalAlignment horizontalAlignment, JzEVerticalAlignment verticalAligment);
+
+    /**
+     * @brief Get the position of the panel
+     */
+    const JzVec2 &GetPosition() const;
+
+    /**
+     * @brief Get the size of the panel
+     */
+    const JzVec2 &GetSize() const;
+
+    /**
+     * @brief Get the horizontal alignment of the panel
+     */
+    JzEHorizontalAlignment GetHorizontalAlignment() const;
+
+    /**
+     * @brief Get the vertical alignment of the panel
+     */
+    JzEVerticalAlignment GetVerticalAlignment() const;
+
 protected:
+    /**
+     * @brief Update the panel
+     */
+    void Update();
+
     /**
      * @brief Implementation of the Draw method
      */
     void _Draw_Impl() override;
+
+private:
+    JzVec2 CalculatePositionAlignmentOffset(Bool p_default = false);
+    void   UpdatePosition();
+    void   UpdateSize();
+    void   CopyImGuiPosition();
+    void   CopyImGuiSize();
 
 public:
     String name;
@@ -125,6 +173,22 @@ public:
 
     JzEvent<> OpenEvent;
     JzEvent<> CloseEvent;
+
+    Bool autoSize = true;
+
+protected:
+    JzVec2                 m_defaultPosition            = {-1.f, -1.f};
+    JzVec2                 m_defaultSize                = {-1.f, -1.f};
+    JzEHorizontalAlignment m_defaultHorizontalAlignment = JzEHorizontalAlignment::LEFT;
+    JzEVerticalAlignment   m_defaultVerticalAlignment   = JzEVerticalAlignment::TOP;
+    JzVec2                 m_position                   = {0.0f, 0.0f};
+    JzVec2                 m_size                       = {0.0f, 0.0f};
+    Bool                   m_positionChanged            = false;
+    Bool                   m_sizeChanged                = false;
+    JzEHorizontalAlignment m_horizontalAlignment        = JzEHorizontalAlignment::LEFT;
+    JzEVerticalAlignment   m_verticalAlignment          = JzEVerticalAlignment::TOP;
+    Bool                   m_alignmentChanged           = false;
+    Bool                   m_firstFrame                 = true;
 
 private:
     Bool m_opened             = false;
