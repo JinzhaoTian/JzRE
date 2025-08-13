@@ -3,35 +3,32 @@
 #include "JzRHIDevice.h"
 #include "JzServiceContainer.h"
 
-#define JzRE_DEVICE() JzRE::JzServiceContainer::Get<JzRE::JzEditorActions>().GetContext().GetDevice()
-
-namespace JzRE {
-JzModel::JzModel(const String &path, Bool gamma) :
+JzRE::JzModel::JzModel(const JzRE::String &path, JzRE::Bool gamma) :
     gammaCorrection(gamma)
 {
     LoadModel(path);
 }
 
-JzModel::JzModel(std::vector<JzMesh> meshes) :
+JzRE::JzModel::JzModel(std::vector<JzRE::JzMesh> meshes) :
     meshes(std::move(meshes)), gammaCorrection(false)
 {
     // No need to load from file for programmatically created models
 }
 
-JzModel::~JzModel()
+JzRE::JzModel::~JzModel()
 {
     // RHI resources will be automatically cleaned up by shared_ptr
     m_loadedTextures.clear();
 }
 
-void JzModel::Draw(std::shared_ptr<JzRHIPipeline> pipeline)
+void JzRE::JzModel::Draw(std::shared_ptr<JzRE::JzRHIPipeline> pipeline)
 {
     for (auto &mesh : this->meshes) {
         mesh.Draw(pipeline);
     }
 }
 
-void JzModel::LoadModel(const String &path)
+void JzRE::JzModel::LoadModel(const JzRE::String &path)
 {
     // read file via ASSIMP
     Assimp::Importer importer;
@@ -51,7 +48,7 @@ void JzModel::LoadModel(const String &path)
 }
 
 // processes a node in a recursive fashion. Processes each individual mesh located at the node and repeats this process on its children nodes (if any).
-void JzModel::ProcessNode(aiNode *node, const aiScene *scene)
+void JzRE::JzModel::ProcessNode(aiNode *node, const aiScene *scene)
 {
     // process each mesh located at the current node
     for (U32 i = 0; i < node->mNumMeshes; i++) {
@@ -67,7 +64,7 @@ void JzModel::ProcessNode(aiNode *node, const aiScene *scene)
     }
 }
 
-JzMesh JzModel::ProcessMesh(aiMesh *mesh, const aiScene *scene)
+JzRE::JzMesh JzRE::JzModel::ProcessMesh(aiMesh *mesh, const aiScene *scene)
 {
     // data to fill
     std::vector<JzVertex>                      vertices;
@@ -137,7 +134,7 @@ JzMesh JzModel::ProcessMesh(aiMesh *mesh, const aiScene *scene)
     return JzMesh(vertices, indices, textures);
 }
 
-std::vector<std::shared_ptr<JzRHITexture>> JzModel::LoadMaterialTextures(aiMaterial *mat, aiTextureType type, String typeName)
+std::vector<std::shared_ptr<JzRE::JzRHITexture>> JzRE::JzModel::LoadMaterialTextures(aiMaterial *mat, aiTextureType type, JzRE::String typeName)
 {
     std::vector<std::shared_ptr<JzRHITexture>> textures;
     for (U32 i = 0; i < mat->GetTextureCount(type); i++) {
@@ -154,7 +151,7 @@ std::vector<std::shared_ptr<JzRHITexture>> JzModel::LoadMaterialTextures(aiMater
     return textures;
 }
 
-std::shared_ptr<JzRHITexture> JzModel::LoadTexture(const String &path, const String &typeName)
+std::shared_ptr<JzRE::JzRHITexture> JzRE::JzModel::LoadTexture(const JzRE::String &path, const JzRE::String &typeName)
 {
     // Check if texture is already loaded
     auto it = m_loadedTextures.find(path);
@@ -191,5 +188,3 @@ std::shared_ptr<JzRHITexture> JzModel::LoadTexture(const String &path, const Str
 
     return texture;
 }
-
-} // namespace JzRE

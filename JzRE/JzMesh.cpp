@@ -3,20 +3,19 @@
 #include "JzRHIDevice.h"
 #include "JzServiceContainer.h"
 
-namespace JzRE {
-JzMesh::JzMesh(std::vector<JzVertex> vertices, std::vector<U32> indices, std::vector<std::shared_ptr<JzRHITexture>> textures) :
+JzRE::JzMesh::JzMesh(std::vector<JzRE::JzVertex> vertices, std::vector<JzRE::U32> indices, std::vector<std::shared_ptr<JzRE::JzRHITexture>> textures) :
     vertices(std::move(vertices)), indices(std::move(indices)), textures(std::move(textures))
 {
     // Setup the mesh when we have all the required data
     SetupMesh();
 }
 
-JzMesh::~JzMesh()
+JzRE::JzMesh::~JzMesh()
 {
     // RHI resources will be automatically cleaned up by shared_ptr
 }
 
-void JzMesh::Draw(std::shared_ptr<JzRHIPipeline> pipeline)
+void JzRE::JzMesh::Draw(std::shared_ptr<JzRE::JzRHIPipeline> pipeline)
 {
     if (!m_isSetup) {
         SetupMesh();
@@ -50,7 +49,7 @@ void JzMesh::Draw(std::shared_ptr<JzRHIPipeline> pipeline)
     device->DrawIndexed(drawParams);
 }
 
-void JzMesh::SetupMesh()
+void JzRE::JzMesh::SetupMesh()
 {
     if (m_isSetup) {
         return;
@@ -115,4 +114,3 @@ void JzMesh::SetupMesh()
 
     m_isSetup = true;
 }
-} // namespace JzRE
