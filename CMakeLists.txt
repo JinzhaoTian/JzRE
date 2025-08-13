@@ -50,7 +50,7 @@ include_directories(${PROJECT_SOURCE_DIR}/JzRE)
 file(GLOB JZRE_SOURCES "${PROJECT_SOURCE_DIR}/JzRE/*.cpp")
 
 # add exe target
-add_executable(JzRE main.cpp ${JZRE_SOURCES})
+add_executable(JzRE "${PROJECT_SOURCE_DIR}/JzRE/main.cpp" ${JZRE_SOURCES})
 
 # Set target properties
 set_target_properties(JzRE PROPERTIES
