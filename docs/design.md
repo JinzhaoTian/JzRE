@@ -78,8 +78,6 @@ classDiagram
 
     class JzView { }
 
-    class JzViewControllable { }
-
     class JzAssetView { }
 
     class JzSceneView { }
@@ -98,9 +96,8 @@ classDiagram
     JzPanel <|-- JzMenuBar
     JzPanel <|-- JzPanelWindow
     JzPanelWindow <|-- JzView
-    JzView <|-- JzViewControllable
-    JzViewControllable <|-- JzAssetView
-    JzViewControllable <|-- JzSceneView
+    JzView <|-- JzAssetView
+    JzView <|-- JzSceneView
     JzPanelWindow <|-- JzAssetBrowser
     JzView <|-- JzGameView
     JzPanelWindow <|-- JzConsole

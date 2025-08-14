@@ -5,7 +5,20 @@ JzRE::JzEditor::JzEditor(JzContext &context) :
     m_panelsManager(m_canvas),
     m_editorActions(m_context, m_panelsManager)
 {
-    SetUI();
+    m_panelsManager.CreatePanel<JzMenuBar>("Menu Bar");
+    m_panelsManager.CreatePanel<JzAssetBrowser>("Asset Browser", true);
+    m_panelsManager.CreatePanel<JzSceneView>("Scene View", true);
+    // m_panelsManager.CreatePanel<JzAssetView>("Asset View", true);
+    // m_panelsManager.CreatePanel<JzGameView>("Game View", true);
+    // m_panelsManager.CreatePanel<JzHierarchy>("Hierarchy", true);
+    m_panelsManager.CreatePanel<JzConsole>("Console", true);
+    // m_panelsManager.CreatePanel<JzMaterialEditor>("Material Editor", true);
+
+    // Initialize menu bar after service registration
+    m_panelsManager.GetPanelAs<JzMenuBar>("Menu Bar").InitializeSettingsMenu();
+
+    m_canvas.SetDockspace(true);
+    m_context.uiManager->SetCanvas(m_canvas);
 
     m_context.sceneManager.LoadDefaultScene();
 }
@@ -34,24 +47,6 @@ void JzRE::JzEditor::PostUpdate()
     m_context.window->SwapBuffers();
     m_context.inputManager->ClearEvents();
     ++m_elapsedFrames;
-}
-
-void JzRE::JzEditor::SetUI()
-{
-    m_panelsManager.CreatePanel<JzMenuBar>("Menu Bar");
-    m_panelsManager.CreatePanel<JzAssetBrowser>("Asset Browser", true);
-    m_panelsManager.CreatePanel<JzSceneView>("Scene View", true);
-    // m_panelsManager.CreatePanel<JzAssetView>("Asset View", true);
-    // m_panelsManager.CreatePanel<JzGameView>("Game View", true);
-    // m_panelsManager.CreatePanel<JzHierarchy>("Hierarchy", true);
-    m_panelsManager.CreatePanel<JzConsole>("Console", true);
-    // m_panelsManager.CreatePanel<JzMaterialEditor>("Material Editor", true);
-
-    // Initialize menu bar after service registration
-    m_panelsManager.GetPanelAs<JzMenuBar>("Menu Bar").InitializeSettingsMenu();
-
-    m_canvas.SetDockspace(true);
-    m_context.uiManager->SetCanvas(m_canvas);
 }
 
 void JzRE::JzEditor::HandleGlobalShortcuts()

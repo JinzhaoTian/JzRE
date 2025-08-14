@@ -3,9 +3,6 @@
 #include "CommonTypes.h"
 #include "JzCamera.h"
 #include "JzEditorActions.h"
-#include "JzInputManager.h"
-#include "JzView.h"
-#include "JzWindow.h"
 
 namespace JzRE {
 /**
@@ -19,7 +16,7 @@ public:
      * @param view The view
      * @param camera The camera
      */
-    JzCameraController(JzView &view, JzCamera &camera);
+    JzCameraController(JzCamera &camera);
 
     /**
      * @brief Handle the inputs
@@ -34,10 +31,7 @@ public:
     Bool IsRightMousePressed() const;
 
 private:
-    JzInputManager &m_inputManager;
-    JzWindow       &m_window;
-    JzView         &m_view;
-    JzCamera       &m_camera;
+    JzCamera &m_camera;
 
     Bool m_leftMousePressed     = false;
     Bool m_middleMousePressed   = false;

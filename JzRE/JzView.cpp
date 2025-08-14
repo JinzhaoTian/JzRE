@@ -1,7 +1,8 @@
 #include "JzView.h"
 
 JzRE::JzView::JzView(const JzRE::String &name, JzRE::Bool is_opened) :
-    JzRE::JzPanelWindow(name, is_opened)
+    JzRE::JzPanelWindow(name, is_opened),
+    m_cameraController(m_camera)
 {
     auto device   = JzRE_DEVICE();
     m_framebuffer = device->CreateFramebuffer();
@@ -22,7 +23,12 @@ JzRE::JzView::JzView(const JzRE::String &name, JzRE::Bool is_opened) :
     scrollable = false;
 }
 
-void JzRE::JzView::Update(JzRE::F32 deltaTime) { }
+void JzRE::JzView::Update(JzRE::F32 deltaTime)
+{
+    m_cameraController.HandleInputs(deltaTime);
+
+    // TODO
+}
 
 void JzRE::JzView::Render()
 {
@@ -108,14 +114,12 @@ void JzRE::JzView::_Draw_Impl()
 
 void JzRE::JzView::InitFrame()
 {
-    // m_renderer->AddDescriptor<OvCore::Rendering::SceneRenderer::SceneDescriptor>(
-    // 	CreateSceneDescriptor()
-    // );
+    // TODO
 }
 
 void JzRE::JzView::DrawFrame()
 {
-    // m_renderer->DrawFrame();
+    // TODO
 }
 
 std::pair<JzRE::U16, JzRE::U16> JzRE::JzView::GetSafeSize() const
@@ -125,4 +129,27 @@ std::pair<JzRE::U16, JzRE::U16> JzRE::JzView::GetSafeSize() const
     return {
         static_cast<JzRE::U16>(size.x()),
         static_cast<JzRE::U16>(std::max(0.0f, size.y() - kTitleBarHeight))};
+}
+
+JzRE::JzCamera *JzRE::JzView::GetCamera()
+{
+    return &m_camera;
+}
+
+JzRE::JzScene *JzRE::JzView::GetScene()
+{
+    auto &sceneManager = EDITOR_CONTEXT(sceneManager);
+    return sceneManager.GetCurrentScene();
+}
+
+void JzRE::JzView::ResetCameraTransform()
+{
+    // TODO
+    // m_camera.transform->SetWorldPosition(kDefaultCameraPosition);
+    // m_camera.transform->SetWorldRotation(kDefaultCameraRotation);
+}
+
+JzRE::JzCameraController &JzRE::JzView::GetCameraController()
+{
+    return m_cameraController;
 }

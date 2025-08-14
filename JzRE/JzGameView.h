@@ -20,22 +20,5 @@ public:
      * @param is_opened
      */
     JzGameView(const String &name, Bool is_opened);
-
-    /**
-     * @brief Get the camera
-     *
-     * @return The camera
-     */
-    JzCamera *GetCamera();
-
-    /**
-     * @brief Get the scene
-     *
-     * @return The scene
-     */
-    JzScene *GetScene();
-
-private:
-    JzSceneManager &m_sceneManager;
 };
 } // namespace JzRE

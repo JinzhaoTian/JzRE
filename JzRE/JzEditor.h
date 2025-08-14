@@ -50,11 +50,6 @@ public:
     void PostUpdate();
 
     /**
-     * @brief Set UI manager
-     */
-    void SetUI();
-
-    /**
      * @brief Handle the global shortcuts
      */
     void HandleGlobalShortcuts();

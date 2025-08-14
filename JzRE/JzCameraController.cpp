@@ -1,9 +1,6 @@
 #include "JzCameraController.h"
 
-JzRE::JzCameraController::JzCameraController(JzRE::JzView &view, JzRE::JzCamera &camera) :
-    m_inputManager(*EDITOR_CONTEXT(inputManager)),
-    m_window(*EDITOR_CONTEXT(window)),
-    m_view(view),
+JzRE::JzCameraController::JzCameraController(JzRE::JzCamera &camera) :
     m_camera(camera)
 {
     m_camera.SetFov(60.0f);

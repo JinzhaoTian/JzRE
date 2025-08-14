@@ -4,13 +4,13 @@
 #include "JzEGizmo.h"
 #include "JzEditorActions.h"
 #include "JzSceneManager.h"
-#include "JzViewControllable.h"
+#include "JzView.h"
 
 namespace JzRE {
 /**
  * @brief Scene View Panel Window
  */
-class JzSceneView : public JzViewControllable {
+class JzSceneView : public JzView {
 public:
     /**
      * @brief Constructor
@@ -25,12 +25,7 @@ public:
      *
      * @param deltaTime
      */
-    virtual void Update(F32 deltaTime) override;
-
-    /**
-     * @brief Initialize the frame
-     */
-    virtual void InitFrame() override;
+    void Update(F32 deltaTime) override;
 
     /**
      * @brief Set the gizmo operation
@@ -44,19 +39,11 @@ public:
      */
     JzEGizmoOperation GetGizmoOperation() const;
 
-    /**
-     * @brief Get the scene
-     *
-     * @return The scene
-     */
-    JzScene *GetScene() override;
+private:
+    void HandleActorPicking();
 
 private:
-    virtual void DrawFrame() override;
-    void         HandleActorPicking();
-
-private:
-    JzSceneManager   &m_sceneManager;
     JzEGizmoOperation m_currentOperation = JzEGizmoOperation::TRANSLATE;
 };
+
 } // namespace JzRE

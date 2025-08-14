@@ -1,8 +1,7 @@
 #include "JzSceneView.h"
 
 JzRE::JzSceneView::JzSceneView(const JzRE::String &name, JzRE::Bool is_opened) :
-    JzRE::JzViewControllable(name, is_opened),
-    m_sceneManager(EDITOR_CONTEXT(sceneManager))
+    JzRE::JzView(name, is_opened)
 {
     m_renderer = std::make_unique<JzRHIRenderer>();
 
@@ -11,7 +10,7 @@ JzRE::JzSceneView::JzSceneView(const JzRE::String &name, JzRE::Bool is_opened) :
 
 void JzRE::JzSceneView::Update(JzRE::F32 deltaTime)
 {
-    JzViewControllable::Update(deltaTime);
+    JzView::Update(deltaTime);
 
     if (IsFocused() && !m_cameraController.IsRightMousePressed()) {
         if (EDITOR_CONTEXT(inputManager)->IsKeyPressed(JzEInputKey::KEY_W)) {
@@ -26,21 +25,6 @@ void JzRE::JzSceneView::Update(JzRE::F32 deltaTime)
             SetGizmoOperation(JzEGizmoOperation::SCALE);
         }
     }
-}
-
-JzRE::JzScene *JzRE::JzSceneView::GetScene()
-{
-    return m_sceneManager.GetCurrentScene();
-}
-
-void JzRE::JzSceneView::InitFrame()
-{
-    JzViewControllable::InitFrame();
-}
-
-void JzRE::JzSceneView::DrawFrame()
-{
-    JzViewControllable::DrawFrame();
 }
 
 void JzRE::JzSceneView::SetGizmoOperation(JzRE::JzEGizmoOperation operation)

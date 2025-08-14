@@ -1,13 +1,13 @@
 #pragma once
 
 #include "CommonTypes.h"
-#include "JzViewControllable.h"
+#include "JzView.h"
 
 namespace JzRE {
 /**
  * @brief Asset View Panel Window
  */
-class JzAssetView : public JzViewControllable {
+class JzAssetView : public JzView {
 public:
     /**
      * @brief Constructor
@@ -22,6 +22,6 @@ public:
      *
      * @param deltaTime
      */
-    virtual void Update(F32 deltaTime) override;
+    void Update(F32 deltaTime) override;
 };
 } // namespace JzRE

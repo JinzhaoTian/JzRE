@@ -2,6 +2,7 @@
 
 #include "CommonTypes.h"
 #include "JzCamera.h"
+#include "JzCameraController.h"
 #include "JzEditorActions.h"
 #include "JzImage.h"
 #include "JzPanelWindow.h"
@@ -55,14 +56,26 @@ public:
      *
      * @return The camera
      */
-    virtual JzCamera *GetCamera() = 0;
+    virtual JzCamera *GetCamera();
 
     /**
      * @brief Get the scene
      *
      * @return The scene
      */
-    virtual JzScene *GetScene() = 0;
+    virtual JzScene *GetScene();
+
+    /**
+     * @brief Reset the camera transform
+     */
+    virtual void ResetCameraTransform();
+
+    /**
+     * @brief Get the camera controller
+     *
+     * @return The camera controller
+     */
+    JzCameraController &GetCameraController();
 
 protected:
     /**
@@ -75,6 +88,9 @@ protected:
     std::shared_ptr<JzRHITexture>     m_texture;
     std::shared_ptr<JzRHIFramebuffer> m_framebuffer;
     std::unique_ptr<JzRHIRenderer>    m_renderer;
+
+    JzCamera           m_camera;
+    JzCameraController m_cameraController;
 };
 
 } // namespace JzRE
