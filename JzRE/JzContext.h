@@ -1,18 +1,16 @@
 #pragma once
 
 #include "CommonTypes.h"
-#include "JzDevice.h"
-#include "JzDeviceSettings.h"
-#include "JzInputManager.h"
-#include "JzRHICommandQueue.h"
-#include "JzRHIDevice.h"
-#include "JzRHIETypes.h"
-#include "JzRHIFactory.h"
-#include "JzSceneManager.h"
-#include "JzServiceContainer.h"
-#include "JzUIManager.h"
 #include "JzWindow.h"
 #include "JzWindowSettings.h"
+#include "JzRHIETypes.h"
+#include "JzRHIFactory.h"
+#include "JzRHIDevice.h"
+#include "JzRHICommandQueue.h"
+#include "JzServiceContainer.h"
+#include "JzInputManager.h"
+#include "JzSceneManager.h"
+#include "JzUIManager.h"
 
 namespace JzRE {
 
@@ -82,7 +80,6 @@ public:
     U32 GetThreadCount() const;
 
 public:
-    std::unique_ptr<JzDevice>       device;
     std::unique_ptr<JzWindow>       window;
     std::unique_ptr<JzInputManager> inputManager;
     std::unique_ptr<JzUIManager>    uiManager;

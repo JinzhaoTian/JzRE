@@ -49,6 +49,11 @@ public:
     void SetTitle(const String &title);
 
     /**
+     * @brief Poll events
+     */
+    void PollEvents() const;
+
+    /**
      * @brief Swap the buffers
      */
     void SwapBuffers() const;

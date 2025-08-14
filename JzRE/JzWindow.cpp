@@ -62,6 +62,11 @@ void JzRE::JzWindow::SetTitle(const JzRE::String &title)
     glfwSetWindowTitle(m_glfwWindow, title.c_str());
 }
 
+void JzRE::JzWindow::PollEvents() const
+{
+    glfwPollEvents();
+}
+
 void JzRE::JzWindow::SwapBuffers() const
 {
     glfwSwapBuffers(m_glfwWindow);

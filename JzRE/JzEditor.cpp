@@ -29,7 +29,7 @@ JzRE::JzEditor::~JzEditor()
 
 void JzRE::JzEditor::PreUpdate()
 {
-    m_context.device->PollEvents();
+    m_context.window->PollEvents();
 }
 
 void JzRE::JzEditor::Update(JzRE::F32 deltaTime)
