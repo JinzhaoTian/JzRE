@@ -1,10 +1,14 @@
 #pragma once
 
 #include "CommonTypes.h"
+#include "JzPanelWindow.h"
 #include "JzButton.h"
 #include "JzGroup.h"
-#include "JzPanelWindow.h"
 #include "JzSeparator.h"
+#include "JzTreeNode.h"
+#include "JzImage.h"
+#include "JzTextClickable.h"
+#include "JzPathParser.h"
 
 namespace JzRE {
 /**
@@ -33,6 +37,10 @@ public:
      * @brief Refresh the asset browser panel
      */
     void Refresh();
+
+private:
+    void ParseFolder(JzTreeNode &p_root, const std::filesystem::directory_entry &p_directory, Bool p_isEngineItem, Bool p_scriptFolder = false);
+    void ConsiderItem(JzTreeNode *p_root, const std::filesystem::directory_entry &p_entry, Bool p_isEngineItem, Bool p_autoOpen = false, Bool p_scriptFolder = false);
 
 private:
     JzGroup *m_assetList;
