@@ -1,9 +1,8 @@
 #include "JzEditor.h"
 
-JzRE::JzEditor::JzEditor(JzContext &context) :
-    m_context(context),
-    m_panelsManager(m_canvas),
-    m_editorActions(m_context, m_panelsManager)
+JzRE::JzEditor::JzEditor() :
+    m_context(JzRE_CONTEXT()), // injection
+    m_panelsManager(m_canvas)
 {
     m_panelsManager.CreatePanel<JzMenuBar>("Menu Bar");
     m_panelsManager.CreatePanel<JzAssetBrowser>("Asset Browser", true);

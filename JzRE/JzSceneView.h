@@ -2,7 +2,6 @@
 
 #include "CommonTypes.h"
 #include "JzEGizmo.h"
-#include "JzEditorActions.h"
 #include "JzSceneManager.h"
 #include "JzView.h"
 

@@ -1,5 +1,5 @@
 #include "JzMenuBar.h"
-#include "JzEditorActions.h"
+#include "JzContext.h"
 
 JzRE::JzMenuBar::JzMenuBar()
 {
@@ -16,11 +16,12 @@ JzRE::JzMenuBar::JzMenuBar()
 
 void JzRE::JzMenuBar::HandleShortcuts(F32 deltaTime)
 {
-    auto &inputManager = *EDITOR_CONTEXT(inputManager);
+    auto &inputManager = *JzRE_CONTEXT().inputManager;
 
     if (inputManager.GetKeyState(JzEInputKey::KEY_LEFT_CONTROL) == JzEInputKeyState::KEY_DOWN) {
-        if (inputManager.IsKeyPressed(JzEInputKey::KEY_N))
-            EDITOR_EXEC(LoadEmptyScene());
+        if (inputManager.IsKeyPressed(JzEInputKey::KEY_N)) {
+            JzRE_CONTEXT().sceneManager.LoadDefaultScene();
+        }
 
         if (inputManager.IsKeyPressed(JzEInputKey::KEY_S)) {
             if (inputManager.GetKeyState(JzEInputKey::KEY_LEFT_SHIFT) == JzEInputKeyState::KEY_UP) {
@@ -68,8 +69,8 @@ void JzRE::JzMenuBar::_Draw_Impl()
 void JzRE::JzMenuBar::CreateFileMenu()
 {
     auto &fileMenu                                                           = CreateWidget<JzMenuList>("File");
-    fileMenu.CreateWidget<JzMenuItem>("New Scene", "CTRL + N").ClickedEvent += EDITOR_BIND(LoadEmptyScene);
-    fileMenu.CreateWidget<JzMenuItem>("Exit", "ALT + F4").ClickedEvent      += [] { EDITOR_CONTEXT(window)->SetShouldClose(true); };
+    fileMenu.CreateWidget<JzMenuItem>("New Scene", "CTRL + N").ClickedEvent += [] { JzRE_CONTEXT().sceneManager.LoadEmptyScene(); };
+    fileMenu.CreateWidget<JzMenuItem>("Exit", "ALT + F4").ClickedEvent      += [] { JzRE_CONTEXT().window->SetShouldClose(true); };
 }
 
 void JzRE::JzMenuBar::CreateBuildMenu()

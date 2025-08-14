@@ -1,7 +1,5 @@
 #include "JzModel.h"
-#include "JzEditorActions.h"
-#include "JzRHIDevice.h"
-#include "JzServiceContainer.h"
+#include "JzContext.h"
 
 JzRE::JzModel::JzModel(const JzRE::String &path, JzRE::Bool gamma) :
     gammaCorrection(gamma)

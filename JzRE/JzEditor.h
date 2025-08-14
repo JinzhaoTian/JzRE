@@ -5,7 +5,6 @@
 #include "JzCanvas.h"
 #include "JzConsole.h"
 #include "JzContext.h"
-#include "JzEditorActions.h"
 #include "JzGameView.h"
 #include "JzHierarchy.h"
 #include "JzMaterialEditor.h"
@@ -22,10 +21,8 @@ class JzEditor {
 public:
     /**
      * @brief Construct a new Editor object
-     *
-     * @param context
      */
-    JzEditor(JzContext &context);
+    JzEditor();
 
     /**
      * @brief Destroy the Editor object
@@ -49,31 +46,11 @@ public:
      */
     void PostUpdate();
 
-    /**
-     * @brief Handle the global shortcuts
-     */
+private:
     void HandleGlobalShortcuts();
-
-    /**
-     * @brief Update the current editor mode
-     */
     void UpdateCurrentEditorMode(F32 deltaTime);
-
-    /**
-     * @brief Render the views
-     */
     void RenderViews(F32 deltaTime);
-
-    /**
-     * @brief Update the editor panels
-     *
-     * @param deltaTime
-     */
     void UpdateEditorPanels(F32 deltaTime);
-
-    /**
-     * @brief Render the editor UI
-     */
     void RenderEditorUI(F32 deltaTime);
 
 private:
@@ -81,6 +58,5 @@ private:
     JzContext      &m_context;
     JzCanvas        m_canvas;
     JzPanelsManager m_panelsManager;
-    JzEditorActions m_editorActions;
 };
 } // namespace JzRE

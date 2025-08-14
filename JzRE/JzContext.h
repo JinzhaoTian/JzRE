@@ -15,6 +15,15 @@
 #include "JzWindowSettings.h"
 
 namespace JzRE {
+
+/**
+ * @brief JzRE Macro Definitions
+ */
+#define JzRE_CONTEXT() \
+    JzRE::JzServiceContainer::Get<JzRE::JzContext>()
+#define JzRE_DEVICE() \
+    JzRE::JzServiceContainer::Get<JzRE::JzContext>().GetDevice()
+
 /**
  * @brief Context of JzRE
  */

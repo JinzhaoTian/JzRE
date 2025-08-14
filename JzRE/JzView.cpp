@@ -1,4 +1,5 @@
 #include "JzView.h"
+#include "JzContext.h"
 
 JzRE::JzView::JzView(const JzRE::String &name, JzRE::Bool is_opened) :
     JzRE::JzPanelWindow(name, is_opened),
@@ -138,8 +139,7 @@ JzRE::JzCamera *JzRE::JzView::GetCamera()
 
 JzRE::JzScene *JzRE::JzView::GetScene()
 {
-    auto &sceneManager = EDITOR_CONTEXT(sceneManager);
-    return sceneManager.GetCurrentScene();
+    return JzRE_CONTEXT().sceneManager.GetCurrentScene();
 }
 
 void JzRE::JzView::ResetCameraTransform()

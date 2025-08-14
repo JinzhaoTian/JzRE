@@ -1,4 +1,5 @@
 #include "JzSceneView.h"
+#include "JzContext.h"
 
 JzRE::JzSceneView::JzSceneView(const JzRE::String &name, JzRE::Bool is_opened) :
     JzRE::JzView(name, is_opened)
@@ -12,16 +13,17 @@ void JzRE::JzSceneView::Update(JzRE::F32 deltaTime)
 {
     JzView::Update(deltaTime);
 
+    auto &inputManager = *JzRE_CONTEXT().inputManager;
     if (IsFocused() && !m_cameraController.IsRightMousePressed()) {
-        if (EDITOR_CONTEXT(inputManager)->IsKeyPressed(JzEInputKey::KEY_W)) {
+        if (inputManager.IsKeyPressed(JzEInputKey::KEY_W)) {
             SetGizmoOperation(JzEGizmoOperation::TRANSLATE);
         }
 
-        if (EDITOR_CONTEXT(inputManager)->IsKeyPressed(JzEInputKey::KEY_E)) {
+        if (inputManager.IsKeyPressed(JzEInputKey::KEY_E)) {
             SetGizmoOperation(JzEGizmoOperation::ROTATE);
         }
 
-        if (EDITOR_CONTEXT(inputManager)->IsKeyPressed(JzEInputKey::KEY_R)) {
+        if (inputManager.IsKeyPressed(JzEInputKey::KEY_R)) {
             SetGizmoOperation(JzEGizmoOperation::SCALE);
         }
     }
@@ -30,7 +32,7 @@ void JzRE::JzSceneView::Update(JzRE::F32 deltaTime)
 void JzRE::JzSceneView::SetGizmoOperation(JzRE::JzEGizmoOperation operation)
 {
     m_currentOperation = operation;
-    EDITOR_EVENT(EditorOperationChanged).Invoke(m_currentOperation);
+    // EDITOR_EVENT(EditorOperationChanged).Invoke(m_currentOperation);
 }
 
 JzRE::JzEGizmoOperation JzRE::JzSceneView::GetGizmoOperation() const
@@ -40,8 +42,7 @@ JzRE::JzEGizmoOperation JzRE::JzSceneView::GetGizmoOperation() const
 
 void JzRE::JzSceneView::HandleActorPicking()
 {
-    auto &inputManager = *EDITOR_CONTEXT(inputManager);
-
+    auto &inputManager = *JzRE_CONTEXT().inputManager;
     if (inputManager.IsMouseButtonReleased(JzEInputMouseButton::MOUSE_BUTTON_LEFT)) {
         // m_gizmoOperations.StopPicking();
     }

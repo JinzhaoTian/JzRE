@@ -2,7 +2,6 @@
 
 #include "CommonTypes.h"
 #include "JzCamera.h"
-#include "JzEditorActions.h"
 
 namespace JzRE {
 /**

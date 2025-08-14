@@ -26,9 +26,7 @@ JzRE::JzContext::JzContext(JzERHIType rhiType) :
     uiManager->SetDocking(true);
 
     /* Service Providing */
-    JzServiceContainer::Provide<JzWindow>(*window);
-    JzServiceContainer::Provide<JzInputManager>(*inputManager);
-    JzServiceContainer::Provide<JzSceneManager>(sceneManager);
+    JzServiceContainer::Provide<JzContext>(*this);
 }
 
 JzRE::JzContext::~JzContext()

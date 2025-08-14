@@ -25,7 +25,7 @@ public:
 
     /**
      * @brief Draw the mesh using RHI
-     * 
+     *
      * @param pipeline The pipeline to use for rendering
      */
     void Draw(std::shared_ptr<JzRHIPipeline> pipeline);
@@ -37,7 +37,7 @@ public:
 
     /**
      * @brief Get the vertex array object
-     * 
+     *
      * @return The vertex array
      */
     std::shared_ptr<JzRHIVertexArray> GetVertexArray() const
@@ -47,7 +47,7 @@ public:
 
     /**
      * @brief Get the number of indices
-     * 
+     *
      * @return The index count
      */
     U32 GetIndexCount() const

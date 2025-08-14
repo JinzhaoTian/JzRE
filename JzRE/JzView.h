@@ -3,7 +3,6 @@
 #include "CommonTypes.h"
 #include "JzCamera.h"
 #include "JzCameraController.h"
-#include "JzEditorActions.h"
 #include "JzImage.h"
 #include "JzPanelWindow.h"
 #include "JzRHIFramebuffer.h"

@@ -2,7 +2,7 @@
 
 JzRE::JzRenderEngine::JzRenderEngine() :
     m_context(),
-    m_editor(m_context) { }
+    m_editor() { }
 
 JzRE::JzRenderEngine::~JzRenderEngine() { }
 

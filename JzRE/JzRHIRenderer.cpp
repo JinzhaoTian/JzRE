@@ -1,8 +1,5 @@
 #include "JzRHIRenderer.h"
-#include "JzEditorActions.h"
-#include "JzRHICommandList.h"
-#include "JzRHIDevice.h"
-#include "JzRHIShader.h"
+#include "JzContext.h"
 
 JzRE::JzRHIRenderer::JzRHIRenderer() { }
 
@@ -44,19 +41,14 @@ JzRE::Bool JzRE::JzRHIRenderer::IsUsingCommandList() const
 
 void JzRE::JzRHIRenderer::SetThreadCount(JzRE::U32 threadCount)
 {
-    // 转发到上下文中的命令队列（如果存在）
-    auto &actions = JzRE::JzServiceContainer::Get<JzRE::JzEditorActions>();
-    auto &ctx     = actions.GetContext();
-    if (auto queue = ctx.GetCommandQueue()) {
+    if (auto queue = JzRE_CONTEXT().GetCommandQueue()) {
         queue->SetThreadCount(threadCount);
     }
 }
 
 JzRE::U32 JzRE::JzRHIRenderer::GetThreadCount() const
 {
-    auto &actions = JzRE::JzServiceContainer::Get<JzRE::JzEditorActions>();
-    auto &ctx     = actions.GetContext();
-    if (auto queue = ctx.GetCommandQueue()) {
+    if (auto queue = JzRE_CONTEXT().GetCommandQueue()) {
         return queue->GetThreadCount();
     }
     return 1;

@@ -1,7 +1,5 @@
 #include "JzMesh.h"
-#include "JzEditorActions.h"
-#include "JzRHIDevice.h"
-#include "JzServiceContainer.h"
+#include "JzContext.h"
 
 JzRE::JzMesh::JzMesh(std::vector<JzRE::JzVertex> vertices, std::vector<JzRE::U32> indices, std::vector<std::shared_ptr<JzRE::JzRHITexture>> textures) :
     vertices(std::move(vertices)), indices(std::move(indices)), textures(std::move(textures))
