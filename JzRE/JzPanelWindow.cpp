@@ -145,18 +145,30 @@ void JzRE::JzPanelWindow::_Draw_Impl()
     if (m_opened) {
         int windowFlags = ImGuiWindowFlags_None;
 
-        if (!resizable) windowFlags |= ImGuiWindowFlags_NoResize;
-        if (!movable) windowFlags |= ImGuiWindowFlags_NoMove;
-        if (!dockable) windowFlags |= ImGuiWindowFlags_NoDocking;
-        if (hideBackground) windowFlags |= ImGuiWindowFlags_NoBackground;
-        if (forceHorizontalScrollbar) windowFlags |= ImGuiWindowFlags_AlwaysHorizontalScrollbar;
-        if (forceVerticalScrollbar) windowFlags |= ImGuiWindowFlags_AlwaysVerticalScrollbar;
-        if (allowHorizontalScrollbar) windowFlags |= ImGuiWindowFlags_HorizontalScrollbar;
-        if (!bringToFrontOnFocus) windowFlags |= ImGuiWindowFlags_NoBringToFrontOnFocus;
-        if (!collapsable) windowFlags |= ImGuiWindowFlags_NoCollapse;
-        if (!allowInputs) windowFlags |= ImGuiWindowFlags_NoInputs;
-        if (!scrollable) windowFlags |= ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar;
-        if (!titleBar) windowFlags |= ImGuiWindowFlags_NoTitleBar;
+        if (!resizable)
+            windowFlags |= ImGuiWindowFlags_NoResize;
+        if (!movable)
+            windowFlags |= ImGuiWindowFlags_NoMove;
+        if (!dockable)
+            windowFlags |= ImGuiWindowFlags_NoDocking;
+        if (hideBackground)
+            windowFlags |= ImGuiWindowFlags_NoBackground;
+        if (forceHorizontalScrollbar)
+            windowFlags |= ImGuiWindowFlags_AlwaysHorizontalScrollbar;
+        if (forceVerticalScrollbar)
+            windowFlags |= ImGuiWindowFlags_AlwaysVerticalScrollbar;
+        if (allowHorizontalScrollbar)
+            windowFlags |= ImGuiWindowFlags_HorizontalScrollbar;
+        if (!bringToFrontOnFocus)
+            windowFlags |= ImGuiWindowFlags_NoBringToFrontOnFocus;
+        if (!collapsable)
+            windowFlags |= ImGuiWindowFlags_NoCollapse;
+        if (!allowInputs)
+            windowFlags |= ImGuiWindowFlags_NoInputs;
+        if (!scrollable)
+            windowFlags |= ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar;
+        if (!titleBar)
+            windowFlags |= ImGuiWindowFlags_NoTitleBar;
 
         ImVec2 minSizeConstraint = JzConverter::ToImVec2(minSize);
         ImVec2 maxSizeConstraint = JzConverter::ToImVec2(maxSize);

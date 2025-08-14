@@ -1,7 +1,8 @@
 #include "JzButton.h"
 
 JzRE::JzButton::JzButton(const JzRE::String &label, JzRE::Bool disabled) :
-    label(label), disabled(disabled)
+    label(label),
+    disabled(disabled)
 {
     auto &style = ImGui::GetStyle();
 }

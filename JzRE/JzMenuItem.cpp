@@ -1,7 +1,11 @@
 #include "JzMenuItem.h"
 
 JzRE::JzMenuItem::JzMenuItem(const String &name, const String &shortcut, Bool is_checkable, Bool is_checked) :
-    JzDataWidget(m_selected), name(name), shortcut(shortcut), checkable(is_checkable), checked(is_checked) { }
+    JzDataWidget(m_selected),
+    name(name),
+    shortcut(shortcut),
+    checkable(is_checkable),
+    checked(is_checked) { }
 
 void JzRE::JzMenuItem::_Draw_Impl()
 {

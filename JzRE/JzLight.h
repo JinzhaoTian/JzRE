@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CommonTypes.h"
+#include "JzVector.h"
 #include "JzRHIShader.h"
 
 namespace JzRE {
@@ -15,7 +16,7 @@ public:
      * @param position The position of the light
      * @param color The color of the light
      */
-    JzLight(const glm::vec3 &position, const glm::vec3 &color);
+    JzLight(const JzVec3 &position, const JzVec3 &color);
 
     /**
      * @brief Destructor
@@ -27,36 +28,30 @@ public:
      *
      * @param position The position of the light
      */
-    void SetPosition(const glm::vec3 &position);
+    void SetPosition(const JzVec3 &position);
 
     /**
      * @brief Get the position of the light
      *
      * @return The position of the light
      */
-    const glm::vec3 &GetPosition() const;
+    const JzVec3 &GetPosition() const;
 
     /**
      * @brief Set the color of the light
      * @param color The color of the light
      */
-    void SetColor(const glm::vec3 &color);
+    void SetColor(const JzVec3 &color);
 
     /**
      * @brief Get the color of the light
      * @return The color of the light
      */
-    const glm::vec3 &GetColor() const;
-
-    /**
-     * @brief Apply the light to the shader
-     * @param shader The shader to apply the light to
-     * @param index The index of the light
-     */
-    virtual void ApplyLight(std::shared_ptr<JzRHIShader> shader, int index) const = 0;
+    const JzVec3 &GetColor() const;
 
 protected:
-    glm::vec3 position;
-    glm::vec3 color;
+    JzVec3 position;
+    JzVec3 color;
 };
+
 }; // namespace JzRE

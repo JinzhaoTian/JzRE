@@ -2,7 +2,8 @@
 
 // RHICommandBuffer实现
 JzRE::JzRHICommandList::JzRHICommandList(const JzRE::String &debugName) :
-    m_debugName(debugName), m_isRecording(false)
+    m_debugName(debugName),
+    m_isRecording(false)
 {
 }
 

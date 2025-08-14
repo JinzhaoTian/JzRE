@@ -2,7 +2,9 @@
 #include "JzContext.h"
 
 JzRE::JzMesh::JzMesh(std::vector<JzRE::JzVertex> vertices, std::vector<JzRE::U32> indices, std::vector<std::shared_ptr<JzRE::JzRHITexture>> textures) :
-    vertices(std::move(vertices)), indices(std::move(indices)), textures(std::move(textures))
+    vertices(std::move(vertices)),
+    indices(std::move(indices)),
+    textures(std::move(textures))
 {
     // Setup the mesh when we have all the required data
     SetupMesh();

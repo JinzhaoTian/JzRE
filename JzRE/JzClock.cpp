@@ -18,7 +18,7 @@ void JzRE::JzClock::Update()
     __ELAPSED      = __CURRENT_TIME - __LAST_TIME;
 
     if (__INITIALIZED) {
-        __DELTA_TIME = __ELAPSED.count() > 0.1f ? 0.1f : static_cast<F32>(__ELAPSED.count());
+        __DELTA_TIME        = __ELAPSED.count() > 0.1f ? 0.1f : static_cast<F32>(__ELAPSED.count());
         __TIME_SINCE_START += __DELTA_TIME * __TIME_SCALE;
     } else {
         Initialize();

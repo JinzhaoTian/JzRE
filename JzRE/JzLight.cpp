@@ -1,29 +1,25 @@
 #include "JzLight.h"
 
-namespace JzRE {
-JzLight::JzLight(const glm::vec3 &position, const glm::vec3 &color) :
-    position(position), color(color)
-{
-}
+JzRE::JzLight::JzLight(const JzRE::JzVec3 &position, const JzRE::JzVec3 &color) :
+    position(position),
+    color(color) { }
 
-void JzLight::SetPosition(const glm::vec3 &position)
+void JzRE::JzLight::SetPosition(const JzRE::JzVec3 &position)
 {
     this->position = position;
 }
 
-const glm::vec3 &JzLight::GetPosition() const
+const JzRE::JzVec3 &JzRE::JzLight::GetPosition() const
 {
     return this->position;
 }
 
-void JzLight::SetColor(const glm::vec3 &color)
+void JzRE::JzLight::SetColor(const JzRE::JzVec3 &color)
 {
     this->color = color;
 }
 
-const glm::vec3 &JzLight::GetColor() const
+const JzRE::JzVec3 &JzRE::JzLight::GetColor() const
 {
     return this->color;
 }
-
-} // namespace JzRE

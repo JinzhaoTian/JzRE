@@ -1,7 +1,8 @@
 #include "JzMenuList.h"
 
 JzRE::JzMenuList::JzMenuList(const String &name, Bool is_locked) :
-    name(name), locked(is_locked) { }
+    name(name),
+    locked(is_locked) { }
 
 void JzRE::JzMenuList::_Draw_Impl()
 {

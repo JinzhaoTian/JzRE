@@ -1,7 +1,8 @@
 #include "JzRenderTask.h"
 
 JzRE::JzRenderTask::JzRenderTask(JzRE::JzERenderTaskType type, JzRE::U32 priority) :
-    type(type), priority(priority) { }
+    type(type), 
+    priority(priority) { }
 
 JzRE::JzERenderTaskType JzRE::JzRenderTask::GetType() const
 {

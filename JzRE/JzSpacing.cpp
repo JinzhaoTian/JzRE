@@ -1,9 +1,7 @@
 #include "JzSpacing.h"
 
 JzRE::JzSpacing::JzSpacing(JzRE::U16 spaces) :
-    spaces(spaces)
-{
-}
+    spaces(spaces) { }
 
 void JzRE::JzSpacing::_Draw_Impl()
 {

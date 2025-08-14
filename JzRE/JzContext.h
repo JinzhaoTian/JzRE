@@ -23,6 +23,8 @@ namespace JzRE {
     JzRE::JzServiceContainer::Get<JzRE::JzContext>()
 #define JzRE_DEVICE() \
     JzRE::JzServiceContainer::Get<JzRE::JzContext>().GetDevice()
+#define JzRE_DEVICE_TYPE() \
+    JzRE::JzServiceContainer::Get<JzRE::JzContext>().GetRHIType()
 
 /**
  * @brief Context of JzRE
