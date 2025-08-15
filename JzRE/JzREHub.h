@@ -9,14 +9,14 @@
 #include "JzCanvas.h"
 #include "JzPanelWindow.h"
 #include "JzButton.h"
+#include "JzGroup.h"
+#include "JzText.h"
 #include "JzInputText.h"
 #include "JzSpacing.h"
 #include "JzSeparator.h"
+#include "JzColumns.h"
 
 namespace JzRE {
-
-class JzREHubPanel;
-
 /**
  * @brief JzRE Hub
  */
@@ -55,7 +55,7 @@ public:
     JzREHubPanel();
 
     /**
-     * @brief Implement of Draw Method
+     * @brief Implementation of Draw Method
      */
     void Draw() override;
 
@@ -65,12 +65,9 @@ public:
     std::optional<std::filesystem::path> GetResult() const;
 
 private:
-    void _UpdateGoButton(const String &p_path);
-    void _OnFailedToOpenCorruptedProject(const std::filesystem::path &p_projectPath);
-    void _OnFailedToCreateProject(const std::filesystem::path &p_projectPath);
-    void _ShowError(const String &p_title, const String &p_message);
-    Bool _ValidateResult(const std::filesystem::path &p_result);
-    Bool _TryFinish(const std::filesystem::path p_result);
+    void _OnUpdateGoButton(const String &p_path);
+    void _OnFailedToOpenPath(const std::filesystem::path &p_path);
+    Bool _OnFinish(const std::filesystem::path p_result);
 
 private:
     std::optional<std::filesystem::path> m_result;

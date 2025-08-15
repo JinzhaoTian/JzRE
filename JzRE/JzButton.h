@@ -3,6 +3,8 @@
 #include "CommonTypes.h"
 #include "JzEvent.h"
 #include "JzWidget.h"
+#include "JzVector.h"
+#include "JzConverter.h"
 
 namespace JzRE {
 /**
@@ -33,5 +35,10 @@ public:
 public:
     String label;
     Bool   disabled = false;
+    JzVec2 size;
+    JzVec4 idleBackgroundColor;
+    JzVec4 hoveredBackgroundColor;
+    JzVec4 clickedBackgroundColor;
+    JzVec4 textColor;
 };
 } // namespace JzRE
