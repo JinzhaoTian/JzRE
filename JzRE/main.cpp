@@ -1,10 +1,15 @@
 #include "JzRenderEngine.h"
+#include "JzREHub.h"
 
 int main()
 {
-    JzRE::JzRenderEngine re;
+    JzRE::JzREHub hub;
 
-    re.Run();
+    hub.Run();
+
+    // JzRE::JzRenderEngine re;
+
+    // re.Run();
 
     return 0;
 }

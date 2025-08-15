@@ -1,8 +1,52 @@
-#include "JzHubPanel.h"
-#include <cstdio>
-#include <filesystem>
+#include "JzREHub.h"
 
-JzRE::JzHubPanel::JzHubPanel() :
+JzRE::JzREHub::JzREHub()
+{
+    auto rhiType = JzERHIType::OpenGL;
+
+    /* Settings */
+    JzWindowSettings windowSettings;
+    windowSettings.title       = "JzRE Hub";
+    windowSettings.width       = 1000;
+    windowSettings.height      = 580;
+    windowSettings.isMaximized = false;
+    windowSettings.isResizable = false;
+    windowSettings.isDecorated = true;
+
+    /* Window creation */
+    m_window = std::make_unique<JzRE::JzWindow>(rhiType, windowSettings);
+    m_window->MakeCurrentContext();
+
+    /* Device */
+    m_device = JzRHIFactory::CreateDevice(rhiType);
+
+    m_uiManager = std::make_unique<JzUIManager>(m_window->GetGLFWWindow());
+    m_uiManager->SetDocking(false);
+}
+
+JzRE::JzREHub::~JzREHub() { }
+
+std::optional<std::filesystem::path> JzRE::JzREHub::Run()
+{
+    JzREHubPanel panel;
+
+    m_uiManager->SetCanvas(m_canvas);
+    m_canvas.AddPanel(panel);
+
+    while (!m_window->ShouldClose()) {
+        m_window->PollEvents();
+        m_uiManager->Render();
+        m_window->SwapBuffers();
+
+        if (!panel.IsOpened()) {
+            m_window->SetShouldClose(true);
+        }
+    }
+
+    return panel.GetResult();
+}
+
+JzRE::JzREHubPanel::JzREHubPanel() :
     JzPanelWindow("JzRE Hub", true)
 {
     resizable = false;
@@ -107,12 +151,12 @@ JzRE::JzHubPanel::JzHubPanel() :
     // }
 }
 
-std::optional<std::filesystem::path> JzRE::JzHubPanel::GetResult() const
+std::optional<std::filesystem::path> JzRE::JzREHubPanel::GetResult() const
 {
     return m_result;
 }
 
-void JzRE::JzHubPanel::Draw()
+void JzRE::JzREHubPanel::Draw()
 {
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {50.f, 50.f});
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.f);
@@ -122,14 +166,14 @@ void JzRE::JzHubPanel::Draw()
     ImGui::PopStyleVar(2);
 }
 
-void JzRE::JzHubPanel::_UpdateGoButton(const JzRE::String &p_path)
+void JzRE::JzREHubPanel::_UpdateGoButton(const JzRE::String &p_path)
 {
     const Bool validPath = !p_path.empty();
     m_goButton->disabled = !validPath;
     // m_goButton->idleBackgroundColor = validPath ? OvUI::Types::Color{0.f, 0.5f, 0.0f} : OvUI::Types::Color{0.1f, 0.1f, 0.1f};
 }
 
-void JzRE::JzHubPanel::_OnFailedToOpenCorruptedProject(const std::filesystem::path &p_projectPath)
+void JzRE::JzREHubPanel::_OnFailedToOpenCorruptedProject(const std::filesystem::path &p_projectPath)
 {
     // TODO: Implement project management system
     // Utils::ProjectManagement::UnregisterProject(p_projectPath);
@@ -139,28 +183,28 @@ void JzRE::JzHubPanel::_OnFailedToOpenCorruptedProject(const std::filesystem::pa
         "The selected project is invalid or corrupted.\nPlease select another project.");
 }
 
-void JzRE::JzHubPanel::_OnFailedToCreateProject(const std::filesystem::path &p_projectPath)
+void JzRE::JzREHubPanel::_OnFailedToCreateProject(const std::filesystem::path &p_projectPath)
 {
     _ShowError(
         "Project creation failed",
         "Something went wrong while creating the project.\nPlease ensure the path is valid and you have the necessary permissions.");
 }
 
-void JzRE::JzHubPanel::_ShowError(const JzRE::String &p_title, const JzRE::String &p_message)
+void JzRE::JzREHubPanel::_ShowError(const JzRE::String &p_title, const JzRE::String &p_message)
 {
     // TODO: Implement proper error dialog system
     // For now, just print to console
     printf("Error: %s - %s\n", p_title.c_str(), p_message.c_str());
 }
 
-JzRE::Bool JzRE::JzHubPanel::_ValidateResult(const std::filesystem::path &p_result)
+JzRE::Bool JzRE::JzREHubPanel::_ValidateResult(const std::filesystem::path &p_result)
 {
     // TODO: Implement proper project validation
     // For now, just check if path exists and is a directory
     return std::filesystem::exists(p_result) && std::filesystem::is_directory(p_result);
 }
 
-JzRE::Bool JzRE::JzHubPanel::_TryFinish(const std::filesystem::path p_result)
+JzRE::Bool JzRE::JzREHubPanel::_TryFinish(const std::filesystem::path p_result)
 {
     if (_ValidateResult(p_result)) {
         m_result = p_result;

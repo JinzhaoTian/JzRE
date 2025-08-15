@@ -33,38 +33,56 @@
  * sys
  */
 #include <algorithm>
-#include <any>
-#include <array>
-#include <atomic>
 #include <cassert>
-#include <chrono>
+#include <cstdio>
 #include <cmath>
-#include <condition_variable>
-#include <cstdint>
 #include <cstring>
-#include <filesystem>
-#include <fstream>
 #include <functional>
 #include <iostream>
 #include <map>
-#include <memory>
 #include <queue>
-#include <ranges>
-#include <regex>
 #include <set>
-#include <span>
 #include <sstream>
 #include <string>
-#include <thread>
-#include <type_traits>
-#include <typeinfo>
-#include <unordered_map>
-#include <unordered_set>
-#include <utility>
 #include <vector>
+#include <typeinfo>
 
 /**
- * JzRE Definitions
+ * c++ 11
+ */
+#include <array>
+#include <atomic>
+#include <utility>
+#include <memory>
+#include <chrono>
+#include <condition_variable>
+#include <cstdint>
+#include <fstream>
+#include <regex>
+#include <thread>
+#include <unordered_map>
+#include <unordered_set>
+#include <type_traits>
+
+/**
+ * c++ 17
+ */
+#include <any>
+#include <filesystem>
+#include <optional>
+
+/**
+ * c++ 20
+ */
+#include <ranges>
+#include <span>
+#include <compare>
+#include <concepts>
+#include <format>
+#include <semaphore>
+
+/**
+ * JzRE definitions
  */
 namespace JzRE {
 

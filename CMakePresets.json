@@ -40,8 +40,8 @@
             }
         },
         {
-            "name": "windows-mingw",
-            "displayName": "Windows (MinGW)",
+            "name": "windows-mingw-static",
+            "displayName": "Windows (MinGW) static",
             "description": "Windows with MinGW compiler",
             "generator": "MinGW Makefiles",
             "binaryDir": "${sourceDir}/build",
@@ -51,6 +51,25 @@
                 "CMAKE_BUILD_TYPE": "Debug",
                 "CMAKE_TOOLCHAIN_FILE": "${env.VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
                 "VCPKG_TARGET_TRIPLET": "x64-mingw-static"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
+        },
+        {
+            "name": "windows-mingw-dynamic",
+            "displayName": "Windows (MinGW) dynamic",
+            "description": "Windows with MinGW compiler",
+            "generator": "MinGW Makefiles",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "gcc",
+                "CMAKE_CXX_COMPILER": "g++",
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_TOOLCHAIN_FILE": "${env.VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+                "VCPKG_TARGET_TRIPLET": "x64-mingw-dynamic"
             },
             "condition": {
                 "type": "equals",
