@@ -24,28 +24,29 @@ JzRE::JzREHub::JzREHub()
 
     m_uiManager = std::make_unique<JzUIManager>(m_window->GetGLFWWindow());
     m_uiManager->SetDocking(false);
+
+    /* JzRE Hub Panel */
+    m_hubPanel = std::make_unique<JzREHubPanel>();
+
+    m_uiManager->SetCanvas(m_canvas);
+    m_canvas.AddPanel(*m_hubPanel);
 }
 
 JzRE::JzREHub::~JzREHub() { }
 
 std::optional<std::filesystem::path> JzRE::JzREHub::Run()
 {
-    JzREHubPanel panel;
-
-    m_uiManager->SetCanvas(m_canvas);
-    m_canvas.AddPanel(panel);
-
     while (!m_window->ShouldClose()) {
         m_window->PollEvents();
         m_uiManager->Render();
         m_window->SwapBuffers();
 
-        if (!panel.IsOpened()) {
+        if (!m_hubPanel->IsOpened()) {
             m_window->SetShouldClose(true);
         }
     }
 
-    return panel.GetResult();
+    return m_hubPanel->GetResult();
 }
 
 JzRE::JzREHubPanel::JzREHubPanel() :
@@ -58,10 +59,23 @@ JzRE::JzREHubPanel::JzREHubPanel() :
     SetSize({800.f, 500.f});
     SetPosition({0.f, 0.f});
 
-    auto &openButton                = CreateWidget<JzButton>("Open Project");
+    auto &openButton                = CreateWidget<JzButton>("Open Folder");
     openButton.idleBackgroundColor  = {0.7f, 0.5f, 0.f, 1.0f};
     openButton.lineBreak            = false;
-    openButton.ClickedEvent        += [this] { };
+    openButton.ClickedEvent        += [this] {
+        JzOpenFileDialog dialog("Open Floder");
+        dialog.AddFileType("*", "*.*");
+        dialog.Show();
+
+        const std::filesystem::path projectFile   = dialog.GetSelectedFilePath();
+        const std::filesystem::path projectFolder = projectFile.parent_path();
+
+        if (dialog.HasSucceeded()) {
+            if (!_OnFinish({projectFolder})) {
+                _OnFailedToOpenPath(projectFolder);
+            }
+        }
+    };
 
     auto &pathField                = CreateWidget<JzInputText>("");
     pathField.lineBreak            = false;
@@ -85,7 +99,7 @@ JzRE::JzREHubPanel::JzREHubPanel() :
     CreateWidget<JzSpacing>();
 
     auto &columns  = CreateWidget<JzColumns<2>>();
-    columns.widths = {750, 500};
+    columns.widths = {550, 200};
 
     auto pathes = std::vector<String>{"sda", "sd", "snba"}; // TODO
 

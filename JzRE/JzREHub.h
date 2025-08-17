@@ -15,8 +15,12 @@
 #include "JzSpacing.h"
 #include "JzSeparator.h"
 #include "JzColumns.h"
+#include "JzOpenFileDialog.h"
 
 namespace JzRE {
+
+class JzREHubPanel;
+
 /**
  * @brief JzRE Hub
  */
@@ -38,10 +42,11 @@ public:
     std::optional<std::filesystem::path> Run();
 
 private:
-    std::unique_ptr<JzRHIDevice> m_device;
-    std::unique_ptr<JzWindow>    m_window;
-    std::unique_ptr<JzUIManager> m_uiManager;
-    JzCanvas                     m_canvas;
+    std::unique_ptr<JzRHIDevice>  m_device;
+    std::unique_ptr<JzWindow>     m_window;
+    std::unique_ptr<JzUIManager>  m_uiManager;
+    JzCanvas                      m_canvas;
+    std::unique_ptr<JzREHubPanel> m_hubPanel;
 };
 
 /**

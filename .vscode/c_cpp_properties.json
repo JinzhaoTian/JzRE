@@ -1,7 +1,8 @@
 {
     "env": {
         "projectIncludePath": [
-            "${workspaceFolder}/JzRE/include/"
+            "${workspaceFolder}/**",
+            "${workspaceFolder}/JzRE"
         ],
         "projectDefines": [
             "_DEBUG",
@@ -34,7 +35,7 @@
             ],
             "defines": [
                 "${projectDefines}",
-                "_MACOS"
+                "__APPLE__"
             ],
             "compilerPath": "",
             "cStandard": "c17",

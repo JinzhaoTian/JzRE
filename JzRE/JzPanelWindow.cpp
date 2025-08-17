@@ -4,7 +4,7 @@ JzRE::JzPanelWindow::JzPanelWindow(const JzRE::String &name, JzRE::Bool is_opene
     name(name),
     m_opened(is_opened)
 {
-    autoSize = true;
+    autoSize = false;
 }
 
 void JzRE::JzPanelWindow::Open()

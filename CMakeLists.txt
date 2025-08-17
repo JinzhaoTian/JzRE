@@ -33,7 +33,8 @@ elseif(APPLE)
     find_library(COREVIDEO_LIB CoreVideo)
     find_library(OPENGL_LIB OpenGL)
     find_library(GLUT_LIB GLUT)
-    set(PLATFORM_LIBS ${COCOA_LIB} ${IOKIT_LIB} ${COREVIDEO_LIB})
+    find_library(UNIFORMTYPEIDENTIFIERS_LIB UniformTypeIdentifiers)
+    set(PLATFORM_LIBS ${COCOA_LIB} ${IOKIT_LIB} ${COREVIDEO_LIB} ${UNIFORMTYPEIDENTIFIERS_LIB})
     set(OPENGL_LIBS ${OPENGL_LIB} ${GLUT_LIB})
 elseif(UNIX AND NOT APPLE)
     find_package(OpenGL REQUIRED)
@@ -49,8 +50,22 @@ include_directories(${PROJECT_SOURCE_DIR}/JzRE)
 # set source files
 file(GLOB JZRE_SOURCES "${PROJECT_SOURCE_DIR}/JzRE/*.cpp")
 
+# Add platform-specific sources
+if(WIN32)
+    file(GLOB PLATFORM_SOURCES "${PROJECT_SOURCE_DIR}/JzRE/platform/Windows/*.cpp")
+elseif(APPLE)
+    file(GLOB PLATFORM_SOURCES 
+         "${PROJECT_SOURCE_DIR}/JzRE/platform/macOS/*.cpp"
+         "${PROJECT_SOURCE_DIR}/JzRE/platform/macOS/*.mm")
+elseif(UNIX AND NOT APPLE)
+    file(GLOB PLATFORM_SOURCES "${PROJECT_SOURCE_DIR}/JzRE/platform/Linux/*.cpp")
+endif()
+
+# Combine all sources
+set(ALL_SOURCES ${JZRE_SOURCES} ${PLATFORM_SOURCES})
+
 # add exe target
-add_executable(JzRE "${PROJECT_SOURCE_DIR}/JzRE/main.cpp" ${JZRE_SOURCES})
+add_executable(JzRE "${PROJECT_SOURCE_DIR}/JzRE/main.cpp" ${ALL_SOURCES})
 
 # Set target properties
 set_target_properties(JzRE PROPERTIES
