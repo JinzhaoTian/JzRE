@@ -2,7 +2,7 @@
 
 #include "CommonTypes.h"
 #include "JzMatrix.h"
-#include "JzRHIDesc.h"
+#include "JzRHIDescription.h"
 #include "JzRHIETypes.h"
 #include "JzRHIResource.h"
 #include "JzVector.h"

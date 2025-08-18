@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CommonTypes.h"
-#include "JzRHIDesc.h"
+#include "JzRHIDescription.h"
 #include "JzRHIETypes.h"
 #include "JzRHIResource.h"
 
@@ -13,7 +13,7 @@ class JzRHITexture : public JzRHIResource {
 public:
     /**
      * @brief Constructor
-     * 
+     *
      * @param desc The description of the texture
      */
     JzRHITexture(const JzTextureDesc &desc) :
@@ -26,7 +26,7 @@ public:
 
     /**
      * @brief Update the data
-     * 
+     *
      * @param data The data to update
      * @param mipLevel The mip level to update
      * @param arrayIndex The array index to update
@@ -47,7 +47,7 @@ public:
 
     /**
      * @brief Get the type of the texture
-     * 
+     *
      * @return The type of the texture
      */
     JzETextureType GetType() const
@@ -57,7 +57,7 @@ public:
 
     /**
      * @brief Get the format of the texture
-     * 
+     *
      * @return The format of the texture
      */
     JzETextureFormat GetFormat() const
@@ -67,7 +67,7 @@ public:
 
     /**
      * @brief Get the width of the texture
-     * 
+     *
      * @return The width of the texture
      */
     U32 GetWidth() const
@@ -77,7 +77,7 @@ public:
 
     /**
      * @brief Get the height of the texture
-     * 
+     *
      * @return The height of the texture
      */
     U32 GetHeight() const
@@ -87,7 +87,7 @@ public:
 
     /**
      * @brief Get the depth of the texture
-     * 
+     *
      * @return The depth of the texture
      */
     U32 GetDepth() const
@@ -97,7 +97,7 @@ public:
 
     /**
      * @brief Get the mip levels of the texture
-     * 
+     *
      * @return The mip levels of the texture
      */
     U32 GetMipLevels() const

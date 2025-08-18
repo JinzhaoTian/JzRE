@@ -2,7 +2,7 @@
 
 #include "CommonTypes.h"
 #include "JzRHICommandList.h"
-#include "JzRHIDesc.h"
+#include "JzRHIDescription.h"
 #include "JzRHIETypes.h"
 #include "JzRHIFramebuffer.h"
 #include "JzRHIShader.h"
