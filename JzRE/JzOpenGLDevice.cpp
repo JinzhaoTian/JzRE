@@ -114,7 +114,7 @@ void JzRE::JzOpenGLDevice::SetViewport(const JzRE::JzViewport &viewport)
 {
     glViewport(static_cast<GLint>(viewport.x), static_cast<GLint>(viewport.y),
                static_cast<GLsizei>(viewport.width), static_cast<GLsizei>(viewport.height));
-    glDepthRangef(viewport.minDepth, viewport.maxDepth);
+    glDepthRange(static_cast<F64>(viewport.minDepth), static_cast<F64>(viewport.maxDepth));
 }
 
 void JzRE::JzOpenGLDevice::SetScissor(const JzRE::JzScissorRect &scissor)
@@ -133,7 +133,7 @@ void JzRE::JzOpenGLDevice::Clear(const JzRE::JzClearParams &params)
     }
 
     if (params.clearDepth) {
-        glClearDepth(params.depth);
+        glClearDepth(static_cast<F64>(params.depth));
         mask |= GL_DEPTH_BUFFER_BIT;
     }
 
@@ -406,5 +406,23 @@ GLenum JzRE::JzOpenGLDevice::ConvertCullMode(JzRE::JzECullMode mode)
         case JzECullMode::Back: return GL_BACK;
         case JzECullMode::FrontAndBack: return GL_FRONT_AND_BACK;
         default: return GL_BACK;
+    }
+}
+
+void JzRE::JzOpenGLDevice::CheckOpenGLError(const JzRE::String &operation) const
+{
+    GLenum error = glGetError();
+    if (error != GL_NO_ERROR) {
+        String errorString;
+        switch (error) {
+            case GL_INVALID_ENUM: errorString = "GL_INVALID_ENUM"; break;
+            case GL_INVALID_VALUE: errorString = "GL_INVALID_VALUE"; break;
+            case GL_INVALID_OPERATION: errorString = "GL_INVALID_OPERATION"; break;
+            case GL_OUT_OF_MEMORY: errorString = "GL_OUT_OF_MEMORY"; break;
+            case GL_INVALID_FRAMEBUFFER_OPERATION: errorString = "GL_INVALID_FRAMEBUFFER_OPERATION"; break;
+            default: errorString = "Unknown error"; break;
+        }
+        std::cerr << "OpenGL error in " << operation << ": " << errorString
+                  << " (0x" << std::hex << error << ")" << std::endl;
     }
 }

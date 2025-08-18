@@ -235,6 +235,7 @@ public:
 private:
     void InitializeCapabilities();
     void ApplyRenderState(const JzRenderState &state);
+    void CheckOpenGLError(const String &operation) const;
 
     static GLenum ConvertPrimitiveType(JzEPrimitiveType type);
     static GLenum ConvertBlendMode(JzEBlendMode mode);

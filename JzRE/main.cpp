@@ -3,13 +3,13 @@
 
 int main()
 {
-    JzRE::JzREHub hub;
+    // JzRE::JzREHub hub;
 
-    hub.Run();
+    // hub.Run();
 
-    // JzRE::JzRenderEngine re;
+    JzRE::JzRenderEngine re;
 
-    // re.Run();
+    re.Run();
 
     return 0;
 }
