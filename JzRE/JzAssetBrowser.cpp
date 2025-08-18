@@ -1,25 +1,49 @@
 #include "JzAssetBrowser.h"
 #include "JzContext.h"
+#include "JzOpenFileDialog.h"
+#include "JzButton.h"
+#include "JzSpacing.h"
+#include "JzSeparator.h"
 
 JzRE::JzAssetBrowser::JzAssetBrowser(const JzRE::String &name, JzRE::Bool is_opened) :
     JzPanelWindow(name, is_opened)
 {
-    auto &openButton = CreateWidget<JzButton>("Open Folder");
-    // TODO
+    AssetPathChangeEvent.AddListener([this] {
+        Refresh();
+    });
 
-    auto &refreshButton         = CreateWidget<JzButton>("Refresh");
-    refreshButton.ClickedEvent += std::bind(&JzAssetBrowser::Refresh, this);
-    refreshButton.lineBreak     = false;
+    auto &openButton                = CreateWidget<JzButton>("Open Folder");
+    openButton.lineBreak            = false;
+    openButton.idleBackgroundColor  = {0.7f, 0.5f, 0.0f};
+    openButton.ClickedEvent        += [this] {
+        JzOpenFileDialog dialog("Open Floder");
+        dialog.AddFileType("*", "*.*");
+        dialog.Show();
+
+        const std::filesystem::path projectFile   = dialog.GetSelectedFilePath();
+        const std::filesystem::path projectFolder = projectFile.parent_path();
+
+        if (dialog.HasSucceeded()) {
+            m_assetPath = projectFolder;
+            AssetPathChangeEvent.Invoke();
+        }
+    };
+
+    auto &refreshButton                = CreateWidget<JzButton>("Refresh");
+    refreshButton.lineBreak            = true;
+    refreshButton.idleBackgroundColor  = {0.f, 0.5f, 0.0f};
+    refreshButton.ClickedEvent        += std::bind(&JzAssetBrowser::Refresh, this);
+
+    CreateWidget<JzSpacing>(2);
+    CreateWidget<JzSeparator>();
+    CreateWidget<JzSpacing>(2);
 
     m_assetList = &CreateWidget<JzGroup>();
-
-    Fill();
 }
 
 void JzRE::JzAssetBrowser::Fill()
 {
-    // to fill fake data
-    m_assetList->CreateWidget<JzSeparator>();
+    ConsiderItem(nullptr, std::filesystem::directory_entry(m_assetPath), true);
 }
 
 void JzRE::JzAssetBrowser::Clear()
