@@ -8,6 +8,8 @@ JzRE::JzContext::JzContext(JzERHIType rhiType) :
 
     window->MakeCurrentContext();
 
+    window->SetAlignCentered();
+
     /* Device */
     auto devicePtr = JzRHIFactory::CreateDevice(rhiType);
     if (!devicePtr) {

@@ -86,11 +86,11 @@ public:
 
     JzSceneManager sceneManager;
 
-    JzDeviceSettings deviceSettings;
     JzWindowSettings windowSettings;
 
 private:
     std::shared_ptr<JzRHIDevice>       m_device;
     std::shared_ptr<JzRHICommandQueue> m_commandQueue;
 };
+
 } // namespace JzRE

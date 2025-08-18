@@ -76,7 +76,11 @@ private:
 
 private:
     std::optional<std::filesystem::path> m_result;
-    JzButton                            *m_goButton = nullptr;
+    JzButton                            *m_goButton        = nullptr;
+    JzVec2                               m_windowSize      = {800.0f, 500.0f};
+    JzVec2                               m_windowPosition  = {0.0f, 0.0f};
+    JzVec2                               m_buttonSize      = {90.0f, 0.0f};
+    F32                                  m_inputFieldWidth = 504.0f;
 };
 
 } // namespace JzRE

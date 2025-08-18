@@ -18,6 +18,7 @@ JzRE::JzREHub::JzREHub()
     /* Window creation */
     m_window = std::make_unique<JzRE::JzWindow>(rhiType, windowSettings);
     m_window->MakeCurrentContext();
+    m_window->SetAlignCentered();
 
     /* Device */
     m_device = JzRHIFactory::CreateDevice(rhiType);
@@ -56,12 +57,20 @@ JzRE::JzREHubPanel::JzREHubPanel() :
     movable   = false;
     titleBar  = false;
 
-    SetSize({800.0f, 500.0f});
-    SetPosition({0.0f, 0.0f});
+    SetSize(m_windowSize);
+    SetPosition(m_windowPosition);
+
+    auto &pathField                = CreateWidget<JzInputText>("");
+    pathField.width                = m_inputFieldWidth;
+    pathField.lineBreak            = false;
+    pathField.ContentChangedEvent += [this, &pathField](String p_content) {
+        pathField.content = std::filesystem::path{p_content}.make_preferred().string();
+        _OnUpdateGoButton(pathField.content);
+    };
 
     auto &openButton                = CreateWidget<JzButton>("Open Folder");
     openButton.idleBackgroundColor  = {0.7f, 0.5f, 0.0f, 1.0f};
-    openButton.size                 = {90.0f, 0.0f};
+    openButton.size                 = m_buttonSize;
     openButton.lineBreak            = false;
     openButton.ClickedEvent        += [this] {
         JzOpenFileDialog dialog("Open Floder");
@@ -78,17 +87,9 @@ JzRE::JzREHubPanel::JzREHubPanel() :
         }
     };
 
-    auto &pathField                = CreateWidget<JzInputText>("");
-    pathField.width                = 504.0f;
-    pathField.lineBreak            = false;
-    pathField.ContentChangedEvent += [this, &pathField](String p_content) {
-        pathField.content = std::filesystem::path{p_content}.make_preferred().string();
-        _OnUpdateGoButton(pathField.content);
-    };
-
     m_goButton                       = &CreateWidget<JzButton>("GO");
     m_goButton->idleBackgroundColor  = {0.1f, 0.1f, 0.1f, 1.0f};
-    m_goButton->size                 = {90.0f, 0.0f};
+    m_goButton->size                 = m_buttonSize;
     m_goButton->disabled             = true;
     m_goButton->lineBreak            = true;
     m_goButton->ClickedEvent        += [this, &pathField] {
@@ -99,9 +100,9 @@ JzRE::JzREHubPanel::JzREHubPanel() :
         }
     };
 
-    CreateWidget<JzSpacing>();
+    CreateWidget<JzSpacing>(2);
     CreateWidget<JzSeparator>();
-    CreateWidget<JzSpacing>();
+    CreateWidget<JzSpacing>(2);
 
     auto &columns  = CreateWidget<JzColumns<2>>();
     columns.widths = {512.0f, 200.0f};
@@ -115,7 +116,7 @@ JzRE::JzREHubPanel::JzREHubPanel() :
 
         auto &_openBtn                = _actions.CreateWidget<JzButton>("Open");
         _openBtn.idleBackgroundColor  = {0.7f, 0.5f, 0.0f, 1.0f};
-        _openBtn.size                 = {90.0f, 0.0f};
+        _openBtn.size                 = m_buttonSize;
         _openBtn.lineBreak            = false;
         _openBtn.ClickedEvent        += [this, &_text, &_actions, path] {
             if (!_OnFinish(path)) {
@@ -126,7 +127,7 @@ JzRE::JzREHubPanel::JzREHubPanel() :
         };
 
         auto &_deleteBtn                = _actions.CreateWidget<JzButton>("Delete");
-        _deleteBtn.idleBackgroundColor  = {0.5f, 0.0f, 0.0f, 1.0f};
+        _deleteBtn.idleBackgroundColor  = {0.3f, 0.0f, 0.0f, 1.0f};
         _deleteBtn.size                 = {90.0f, 0.0f};
         _deleteBtn.lineBreak            = true;
         _deleteBtn.ClickedEvent        += [this, &_text, &_actions, path] {

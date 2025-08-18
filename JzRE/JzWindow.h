@@ -1,12 +1,13 @@
 #pragma once
 
 #include "CommonTypes.h"
-#include "JzDevice.h"
-#include "JzEvent.h"
-#include "JzRHIETypes.h"
 #include "JzWindowSettings.h"
+#include "JzRHIETypes.h"
+#include "JzEvent.h"
+#include "JzVector.h"
 
 namespace JzRE {
+
 /**
  * @brief Window of JzRE
  */
@@ -42,11 +43,83 @@ public:
     void *GetNativeWindow() const;
 
     /**
+     * @brief Get the size, in pixels, of the primary monitor
+     */
+    JzIVec2 GetMonitorSize() const;
+
+    /**
      * @brief Set the title of the window
      *
      * @param title
      */
     void SetTitle(const String &title);
+
+    /**
+     * @brief Get the title of the window
+     */
+    String GetTitle() const;
+
+    /**
+     * @brief Set the position for the window
+     */
+    void SetPosition(JzIVec2 p_position);
+
+    /**
+     * @brief Set the size for the window
+     */
+    void SetSize(JzIVec2 p_size);
+
+    /**
+     * @brief Get the current size of the window
+     */
+    JzIVec2 GetSize() const;
+
+    /**
+     * @brief Return true if the windows is minimized
+     */
+    Bool IsMinimized() const;
+
+    /**
+     * @brief Set a minimum size for the window
+     */
+    void SetMinimumSize(JzIVec2 minimumSize);
+
+    /**
+     * @brief Get the current minimum size of the window
+     * @note -1 (WindowSettings::DontCare) values means no limitation
+     */
+    JzIVec2 GetMinimumSize() const;
+
+    /**
+     * @brief Return true if the windows is maximized
+     */
+    Bool IsMaximized() const;
+
+    /**
+     * @brief Set a maximum size for the window
+     */
+    void SetMaximumSize(JzIVec2 maximumSize);
+
+    /**
+     * @brief Get the current maximum size of the window
+     * @note -1 (WindowSettings::DontCare) values means no limitation
+     */
+    JzIVec2 GetMaximumSize() const;
+
+    /**
+     * @brief Set the window in fullscreen mode
+     */
+    void SetFullscreen(Bool p_value);
+
+    /**
+     * @brief Return true if the window is fullscreen
+     */
+    Bool IsFullscreen() const;
+
+    /**
+     * @brief Set the window align centered
+     */
+    void SetAlignCentered();
 
     /**
      * @brief Poll events
@@ -99,40 +172,43 @@ private:
     void BindMoveCallback() const;              // Bind the move callback
     void BindFocusCallback() const;             // Bind the focus callback
 
-    void OnResize(U16 width, U16 height);
-    void OnMove(I16 x, I16 y);
+    void OnResize(JzIVec2 p_size);
+    void OnMove(JzIVec2 p_position);
+
+    void UpdateSizeLimit() const;
 
 public:
     /* Inputs events */
-    JzEvent<I32>      KeyPressedEvent;
-    JzEvent<I32>      KeyReleasedEvent;
-    JzEvent<I32>      MouseButtonPressedEvent;
-    JzEvent<I32>      MouseButtonReleasedEvent;
-    JzEvent<U16, U16> MouseMovedEvent;
-    JzEvent<F64, F64> MouseScrolledEvent;
+    JzEvent<I32>     KeyPressedEvent;
+    JzEvent<I32>     KeyReleasedEvent;
+    JzEvent<I32>     MouseButtonPressedEvent;
+    JzEvent<I32>     MouseButtonReleasedEvent;
+    JzEvent<JzIVec2> MouseMovedEvent;
+    JzEvent<JzVec2>  MouseScrolledEvent;
 
     /* Window events */
-    JzEvent<U16, U16> WindowResizedEvent;
-    JzEvent<U16, U16> WindowFrameBufferResizedEvent;
-    JzEvent<I16, I16> WindowMoveEvent;
-    JzEvent<I16, I16> WindowCursorMoveEvent;
-    JzEvent<>         WindowMinimizedEvent;
-    JzEvent<>         WindowMaximizedEvent;
-    JzEvent<>         WindowFocusGainEvent;
-    JzEvent<>         WindowFocusLostEvent;
-    JzEvent<>         WindowClosedEvent;
+    JzEvent<JzIVec2> WindowResizedEvent;
+    JzEvent<JzIVec2> WindowFrameBufferResizedEvent;
+    JzEvent<JzIVec2> WindowMoveEvent;
+    JzEvent<JzIVec2> WindowCursorMoveEvent;
+    JzEvent<>        WindowMinimizedEvent;
+    JzEvent<>        WindowMaximizedEvent;
+    JzEvent<>        WindowFocusGainEvent;
+    JzEvent<>        WindowFocusLostEvent;
+    JzEvent<>        WindowClosedEvent;
 
 private:
     static std::unordered_map<GLFWwindow *, JzWindow *> __WINDOWS_MAP;
 
-    JzERHIType          m_rhiType;
-    GLFWwindow         *m_glfwWindow;
-    String              m_title;
-    std::pair<U16, U16> m_size;
-    std::pair<I16, I16> m_minimumSize;
-    std::pair<I16, I16> m_maximumSize;
-    std::pair<I16, I16> m_position;
-    Bool                m_fullscreen;
-    I32                 m_refreshRate;
+    JzERHIType  m_rhiType;
+    GLFWwindow *m_glfwWindow;
+    String      m_title;
+    JzIVec2     m_size;
+    JzIVec2     m_minimumSize;
+    JzIVec2     m_maximumSize;
+    JzIVec2     m_position;
+    Bool        m_fullscreen;
+    I32         m_refreshRate;
 };
+
 } // namespace JzRE

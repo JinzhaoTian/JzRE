@@ -25,9 +25,9 @@ JzRE::JzWindow::JzWindow(JzRE::JzERHIType rhiType, const JzRE::JzWindowSettings 
     BindMoveCallback();
     BindFocusCallback();
 
-    WindowResizedEvent.AddListener(std::bind(&JzWindow::OnResize, this, std::placeholders::_1, std::placeholders::_2));
+    WindowResizedEvent.AddListener(std::bind(&JzWindow::OnResize, this, std::placeholders::_1));
 
-    WindowMoveEvent.AddListener(std::bind(&JzWindow::OnMove, this, std::placeholders::_1, std::placeholders::_2));
+    WindowMoveEvent.AddListener(std::bind(&JzWindow::OnMove, this, std::placeholders::_1));
 }
 
 JzRE::JzWindow::~JzWindow()
@@ -56,10 +56,107 @@ void *JzRE::JzWindow::GetNativeWindow() const
 #endif
 }
 
+JzRE::JzIVec2 JzRE::JzWindow::GetMonitorSize() const
+{
+    const GLFWvidmode *mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+    return {static_cast<I32>(mode->width), static_cast<I32>(mode->height)};
+}
+
 void JzRE::JzWindow::SetTitle(const JzRE::String &title)
 {
     m_title = title;
     glfwSetWindowTitle(m_glfwWindow, title.c_str());
+}
+
+JzRE::String JzRE::JzWindow::GetTitle() const
+{
+    return m_title;
+}
+
+void JzRE::JzWindow::SetPosition(JzRE::JzIVec2 p_position)
+{
+    glfwSetWindowPos(m_glfwWindow, p_position.x(), p_position.y());
+}
+
+void JzRE::JzWindow::SetSize(JzRE::JzIVec2 p_size)
+{
+    glfwSetWindowSize(m_glfwWindow, p_size.x(), p_size.y());
+}
+
+JzRE::JzIVec2 JzRE::JzWindow::GetSize() const
+{
+    I32 width, height;
+    glfwGetWindowSize(m_glfwWindow, &width, &height);
+    return {width, height};
+}
+
+JzRE::Bool JzRE::JzWindow::IsMinimized() const
+{
+    return glfwGetWindowAttrib(m_glfwWindow, GLFW_MAXIMIZED) == GLFW_FALSE;
+}
+
+void JzRE::JzWindow::SetMinimumSize(JzRE::JzIVec2 minimumSize)
+{
+    m_minimumSize = minimumSize;
+
+    UpdateSizeLimit();
+}
+
+JzRE::JzIVec2 JzRE::JzWindow::GetMinimumSize() const
+{
+    return m_minimumSize;
+}
+
+JzRE::Bool JzRE::JzWindow::IsMaximized() const
+{
+    return glfwGetWindowAttrib(m_glfwWindow, GLFW_MAXIMIZED) == GLFW_TRUE;
+}
+
+void JzRE::JzWindow::SetMaximumSize(JzRE::JzIVec2 maximumSize)
+{
+    m_maximumSize = maximumSize;
+
+    UpdateSizeLimit();
+}
+
+JzRE::JzIVec2 JzRE::JzWindow::GetMaximumSize() const
+{
+    return m_maximumSize;
+}
+
+void JzRE::JzWindow::SetFullscreen(JzRE::Bool p_value)
+{
+    if (p_value)
+        m_fullscreen = true;
+
+    glfwSetWindowMonitor(
+        m_glfwWindow,
+        p_value ? glfwGetPrimaryMonitor() : nullptr,
+        static_cast<I32>(m_position.x()),
+        static_cast<I32>(m_position.y()),
+        static_cast<I32>(m_size.x()),
+        static_cast<I32>(m_size.y()),
+        m_refreshRate);
+
+    if (!p_value)
+        m_fullscreen = false;
+}
+
+JzRE::Bool JzRE::JzWindow::IsFullscreen() const
+{
+    return m_fullscreen;
+}
+
+void JzRE::JzWindow::SetAlignCentered()
+{
+    const GLFWvidmode *mode      = glfwGetVideoMode(glfwGetPrimaryMonitor());
+    auto               monWidth  = mode->width;
+    auto               monHeight = mode->height;
+
+    I32 winWidth, winHeight;
+    glfwGetWindowSize(m_glfwWindow, &winWidth, &winHeight);
+
+    glfwSetWindowPos(m_glfwWindow, monWidth / 2 - winWidth / 2, monHeight / 2 - winHeight / 2);
 }
 
 void JzRE::JzWindow::PollEvents() const
@@ -138,8 +235,8 @@ void JzRE::JzWindow::CreateGlfwWindow(const JzRE::JzWindowSettings &windowSettin
     }
 
     m_glfwWindow = glfwCreateWindow(
-        static_cast<I32>(m_size.first),
-        static_cast<I32>(m_size.second),
+        m_size.x(),
+        m_size.y(),
         m_title.c_str(),
         selectedMonitor,
         nullptr);
@@ -156,15 +253,15 @@ void JzRE::JzWindow::CreateGlfwWindow(const JzRE::JzWindowSettings &windowSettin
     } else {
         glfwSetWindowSizeLimits(
             m_glfwWindow,
-            static_cast<I32>(m_minimumSize.first),
-            static_cast<I32>(m_minimumSize.second),
-            static_cast<I32>(m_maximumSize.first),
-            static_cast<I32>(m_maximumSize.second));
+            m_minimumSize.x(),
+            m_minimumSize.y(),
+            m_maximumSize.x(),
+            m_maximumSize.y());
 
         glfwSetWindowPos(
             m_glfwWindow,
-            static_cast<I32>(m_position.first),
-            static_cast<I32>(m_position.second));
+            m_position.x(),
+            m_position.y());
 
         __WINDOWS_MAP[m_glfwWindow] = this;
     }
@@ -215,7 +312,7 @@ void JzRE::JzWindow::BindScrollCallback() const
         JzWindow *windowInstance = FindInstance(p_window);
 
         if (windowInstance) {
-            windowInstance->MouseMovedEvent.Invoke(p_xOffset, p_yOffset);
+            windowInstance->MouseScrolledEvent.Invoke({static_cast<F32>(p_xOffset), static_cast<F32>(p_yOffset)});
         }
     };
 
@@ -228,7 +325,7 @@ void JzRE::JzWindow::BindResizeCallback() const
         JzWindow *windowInstance = FindInstance(p_window);
 
         if (windowInstance) {
-            windowInstance->WindowResizedEvent.Invoke(static_cast<U16>(p_width), static_cast<U16>(p_height));
+            windowInstance->WindowResizedEvent.Invoke({p_width, p_height});
         }
     };
 
@@ -241,7 +338,7 @@ void JzRE::JzWindow::BindFramebufferResizeCallback() const
         JzWindow *windowInstance = FindInstance(p_window);
 
         if (windowInstance) {
-            windowInstance->WindowFrameBufferResizedEvent.Invoke(static_cast<U16>(p_width), static_cast<U16>(p_height));
+            windowInstance->WindowFrameBufferResizedEvent.Invoke({p_width, p_height});
         }
     };
 
@@ -254,7 +351,7 @@ void JzRE::JzWindow::BindCursorMoveCallback() const
         JzWindow *windowInstance = FindInstance(p_window);
 
         if (windowInstance) {
-            windowInstance->WindowCursorMoveEvent.Invoke(static_cast<I16>(p_x), static_cast<I16>(p_y));
+            windowInstance->WindowCursorMoveEvent.Invoke({static_cast<I32>(p_x), static_cast<I32>(p_y)});
         }
     };
 
@@ -267,7 +364,7 @@ void JzRE::JzWindow::BindMoveCallback() const
         JzWindow *windowInstance = FindInstance(p_window);
 
         if (windowInstance) {
-            windowInstance->WindowMoveEvent.Invoke(static_cast<I16>(p_x), static_cast<I16>(p_y));
+            windowInstance->WindowMoveEvent.Invoke({p_x, p_y});
         }
     };
 
@@ -321,16 +418,24 @@ void JzRE::JzWindow::BindCloseCallback() const
     glfwSetWindowCloseCallback(m_glfwWindow, closeCallback);
 }
 
-void JzRE::JzWindow::OnResize(JzRE::U16 width, JzRE::U16 height)
+void JzRE::JzWindow::OnResize(JzRE::JzIVec2 p_size)
 {
-    m_size.first  = width;
-    m_size.second = height;
+    m_size = p_size;
 }
 
-void JzRE::JzWindow::OnMove(JzRE::I16 x, JzRE::I16 y)
+void JzRE::JzWindow::OnMove(JzRE::JzIVec2 p_position)
 {
     if (!m_fullscreen) {
-        m_position.first  = x;
-        m_position.second = y;
+        m_position = p_position;
     }
+}
+
+void JzRE::JzWindow::UpdateSizeLimit() const
+{
+    glfwSetWindowSizeLimits(
+        m_glfwWindow,
+        m_minimumSize.x(),
+        m_minimumSize.y(),
+        m_maximumSize.x(),
+        m_maximumSize.y());
 }
