@@ -13,7 +13,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # set export compile commands
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# Find packages using vcpkg
+# find packages using vcpkg
 find_package(glfw3 CONFIG REQUIRED)
 find_package(glad CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
@@ -21,7 +21,7 @@ find_package(imgui CONFIG REQUIRED)
 find_package(assimp CONFIG REQUIRED)
 find_package(Stb REQUIRED)
 
-# Platform-specific libraries and OpenGL
+# add platform-specific libraries and OpenGL
 if(WIN32)
     find_package(OpenGL REQUIRED)
     set(PLATFORM_LIBS opengl32 gdi32)
@@ -44,13 +44,13 @@ elseif(UNIX AND NOT APPLE)
     set(OPENGL_LIBS ${OpenGL})
 endif()
 
-# set include path
+# set project include path
 include_directories(${PROJECT_SOURCE_DIR}/JzRE)
 
-# set source files
+# set project source files
 file(GLOB JZRE_SOURCES "${PROJECT_SOURCE_DIR}/JzRE/*.cpp")
 
-# Add platform-specific sources
+# set project platform-specific sources
 if(WIN32)
     file(GLOB PLATFORM_SOURCES "${PROJECT_SOURCE_DIR}/JzRE/platform/Windows/*.cpp")
 elseif(APPLE)
@@ -61,20 +61,20 @@ elseif(UNIX AND NOT APPLE)
     file(GLOB PLATFORM_SOURCES "${PROJECT_SOURCE_DIR}/JzRE/platform/Linux/*.cpp")
 endif()
 
-# Combine all sources
+# combine all sources
 set(ALL_SOURCES ${JZRE_SOURCES} ${PLATFORM_SOURCES})
 
 # add exe target
 add_executable(JzRE "${PROJECT_SOURCE_DIR}/JzRE/main.cpp" ${ALL_SOURCES})
 
-# Set target properties
+# set target properties
 set_target_properties(JzRE PROPERTIES
     CXX_STANDARD 20
     CXX_STANDARD_REQUIRED ON
     CXX_EXTENSIONS OFF
 )
 
-# Link libraries using vcpkg targets
+# link libraries using vcpkg targets
 target_link_libraries(JzRE PRIVATE
     ${PLATFORM_LIBS}
     ${OPENGL_LIBS}
@@ -82,4 +82,11 @@ target_link_libraries(JzRE PRIVATE
     glm::glm
     imgui::imgui
     assimp::assimp
+)
+
+# set output directory
+set_target_properties(JzRE PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/bin
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/bin
 )

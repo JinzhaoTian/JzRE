@@ -22,7 +22,7 @@
         },
         {
             "name": "macos-clang",
-            "displayName": "macOS (Clang)",
+            "displayName": "macOS (Clang) static",
             "description": "Use Clang on macOS",
             "generator": "Unix Makefiles",
             "binaryDir": "${sourceDir}/build",
@@ -32,6 +32,25 @@
                 "CMAKE_BUILD_TYPE": "Debug",
                 "CMAKE_TOOLCHAIN_FILE": "${env.HOME}/vcpkg/scripts/buildsystems/vcpkg.cmake",
                 "VCPKG_TARGET_TRIPLET": "arm64-osx"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Darwin"
+            }
+        },
+        {
+            "name": "macos-clang",
+            "displayName": "macOS (Clang) dynamic",
+            "description": "Use Clang on macOS",
+            "generator": "Unix Makefiles",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "clang",
+                "CMAKE_CXX_COMPILER": "clang++",
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_TOOLCHAIN_FILE": "${env.HOME}/vcpkg/scripts/buildsystems/vcpkg.cmake",
+                "VCPKG_TARGET_TRIPLET": "arm64-osx-dynamic"
             },
             "condition": {
                 "type": "equals",
