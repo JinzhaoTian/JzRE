@@ -6,7 +6,7 @@ JzRE::JzOpenGLFramebuffer::JzOpenGLFramebuffer(const JzRE::String &debugName) :
 {
     glGenFramebuffers(1, &m_handle);
 
-    if (!debugName.empty()) {
+    if (!debugName.empty() && glObjectLabel != nullptr) {
         glObjectLabel(GL_FRAMEBUFFER, m_handle, -1, debugName.c_str());
     }
 }

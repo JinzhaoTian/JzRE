@@ -5,21 +5,9 @@ JzRE::JzView::JzView(const JzRE::String &name, JzRE::Bool is_opened) :
     JzRE::JzPanelWindow(name, is_opened),
     m_cameraController(m_camera)
 {
-    auto device   = JzRE_DEVICE();
-    m_framebuffer = device->CreateFramebuffer();
+    m_image = &CreateWidget<JzImage>(0, JzVec2(0.f, 0.f));
 
-    // Create texture
-    JzTextureDesc textureDesc;
-    textureDesc.type      = JzETextureType::Texture2D;
-    textureDesc.format    = JzETextureFormat::RGBA8;
-    textureDesc.width     = 256;
-    textureDesc.height    = 256;
-    textureDesc.debugName = "TestScene";
-    m_texture             = device->CreateTexture(textureDesc);
-
-    m_framebuffer->AttachColorTexture(m_texture);
-
-    m_image = &CreateWidget<JzImage>(m_texture->GetHandle(), JzVec2(0.f, 0.f));
+    m_renderer = std::make_unique<JzRHIRenderer>();
 
     scrollable = false;
 }
@@ -33,75 +21,27 @@ void JzRE::JzView::Update(JzRE::F32 deltaTime)
 
 void JzRE::JzView::Render()
 {
-    auto [winWidth, winHeight] = GetSafeSize();
-    auto camera                = GetCamera();
-    auto scene                 = GetScene();
+    if (!m_renderer->IsInitialized()) {
+        m_renderer->Initialize();
+    }
 
-    if (winWidth > 0 && winHeight > 0 && camera && scene) {
-        auto device = JzRE_DEVICE();
+    auto winSize = GetSafeSize();
+    auto scene   = GetScene();
+    if (winSize.x() > 0 && winSize.y() > 0 && scene) {
+        auto currentFrameSize = m_renderer->GetCurrentFrameSize();
 
-        // 开始帧（RHI）
-        device->BeginFrame();
-
-        // 尺寸变更则重建离屏纹理并重新挂载到帧缓冲（RHI）
-        if (!m_texture || m_texture->GetWidth() != winWidth || m_texture->GetHeight() != winHeight) {
-            JzTextureDesc textureDesc;
-            textureDesc.type      = JzETextureType::Texture2D;
-            textureDesc.format    = JzETextureFormat::RGBA8;
-            textureDesc.width     = winWidth;
-            textureDesc.height    = winHeight;
-            textureDesc.mipLevels = 1;
-            textureDesc.debugName = "ViewColor";
-            m_texture             = device->CreateTexture(textureDesc);
-
-            if (m_framebuffer) {
-                m_framebuffer->AttachColorTexture(m_texture);
-            }
-
-            // Update image widget with new texture handle
-            if (m_image && m_texture) {
-                m_image->textureId = m_texture->GetHandle();
-            }
+        if (currentFrameSize != winSize) {
+            m_renderer->SetFrameSize(winSize);
         }
 
-        // 绑定离屏帧缓冲并设置视口（RHI）
-        device->BindFramebuffer(m_framebuffer);
-
-        JzViewport viewport;
-        viewport.x        = 0.0f;
-        viewport.y        = 0.0f;
-        viewport.width    = static_cast<F32>(winWidth);
-        viewport.height   = static_cast<F32>(winHeight);
-        viewport.minDepth = 0.0f;
-        viewport.maxDepth = 1.0f;
-        device->SetViewport(viewport);
-
-        // 清屏（RHI）
-        JzClearParams clearParams;
-        clearParams.clearColor   = true;
-        clearParams.clearDepth   = true;
-        clearParams.clearStencil = false;
-        clearParams.colorR       = 1.0f;
-        clearParams.colorG       = 0.1f;
-        clearParams.colorB       = 0.1f;
-        clearParams.colorA       = 1.0f;
-        clearParams.depth        = 1.0f;
-        clearParams.stencil      = 0;
-        device->Clear(clearParams);
-
-        // 场景渲染（RHI）
+        m_renderer->BeginFrame();
         m_renderer->RenderScene(scene);
+        m_renderer->EndFrame();
 
-        // 解绑离屏帧缓冲（回到默认帧缓冲）（RHI）
-        device->BindFramebuffer(nullptr);
-
-        // 结束帧（RHI）
-        device->EndFrame();
-
-        // 更新展示用控件尺寸和纹理（非图形 API 调用）
-        if (m_image && m_texture) {
-            m_image->size      = JzVec2(static_cast<F32>(winWidth), static_cast<F32>(winHeight));
-            m_image->textureId = m_texture->GetHandle();
+        if (m_image) {
+            auto currentTexture = m_renderer->GetCurrentTexture();
+            m_image->size       = JzVec2(static_cast<F32>(winSize.x()), static_cast<F32>(winSize.y()));
+            m_image->textureId  = currentTexture->GetHandle();
         }
     }
 }
@@ -123,13 +63,13 @@ void JzRE::JzView::DrawFrame()
     // TODO
 }
 
-std::pair<JzRE::U16, JzRE::U16> JzRE::JzView::GetSafeSize() const
+JzRE::JzIVec2 JzRE::JzView::GetSafeSize() const
 {
     constexpr float kTitleBarHeight = 20.0f; // <--- this takes into account the imgui window title bar
     const auto     &size            = GetSize();
     return {
-        static_cast<JzRE::U16>(size.x()),
-        static_cast<JzRE::U16>(std::max(0.0f, size.y() - kTitleBarHeight))};
+        static_cast<JzRE::I32>(size.x()),
+        static_cast<JzRE::I32>(std::max(0.0f, size.y() - kTitleBarHeight))};
 }
 
 JzRE::JzCamera *JzRE::JzView::GetCamera()

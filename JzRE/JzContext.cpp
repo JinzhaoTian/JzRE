@@ -47,6 +47,11 @@ std::shared_ptr<JzRE::JzRHIDevice> JzRE::JzContext::GetDevice() const
     return m_device;
 }
 
+JzRE::JzInputManager &JzRE::JzContext::GetInputManager() const
+{
+    return *inputManager;
+}
+
 JzRE::JzERHIType JzRE::JzContext::GetRHIType() const
 {
     return m_device ? m_device->GetRHIType() : JzERHIType::Unknown;

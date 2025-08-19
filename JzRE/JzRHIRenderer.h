@@ -119,6 +119,21 @@ public:
      */
     void SetRenderState(const JzRenderState &state);
 
+    /**
+     * @brief Get current frame size
+     */
+    void SetFrameSize(JzIVec2 p_size);
+
+    /**
+     * @brief Get current frame size
+     */
+    JzIVec2 GetCurrentFrameSize() const;
+
+    /**
+     * @brief Get framebuffer output texture
+     */
+    std::shared_ptr<JzRHITexture> GetCurrentTexture();
+
 private:
     Bool CreateFramebuffer();
     Bool CreateDefaultPipeline();
@@ -133,6 +148,8 @@ private:
     std::shared_ptr<JzRHIPipeline>    m_defaultPipeline;
     Bool                              m_useCommandList = false;
     Bool                              m_isInitialized  = false;
+    JzIVec2                           m_frameSize;
+    Bool                              m_frameSizeChanged = false;
 };
 
 } // namespace JzRE

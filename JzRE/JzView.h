@@ -48,7 +48,7 @@ public:
      *
      * @return The safe size
      */
-    std::pair<U16, U16> GetSafeSize() const;
+    JzIVec2 GetSafeSize() const;
 
     /**
      * @brief Get the camera
@@ -83,13 +83,10 @@ protected:
     void _Draw_Impl() override;
 
 protected:
-    JzImage                          *m_image;
-    std::shared_ptr<JzRHITexture>     m_texture;
-    std::shared_ptr<JzRHIFramebuffer> m_framebuffer;
-    std::unique_ptr<JzRHIRenderer>    m_renderer;
-
-    JzCamera           m_camera;
-    JzCameraController m_cameraController;
+    JzImage                       *m_image;
+    std::unique_ptr<JzRHIRenderer> m_renderer;
+    JzCamera                       m_camera;
+    JzCameraController             m_cameraController;
 };
 
 } // namespace JzRE

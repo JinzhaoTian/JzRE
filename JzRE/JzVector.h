@@ -219,8 +219,16 @@ public:
     inline bool operator==(const JzVector<N, T> &other) const
     {
         for (U16 i = 0; i < N; ++i) {
-            if ((m_Data[i] - other[i]) > std::numeric_limits<T>::epsilon()) {
-                return false;
+            if constexpr (std::is_floating_point_v<T>) {
+                // 对浮点数使用epsilon容差比较
+                if (std::abs(m_Data[i] - other[i]) > std::numeric_limits<T>::epsilon()) {
+                    return false;
+                }
+            } else {
+                // 对整数使用严格相等比较
+                if (m_Data[i] != other[i]) {
+                    return false;
+                }
             }
         }
         return true;

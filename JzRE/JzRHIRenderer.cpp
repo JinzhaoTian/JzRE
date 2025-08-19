@@ -14,6 +14,11 @@ void JzRE::JzRHIRenderer::RenderScene(JzRE::JzScene *scene)
         return;
     }
 
+    if (m_frameSizeChanged) {
+        CreateFramebuffer();
+        m_frameSizeChanged = false;
+    }
+
     if (!m_isInitialized) {
         CreateDefaultPipeline();
         m_isInitialized = true;
@@ -61,32 +66,36 @@ JzRE::Bool JzRE::JzRHIRenderer::CreateFramebuffer()
         return false;
     }
 
-    // 最小尺寸的离屏帧缓冲（若上层需要自有帧缓冲可忽略本对象）
+    // create default framebuffer
     m_framebuffer = device->CreateFramebuffer("RendererDefaultFB");
     if (!m_framebuffer) {
         return false;
     }
 
-    // 创建默认颜色与深度纹理（占位，避免未绑定）
+    // create default color texture
     JzTextureDesc colorDesc;
     colorDesc.type      = JzETextureType::Texture2D;
     colorDesc.format    = JzETextureFormat::RGBA8;
-    colorDesc.width     = 1;
-    colorDesc.height    = 1;
+    colorDesc.width     = static_cast<U32>(m_frameSize.x());
+    colorDesc.height    = static_cast<U32>(m_frameSize.y());
     colorDesc.debugName = "RendererColor";
     m_colorTexture      = device->CreateTexture(colorDesc);
 
-    JzTextureDesc depthDesc;
-    depthDesc.type      = JzETextureType::Texture2D;
-    depthDesc.format    = JzETextureFormat::Depth24;
-    depthDesc.width     = 1;
-    depthDesc.height    = 1;
-    depthDesc.debugName = "RendererDepth";
-    m_depthTexture      = device->CreateTexture(depthDesc);
-
+    // bind color texture to framebuffer
     if (m_colorTexture) {
         m_framebuffer->AttachColorTexture(m_colorTexture, 0);
     }
+
+    // create default depth texture
+    JzTextureDesc depthDesc;
+    depthDesc.type      = JzETextureType::Texture2D;
+    depthDesc.format    = JzETextureFormat::Depth24;
+    depthDesc.width     = static_cast<U32>(m_frameSize.x());
+    depthDesc.height    = static_cast<U32>(m_frameSize.y());
+    depthDesc.debugName = "RendererDepth";
+    m_depthTexture      = device->CreateTexture(depthDesc);
+
+    // bind depth texture to framebuffer
     if (m_depthTexture) {
         m_framebuffer->AttachDepthTexture(m_depthTexture);
     }
@@ -179,22 +188,47 @@ void JzRE::JzRHIRenderer::RenderImmediate(std::shared_ptr<JzRE::JzScene> scene)
         return;
     }
 
-    // 绑定默认管线（若存在）
-    if (m_defaultPipeline) {
-        device->BindPipeline(m_defaultPipeline);
-    }
+    // bind frame buffer
+    device->BindFramebuffer(m_framebuffer);
+
+    // bind pipeline
+    device->BindPipeline(m_defaultPipeline);
+
+    JzViewport viewport;
+    viewport.x        = 0.0f;
+    viewport.y        = 0.0f;
+    viewport.width    = static_cast<F32>(m_frameSize.x());
+    viewport.height   = static_cast<F32>(m_frameSize.y());
+    viewport.minDepth = 0.0f;
+    viewport.maxDepth = 1.0f;
+    device->SetViewport(viewport);
+
+    // 清屏（RHI）
+    JzClearParams clearParams;
+    clearParams.clearColor   = true;
+    clearParams.clearDepth   = true;
+    clearParams.clearStencil = false;
+    clearParams.colorR       = 1.0f;
+    clearParams.colorG       = 0.1f;
+    clearParams.colorB       = 0.1f;
+    clearParams.colorA       = 1.0f;
+    clearParams.depth        = 1.0f;
+    clearParams.stencil      = 0;
+    device->Clear(clearParams);
 
     JzMat4 modelMatrix = JzMat4x4::Identity();
     m_defaultPipeline->SetUniform("model", modelMatrix);
     m_defaultPipeline->SetUniform("view", modelMatrix);
     m_defaultPipeline->SetUniform("projection", modelMatrix);
 
-    // 遍历场景模型进行绘制
+    // render scene
     for (const auto &model : scene->GetModels()) {
         if (model) {
             model->Draw(m_defaultPipeline);
         }
     }
+
+    device->BindFramebuffer(nullptr);
 }
 
 void JzRE::JzRHIRenderer::RenderWithCommandList(std::shared_ptr<JzRE::JzScene> scene)
@@ -358,4 +392,20 @@ void JzRE::JzRHIRenderer::SetRenderState(const JzRE::JzRenderState &state)
     }
 
     device->SetRenderState(state);
+}
+
+void JzRE::JzRHIRenderer::SetFrameSize(JzRE::JzIVec2 p_size)
+{
+    m_frameSize        = p_size;
+    m_frameSizeChanged = true;
+}
+
+JzRE::JzIVec2 JzRE::JzRHIRenderer::GetCurrentFrameSize() const
+{
+    return m_frameSize;
+}
+
+std::shared_ptr<JzRE::JzRHITexture> JzRE::JzRHIRenderer::GetCurrentTexture()
+{
+    return m_colorTexture;
 }

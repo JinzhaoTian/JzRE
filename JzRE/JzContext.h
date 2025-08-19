@@ -51,9 +51,17 @@ public:
 
     /**
      * @brief Get the device
-     * @return The device
+     *
+     * @return The RHI device
      */
     std::shared_ptr<JzRHIDevice> GetDevice() const;
+
+    /**
+     * @brief Get the input manager
+     *
+     * @return The Input Manager
+     */
+    JzInputManager &GetInputManager() const;
 
     /**
      * @brief Get the RHI type

@@ -16,7 +16,7 @@ JzRE::JzMenuBar::JzMenuBar()
 
 void JzRE::JzMenuBar::HandleShortcuts(F32 deltaTime)
 {
-    auto &inputManager = *JzRE_CONTEXT().inputManager;
+    auto &inputManager = JzRE_CONTEXT().GetInputManager();
 
     if (inputManager.GetKeyState(JzEInputKey::KEY_LEFT_CONTROL) == JzEInputKeyState::KEY_DOWN) {
         if (inputManager.IsKeyPressed(JzEInputKey::KEY_N)) {
