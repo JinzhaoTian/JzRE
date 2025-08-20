@@ -1,17 +1,21 @@
 #include "JzMenuBar.h"
 #include "JzContext.h"
+#include "JzText.h"
+#include "JzArrowButton.h"
+#include "JzSeparator.h"
 
 JzRE::JzMenuBar::JzMenuBar()
 {
     CreateFileMenu();
-    CreateBuildMenu();
+    // CreateBuildMenu();
     CreateWindowMenu();
-    CreateActorsMenu();
-    CreateResourcesMenu();
-    CreateToolsMenu();
-    CreateSettingsMenu();
-    CreateLayoutMenu();
-    CreateHelpMenu();
+    // CreateActorsMenu();
+    // CreateResourcesMenu();
+    // CreateToolsMenu();
+    // CreateSettingsMenu();
+    // CreateLayoutMenu();
+    // CreateHelpMenu();
+    CreateRunButton();
 }
 
 void JzRE::JzMenuBar::HandleShortcuts(F32 deltaTime)
@@ -115,6 +119,11 @@ void JzRE::JzMenuBar::CreateHelpMenu()
 {
     auto &helpMenu = CreateWidget<JzMenuList>("Help");
     helpMenu.CreateWidget<JzText>("JzRE: " + std::string("test"));
+}
+
+void JzRE::JzMenuBar::CreateRunButton()
+{
+    auto &runButton = CreateWidget<JzArrowButton>(JzEArrowDirection::RIGHT);
 }
 
 void JzRE::JzMenuBar::UpdateToggleableItems()

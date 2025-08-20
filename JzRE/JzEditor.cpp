@@ -14,7 +14,7 @@ JzRE::JzEditor::JzEditor() :
     // m_panelsManager.CreatePanel<JzMaterialEditor>("Material Editor", true);
 
     // Initialize menu bar after service registration
-    m_panelsManager.GetPanelAs<JzMenuBar>("Menu Bar").InitializeSettingsMenu();
+    // m_panelsManager.GetPanelAs<JzMenuBar>("Menu Bar").InitializeSettingsMenu();
 
     m_canvas.SetDockspace(true);
     m_context.uiManager->SetCanvas(m_canvas);

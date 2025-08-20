@@ -1,12 +1,10 @@
 #pragma once
 
 #include "CommonTypes.h"
-#include "JzMenuItem.h"
-#include "JzMenuList.h"
 #include "JzPanel.h"
 #include "JzPanelWindow.h"
-#include "JzSeparator.h"
-#include "JzText.h"
+#include "JzMenuItem.h"
+#include "JzMenuList.h"
 
 namespace JzRE {
 /**
@@ -55,6 +53,7 @@ private:
     void CreateSettingsMenu();
     void CreateLayoutMenu();
     void CreateHelpMenu();
+    void CreateRunButton();
 
     void UpdateToggleableItems();
     void OpenEveryWindows(Bool state);
