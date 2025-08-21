@@ -18,6 +18,8 @@ void JzRE::JzArrowButton::_Draw_Impl()
                 return ImGuiDir_Up;
             case JzEArrowDirection::DOWN:
                 return ImGuiDir_Down;
+            default:
+                return ImGuiDir_None;
         }
     };
 

@@ -41,12 +41,8 @@ private:
     void ParseFolder(JzTreeNode &p_root, const std::filesystem::directory_entry &p_directory, Bool p_isEngineItem, Bool p_scriptFolder = false);
     void ConsiderItem(JzTreeNode *p_root, const std::filesystem::directory_entry &p_entry, Bool p_isEngineItem, Bool p_autoOpen = false, Bool p_scriptFolder = false);
 
-public:
-    JzEvent<> AssetPathChangeEvent;
-
 private:
     JzGroup              *m_assetList;
-    std::filesystem::path m_assetPath;
 };
 
 } // namespace JzRE

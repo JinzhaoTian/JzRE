@@ -3,6 +3,7 @@
 #include "JzText.h"
 #include "JzArrowButton.h"
 #include "JzSeparator.h"
+#include "JzOpenFileDialog.h"
 
 JzRE::JzMenuBar::JzMenuBar()
 {
@@ -12,7 +13,7 @@ JzRE::JzMenuBar::JzMenuBar()
     // CreateActorsMenu();
     // CreateResourcesMenu();
     // CreateToolsMenu();
-    // CreateSettingsMenu();
+    CreateSettingsMenu();
     // CreateLayoutMenu();
     // CreateHelpMenu();
     CreateRunButton();
@@ -72,9 +73,45 @@ void JzRE::JzMenuBar::_Draw_Impl()
 
 void JzRE::JzMenuBar::CreateFileMenu()
 {
-    auto &fileMenu                                                           = CreateWidget<JzMenuList>("File");
-    fileMenu.CreateWidget<JzMenuItem>("New Scene", "CTRL + N").ClickedEvent += [] { JzRE_CONTEXT().sceneManager.LoadEmptyScene(); };
-    fileMenu.CreateWidget<JzMenuItem>("Exit", "ALT + F4").ClickedEvent      += [] { JzRE_CONTEXT().window->SetShouldClose(true); };
+    auto &fileMenu = CreateWidget<JzMenuList>("File");
+
+    auto &openFileMenu         = fileMenu.CreateWidget<JzMenuItem>("Open File", "CTRL + O");
+    openFileMenu.ClickedEvent += [] {
+        JzOpenFileDialog dialog("Open Floder");
+        dialog.AddFileType("*", "*.*");
+        dialog.Show();
+
+        const std::filesystem::path projectFile   = dialog.GetSelectedFilePath();
+        const std::filesystem::path projectFolder = projectFile.parent_path();
+
+        if (dialog.HasSucceeded()) {
+            // TODO
+        }
+    };
+
+    auto &openFileFolderMenu         = fileMenu.CreateWidget<JzMenuItem>("Open File Folder", "CTRL + K CTRL + O");
+    openFileFolderMenu.ClickedEvent += [] {
+        JzOpenFileDialog dialog("Open Floder");
+        dialog.AddFileType("*", "*.*");
+        dialog.Show();
+
+        const std::filesystem::path projectFile   = dialog.GetSelectedFilePath();
+        const std::filesystem::path projectFolder = projectFile.parent_path();
+
+        if (dialog.HasSucceeded()) {
+            // TODO
+        }
+    };
+
+    fileMenu.CreateWidget<JzSeparator>();
+
+    auto &closeFileFolderMenu         = fileMenu.CreateWidget<JzMenuItem>("Close File Folder", "CTRL + K F");
+    closeFileFolderMenu.ClickedEvent += [] { };
+
+    fileMenu.CreateWidget<JzSeparator>();
+
+    auto &exitMenu         = fileMenu.CreateWidget<JzMenuItem>("Exit", "ALT + F4");
+    exitMenu.ClickedEvent += [] { JzRE_CONTEXT().window->SetShouldClose(true); };
 }
 
 void JzRE::JzMenuBar::CreateBuildMenu()
