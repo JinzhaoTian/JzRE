@@ -1,0 +1,30 @@
+If:
+  PathMatch: .*\.(cpp|cxx|cc|c|h|hpp|m|mm)$
+
+CompileFlags:
+  CompilationDatabase: build    # 指定编译数据库目录
+  Add: 
+    - "-Wall"                   # 启用所有警告 
+    - "-Wextra"                 # 启用额外警告 
+    - "-std=c++20"              # 使用 C++20 标准
+    - "-I./JzRE"                # 添加项目头文件路径
+
+Index:
+  Background: Build             # 后台构建索引
+  StandardLibrary: Yes          # 索引标准库
+
+Diagnostics:
+  UnusedIncludes: None          # 禁用未使用包含检查，避免宏定义误报
+  MissingIncludes: None
+
+Completion:
+  AllScopes: true               # 启用所有作用域的代码补全
+
+InlayHints:
+  Enabled: true                 # 启用代码提示
+  ParameterNames: true          # 显示参数名称提示
+  DeducedTypes: true            # 显示推断类型提示
+  Designators: true             # 显示设计器提示
+
+Hover:
+  ShowAKA: Yes                  # 显示类型别名

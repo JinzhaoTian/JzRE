@@ -3,7 +3,7 @@
     "configurePresets": [
         {
             "name": "linux-gcc",
-            "displayName": "Linux (GCC)",
+            "displayName": "linux-gcc",
             "description": "Use GCC on Linux",
             "generator": "Unix Makefiles",
             "binaryDir": "${sourceDir}/build",
@@ -12,7 +12,8 @@
                 "CMAKE_CXX_COMPILER": "g++",
                 "CMAKE_BUILD_TYPE": "Debug",
                 "CMAKE_TOOLCHAIN_FILE": "${env.VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-                "VCPKG_TARGET_TRIPLET": "x64-linux"
+                "VCPKG_TARGET_TRIPLET": "x64-linux",
+                "VCPKG_HOST_TRIPLET": "x64-linux"
             },
             "condition": {
                 "type": "equals",
@@ -22,7 +23,7 @@
         },
         {
             "name": "macos-clang-static",
-            "displayName": "macOS (Clang) static",
+            "displayName": "macos-clang-static",
             "description": "Use Clang on macOS",
             "generator": "Unix Makefiles",
             "binaryDir": "${sourceDir}/build",
@@ -31,7 +32,8 @@
                 "CMAKE_CXX_COMPILER": "clang++",
                 "CMAKE_BUILD_TYPE": "Debug",
                 "CMAKE_TOOLCHAIN_FILE": "${env.HOME}/vcpkg/scripts/buildsystems/vcpkg.cmake",
-                "VCPKG_TARGET_TRIPLET": "arm64-osx"
+                "VCPKG_TARGET_TRIPLET": "arm64-osx",
+                "VCPKG_HOST_TRIPLET": "arm64-osx"
             },
             "condition": {
                 "type": "equals",
@@ -41,7 +43,7 @@
         },
         {
             "name": "macos-clang-dynamic",
-            "displayName": "macOS (Clang) dynamic",
+            "displayName": "macos-clang-dynamic",
             "description": "Use Clang on macOS",
             "generator": "Unix Makefiles",
             "binaryDir": "${sourceDir}/build",
@@ -50,7 +52,8 @@
                 "CMAKE_CXX_COMPILER": "clang++",
                 "CMAKE_BUILD_TYPE": "Debug",
                 "CMAKE_TOOLCHAIN_FILE": "${env.HOME}/vcpkg/scripts/buildsystems/vcpkg.cmake",
-                "VCPKG_TARGET_TRIPLET": "arm64-osx-dynamic"
+                "VCPKG_TARGET_TRIPLET": "arm64-osx-dynamic",
+                "VCPKG_HOST_TRIPLET": "arm64-osx-dynamic"
             },
             "condition": {
                 "type": "equals",
@@ -60,8 +63,8 @@
         },
         {
             "name": "windows-mingw-static",
-            "displayName": "Windows (MinGW) static",
-            "description": "Windows with MinGW compiler",
+            "displayName": "windows-mingw-static",
+            "description": "Windows using MinGW compiler with static link",
             "generator": "MinGW Makefiles",
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
@@ -69,7 +72,8 @@
                 "CMAKE_CXX_COMPILER": "g++",
                 "CMAKE_BUILD_TYPE": "Debug",
                 "CMAKE_TOOLCHAIN_FILE": "${env.VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-                "VCPKG_TARGET_TRIPLET": "x64-mingw-static"
+                "VCPKG_TARGET_TRIPLET": "x64-mingw-static",
+                "VCPKG_HOST_TRIPLET": "x64-mingw-static"
             },
             "condition": {
                 "type": "equals",
@@ -79,8 +83,8 @@
         },
         {
             "name": "windows-mingw-dynamic",
-            "displayName": "Windows (MinGW) dynamic",
-            "description": "Windows with MinGW compiler",
+            "displayName": "windows-mingw-dynamic",
+            "description": "Windows using MinGW compiler with dynamic link",
             "generator": "MinGW Makefiles",
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
@@ -88,7 +92,8 @@
                 "CMAKE_CXX_COMPILER": "g++",
                 "CMAKE_BUILD_TYPE": "Debug",
                 "CMAKE_TOOLCHAIN_FILE": "${env.VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-                "VCPKG_TARGET_TRIPLET": "x64-mingw-dynamic"
+                "VCPKG_TARGET_TRIPLET": "x64-mingw-dynamic",
+                "VCPKG_HOST_TRIPLET": "x64-mingw-dynamic"
             },
             "condition": {
                 "type": "equals",
@@ -97,15 +102,43 @@
             }
         },
         {
-            "name": "使用工具链文件配置预设",
-            "displayName": "使用工具链文件配置预设",
-            "description": "设置 Ninja 生成器、版本和安装目录",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/out/build/${presetName}",
+            "name": "windows-clang-mingw",
+            "displayName": "windows-clang-mingw",
+            "description": "Windows using Clang frontend and MinGW compiler with dynamic link",
+            "generator": "MinGW Makefiles",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "clang",
+                "CMAKE_CXX_COMPILER": "clang++",
+                "CMAKE_C_COMPILER_TARGET": "x86_64-w64-windows-gnu",
+                "CMAKE_CXX_COMPILER_TARGET": "x86_64-w64-windows-gnu",
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_TOOLCHAIN_FILE": "${env.VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+                "VCPKG_TARGET_TRIPLET": "x64-mingw-dynamic",
+                "VCPKG_HOST_TRIPLET": "x64-mingw-dynamic"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
+        },
+        {
+            "name": "windows-clang-msvc",
+            "displayName": "windows-clang-msvc",
+            "description": "Windows using Clang with MSVC toolchain (recommended for better compatibility)",
+            "generator": "Visual Studio 17 2022",
+            "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
-                "CMAKE_TOOLCHAIN_FILE": "",
-                "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}"
+                "CMAKE_TOOLCHAIN_FILE": "${env.VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+                "VCPKG_TARGET_TRIPLET": "x64-windows",
+                "VCPKG_HOST_TRIPLET": "x64-windows"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
             }
         }
     ]

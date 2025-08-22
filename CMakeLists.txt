@@ -20,6 +20,7 @@ find_package(glm CONFIG REQUIRED)
 find_package(imgui CONFIG REQUIRED)
 find_package(assimp CONFIG REQUIRED)
 find_package(Stb REQUIRED)
+find_package(Threads REQUIRED)
 
 # add platform-specific libraries and OpenGL
 if(WIN32)
@@ -82,6 +83,7 @@ target_link_libraries(JzRE PRIVATE
     glm::glm
     imgui::imgui
     assimp::assimp
+    Threads::Threads
 )
 
 # set output directory
