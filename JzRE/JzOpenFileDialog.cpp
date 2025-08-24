@@ -10,6 +10,13 @@ void JzRE::JzOpenFileDialog::SetInitialDirectory(const JzRE::String &p_initialDi
     }
 }
 
+void JzRE::JzOpenFileDialog::SetOpenFileType(JzRE::Bool openFile)
+{
+    if (m_fileDialog) {
+        m_fileDialog->SetOpenFileType(openFile);
+    }
+}
+
 void JzRE::JzOpenFileDialog::Show()
 {
     if (m_fileDialog) {

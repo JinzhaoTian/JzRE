@@ -79,10 +79,10 @@ void JzRE::JzMenuBar::CreateFileMenu()
     openFileMenu.ClickedEvent += [] {
         JzOpenFileDialog dialog("Open Floder");
         dialog.AddFileType("*", "*.*");
+        dialog.SetOpenFileType(true);
         dialog.Show();
 
-        const std::filesystem::path projectFile   = dialog.GetSelectedFilePath();
-        const std::filesystem::path projectFolder = projectFile.parent_path();
+        const std::filesystem::path projectFile = dialog.GetSelectedFilePath();
 
         if (dialog.HasSucceeded()) {
             // TODO
@@ -93,10 +93,10 @@ void JzRE::JzMenuBar::CreateFileMenu()
     openFileFolderMenu.ClickedEvent += [] {
         JzOpenFileDialog dialog("Open Floder");
         dialog.AddFileType("*", "*.*");
+        dialog.SetOpenFileType(false);
         dialog.Show();
 
-        const std::filesystem::path projectFile   = dialog.GetSelectedFilePath();
-        const std::filesystem::path projectFolder = projectFile.parent_path();
+        const std::filesystem::path projectFile = dialog.GetSelectedFilePath();
 
         if (dialog.HasSucceeded()) {
             // TODO

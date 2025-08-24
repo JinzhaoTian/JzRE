@@ -31,6 +31,13 @@ public:
     void SetInitialDirectory(const String &p_initialDirectory) override;
 
     /**
+     * @brief Set Open File or Folder
+     *
+     * @param openFile true if open file, false if open file folder
+     */
+    void SetOpenFileType(Bool openFile) override;
+
+    /**
      * @brief Show the file dialog
      */
     void Show() override;
@@ -89,6 +96,7 @@ private:
     String m_filename;
     String m_filepath;
     Bool   m_succeeded;
+    Bool   m_openFile;
 };
 
 } // namespace JzRE

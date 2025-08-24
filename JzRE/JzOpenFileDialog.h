@@ -29,6 +29,13 @@ public:
     void SetInitialDirectory(const String &p_initialDirectory);
 
     /**
+     * @brief Set Open File or Folder
+     *
+     * @param openFile true if open file, false if open file folder
+     */
+    void SetOpenFileType(Bool openFile);
+
+    /**
      * @brief Show the file dialog
      */
     void Show();

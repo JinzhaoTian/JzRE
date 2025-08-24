@@ -8,11 +8,17 @@
 JzRE::JzFileDialogLinux::JzFileDialogLinux(const JzRE::String &p_dialogTitle) :
     m_dialogTitle(p_dialogTitle),
     m_initialDirectory(""),
-    m_succeeded(false) { }
+    m_succeeded(false),
+    m_openFile(true) { }
 
 void JzRE::JzFileDialogLinux::SetInitialDirectory(const JzRE::String &p_initialDirectory)
 {
     m_initialDirectory = p_initialDirectory;
+}
+
+void JzRE::JzFileDialogLinux::SetOpenFileType(Bool openFile)
+{
+    m_openFile = openFile;
 }
 
 void JzRE::JzFileDialogLinux::Show()

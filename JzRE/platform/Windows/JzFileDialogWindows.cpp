@@ -8,11 +8,17 @@
 JzRE::JzFileDialogWindows::JzFileDialogWindows(const JzRE::String &p_dialogTitle) :
     m_dialogTitle(p_dialogTitle),
     m_initialDirectory(""),
-    m_succeeded(false) { }
+    m_succeeded(false),
+    m_openFile(true) { }
 
 void JzRE::JzFileDialogWindows::SetInitialDirectory(const JzRE::String &p_initialDirectory)
 {
     m_initialDirectory = p_initialDirectory;
+}
+
+void JzRE::JzFileDialogWindows::SetOpenFileType(JzRE::Bool openFile)
+{
+    m_openFile = openFile;
 }
 
 void JzRE::JzFileDialogWindows::Show()

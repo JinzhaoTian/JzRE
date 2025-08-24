@@ -30,6 +30,13 @@ public:
     virtual void SetInitialDirectory(const String &p_initialDirectory) = 0;
 
     /**
+     * @brief Set Open File or Folder
+     *
+     * @param openFile true if open file, false if open file folder
+     */
+    virtual void SetOpenFileType(Bool openFile) = 0;
+
+    /**
      * @brief Show the file dialog
      */
     virtual void Show() = 0;
