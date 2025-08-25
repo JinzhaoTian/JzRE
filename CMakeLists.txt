@@ -92,3 +92,12 @@ set_target_properties(JzRE PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/bin
     RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/bin
 )
+
+# copy resources
+add_custom_command(
+    TARGET JzRE POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/resources
+        $<TARGET_FILE_DIR:JzRE>/assets
+    COMMENT "copying resources to output directory"
+)
