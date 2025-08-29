@@ -3,14 +3,36 @@
     "version": "0.1.0",
     "description": "JzRE project dependencies",
     "dependencies": [
-        "glfw3",
-        "glad",
-        "glm",
+        {
+            "name": "llvm",
+            "version>=": "17.0.2#5",
+            "features": ["clang", "tools"]
+        },
+        {
+            "name": "glfw3",
+            "version>=": "3.4#1"
+        },
+        {
+            "name": "glad",
+            "version>=": "0.1.36"
+        },
+        {
+            "name": "glm",
+            "version>=": "1.0.1"
+        },
         {
             "name": "imgui",
+            "version>=": "1.91.9",
             "features": ["glfw-binding", "opengl3-binding", "docking-experimental"]
         },
-        "assimp",
-        "stb"
-    ]
+        {
+            "name": "assimp",
+            "version>=": "5.3.1"
+        },
+        {
+            "name": "stb",
+            "version>=": "2024-07-29#1"
+        }
+    ],
+    "builtin-baseline": "5d8a81e7e232ca70c62f645b0ff434ac5574e921"
 }
