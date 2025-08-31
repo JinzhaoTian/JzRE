@@ -18,4 +18,4 @@ set(GENERATED_DIR ${CMAKE_BINARY_DIR}/generated)
 include_directories(${GENERATED_DIR})
 
 # add module
-add_subdirectory(JzRE)
+add_subdirectory(src)

@@ -2,7 +2,7 @@
     "env": {
         "projectIncludePath": [
             "${workspaceFolder}/**",
-            "${workspaceFolder}/JzRE"
+            "${workspaceFolder}/src"
         ],
         "projectDefines": [
             "_DEBUG",

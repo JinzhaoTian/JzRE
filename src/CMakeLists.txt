@@ -31,27 +31,27 @@ elseif(UNIX AND NOT APPLE)
 endif()
 
 # set project include path
-include_directories(${PROJECT_SOURCE_DIR}/JzRE)
+include_directories(${PROJECT_SOURCE_DIR}/src)
 
 # set project source files
-file(GLOB JZRE_SOURCES "${PROJECT_SOURCE_DIR}/JzRE/*.cpp")
+file(GLOB JZRE_SOURCES "${PROJECT_SOURCE_DIR}/src/*.cpp")
 
 # set project platform-specific sources
 if(WIN32)
-    file(GLOB PLATFORM_SOURCES "${PROJECT_SOURCE_DIR}/JzRE/platform/Windows/*.cpp")
+    file(GLOB PLATFORM_SOURCES "${PROJECT_SOURCE_DIR}/src/platform/Windows/*.cpp")
 elseif(APPLE)
     file(GLOB PLATFORM_SOURCES 
-         "${PROJECT_SOURCE_DIR}/JzRE/platform/macOS/*.cpp"
-         "${PROJECT_SOURCE_DIR}/JzRE/platform/macOS/*.mm")
+         "${PROJECT_SOURCE_DIR}/src/platform/macOS/*.cpp"
+         "${PROJECT_SOURCE_DIR}/src/platform/macOS/*.mm")
 elseif(UNIX AND NOT APPLE)
-    file(GLOB PLATFORM_SOURCES "${PROJECT_SOURCE_DIR}/JzRE/platform/Linux/*.cpp")
+    file(GLOB PLATFORM_SOURCES "${PROJECT_SOURCE_DIR}/src/platform/Linux/*.cpp")
 endif()
 
 # combine all sources
 set(ALL_SOURCES ${JZRE_SOURCES} ${PLATFORM_SOURCES})
 
 # add exe target
-add_executable(JzRE "${PROJECT_SOURCE_DIR}/JzRE/main.cpp" ${ALL_SOURCES})
+add_executable(JzRE "${PROJECT_SOURCE_DIR}/src/main.cpp" ${ALL_SOURCES})
 
 # set target properties
 set_target_properties(JzRE PROPERTIES
