@@ -48,16 +48,33 @@ elseif(UNIX AND NOT APPLE)
 endif()
 
 # include generated reflection files
-include_directories(${REFLECTION_OUTPUT_DIRECTORY})
+if(REFLECTION_OUTPUT_DIRECTORY)
+    include_directories(${REFLECTION_OUTPUT_DIRECTORY})
+    message(STATUS "添加反射代码包含目录: ${REFLECTION_OUTPUT_DIRECTORY}")
+endif()
 
 # combine all sources including generated reflection files
-set(ALL_SOURCES ${JZRE_SOURCES} ${PLATFORM_SOURCES} ${REFLECTION_GENERATED_FILES})
+set(ALL_SOURCES ${JZRE_SOURCES} ${PLATFORM_SOURCES})
+if(REFLECTION_GENERATED_FILES)
+    list(APPEND ALL_SOURCES ${REFLECTION_GENERATED_FILES})
+    list(LENGTH REFLECTION_GENERATED_FILES GENERATED_COUNT)
+    message(STATUS "包含 ${GENERATED_COUNT} 个生成的反射文件")
+endif()
 
 # add exe target
 add_executable(JzRE "${PROJECT_SOURCE_DIR}/src/main.cpp" ${ALL_SOURCES})
 
 # 添加反射代码生成依赖
-add_dependencies(JzRE ${REFLECTION_TARGET})
+if(REFLECTION_TARGET)
+    add_dependencies(JzRE ${REFLECTION_TARGET})
+    message(STATUS "添加反射代码生成依赖: ${REFLECTION_TARGET}")
+endif()
+
+# 设置目标属性，确保反射头文件可被找到
+target_include_directories(JzRE PRIVATE 
+    ${PROJECT_SOURCE_DIR}/src
+    $<$<BOOL:${REFLECTION_OUTPUT_DIRECTORY}>:${REFLECTION_OUTPUT_DIRECTORY}>
+)
 
 # set target properties
 set_target_properties(JzRE PROPERTIES

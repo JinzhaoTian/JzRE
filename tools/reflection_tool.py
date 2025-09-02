@@ -15,18 +15,85 @@ import os
 import argparse
 import json
 import re
+import platform
+import subprocess
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, List, Optional, Set, Tuple, Union
 from dataclasses import dataclass, field
 from enum import Enum
 
 # 尝试导入clang库
 try:
     import clang.cindex
-    from clang.cindex import CursorKind, TypeKind, AccessSpecifier
+    from clang.cindex import CursorKind, TypeKind, AccessSpecifier, TranslationUnit
     CLANG_AVAILABLE = True
-except ImportError:
-    print("警告: 未找到libclang，请安装: pip install libclang")
+    
+    # 尝试自动检测和配置libclang路径
+    def setup_libclang():
+        """自动检测和设置libclang库路径"""
+        system = platform.system().lower()
+        possible_paths = []
+        
+        if system == "windows":
+            # Windows常见路径
+            possible_paths = [
+                "C:/Program Files/LLVM/bin/libclang.dll",
+                "C:/Program Files (x86)/LLVM/bin/libclang.dll",
+                "C:/LLVM/bin/libclang.dll",
+            ]
+            # 尝试通过where命令找到clang
+            try:
+                result = subprocess.run(["where", "clang"], capture_output=True, text=True)
+                if result.returncode == 0:
+                    clang_path = result.stdout.strip().split('\n')[0]
+                    libclang_path = Path(clang_path).parent / "libclang.dll"
+                    if libclang_path.exists():
+                        possible_paths.insert(0, str(libclang_path))
+            except:
+                pass
+                
+        elif system == "darwin":  # macOS
+            possible_paths = [
+                "/usr/local/opt/llvm/lib/libclang.dylib",
+                "/opt/homebrew/opt/llvm/lib/libclang.dylib",
+                "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/libclang.dylib",
+                "/Library/Developer/CommandLineTools/usr/lib/libclang.dylib",
+            ]
+        else:  # Linux
+            possible_paths = [
+                "/usr/lib/llvm-15/lib/libclang.so.1",
+                "/usr/lib/llvm-14/lib/libclang.so.1",
+                "/usr/lib/llvm-13/lib/libclang.so.1",
+                "/usr/lib/llvm-12/lib/libclang.so.1",
+                "/usr/lib/x86_64-linux-gnu/libclang-15.so.1",
+                "/usr/lib/x86_64-linux-gnu/libclang-14.so.1",
+                "/usr/lib/x86_64-linux-gnu/libclang-13.so.1",
+                "/usr/lib/libclang.so.1",
+                "/usr/lib/libclang.so",
+            ]
+        
+        # 尝试每个路径
+        for path in possible_paths:
+            if os.path.exists(path):
+                try:
+                    clang.cindex.conf.set_library_file(path)
+                    # 测试是否能正常工作
+                    index = clang.cindex.Index.create()
+                    print(f"成功配置libclang: {path}")
+                    return True
+                except Exception as e:
+                    print(f"尝试libclang路径失败 {path}: {e}")
+                    continue
+        
+        print("警告: 无法自动检测libclang路径，将使用系统默认配置")
+        return False
+    
+    # 自动设置libclang
+    setup_libclang()
+    
+except ImportError as e:
+    print(f"警告: 未找到libclang，请安装: pip install libclang")
+    print(f"错误详情: {e}")
     CLANG_AVAILABLE = False
 
 class ReflectionPhase(Enum):
@@ -83,6 +150,11 @@ class ReflectionParser:
         self.classes: Dict[str, ClassInfo] = {}
         self.processed_files: Set[str] = set()
         
+        # 选项配置
+        self.verbose = False
+        self.force_regenerate = False  
+        self.single_file_mode = None
+        
         # 反射宏模式 - 支持跨行匹配
         self.jzclass_pattern = re.compile(r'JZCLASS\s*\((.*?)\)', re.MULTILINE | re.DOTALL)
         # 支持跨行的JZPROPERTY模式：JZPROPERTY(...)\n    Type varName = value;
@@ -96,7 +168,8 @@ class ReflectionParser:
         
     def log(self, phase: ReflectionPhase, message: str):
         """记录日志"""
-        print(f"[{phase.value}] {message}")
+        if self.verbose:
+            print(f"[{phase.value}] {message}")
     
     def parse_metadata(self, meta_str: str) -> Dict[str, str]:
         """解析元数据字符串"""
@@ -115,6 +188,27 @@ class ReflectionParser:
     
     def preprocess_files(self) -> List[Path]:
         """预处理阶段：收集所有需要处理的头文件"""
+        if self.single_file_mode:
+            # 单文件模式：只处理指定的文件
+            single_file = Path(self.single_file_mode)
+            if not single_file.exists():
+                self.log(ReflectionPhase.PREPROCESS, f"指定的文件不存在: {single_file}")
+                return []
+            
+            # 检查单个文件是否需要反射处理
+            try:
+                content = single_file.read_text(encoding='utf-8')
+                if any(pattern in content for pattern in ["JZCLASS", "JZPROPERTY", "JZMETHOD", "JZREFLECTION_FILE"]):
+                    self.log(ReflectionPhase.PREPROCESS, f"单文件模式处理: {single_file}")
+                    return [single_file]
+                else:
+                    self.log(ReflectionPhase.PREPROCESS, f"单文件无反射宏: {single_file}")
+                    return []
+            except Exception as e:
+                self.log(ReflectionPhase.PREPROCESS, f"读取单文件失败 {single_file}: {e}")
+                return []
+        
+        # 常规模式：扫描所有文件
         self.log(ReflectionPhase.PREPROCESS, f"扫描源文件目录: {self.source_dir}")
         
         header_files = []
@@ -244,26 +338,240 @@ class ReflectionParser:
             self.log(ReflectionPhase.PARSE, f"解析文件失败 {file_path}: {e}")
             return None
     
+    def extract_macro_metadata(self, file_content: str, macro_start: int, macro_name: str) -> Dict[str, str]:
+        """从宏调用中提取元数据参数"""
+        metadata = {}
+        
+        # 找到宏的开始和结束位置
+        paren_count = 0
+        start_pos = file_content.find('(', macro_start)
+        if start_pos == -1:
+            return metadata
+        
+        end_pos = start_pos + 1
+        while end_pos < len(file_content) and (paren_count > 0 or file_content[end_pos] != ')'):
+            if file_content[end_pos] == '(':
+                paren_count += 1
+            elif file_content[end_pos] == ')':
+                paren_count -= 1
+            end_pos += 1
+        
+        if end_pos >= len(file_content):
+            return metadata
+        
+        # 提取宏参数内容
+        macro_content = file_content[start_pos + 1:end_pos]
+        
+        # 解析meta=(...)格式
+        meta_match = self.meta_pattern.search(macro_content)
+        if meta_match:
+            meta_inner = meta_match.group(1)
+            for attr_match in self.meta_attr_pattern.finditer(meta_inner):
+                key, value = attr_match.groups()
+                metadata[key] = value
+        
+        return metadata
+    
+    def visit_class_cursor(self, cursor, class_info: ClassInfo, file_content: str):
+        """访问类定义的AST节点"""
+        for child in cursor.get_children():
+            # 检查是否是源文件中的定义（不是从include文件来的）
+            if child.location.file and str(child.location.file) != class_info.file_path:
+                continue
+                
+            if child.kind == CursorKind.FIELD_DECL:
+                # 检查字段前是否有JZPROPERTY宏
+                field_start_offset = child.extent.start.offset
+                
+                # 在字段前查找JZPROPERTY宏（向前查找最多1000个字符）
+                search_start = max(0, field_start_offset - 1000)
+                search_content = file_content[search_start:field_start_offset]
+                
+                # 查找最近的JZPROPERTY宏
+                property_matches = list(self.jzproperty_pattern.finditer(search_content))
+                if property_matches:
+                    last_match = property_matches[-1]
+                    # 检查宏和字段之间是否只有空白字符
+                    between_content = search_content[last_match.end():].strip()
+                    if not between_content or between_content.isspace():
+                        # 提取宏的元数据
+                        macro_start = search_start + last_match.start()
+                        metadata = self.extract_macro_metadata(file_content, macro_start, "JZPROPERTY")
+                        
+                        # 创建属性信息
+                        prop_info = PropertyInfo(
+                            name=child.spelling,
+                            type_name=child.type.spelling,
+                            display_name=metadata.get('DisplayName', child.spelling),
+                            category=metadata.get('Category', ''),
+                            tooltip=metadata.get('Tooltip', ''),
+                            is_public=(child.access_specifier == AccessSpecifier.PUBLIC),
+                            file_path=class_info.file_path,
+                            line_number=child.location.line
+                        )
+                        class_info.properties.append(prop_info)
+                        
+            elif child.kind == CursorKind.CXX_METHOD:
+                # 检查方法前是否有JZMETHOD宏
+                method_start_offset = child.extent.start.offset
+                
+                # 在方法前查找JZMETHOD宏（向前查找最多1000个字符）
+                search_start = max(0, method_start_offset - 1000)
+                search_content = file_content[search_start:method_start_offset]
+                
+                # 查找最近的JZMETHOD宏
+                method_matches = list(self.jzmethod_pattern.finditer(search_content))
+                if method_matches:
+                    last_match = method_matches[-1]
+                    # 检查宏和方法之间是否只有空白字符或类型声明
+                    between_content = search_content[last_match.end():].strip()
+                    if not between_content or self._is_method_declaration_start(between_content):
+                        # 提取宏的元数据
+                        macro_start = search_start + last_match.start()
+                        metadata = self.extract_macro_metadata(file_content, macro_start, "JZMETHOD")
+                        
+                        # 获取方法参数
+                        parameters = []
+                        for param in child.get_arguments():
+                            param_type = param.type.spelling
+                            param_name = param.spelling
+                            parameters.append((param_type, param_name))
+                        
+                        # 创建方法信息
+                        method_info = MethodInfo(
+                            name=child.spelling,
+                            return_type=child.result_type.spelling,
+                            parameters=parameters,
+                            display_name=metadata.get('DisplayName', child.spelling),
+                            category=metadata.get('Category', ''),
+                            is_public=(child.access_specifier == AccessSpecifier.PUBLIC),
+                            file_path=class_info.file_path,
+                            line_number=child.location.line
+                        )
+                        class_info.methods.append(method_info)
+    
+    def _is_method_declaration_start(self, content: str) -> bool:
+        """检查内容是否看起来像方法声明的开始"""
+        # 移除注释和多余空白
+        content = re.sub(r'/\*.*?\*/', '', content, flags=re.DOTALL)
+        content = re.sub(r'//.*$', '', content, flags=re.MULTILINE)
+        content = content.strip()
+        
+        # 检查是否包含可能的返回类型关键字
+        type_keywords = ['void', 'int', 'float', 'double', 'bool', 'char', 'std::', 'const', 'static', 'virtual', 'inline']
+        return any(keyword in content for keyword in type_keywords)
+    
     def parse_with_clang(self, file_path: Path) -> Optional[ClassInfo]:
         """使用libclang解析文件"""
         if not CLANG_AVAILABLE:
             return self.parse_with_regex(file_path)
         
         try:
-            # 配置clang
-            clang.cindex.conf.set_library_file("/usr/lib/llvm-14/lib/libclang.so.1")  # 可能需要调整路径
+            # 读取文件内容用于宏检查
+            file_content = file_path.read_text(encoding='utf-8')
             
+            # 检查文件是否包含反射宏
+            if not any(macro in file_content for macro in ["JZCLASS", "JZPROPERTY", "JZMETHOD"]):
+                return None
+            
+            # 创建index和翻译单元
             index = clang.cindex.Index.create()
-            translation_unit = index.parse(str(file_path), args=['-std=c++20'])
             
-            # 遍历AST查找反射信息
-            # 这里可以实现更精确的AST解析
-            # 目前先使用正则表达式作为fallback
-            return self.parse_with_regex(file_path)
+            # 设置编译参数
+            compile_args = [
+                '-std=c++20',
+                '-I' + str(self.source_dir),  # 添加源码目录到包含路径
+                '-DJZREFLECTION_ENABLED=1',   # 定义反射宏启用标志
+                '-x', 'c++',  # 明确指定为C++
+                '-Wno-pragma-once-outside-header',  # 抑制一些警告
+            ]
             
+            # 解析文件
+            translation_unit = index.parse(
+                str(file_path), 
+                args=compile_args,
+                options=TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD
+            )
+            
+            # 检查诊断信息
+            has_errors = False
+            for diag in translation_unit.diagnostics:
+                if diag.severity >= clang.cindex.Diagnostic.Error:
+                    has_errors = True
+                    self.log(ReflectionPhase.PARSE, f"解析错误: {diag.spelling} at {diag.location}")
+            
+            # 如果有严重错误，回退到正则表达式解析
+            if has_errors:
+                self.log(ReflectionPhase.PARSE, f"Clang解析有错误，回退到正则表达式解析: {file_path}")
+                return self.parse_with_regex(file_path)
+            
+            # 遍历AST查找类定义
+            classes_found = []
+            self._find_classes_recursive(translation_unit.cursor, file_path, file_content, classes_found)
+            
+            # 返回第一个找到的类（假设每个文件只有一个主要的反射类）
+            if classes_found:
+                return classes_found[0]
+            else:
+                self.log(ReflectionPhase.PARSE, f"未找到反射类定义: {file_path}")
+                return self.parse_with_regex(file_path)  # 回退到正则表达式
+                
         except Exception as e:
             self.log(ReflectionPhase.PARSE, f"Clang解析失败，使用正则表达式: {e}")
             return self.parse_with_regex(file_path)
+    
+    def _find_classes_recursive(self, cursor, file_path: Path, file_content: str, classes_found: List[ClassInfo]):
+        """递归查找类定义"""
+        for child in cursor.get_children():
+            # 只处理当前文件中的节点
+            if child.location.file and str(child.location.file) != str(file_path):
+                continue
+                
+            if child.kind == CursorKind.CLASS_DECL:
+                # 检查类前是否有JZCLASS宏
+                class_start_offset = child.extent.start.offset
+                
+                # 在类定义前查找JZCLASS宏（向前查找最多2000个字符）
+                search_start = max(0, class_start_offset - 2000)
+                search_content = file_content[search_start:class_start_offset]
+                
+                # 查找JZCLASS宏
+                class_matches = list(self.jzclass_pattern.finditer(search_content))
+                if class_matches:
+                    last_match = class_matches[-1]
+                    
+                    # 提取类的宏元数据
+                    macro_start = search_start + last_match.start()
+                    metadata = self.extract_macro_metadata(file_content, macro_start, "JZCLASS")
+                    
+                    # 获取基类信息
+                    parent_name = ""
+                    for base in child.get_children():
+                        if base.kind == CursorKind.CXX_BASE_SPECIFIER:
+                            parent_name = base.type.spelling
+                            break
+                    
+                    # 创建类信息
+                    class_info = ClassInfo(
+                        name=child.spelling,
+                        parent_name=parent_name,
+                        display_name=metadata.get('DisplayName', child.spelling),
+                        category=metadata.get('Category', ''),
+                        file_path=str(file_path),
+                        line_number=child.location.line,
+                        namespace="JzRE"  # 可以从AST中提取，但暂时硬编码
+                    )
+                    
+                    # 访问类的成员
+                    self.visit_class_cursor(child, class_info, file_content)
+                    
+                    classes_found.append(class_info)
+                    
+                    self.log(ReflectionPhase.PARSE, 
+                           f"通过AST找到反射类 {class_info.name}: {len(class_info.properties)} 属性, {len(class_info.methods)} 方法")
+            
+            # 递归处理子节点
+            self._find_classes_recursive(child, file_path, file_content, classes_found)
     
     def extract_reflection_data(self, files: List[Path]):
         """提取阶段：收集类型信息、属性元数据和函数签名"""
@@ -411,6 +719,28 @@ IMPLEMENT_{class_info.name.upper()}_REFLECTION()
         
         return source_content
     
+    def _needs_regeneration(self, input_file: Path, output_files: List[Path]) -> bool:
+        """检查是否需要重新生成文件"""
+        if self.force_regenerate:
+            return True
+            
+        # 检查输出文件是否存在
+        for output_file in output_files:
+            if not output_file.exists():
+                return True
+        
+        # 检查输入文件是否比输出文件更新
+        try:
+            input_mtime = input_file.stat().st_mtime
+            for output_file in output_files:
+                output_mtime = output_file.stat().st_mtime
+                if input_mtime > output_mtime:
+                    return True
+        except OSError:
+            return True  # 如果无法获取文件时间，则重新生成
+        
+        return False
+    
     def generate_code_files(self):
         """生成阶段：产生.generated.h和.generated.cpp文件"""
         self.log(ReflectionPhase.GENERATE, "开始生成代码文件")
@@ -418,22 +748,40 @@ IMPLEMENT_{class_info.name.upper()}_REFLECTION()
         # 确保输出目录存在
         self.output_dir.mkdir(parents=True, exist_ok=True)
         
+        generated_count = 0
+        skipped_count = 0
+        
         for class_name, class_info in self.classes.items():
-            # 生成.generated.h文件
+            # 确定输出文件路径
             header_file = self.output_dir / f"{Path(class_info.file_path).stem}.generated.h"
-            header_content = self.generate_header_file(class_info)
+            source_file = self.output_dir / f"{Path(class_info.file_path).stem}.generated.cpp"
+            input_file = Path(class_info.file_path)
             
+            # 检查是否需要重新生成
+            if not self._needs_regeneration(input_file, [header_file, source_file]):
+                self.log(ReflectionPhase.GENERATE, f"跳过生成 {class_name}（文件已是最新）")
+                skipped_count += 1
+                continue
+            
+            # 生成.generated.h文件
+            header_content = self.generate_header_file(class_info)
             header_file.write_text(header_content, encoding='utf-8')
             self.log(ReflectionPhase.GENERATE, f"生成头文件: {header_file}")
             
             # 生成.generated.cpp文件
-            source_file = self.output_dir / f"{Path(class_info.file_path).stem}.generated.cpp"
             source_content = self.generate_source_file(class_info)
-            
             source_file.write_text(source_content, encoding='utf-8')
             self.log(ReflectionPhase.GENERATE, f"生成源文件: {source_file}")
+            
+            generated_count += 1
         
-        self.log(ReflectionPhase.GENERATE, f"代码生成完成，共生成 {len(self.classes)} 个类的反射代码")
+        if generated_count > 0:
+            self.log(ReflectionPhase.GENERATE, f"代码生成完成，生成 {generated_count} 个类的反射代码")
+        if skipped_count > 0:
+            self.log(ReflectionPhase.GENERATE, f"跳过 {skipped_count} 个已是最新的类")
+        
+        if generated_count == 0 and skipped_count == 0:
+            self.log(ReflectionPhase.GENERATE, "没有找到需要生成反射代码的类")
     
     def run(self):
         """运行反射工具的完整流程"""
@@ -453,9 +801,13 @@ IMPLEMENT_{class_info.name.upper()}_REFLECTION()
             # 4. 生成阶段
             self.generate_code_files()
             
-            print(f"\n反射工具执行完成!")
-            print(f"处理了 {len(self.processed_files)} 个文件")
-            print(f"生成了 {len(self.classes)} 个类的反射代码")
+            if self.verbose:
+                print(f"\n反射工具执行完成!")
+                print(f"处理了 {len(self.processed_files)} 个文件")
+                print(f"生成了 {len(self.classes)} 个类的反射代码")
+            elif len(self.classes) > 0:
+                # 非详细模式只在有实际生成时输出
+                print(f"反射工具完成，生成了 {len(self.classes)} 个类的反射代码")
             
         except Exception as e:
             print(f"反射工具执行失败: {e}")
@@ -465,7 +817,9 @@ def main():
     parser = argparse.ArgumentParser(description='JzRE C++反射系统代码生成工具')
     parser.add_argument('--source-dir', '-s', required=True, help='源代码目录')
     parser.add_argument('--output-dir', '-o', required=True, help='输出目录')
+    parser.add_argument('--single-file', '-f', help='只处理指定的单个文件（用于增量构建）')
     parser.add_argument('--verbose', '-v', action='store_true', help='详细输出')
+    parser.add_argument('--force', action='store_true', help='强制重新生成，即使输出文件较新')
     
     args = parser.parse_args()
     
@@ -473,8 +827,18 @@ def main():
         print("JzRE反射工具启动...")
         print(f"源码目录: {args.source_dir}")
         print(f"输出目录: {args.output_dir}")
+        if args.single_file:
+            print(f"单文件模式: {args.single_file}")
+        if args.force:
+            print("强制模式: 将重新生成所有文件")
     
     reflection_parser = ReflectionParser(args.source_dir, args.output_dir)
+    
+    # 设置选项
+    reflection_parser.verbose = args.verbose
+    reflection_parser.force_regenerate = args.force
+    reflection_parser.single_file_mode = args.single_file
+    
     reflection_parser.run()
 
 if __name__ == "__main__":
