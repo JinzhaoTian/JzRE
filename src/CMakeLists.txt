@@ -47,11 +47,17 @@ elseif(UNIX AND NOT APPLE)
     file(GLOB PLATFORM_SOURCES "${PROJECT_SOURCE_DIR}/src/platform/Linux/*.cpp")
 endif()
 
-# combine all sources
-set(ALL_SOURCES ${JZRE_SOURCES} ${PLATFORM_SOURCES})
+# include generated reflection files
+include_directories(${REFLECTION_OUTPUT_DIRECTORY})
+
+# combine all sources including generated reflection files
+set(ALL_SOURCES ${JZRE_SOURCES} ${PLATFORM_SOURCES} ${REFLECTION_GENERATED_FILES})
 
 # add exe target
 add_executable(JzRE "${PROJECT_SOURCE_DIR}/src/main.cpp" ${ALL_SOURCES})
+
+# 添加反射代码生成依赖
+add_dependencies(JzRE ${REFLECTION_TARGET})
 
 # set target properties
 set_target_properties(JzRE PROPERTIES

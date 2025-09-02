@@ -13,5 +13,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # set export compile commands
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# add reflection tools
+add_subdirectory(tools)
+
 # add main module
 add_subdirectory(src)
