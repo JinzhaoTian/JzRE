@@ -4,11 +4,6 @@
     "description": "JzRE project dependencies",
     "dependencies": [
         {
-            "name": "llvm",
-            "version>=": "17.0.2#5",
-            "features": ["clang", "tools"]
-        },
-        {
             "name": "glfw3",
             "version>=": "3.4#1"
         },
