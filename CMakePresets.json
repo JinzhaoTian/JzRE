@@ -64,7 +64,7 @@
         {
             "name": "windows-mingw-static",
             "displayName": "windows-mingw-static",
-            "description": "Windows using MinGW compiler with static link",
+            "description": "Windows using MinGW compiler with static linking",
             "generator": "MinGW Makefiles",
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
@@ -84,7 +84,7 @@
         {
             "name": "windows-mingw-dynamic",
             "displayName": "windows-mingw-dynamic",
-            "description": "Windows using MinGW compiler with dynamic link",
+            "description": "Windows using MinGW compiler with dynamic linking",
             "generator": "MinGW Makefiles",
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
@@ -102,9 +102,75 @@
             }
         },
         {
-            "name": "windows-clang-mingw",
-            "displayName": "windows-clang-mingw",
-            "description": "Windows using Clang frontend and MinGW compiler with dynamic link",
+            "name": "windows-msvc-static",
+            "displayName": "windows-msvc-static",
+            "description": "Windows using MSVC compiler with static linking",
+            "generator": "Visual Studio 17 2022",
+            "binaryDir": "${sourceDir}/build",
+            "architecture": {
+                "value": "x64",
+                "strategy": "external"
+            },
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_TOOLCHAIN_FILE": "${env.VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+                "VCPKG_TARGET_TRIPLET": "x64-windows-static",
+                "VCPKG_HOST_TRIPLET": "x64-windows-static"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
+        },
+        {
+            "name": "windows-msvc-dynamic",
+            "displayName": "windows-msvc-dynamic",
+            "description": "Windows using MSVC compiler with dynamic linking",
+            "generator": "Visual Studio 17 2022",
+            "binaryDir": "${sourceDir}/build",
+            "architecture": {
+                "value": "x64",
+                "strategy": "external"
+            },
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_TOOLCHAIN_FILE": "${env.VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+                "VCPKG_TARGET_TRIPLET": "x64-windows",
+                "VCPKG_HOST_TRIPLET": "x64-windows"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
+        },
+        {
+            "name": "windows-clang-mingw-static",
+            "displayName": "windows-clang-mingw-static",
+            "description": "Windows using Clang frontend and MinGW compiler with static linking",
+            "generator": "MinGW Makefiles",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "clang",
+                "CMAKE_CXX_COMPILER": "clang++",
+                "CMAKE_C_COMPILER_TARGET": "x86_64-w64-windows-gnu",
+                "CMAKE_CXX_COMPILER_TARGET": "x86_64-w64-windows-gnu",
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_TOOLCHAIN_FILE": "${env.VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+                "VCPKG_TARGET_TRIPLET": "x64-mingw-static",
+                "VCPKG_HOST_TRIPLET": "x64-mingw-static"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
+        },
+        {
+            "name": "windows-clang-mingw-dynamic",
+            "displayName": "windows-clang-mingw-dynamic",
+            "description": "Windows using Clang frontend and MinGW compiler with dynamic linking",
             "generator": "MinGW Makefiles",
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
@@ -124,9 +190,27 @@
             }
         },
         {
-            "name": "windows-clang-msvc",
-            "displayName": "windows-clang-msvc",
-            "description": "Windows using Clang with MSVC toolchain (recommended for better compatibility)",
+            "name": "windows-clang-msvc-static",
+            "displayName": "windows-clang-msvc-static",
+            "description": "Windows using Clang frontend and MinGW compiler with static linking",
+            "generator": "Visual Studio 17 2022",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_TOOLCHAIN_FILE": "${env.VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+                "VCPKG_TARGET_TRIPLET": "x64-windows-static",
+                "VCPKG_HOST_TRIPLET": "x64-windows-static"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
+        },
+        {
+            "name": "windows-clang-msvc-dynamic",
+            "displayName": "windows-clang-msvc-dynamic",
+            "description": "Windows using Clang frontend and MinGW compiler with dynamic linking",
             "generator": "Visual Studio 17 2022",
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
