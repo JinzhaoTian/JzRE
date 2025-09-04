@@ -47,7 +47,19 @@ public:
 /**
  * @brief JzRE Tool Clang Command Line Option
  */
-static llvm::cl::OptionCategory JzREToolOptionCategory("JzRE Header Tool options");
+static llvm::cl::OptionCategory   JzREToolOptionCategory("JzRE Header Tool options");
+static llvm::cl::extrahelp        JzREToolHelp(clang::tooling::CommonOptionsParser::HelpMessage);
+static llvm::cl::opt<std::string> JzREToolArgOutput("output",
+                                                    llvm::cl::desc("Output directory for generated files"),
+                                                    llvm::cl::value_desc("directory"),
+                                                    llvm::cl::cat(JzREToolOptionCategory));
+static llvm::cl::opt<std::string> JzREToolArgSource("source",
+                                                    llvm::cl::desc("Source directory"),
+                                                    llvm::cl::value_desc("directory"),
+                                                    llvm::cl::cat(JzREToolOptionCategory));
+static llvm::cl::opt<bool>        JzREToolArgVerbose("verbose",
+                                                     llvm::cl::desc("Enable verbose output"),
+                                                     llvm::cl::cat(JzREToolOptionCategory));
 
 int main(int argc, const char **argv)
 {
