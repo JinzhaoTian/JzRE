@@ -50,8 +50,23 @@ endif()
 # combine all sources
 set(ALL_SOURCES ${JZRE_SOURCES} ${PLATFORM_SOURCES})
 
-# add exe target
-add_executable(JzRE "${PROJECT_SOURCE_DIR}/src/main.cpp" ${ALL_SOURCES})
+# Generate reflection code for headers with reflection macros
+generate_reflection_code(JzRE
+    HEADER_FILES 
+        JzTestReflectable.h
+        # 可以在这里添加更多需要反射的头文件
+    INCLUDE_PATHS
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${PROJECT_SOURCE_DIR}/src
+)
+
+# add exe target with generated reflection sources
+add_executable(JzRE 
+    "${PROJECT_SOURCE_DIR}/src/main.cpp" 
+    ${ALL_SOURCES}
+    ${JzRE_GENERATED_HEADER}
+    ${JzRE_GENERATED_SOURCE}
+)
 
 # set target properties
 set_target_properties(JzRE PROPERTIES
@@ -59,6 +74,9 @@ set_target_properties(JzRE PROPERTIES
     CXX_STANDARD_REQUIRED ON
     CXX_EXTENSIONS OFF
 )
+
+# Add dependency on reflection generation
+add_dependencies(JzRE ${JzRE_REFLECTION_TARGET})
 
 # link libraries using vcpkg targets
 target_link_libraries(JzRE PRIVATE
