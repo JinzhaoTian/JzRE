@@ -87,12 +87,12 @@ void JzRE::JzOpenGLVertexArray::SetVertexAttribute(JzRE::U32 index, JzRE::U32 si
     // Assume data type is GL_FLOAT, which is the most common case
     // In a more complete implementation, the data type may need to be passed as a parameter
     glVertexAttribPointer(
-        index,                           // Attribute index
-        size,                            // Number of components per vertex (1, 2, 3, or 4)
-        GL_FLOAT,                        // Data type
-        GL_FALSE,                        // Whether to normalize
-        stride,                          // Stride (bytes)
-        reinterpret_cast<void *>(offset) // Offset
+        index,                                             // Attribute index
+        size,                                              // Number of components per vertex (1, 2, 3, or 4)
+        GL_FLOAT,                                          // Data type
+        GL_FALSE,                                          // Whether to normalize
+        stride,                                            // Stride (bytes)
+        reinterpret_cast<void *>(static_cast<U64>(offset)) // Offset
     );
 }
 
