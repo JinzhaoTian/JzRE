@@ -25,11 +25,11 @@ class JzREToolASTConsumer : public clang::ASTConsumer {
 public:
     void HandleTranslationUnit(clang::ASTContext &Context) override
     {
-        Visitor.TraverseDecl(Context.getTranslationUnitDecl());
+        m_visitor.TraverseDecl(Context.getTranslationUnitDecl());
     }
 
 private:
-    JzREToolASTVisitor Visitor;
+    JzREToolASTVisitor m_visitor;
 };
 
 /**
