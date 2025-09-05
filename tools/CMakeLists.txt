@@ -19,10 +19,19 @@ target_compile_definitions(JzREHeaderTool PRIVATE
 )
 
 # Disable RTTI to match LLVM configuration
-target_compile_options(JzREHeaderTool PRIVATE
-    -fno-rtti
-    -fexceptions
-)
+if(MSVC)
+    # MSVC
+    target_compile_options(JzREHeaderTool PRIVATE
+        /GR
+        /EHsc
+    )
+else()
+    # GCC/Clang
+    target_compile_options(JzREHeaderTool PRIVATE
+        -fno-rtti
+        -fexceptions
+    )
+endif()
 
 target_link_libraries(JzREHeaderTool PRIVATE
     clangTooling
