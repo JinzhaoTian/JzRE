@@ -343,6 +343,17 @@ public:
 };
 
 /**
+ * @brief JzRE Tool Clang Frontend Action Factory
+ */
+class JzREToolFrontendActionFactory : public clang::tooling::FrontendActionFactory {
+public:
+    std::unique_ptr<clang::FrontendAction> create() override
+    {
+        return std::make_unique<JzREToolFrontendAction>();
+    }
+};
+
+/**
  * @brief JzRE Tool Clang Command Line Option
  */
 static llvm::cl::OptionCategory   JzREToolOptionCategory("JzRE Header Tool options");
