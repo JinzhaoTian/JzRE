@@ -5,7 +5,12 @@ message(STATUS "LLVM version: ${LLVM_PACKAGE_VERSION}")
 message(STATUS "Clang version: ${Clang_VERSION}")
 
 add_executable(JzREHeaderTool
+    main.cpp
     JzREHeaderTool.cpp
+    JzREHeaderToolOptions.cpp
+    JzREHeaderToolASTVisitor.cpp
+    JzREHeaderToolASTConsumer.cpp
+    JzREHeaderToolFrontend.cpp
 )
 
 target_include_directories(JzREHeaderTool PRIVATE
@@ -37,6 +42,7 @@ target_link_libraries(JzREHeaderTool PRIVATE
     clangTooling
     clangFrontend
     clangDriver
+    clangSerialization
 )
 
  # set output directory
