@@ -30,19 +30,33 @@ function(jzre_generate_reflection target_name)
     # If no headers specified, scan the target's source directory
     if(NOT ALL_HEADERS)
         get_target_property(target_sources ${target_name} SOURCES)
-        if(target_sources)
+        message(STATUS "JzRE Reflection: Target ${target_name} sources: ${target_sources}")
+        
+        if(target_sources AND NOT target_sources STREQUAL "target_sources-NOTFOUND")
             foreach(source_file ${target_sources})
                 get_filename_component(file_ext ${source_file} EXT)
                 if(file_ext STREQUAL ".h" OR file_ext STREQUAL ".hpp")
+                    # Make path absolute if relative
+                    if(NOT IS_ABSOLUTE ${source_file})
+                        set(source_file "${CMAKE_CURRENT_SOURCE_DIR}/${source_file}")
+                    endif()
                     list(APPEND ALL_HEADERS ${source_file})
                 endif()
             endforeach()
-        else()
-            # Fallback: scan source directory
-            file(GLOB_RECURSE ALL_HEADERS 
-                "${CMAKE_CURRENT_SOURCE_DIR}/*.h" 
-                "${CMAKE_CURRENT_SOURCE_DIR}/*.hpp")
         endif()
+        
+        # Always scan source directory as fallback
+        file(GLOB_RECURSE SCANNED_HEADERS 
+            "${CMAKE_CURRENT_SOURCE_DIR}/*.h" 
+            "${CMAKE_CURRENT_SOURCE_DIR}/*.hpp")
+        list(APPEND ALL_HEADERS ${SCANNED_HEADERS})
+        
+        # Remove duplicates
+        if(ALL_HEADERS)
+            list(REMOVE_DUPLICATES ALL_HEADERS)
+        endif()
+        
+        message(STATUS "JzRE Reflection: Found headers: ${ALL_HEADERS}")
     endif()
     
     # Process headers that need reflection
@@ -58,35 +72,51 @@ function(jzre_generate_reflection target_name)
         
         # Check if file exists and contains JzRE_CLASS macro
         if(EXISTS ${header_file})
-            file(READ ${header_file} file_content)
-            string(FIND "${file_content}" "JzRE_CLASS" has_reflection)
-            if(NOT has_reflection EQUAL -1)
-                list(APPEND REFLECTION_HEADERS ${header_file})
+            # Skip certain files that shouldn't be processed
+            get_filename_component(file_name ${header_file} NAME)
+            if(file_name STREQUAL "JzReflectable.h" OR 
+               file_name STREQUAL "JzReflectionRegistry.h" OR
+               file_name STREQUAL "CommonTypes.h")
+                message(STATUS "JzRE Reflection: Skipping ${file_name} (system file)")
+            else()
+                file(READ ${header_file} file_content)
+                string(FIND "${file_content}" "JzRE_CLASS" has_reflection)
+                message(STATUS "JzRE Reflection: Checking ${header_file} - has_reflection: ${has_reflection}")
                 
-                # Generate output file names
-                get_filename_component(file_name ${header_file} NAME_WE)
-                set(generated_header "${GENERATED_DIR}/${file_name}.generated.h")
-                set(generated_source "${GENERATED_DIR}/${file_name}.generated.cpp")
-                list(APPEND GENERATED_SOURCES ${generated_source})
-                list(APPEND GENERATED_HEADERS ${generated_header})
+                if(NOT has_reflection EQUAL -1)
+                    list(APPEND REFLECTION_HEADERS ${header_file})
+                    
+                    # Generate output file names
+                    get_filename_component(file_name_we ${header_file} NAME_WE)
+                    set(generated_header "${GENERATED_DIR}/${file_name_we}.generated.h")
+                    set(generated_source "${GENERATED_DIR}/${file_name_we}.generated.cpp")
+                    list(APPEND GENERATED_SOURCES ${generated_source})
+                    list(APPEND GENERATED_HEADERS ${generated_header})
                 
-                # Add custom command to generate reflection code
-                add_custom_command(
-                    OUTPUT ${generated_header} ${generated_source}
-                    COMMAND $<TARGET_FILE:JzREHeaderTool>
-                        -source-root=${CMAKE_CURRENT_SOURCE_DIR}
-                        -output=${GENERATED_DIR}
-                        -verbose
-                        ${header_file}
-                    DEPENDS JzREHeaderTool ${header_file}
-                    COMMENT "Generating reflection code for ${file_name}.h"
-                    VERBATIM
-                )
-                
-                # Mark generated files as generated
-                set_source_files_properties(${generated_header} ${generated_source}
-                    PROPERTIES GENERATED TRUE)
+                    message(STATUS "JzRE Reflection: Will generate ${generated_header} and ${generated_source}")
+                    
+                    # Add custom command to generate reflection code
+                    add_custom_command(
+                        OUTPUT ${generated_header} ${generated_source}
+                        COMMAND $<TARGET_FILE:JzREHeaderTool>
+                            -p=${CMAKE_BINARY_DIR}
+                            --source=${CMAKE_CURRENT_SOURCE_DIR}
+                            --output=${GENERATED_DIR}
+                            --verbose
+                            ${header_file}
+                        DEPENDS JzREHeaderTool ${header_file}
+                        COMMENT "Generating reflection code for ${file_name_we}.h"
+                        VERBATIM
+                        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                    )
+                    
+                    # Mark generated files as generated
+                    set_source_files_properties(${generated_header} ${generated_source}
+                        PROPERTIES GENERATED TRUE)
+                endif()
             endif()
+        else()
+            message(WARNING "JzRE Reflection: Header file does not exist: ${header_file}")
         endif()
     endforeach()
     
