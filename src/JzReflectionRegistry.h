@@ -22,6 +22,16 @@ public:
         auto it = classes.find(className);
         return it != classes.end() ? &it->second : nullptr;
     }
+    
+    const JzReflectedClassInfo *FindClass(const String &className) const
+    {
+        return GetClassInfo(className);
+    }
+    
+    const std::unordered_map<String, JzReflectedClassInfo>& GetAllClasses() const
+    {
+        return classes;
+    }
 
     std::vector<String> GetAllClassNames() const
     {

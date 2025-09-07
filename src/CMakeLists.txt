@@ -60,6 +60,9 @@ set_target_properties(JzRE PROPERTIES
     CXX_EXTENSIONS OFF
 )
 
+# generate reflection code for JzRE target
+jzre_generate_reflection(JzRE)
+
 # link libraries using vcpkg targets
 target_link_libraries(JzRE PRIVATE
     ${PLATFORM_LIBS}

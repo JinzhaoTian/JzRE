@@ -8,11 +8,11 @@ namespace JzRE {
  * @brief JzRE Reflection Macro Definition
  */
 #if defined(_MSC_VER)
-#define JZRE_CLASS(...) \
+#define JzRE_CLASS(...) \
     __declspec(annotate("JzRE_CLASS:" #__VA_ARGS__))
-#define JZRE_PROPERTY(...) \
+#define JzRE_PROPERTY(...) \
     __declspec(annotate("JzRE_PROPERTY:" #__VA_ARGS__))
-#define JZRE_METHOD(...) \
+#define JzRE_METHOD(...) \
     __declspec(annotate("JzRE_METHOD:" #__VA_ARGS__))
 #else
 #define JzRE_CLASS(...) \
@@ -22,6 +22,23 @@ namespace JzRE {
 #define JzRE_METHOD(...) \
     __attribute__((annotate("JzRE_METHOD:" #__VA_ARGS__)))
 #endif
+
+/**
+ * @brief GENERATED_BODY macro - must be placed inside class body
+ * This macro will be replaced with generated reflection code during compilation
+ */
+#define GENERATED_BODY()                                         \
+public:                                                          \
+    static const ::JzRE::JzReflectedClassInfo &GetStaticClass(); \
+                                                                 \
+    virtual const ::JzRE::JzReflectedClassInfo &GetClass() const \
+    {                                                            \
+        return GetStaticClass();                                 \
+    }                                                            \
+                                                                 \
+    static void RegisterReflection();                            \
+                                                                 \
+private:
 
 /**
  * @brief JzRE Reflection class property info

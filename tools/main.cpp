@@ -17,17 +17,23 @@ int main(int argc, const char **argv)
     // 创建工具实例
     JzREHeaderTool headerTool;
 
-    // 预处理阶段
-    headerTool.PreprocessPhase(optionParser.getSourcePathList());
+    // 文件过滤
+    std::vector<std::string> filteredFiles;
+    for (const auto &file : optionParser.getSourcePathList()) {
+        // 检查文件名是否为 JzReflectable.h 或包含该文件名
+        if (file.find("JzReflectable.h") == std::string::npos) {
+            filteredFiles.push_back(file);
+        }
+    }
 
-    // 运行Clang工具进行解析
+    headerTool.PreprocessPhase(filteredFiles);
+
     JzREHeaderToolFrontendActionFactory factory(&headerTool);
     int                                 result = Tool.run(&factory);
 
     if (result == 0) {
-        // 验证和生成阶段
         headerTool.ValidatePhase();
-        headerTool.GeneratePhase();
+        headerTool.GeneratePhasePerFile();
     }
 
     return result;
