@@ -2,9 +2,11 @@
 
 #include "JzReflectable.h"
 
-// 最简单的反射测试
+#include "SimpleReflectionTest.generated.h"
 
-class JzRE_CLASS() ATestActor
+// 最简单的反射测试
+JzRE_CLASS()
+class ATestActor
 {
     GENERATED_BODY()
 

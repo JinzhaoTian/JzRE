@@ -1,3 +1,6 @@
+#include "JzREHeaderTool.h"
+#include "JzREHeaderToolOptions.h"
+
 #include <fstream>
 #include <regex>
 #include <algorithm>
@@ -6,9 +9,6 @@
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Support/FileSystem.h"
 #include "llvm/ADT/StringRef.h"
-
-#include "JzREHeaderTool.h"
-#include "JzREHeaderToolOptions.h"
 
 void JzREHeaderTool::ProcessFiles(const std::vector<std::string> &sourceFiles)
 {
@@ -539,16 +539,15 @@ void JzREHeaderTool::GenerateGeneratedHeaderFile(const std::string &headerFile, 
     generatedFile << "#include \"JzReflectable.h\"\n";
     generatedFile << "#include \"JzReflectionRegistry.h\"\n\n";
 
-    // 为每个类生成 GENERATED_BODY 宏的实际内容
-    for (const auto &classInfo : classes) {
-        generatedFile << "// Generated body for class: " << classInfo.name << "\n";
-        generatedFile << "#define GENERATED_BODY_" << classInfo.name << "() \\\n";
-        generatedFile << "public: \\\n";
-        generatedFile << "    static const ::JzRE::JzReflectedClassInfo& GetStaticClass(); \\\n";
-        generatedFile << "    virtual const ::JzRE::JzReflectedClassInfo& GetClass() const { return GetStaticClass(); } \\\n";
-        generatedFile << "    static void RegisterReflection(); \\\n";
-        generatedFile << "private:\n\n";
-    }
+    // 重新定义 GENERATED_BODY 宏以包含反射功能
+    generatedFile << "// Redefine GENERATED_BODY macro to include reflection functionality\n";
+    generatedFile << "#undef GENERATED_BODY\n";
+    generatedFile << "#define GENERATED_BODY() \\\n";
+    generatedFile << "public: \\\n";
+    generatedFile << "    static const ::JzRE::JzReflectedClassInfo& GetStaticClass(); \\\n";
+    generatedFile << "    virtual const ::JzRE::JzReflectedClassInfo& GetClass() const { return GetStaticClass(); } \\\n";
+    generatedFile << "    static void RegisterReflection(); \\\n";
+    generatedFile << "private:\n\n";
 
     // 生成函数声明
     generatedFile << "namespace JzRE {\n\n";

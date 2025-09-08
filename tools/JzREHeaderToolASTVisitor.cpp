@@ -5,7 +5,8 @@
 
 #include "clang/AST/Attr.h"
 #include "clang/AST/RecordLayout.h"
-#include <clang/Basic/SourceManager.h>
+#include "clang/Basic/SourceManager.h"
+#include "clang/Lex/Lexer.h"
 #include "llvm/Support/raw_ostream.h"
 
 JzREHeaderToolASTVisitor::JzREHeaderToolASTVisitor(clang::ASTContext *context, JzREHeaderTool *tool) :
@@ -17,24 +18,49 @@ bool JzREHeaderToolASTVisitor::VisitCXXRecordDecl(clang::CXXRecordDecl *declarat
         return true;
     }
 
-    if (HasReflectedClassAttribute(declaration)) {
+    if (HasReflectedClassMacro(declaration)) {
         ProcessReflectedClass(declaration);
     }
 
     return true;
 }
 
-bool JzREHeaderToolASTVisitor::HasReflectedClassAttribute(const clang::CXXRecordDecl *classDecl)
+bool JzREHeaderToolASTVisitor::HasReflectedClassMacro(const clang::CXXRecordDecl *classDecl)
 {
-    for (const auto *attr : classDecl->attrs()) {
-        if (const auto *annotate = dyn_cast<clang::AnnotateAttr>(attr)) {
-            std::string annotation = annotate->getAnnotation().str();
-            if (annotation.find("JzRE_CLASS") == 0) {
-                return true;
-            }
-        }
+    clang::SourceManager &sm       = m_context->getSourceManager();
+    clang::SourceLocation classLoc = classDecl->getLocation();
+
+    if (!classLoc.isValid()) {
+        return false;
     }
-    return false;
+
+    // 获取类声明前的源代码行
+    clang::SourceLocation lineStart = sm.translateLineCol(
+        sm.getFileID(classLoc),
+        sm.getSpellingLineNumber(classLoc) - 1, 1);
+
+    if (!lineStart.isValid()) {
+        return false;
+    }
+
+    // 读取前一行的源代码
+    clang::SourceLocation lineEnd = clang::Lexer::getLocForEndOfToken(
+        lineStart, 0, sm, m_context->getLangOpts());
+
+    if (!lineEnd.isValid()) {
+        lineEnd = classLoc;
+    }
+
+    bool            invalid  = false;
+    llvm::StringRef lineText = clang::Lexer::getSourceText(
+        clang::CharSourceRange::getCharRange(lineStart, lineEnd), sm, m_context->getLangOpts(), &invalid);
+
+    if (invalid) {
+        return false;
+    }
+
+    // 检查是否包含 JzRE_CLASS 宏
+    return lineText.contains("JzRE_CLASS");
 }
 
 void JzREHeaderToolASTVisitor::ProcessReflectedClass(const clang::CXXRecordDecl *classDecl)
@@ -68,15 +94,10 @@ void JzREHeaderToolASTVisitor::ProcessReflectedClass(const clang::CXXRecordDecl 
         classInfo.sizeInBytes                = layout.getSize().getQuantity();
     }
 
-    // parse class annotation
-    for (const auto *attr : classDecl->attrs()) {
-        if (const auto *annotate = dyn_cast<clang::AnnotateAttr>(attr)) {
-            std::string annotation = annotate->getAnnotation().str();
-            if (annotation.find("JzRE_CLASS") == 0) {
-                auto metadata      = ParseReflectedAnnotation(annotation.substr(10)); // 移除 "JzRE_CLASS:"
-                classInfo.metadata = metadata;
-            }
-        }
+    // parse class macro arguments
+    std::string macroArgs = ExtractMacroArgumentsFromSource(loc, "JzRE_CLASS");
+    if (!macroArgs.empty()) {
+        classInfo.metadata = ParseReflectedMacroArgs(macroArgs);
     }
 
     // parse class base-class info
@@ -87,7 +108,7 @@ void JzREHeaderToolASTVisitor::ProcessReflectedClass(const clang::CXXRecordDecl 
 
     // parse class property info
     for (const auto *field : classDecl->fields()) {
-        if (HasReflectedPropertyAttribute(field)) {
+        if (HasReflectedPropertyMacro(field)) {
             auto propInfo = ProcessReflectedProperty(field);
             classInfo.properties.push_back(propInfo);
         }
@@ -95,7 +116,7 @@ void JzREHeaderToolASTVisitor::ProcessReflectedClass(const clang::CXXRecordDecl 
 
     // parse class method info
     for (const auto *method : classDecl->methods()) {
-        if (HasReflectedMethodAttribute(method)) {
+        if (HasReflectedMethodMacro(method)) {
             auto methodInfo = ProcessReflectedMethod(method);
             classInfo.methods.push_back(methodInfo);
         }
@@ -110,17 +131,37 @@ void JzREHeaderToolASTVisitor::ProcessReflectedClass(const clang::CXXRecordDecl 
     }
 }
 
-bool JzREHeaderToolASTVisitor::HasReflectedPropertyAttribute(const clang::FieldDecl *fieldDecl)
+bool JzREHeaderToolASTVisitor::HasReflectedPropertyMacro(const clang::FieldDecl *fieldDecl)
 {
-    for (const auto *attr : fieldDecl->attrs()) {
-        if (const auto *annotate = dyn_cast<clang::AnnotateAttr>(attr)) {
-            std::string annotation = annotate->getAnnotation().str();
-            if (annotation.find("JzRE_PROPERTY") == 0) {
-                return true;
-            }
-        }
+    clang::SourceManager &sm       = m_context->getSourceManager();
+    clang::SourceLocation fieldLoc = fieldDecl->getLocation();
+
+    if (!fieldLoc.isValid()) {
+        return false;
     }
-    return false;
+
+    // 获取字段声明前的源代码行
+    clang::SourceLocation lineStart = sm.translateLineCol(
+        sm.getFileID(fieldLoc),
+        sm.getSpellingLineNumber(fieldLoc) - 1, 1);
+
+    if (!lineStart.isValid()) {
+        return false;
+    }
+
+    // 读取前一行的源代码
+    clang::SourceLocation lineEnd = fieldLoc;
+
+    bool            invalid  = false;
+    llvm::StringRef lineText = clang::Lexer::getSourceText(
+        clang::CharSourceRange::getCharRange(lineStart, lineEnd), sm, m_context->getLangOpts(), &invalid);
+
+    if (invalid) {
+        return false;
+    }
+
+    // 检查是否包含 JzRE_PROPERTY 宏
+    return lineText.contains("JzRE_PROPERTY");
 }
 
 JzREHeaderToolReflectedClassPropertyInfo JzREHeaderToolASTVisitor::ProcessReflectedProperty(const clang::FieldDecl *fieldDecl)
@@ -138,40 +179,57 @@ JzREHeaderToolReflectedClassPropertyInfo JzREHeaderToolASTVisitor::ProcessReflec
         propInfo.offset                       = layout.getFieldOffset(fieldNo) / 8; // 转换为字节
     }
 
-    // parse class property annotation
-    for (const auto *attr : fieldDecl->attrs()) {
-        if (const auto *annotate = dyn_cast<clang::AnnotateAttr>(attr)) {
-            std::string annotation = annotate->getAnnotation().str();
-            if (annotation.find("JzRE_PROPERTY") == 0) {
-                auto metadata     = ParseReflectedAnnotation(annotation.substr(13)); // 移除 "JzRE_PROPERTY:"
-                propInfo.metadata = metadata;
+    // parse class property macro arguments
+    clang::SourceManager &sm        = m_context->getSourceManager();
+    clang::SourceLocation fieldLoc  = fieldDecl->getLocation();
+    std::string           macroArgs = ExtractMacroArgumentsFromSource(fieldLoc, "JzRE_PROPERTY");
+    if (!macroArgs.empty()) {
+        propInfo.metadata = ParseReflectedMacroArgs(macroArgs);
 
-                // parse flag
-                if (metadata.find("EditAnywhere") != metadata.end()) {
-                    propInfo.flags.push_back("EditAnywhere");
-                }
+        // parse flag
+        if (propInfo.metadata.find("EditAnywhere") != propInfo.metadata.end()) {
+            propInfo.flags.push_back("EditAnywhere");
+        }
 
-                if (metadata.find("Category") != metadata.end()) {
-                    propInfo.category = metadata["Category"];
-                }
-            }
+        if (propInfo.metadata.find("Category") != propInfo.metadata.end()) {
+            propInfo.category = propInfo.metadata["Category"];
         }
     }
 
     return propInfo;
 }
 
-bool JzREHeaderToolASTVisitor::HasReflectedMethodAttribute(const clang::CXXMethodDecl *methodDecl)
+bool JzREHeaderToolASTVisitor::HasReflectedMethodMacro(const clang::CXXMethodDecl *methodDecl)
 {
-    for (const auto *attr : methodDecl->attrs()) {
-        if (const auto *annotate = dyn_cast<clang::AnnotateAttr>(attr)) {
-            std::string annotation = annotate->getAnnotation().str();
-            if (annotation.find("JzRE_METHOD") == 0) {
-                return true;
-            }
-        }
+    clang::SourceManager &sm        = m_context->getSourceManager();
+    clang::SourceLocation methodLoc = methodDecl->getLocation();
+
+    if (!methodLoc.isValid()) {
+        return false;
     }
-    return false;
+
+    // 获取方法声明前的源代码行
+    clang::SourceLocation lineStart = sm.translateLineCol(
+        sm.getFileID(methodLoc),
+        sm.getSpellingLineNumber(methodLoc) - 1, 1);
+
+    if (!lineStart.isValid()) {
+        return false;
+    }
+
+    // 读取前一行的源代码
+    clang::SourceLocation lineEnd = methodLoc;
+
+    bool            invalid  = false;
+    llvm::StringRef lineText = clang::Lexer::getSourceText(
+        clang::CharSourceRange::getCharRange(lineStart, lineEnd), sm, m_context->getLangOpts(), &invalid);
+
+    if (invalid) {
+        return false;
+    }
+
+    // 检查是否包含 JzRE_METHOD 宏
+    return lineText.contains("JzRE_METHOD");
 }
 
 JzREHeaderToolReflectedClassMethodInfo JzREHeaderToolASTVisitor::ProcessReflectedMethod(const clang::CXXMethodDecl *methodDecl)
@@ -192,28 +250,29 @@ JzREHeaderToolReflectedClassMethodInfo JzREHeaderToolASTVisitor::ProcessReflecte
         methodInfo.parameters.emplace_back(paramType, paramName);
     }
 
-    // parse class method annotation
-    for (const auto *attr : methodDecl->attrs()) {
-        if (const auto *annotate = dyn_cast<clang::AnnotateAttr>(attr)) {
-            std::string annotation = annotate->getAnnotation().str();
-            if (annotation.find("JzRE_METHOD") == 0) {
-                auto metadata       = ParseReflectedAnnotation(annotation.substr(11)); // 移除 "JzRE_METHOD:"
-                methodInfo.metadata = metadata;
-            }
-        }
+    // parse class method macro arguments
+    clang::SourceManager &sm        = m_context->getSourceManager();
+    clang::SourceLocation methodLoc = methodDecl->getLocation();
+    std::string           macroArgs = ExtractMacroArgumentsFromSource(methodLoc, "JzRE_METHOD");
+    if (!macroArgs.empty()) {
+        methodInfo.metadata = ParseReflectedMacroArgs(macroArgs);
     }
 
     return methodInfo;
 }
 
-std::unordered_map<std::string, std::string> JzREHeaderToolASTVisitor::ParseReflectedAnnotation(const std::string &annotation)
+std::unordered_map<std::string, std::string> JzREHeaderToolASTVisitor::ParseReflectedMacroArgs(const std::string &macroArgs)
 {
     std::unordered_map<std::string, std::string> result;
+
+    if (macroArgs.empty()) {
+        return result;
+    }
 
     // parse simple key-value (key=value, key=value)
     std::regex  pattern(R"((\w+)=([^,\)]+))");
     std::smatch match;
-    std::string searchString = annotation;
+    std::string searchString = macroArgs;
 
     while (std::regex_search(searchString, match, pattern)) {
         if (match.size() == 3) {
@@ -230,7 +289,7 @@ std::unordered_map<std::string, std::string> JzREHeaderToolASTVisitor::ParseRefl
 
     // parse simple flag
     std::regex flagPattern(R"(\b(\w+)\b)");
-    searchString = annotation;
+    searchString = macroArgs;
     while (std::regex_search(searchString, match, flagPattern)) {
         std::string flag = match[1].str();
         if (result.find(flag) == result.end()) {
@@ -240,4 +299,57 @@ std::unordered_map<std::string, std::string> JzREHeaderToolASTVisitor::ParseRefl
     }
 
     return result;
+}
+
+std::string JzREHeaderToolASTVisitor::ExtractMacroArgumentsFromSource(clang::SourceLocation startLoc, const std::string &macroName)
+{
+    clang::SourceManager &sm = m_context->getSourceManager();
+
+    if (!startLoc.isValid()) {
+        return "";
+    }
+
+    // 获取宏调用前的源代码行
+    clang::SourceLocation lineStart = sm.translateLineCol(
+        sm.getFileID(startLoc),
+        sm.getSpellingLineNumber(startLoc) - 1, 1);
+
+    if (!lineStart.isValid()) {
+        return "";
+    }
+
+    // 读取整行源代码
+    clang::SourceLocation lineEnd = clang::Lexer::getLocForEndOfToken(
+        sm.translateLineCol(sm.getFileID(startLoc), sm.getSpellingLineNumber(startLoc) - 1, 200),
+        0, sm, m_context->getLangOpts());
+
+    bool            invalid  = false;
+    llvm::StringRef lineText = clang::Lexer::getSourceText(
+        clang::CharSourceRange::getCharRange(lineStart, lineEnd), sm, m_context->getLangOpts(), &invalid);
+
+    if (invalid) {
+        return "";
+    }
+
+    std::string line = lineText.str();
+
+    // 查找宏调用
+    size_t macroPos = line.find(macroName);
+    if (macroPos == std::string::npos) {
+        return "";
+    }
+
+    // 查找括号
+    size_t openParen = line.find('(', macroPos);
+    if (openParen == std::string::npos) {
+        return ""; // 无参数宏
+    }
+
+    size_t closeParen = line.find(')', openParen);
+    if (closeParen == std::string::npos) {
+        return "";
+    }
+
+    // 提取括号内的内容
+    return line.substr(openParen + 1, closeParen - openParen - 1);
 }

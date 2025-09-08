@@ -1,4 +1,4 @@
-#include "JzReflectable.h"
+#include "JzReflectionInfo.h"
 
 namespace JzRE {
 /**
@@ -22,13 +22,13 @@ public:
         auto it = classes.find(className);
         return it != classes.end() ? &it->second : nullptr;
     }
-    
+
     const JzReflectedClassInfo *FindClass(const String &className) const
     {
         return GetClassInfo(className);
     }
-    
-    const std::unordered_map<String, JzReflectedClassInfo>& GetAllClasses() const
+
+    const std::unordered_map<String, JzReflectedClassInfo> &GetAllClasses() const
     {
         return classes;
     }
