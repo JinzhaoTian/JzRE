@@ -5,9 +5,9 @@
  */
 int main(int argc, char **argv)
 {
-    // 初始化Google Test框架
+    // init Google Test
     ::testing::InitGoogleTest(&argc, argv);
 
-    // 运行所有测试
+    // run
     return RUN_ALL_TESTS();
 }
