@@ -31,6 +31,10 @@
         {
             "name": "stb",
             "version>=": "2024-07-29#1"
+        },
+        {
+            "name": "gtest",
+            "version>=": "1.14.0"
         }
     ],
     "builtin-baseline": "5d8a81e7e232ca70c62f645b0ff434ac5574e921"

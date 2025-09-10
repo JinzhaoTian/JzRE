@@ -47,21 +47,32 @@ elseif(UNIX AND NOT APPLE)
     file(GLOB PLATFORM_SOURCES "${PROJECT_SOURCE_DIR}/src/platform/Linux/*.cpp")
 endif()
 
-# combine all sources
+# combine all sources (excluding main.cpp for library)
 set(ALL_SOURCES ${JZRE_SOURCES} ${PLATFORM_SOURCES})
+list(REMOVE_ITEM ALL_SOURCES "${PROJECT_SOURCE_DIR}/src/main.cpp")
+
+# create library target for testing
+add_library(JzRELib STATIC ${ALL_SOURCES})
 
 # add exe target
-add_executable(JzRE "${PROJECT_SOURCE_DIR}/src/main.cpp" ${ALL_SOURCES})
+add_executable(JzRE "${PROJECT_SOURCE_DIR}/src/main.cpp")
 
-# set target properties
+# set target properties for library
+set_target_properties(JzRELib PROPERTIES
+    CXX_STANDARD 20
+    CXX_STANDARD_REQUIRED ON
+    CXX_EXTENSIONS OFF
+)
+
+# set target properties for executable
 set_target_properties(JzRE PROPERTIES
     CXX_STANDARD 20
     CXX_STANDARD_REQUIRED ON
     CXX_EXTENSIONS OFF
 )
 
-# link libraries using vcpkg targets
-target_link_libraries(JzRE PRIVATE
+# link libraries to library target
+target_link_libraries(JzRELib PUBLIC
     ${PLATFORM_LIBS}
     ${OPENGL_LIBS}
     glad::glad
@@ -70,6 +81,9 @@ target_link_libraries(JzRE PRIVATE
     assimp::assimp
     Threads::Threads
 )
+
+# link library to executable
+target_link_libraries(JzRE PRIVATE JzRELib)
 
 # set output directory
 set_target_properties(JzRE PROPERTIES
