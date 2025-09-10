@@ -4,11 +4,6 @@
     "description": "JzRE project dependencies",
     "dependencies": [
         {
-            "name": "llvm",
-            "version>=": "17.0.2#5",
-            "features": ["clang", "tools"]
-        },
-        {
             "name": "glfw3",
             "version>=": "3.4#1"
         },
@@ -23,7 +18,11 @@
         {
             "name": "imgui",
             "version>=": "1.91.9",
-            "features": ["glfw-binding", "opengl3-binding", "docking-experimental"]
+            "features": [
+                "glfw-binding",
+                "opengl3-binding",
+                "docking-experimental"
+            ]
         },
         {
             "name": "assimp",

@@ -4,74 +4,70 @@
 
 namespace JzRE {
 
-#define JzRE_REFLECTABLE()            \
-    static const char *getClassName() \
-    {                                 \
-        return __VA_ARGS__;           \
-    }                                 \
-    friend class JzReflectionGenerator;
+/**
+ * @brief JzRE Reflection Macro Definition
+ */
+#define JzRE_CLASS(...)
+#define JzRE_PROPERTY(...)
+#define JzRE_METHOD(...)
 
-#define JzRE_REFLECT_FIELD(type, name) \
-    type name
+/**
+ * @brief GENERATED_BODY This macro will be replaced with generated reflection code during compilation
+ */
+#define GENERATED_BODY()
 
-#define JzRE_REFLECT_METHOD(ret, name, ...) \
-    ret name(__VA_ARGS__)
-
-struct JzReflectFieldInfo {
-    String                        name;
-    String                        type;
-    Size                          offset;
-    std::function<void *(void *)> getter;
+/**
+ * @brief JzRE Reflection class property info
+ */
+struct JzReflectedClassPropertyInfo {
+    String                             name;
+    String                             type;
+    String                             category;
+    std::vector<String>                flags;
+    std::unordered_map<String, String> metadata;
+    Size                               offset;
 };
 
-struct JzReflectMethodInfo {
-    String                                             name;
-    String                                             returnType;
-    std::vector<String>                                parameterTypes;
-    std::function<void *(void *, std::vector<void *>)> invoker;
+/**
+ * @brief JzRE Reflection class method info
+ */
+struct JzReflectedClassMethodInfo {
+    String                                 name;
+    String                                 returnType;
+    std::vector<std::pair<String, String>> parameters; // type, name
+    std::vector<String>                    flags;
+    std::unordered_map<String, String>     metadata;
+    Bool                                   isConst;
+    Bool                                   isStatic;
+    Bool                                   isVirtual;
 };
 
-struct JzReflectClassInfo {
-    String                                          name;
-    std::unordered_map<String, JzReflectFieldInfo>  fields;
-    std::unordered_map<String, JzReflectMethodInfo> methods;
-    std::function<void *()>                         createInstance;
-};
+/**
+ * @brief JzRE Reflection class info
+ */
+struct JzReflectedClassInfo {
+    String                                    name;
+    String                                    namespaceName;
+    String                                    fullName;
+    String                                    headerFile;
+    std::vector<String>                       baseClasses;
+    std::vector<JzReflectedClassPropertyInfo> properties;
+    std::vector<JzReflectedClassMethodInfo>   methods;
+    std::unordered_map<String, String>        metadata;
+    Size                                      size; // in bytes
 
-class JzReflectionRegistry {
-public:
-    static JzReflectionRegistry &getInstance()
+    JzReflectedClassInfo() :
+        size(0) { }
+
+    const String GetName() const
     {
-        static JzReflectionRegistry instance;
-        return instance;
+        return name;
     }
 
-    void registerClass(const JzReflectClassInfo &classInfo)
+    Size GetSize() const
     {
-        classes[classInfo.name] = classInfo;
+        return size;
     }
-
-    const JzReflectClassInfo *getClassInfo(const String &className) const
-    {
-        auto it = classes.find(className);
-        return it != classes.end() ? &it->second : nullptr;
-    }
-
-    void printAllClasses() const
-    {
-        for (const auto &pair : classes) {
-            std::cout << "Class: " << pair.first << std::endl;
-            for (const auto &field : pair.second.fields) {
-                std::cout << "  Field: " << field.second.type << " " << field.first << std::endl;
-            }
-            for (const auto &method : pair.second.methods) {
-                std::cout << "  Method: " << method.second.returnType << " " << method.first << "()" << std::endl;
-            }
-        }
-    }
-
-private:
-    std::unordered_map<String, JzReflectClassInfo> classes;
 };
 
 } // namespace JzRE
