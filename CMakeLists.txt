@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.15.0)
 
 # set project name
-project(JzRE)
+project(JzRE VERSION 0.0.1 LANGUAGES CXX C)
 
 # set c/c++ standard
 set(CMAKE_C_STANDARD 17)
@@ -13,11 +13,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # set export compile commands
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# enable testing
-enable_testing()
+# set output path
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-# add module
+# add src module
 add_subdirectory(src)
 
 # add tests module
-add_subdirectory(tests)
+option(BUILD_TESTS "Build the tests" ON)
+if(BUILD_TESTS)
+    add_subdirectory(tests)
+endif()

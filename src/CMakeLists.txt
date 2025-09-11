@@ -30,9 +30,6 @@ elseif(UNIX AND NOT APPLE)
     set(OPENGL_LIBS ${OpenGL})
 endif()
 
-# set project include path
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-
 # set project source files
 file(GLOB JzRE_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/Jz*.cpp")
 
@@ -60,6 +57,11 @@ set_target_properties(JzRELib PROPERTIES
     CXX_EXTENSIONS OFF
 )
 
+# set include path
+target_include_directories(JzRELib PUBLIC
+    "${CMAKE_CURRENT_SOURCE_DIR}/"
+)
+
 # link libraries to library target
 target_link_libraries(JzRELib PUBLIC
     ${PLATFORM_LIBS}
@@ -83,13 +85,6 @@ set_target_properties(JzRE PROPERTIES
 
 # link library to executable
 target_link_libraries(JzRE PRIVATE JzRELib)
-
-# set output directory
-set_target_properties(JzRE PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-    RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/bin
-    RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/bin
-)
 
 # copy resources
 add_custom_command(
