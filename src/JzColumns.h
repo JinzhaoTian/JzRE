@@ -1,6 +1,11 @@
-#pragma once
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
 
-#include "CommonTypes.h"
+#include <imgui.h>
+#include <array>
+#include "JzRETypes.h"
 #include "JzWidget.h"
 #include "JzWidgetContainer.h"
 

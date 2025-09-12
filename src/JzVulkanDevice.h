@@ -1,10 +1,17 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #pragma once
 
-#include "JzRHICommandList.h"
-#include "JzRHIDevice.h"
 #include "JzRHIETypes.h"
+#include "JzRHIDevice.h"
+#include "JzRHICapabilities.h"
+#include "JzRHICommandList.h"
 #include "JzRHIFramebuffer.h"
 #include "JzRHIShader.h"
+#include "JzRHIStats.h"
 
 namespace JzRE {
 /**

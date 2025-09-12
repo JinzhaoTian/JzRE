@@ -1,8 +1,12 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #pragma once
 
-#include "CommonTypes.h"
+#include "JzRETypes.h"
 #include "JzRHICommandList.h"
-#include "JzRHIETypes.h"
 
 namespace JzRE {
 /**
@@ -22,7 +26,7 @@ public:
 
     /**
      * @brief Create a command list
-     * 
+     *
      * @param debugName The debug name of the command list
      * @return The created command list
      */
@@ -30,7 +34,7 @@ public:
 
     /**
      * @brief Submit a command list
-     * 
+     *
      * @param commandList The command list to submit
      */
     void SubmitCommandList(std::shared_ptr<JzRHICommandList> commandList);
@@ -47,7 +51,7 @@ public:
 
     /**
      * @brief Set the thread count
-     * 
+     *
      * @param threadCount The thread count
      */
     void SetThreadCount(U32 threadCount);

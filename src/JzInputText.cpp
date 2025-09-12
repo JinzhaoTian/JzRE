@@ -1,4 +1,10 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #include "JzInputText.h"
+#include <imgui.h>
 
 JzRE::JzInputText::JzInputText(const JzRE::String &p_content, const JzRE::String &p_label) :
     JzDataWidget(content),

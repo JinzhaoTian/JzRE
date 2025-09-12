@@ -1,9 +1,9 @@
 #pragma once
 
-#include "CommonTypes.h"
+#include <chrono>
+#include "JzRETypes.h"
 #include "JzRHIBuffer.h"
 #include "JzRHICommandList.h"
-#include "JzRHIETypes.h"
 #include "JzRHIStats.h"
 #include "JzRenderThreadContext.h"
 #include "JzRenderThreadPool.h"

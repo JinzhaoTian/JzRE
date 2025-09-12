@@ -1,6 +1,9 @@
-#pragma once
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
 
-#include "CommonTypes.h"
+#include "JzRETypes.h"
 #include "JzRHICommandList.h"
 #include "JzRHIETypes.h"
 #include "JzRenderTask.h"

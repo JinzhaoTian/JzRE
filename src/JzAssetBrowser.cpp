@@ -1,9 +1,12 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #include "JzAssetBrowser.h"
-#include "JzContext.h"
-#include "JzOpenFileDialog.h"
-#include "JzButton.h"
-#include "JzSpacing.h"
-#include "JzSeparator.h"
+#include "JzPathParser.h"
+#include "JzImage.h"
+#include "JzTextClickable.h"
 
 JzRE::JzAssetBrowser::JzAssetBrowser(const JzRE::String &name, JzRE::Bool is_opened) :
     JzPanelWindow(name, is_opened)

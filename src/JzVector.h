@@ -1,6 +1,17 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #pragma once
 
-#include "CommonTypes.h"
+#include <cmath>
+#include <type_traits>
+#include <algorithm>
+#include <cassert>
+#include <cmath>
+#include <cstring>
+#include "JzRETypes.h"
 
 namespace JzRE {
 

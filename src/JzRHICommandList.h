@@ -1,6 +1,13 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #pragma once
 
-#include "CommonTypes.h"
+#include <memory>
+#include <mutex>
+#include "JzRETypes.h"
 #include "JzRHICommand.h"
 #include "JzRHIETypes.h"
 #include "JzRHIFramebuffer.h"
@@ -13,7 +20,7 @@ class JzRHICommandList {
 public:
     /**
      * @brief Constructor
-     * 
+     *
      * @param debugName The debug name of the command buffer
      */
     JzRHICommandList(const String &debugName = "");
@@ -65,42 +72,42 @@ public:
 
     /**
      * @brief Buffer Clear Command
-     * 
+     *
      * @param params The parameters of the clear command
      */
     void Clear(const JzClearParams &params);
 
     /**
      * @brief Buffer Draw Command
-     * 
+     *
      * @param params The parameters of the draw command
      */
     void Draw(const JzDrawParams &params);
 
     /**
      * @brief Buffer Draw Indexed Command
-     * 
+     *
      * @param params The parameters of the draw indexed command
      */
     void DrawIndexed(const JzDrawIndexedParams &params);
 
     /**
      * @brief Buffer Bind Pipeline Command
-     * 
+     *
      * @param pipeline The pipeline to bind
      */
     void BindPipeline(std::shared_ptr<JzRHIPipeline> pipeline);
 
     /**
      * @brief Buffer Bind Vertex Array Command
-     * 
+     *
      * @param vertexArray The vertex array to bind
      */
     void BindVertexArray(std::shared_ptr<JzRHIVertexArray> vertexArray);
 
     /**
      * @brief Buffer Bind Texture Command
-     * 
+     *
      * @param texture The texture to bind
      * @param slot The slot to bind the texture to
      */
@@ -108,14 +115,14 @@ public:
 
     /**
      * @brief Buffer Set Viewport Command
-     * 
+     *
      * @param viewport The viewport to set
      */
     void SetViewport(const JzViewport &viewport);
 
     /**
      * @brief Buffer Set Scissor Command
-     * 
+     *
      * @param scissor The scissor to set
      */
     void SetScissor(const JzScissorRect &scissor);

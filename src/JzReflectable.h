@@ -1,6 +1,13 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #pragma once
 
-#include "CommonTypes.h"
+#include <vector>
+#include <unordered_map>
+#include "JzRETypes.h"
 
 namespace JzRE {
 

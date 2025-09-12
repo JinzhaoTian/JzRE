@@ -1,4 +1,11 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #include "JzHierarchy.h"
+#include "JzGroup.h"
+#include "JzSeparator.h"
 
 JzRE::JzHierarchy::JzHierarchy(const JzRE::String &name, JzRE::Bool is_opened) :
     JzPanelWindow(name, is_opened),

@@ -1,8 +1,13 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #pragma once
 
+#include <memory>
 #include "JzRHIFramebuffer.h"
 #include "JzRHIPipeline.h"
-#include "JzRHIStats.h"
 #include "JzRHITexture.h"
 #include "JzScene.h"
 

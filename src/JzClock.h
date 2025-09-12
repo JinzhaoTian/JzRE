@@ -1,6 +1,12 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #pragma once
 
-#include "CommonTypes.h"
+#include <chrono>
+#include "JzRETypes.h"
 
 namespace JzRE {
 /**

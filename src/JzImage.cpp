@@ -1,4 +1,10 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #include "JzImage.h"
+#include "JzConverter.h"
 
 JzRE::JzImage::JzImage(JzRE::U32 p_textureId, const JzRE::JzVec2 &p_size) :
     textureId{p_textureId},

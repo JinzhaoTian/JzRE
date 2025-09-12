@@ -1,7 +1,12 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #pragma once
 
-#include "CommonTypes.h"
-#include "JzRHIETypes.h"
+#include <glad/glad.h>
+#include "JzRETypes.h"
 #include "JzRHIFramebuffer.h"
 #include "JzRHITexture.h"
 

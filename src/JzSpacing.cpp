@@ -1,4 +1,10 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #include "JzSpacing.h"
+#include <imgui.h>
 
 JzRE::JzSpacing::JzSpacing(JzRE::U16 spaces) :
     spaces(spaces) { }

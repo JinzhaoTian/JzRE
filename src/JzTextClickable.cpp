@@ -1,4 +1,10 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #include "JzTextClickable.h"
+#include <imgui.h>
 
 JzRE::JzTextClickable::JzTextClickable(const JzRE::String &p_content) :
     JzText(p_content) { }

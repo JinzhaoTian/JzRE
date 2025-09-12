@@ -1,4 +1,10 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #include "JzArrowButton.h"
+#include <imgui.h>
 
 JzRE::JzArrowButton::JzArrowButton(JzRE::JzEArrowDirection p_direction, JzRE::JzEAlign p_align) :
     arrowDirection(p_direction),

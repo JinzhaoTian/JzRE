@@ -1,4 +1,10 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #include "JzContext.h"
+#include "JzRHIFactory.h"
 
 JzRE::JzContext::JzContext(JzERHIType rhiType) :
     sceneManager()

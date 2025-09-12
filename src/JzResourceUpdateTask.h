@@ -1,6 +1,12 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #pragma once
 
-#include "CommonTypes.h"
+#include <functional>
+#include "JzRETypes.h"
 #include "JzRenderTask.h"
 
 namespace JzRE {
@@ -16,4 +22,4 @@ private:
     std::function<void()> updateFunc;
 };
 
-}
+} // namespace JzRE

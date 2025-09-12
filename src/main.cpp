@@ -1,5 +1,10 @@
-#include "JzRenderEngine.h"
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #include "JzREHub.h"
+#include "JzRenderEngine.h"
 
 int main()
 {

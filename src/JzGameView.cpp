@@ -1,3 +1,8 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #include "JzGameView.h"
 
 JzRE::JzGameView::JzGameView(const String &name, Bool is_opened) :

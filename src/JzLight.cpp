@@ -1,3 +1,8 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #include "JzLight.h"
 
 JzRE::JzLight::JzLight(const JzRE::JzVec3 &position, const JzRE::JzVec3 &color) :

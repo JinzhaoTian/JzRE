@@ -1,4 +1,11 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #include "JzWidgetContainer.h"
+#include <algorithm>
+#include <ranges>
 
 JzRE::JzWidgetContainer::~JzWidgetContainer()
 {

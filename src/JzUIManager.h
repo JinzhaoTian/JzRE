@@ -1,6 +1,12 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #pragma once
 
-#include "CommonTypes.h"
+#include <GLFW/glfw3.h>
+#include "JzRETypes.h"
 #include "JzCanvas.h"
 
 namespace JzRE {

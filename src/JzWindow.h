@@ -1,7 +1,14 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #pragma once
 
-#include "CommonTypes.h"
+#include <unordered_map>
+#include <GLFW/glfw3.h>
 #include "JzWindowSettings.h"
+#include "JzRETypes.h"
 #include "JzRHIETypes.h"
 #include "JzEvent.h"
 #include "JzVector.h"

@@ -1,4 +1,11 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #include "JzMenuBar.h"
+#include <filesystem>
+#include <imgui.h>
 #include "JzContext.h"
 #include "JzText.h"
 #include "JzArrowButton.h"

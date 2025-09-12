@@ -1,6 +1,13 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #pragma once
 
-#include "CommonTypes.h"
+#include <vector>
+#include <utility>
+#include "JzRETypes.h"
 #include "JzEMemory.h"
 #include "JzWidget.h"
 

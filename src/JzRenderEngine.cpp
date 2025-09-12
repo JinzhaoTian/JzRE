@@ -1,4 +1,10 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #include "JzRenderEngine.h"
+#include "JzClock.h"
 
 JzRE::JzRenderEngine::JzRenderEngine() :
     m_context(),

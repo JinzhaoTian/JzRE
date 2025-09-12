@@ -1,21 +1,29 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #include <gtest/gtest.h>
 #include "JzVector.h"
 
 using namespace JzRE;
 
-class JzVectorTest : public ::testing::Test {
+class TestJzVector : public ::testing::Test {
 protected:
-    void SetUp() override {
+    void SetUp() override
+    {
         // 设置测试数据
     }
 
-    void TearDown() override {
+    void TearDown() override
+    {
         // 清理测试数据
     }
 };
 
 // 测试向量构造函数
-TEST_F(JzVectorTest, Constructor) {
+TEST_F(TestJzVector, Constructor)
+{
     // 测试默认构造
     JzVec3 v1(0.0f);
     EXPECT_FLOAT_EQ(v1.x(), 0.0f);
@@ -36,7 +44,8 @@ TEST_F(JzVectorTest, Constructor) {
 }
 
 // 测试向量运算符
-TEST_F(JzVectorTest, Operators) {
+TEST_F(TestJzVector, Operators)
+{
     JzVec3 v1(1.0f, 2.0f, 3.0f);
     JzVec3 v2(4.0f, 5.0f, 6.0f);
 
@@ -70,7 +79,8 @@ TEST_F(JzVectorTest, Operators) {
 }
 
 // 测试向量数学函数
-TEST_F(JzVectorTest, MathFunctions) {
+TEST_F(TestJzVector, MathFunctions)
+{
     JzVec3 v1(3.0f, 4.0f, 0.0f);
 
     // 测试长度计算
@@ -95,17 +105,19 @@ TEST_F(JzVectorTest, MathFunctions) {
 }
 
 // 测试向量负号
-TEST_F(JzVectorTest, Negation) {
+TEST_F(TestJzVector, Negation)
+{
     JzVec3 v1(1.0f, -2.0f, 3.0f);
     JzVec3 negated = -v1;
-    
+
     EXPECT_FLOAT_EQ(negated.x(), -1.0f);
     EXPECT_FLOAT_EQ(negated.y(), 2.0f);
     EXPECT_FLOAT_EQ(negated.z(), -3.0f);
 }
 
 // 测试向量复合赋值操作符
-TEST_F(JzVectorTest, CompoundAssignmentOperators) {
+TEST_F(TestJzVector, CompoundAssignmentOperators)
+{
     JzVec3 v1(1.0f, 2.0f, 3.0f);
     JzVec3 v2(4.0f, 5.0f, 6.0f);
 
@@ -135,7 +147,8 @@ TEST_F(JzVectorTest, CompoundAssignmentOperators) {
 }
 
 // 测试不同维度的向量
-TEST_F(JzVectorTest, DifferentDimensions) {
+TEST_F(TestJzVector, DifferentDimensions)
+{
     // 2D向量测试
     JzVec2 v2d(1.0f, 2.0f);
     EXPECT_FLOAT_EQ(v2d.x(), 1.0f);

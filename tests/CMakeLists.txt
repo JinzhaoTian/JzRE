@@ -5,24 +5,20 @@ find_package(GTest CONFIG REQUIRED)
 enable_testing()
 
 # set test source files
-file(GLOB TEST_SOURCES "*.cpp")
+file(GLOB TEST_SOURCES CONFIGURE_DEPENDS "*.cpp")
 
-# add test executable
-add_executable(JzRETests ${TEST_SOURCES})
+# create test executable target
+add_executable(JzRETest ${TEST_SOURCES})
 
-# set target properties
-set_target_properties(JzRETests PROPERTIES
-    CXX_STANDARD 20
-    CXX_STANDARD_REQUIRED ON
-    CXX_EXTENSIONS OFF
-)
+# set test executable target compile properties
+target_compile_features(JzRETest PUBLIC cxx_std_20)
 
-# set link libraries
-target_link_libraries(JzRETests PRIVATE
+# set test executable target link libraries
+target_link_libraries(JzRETest PRIVATE
     JzRELib
     GTest::gtest
 )
 
 # add tests to CTest
 include(GoogleTest)
-gtest_discover_tests(JzRETests)
+gtest_discover_tests(JzRETest)

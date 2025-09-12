@@ -1,17 +1,13 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #pragma once
 
-#include "JzAssetBrowser.h"
-#include "JzAssetView.h"
 #include "JzCanvas.h"
-#include "JzConsole.h"
 #include "JzContext.h"
-#include "JzGameView.h"
-#include "JzHierarchy.h"
-#include "JzMaterialEditor.h"
-#include "JzMenuBar.h"
-#include "JzPanelWindowSettings.h"
 #include "JzPanelsManager.h"
-#include "JzSceneView.h"
 
 namespace JzRE {
 /**

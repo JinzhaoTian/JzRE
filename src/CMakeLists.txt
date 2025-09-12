@@ -31,7 +31,7 @@ elseif(UNIX AND NOT APPLE)
 endif()
 
 # set project source files
-file(GLOB JzRE_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/Jz*.cpp")
+file(GLOB JzRE_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/Jz*.cpp")
 
 # set project platform-specific sources
 if(WIN32)
@@ -44,25 +44,18 @@ elseif(UNIX AND NOT APPLE)
     file(GLOB PLATFORM_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/platform/Linux/*.cpp")
 endif()
 
-# combine all sources (excluding main.cpp for library)
-set(ALL_SOURCES ${JzRE_SOURCES} ${PLATFORM_SOURCES})
+# create library target
+add_library(JzRELib STATIC ${JzRE_SOURCES} ${PLATFORM_SOURCES})
 
-# create library target for testing
-add_library(JzRELib STATIC ${ALL_SOURCES})
+# set library target compile properties
+target_compile_features(JzRELib PUBLIC cxx_std_20)
 
-# set target properties for library
-set_target_properties(JzRELib PROPERTIES
-    CXX_STANDARD 20
-    CXX_STANDARD_REQUIRED ON
-    CXX_EXTENSIONS OFF
-)
-
-# set include path
+# set library target include path
 target_include_directories(JzRELib PUBLIC
     "${CMAKE_CURRENT_SOURCE_DIR}/"
 )
 
-# link libraries to library target
+# set library target link libraries
 target_link_libraries(JzRELib PUBLIC
     ${PLATFORM_LIBS}
     ${OPENGL_LIBS}
@@ -73,24 +66,21 @@ target_link_libraries(JzRELib PUBLIC
     Threads::Threads
 )
 
-# add exe target
-add_executable(JzRE "main.cpp")
-
-# set target properties for executable
-set_target_properties(JzRE PROPERTIES
-    CXX_STANDARD 20
-    CXX_STANDARD_REQUIRED ON
-    CXX_EXTENSIONS OFF
+# set library target output
+set_target_properties(JzRELib PROPERTIES
+    OUTPUT_NAME "JzRE"
 )
 
-# link library to executable
+# create executable target
+add_executable(JzRE "main.cpp")
+
+# set executable target compile properties
+target_compile_features(JzRE PUBLIC cxx_std_20)
+
+# set executable target link library
 target_link_libraries(JzRE PRIVATE JzRELib)
 
-# copy resources
-add_custom_command(
-    TARGET JzRE POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_SOURCE_DIR}/resources
-        $<TARGET_FILE_DIR:JzRE>/assets
-    COMMENT "copying resources to output directory"
+# set executable target output
+set_target_properties(JzRE PROPERTIES
+    OUTPUT_NAME "JzRE"
 )

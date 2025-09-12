@@ -1,4 +1,10 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #include "JzOpenGLDevice.h"
+#include <iostream>
 #include "JzOpenGLBuffer.h"
 #include "JzOpenGLTexture.h"
 

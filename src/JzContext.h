@@ -1,10 +1,14 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #pragma once
 
-#include "CommonTypes.h"
+#include "JzRETypes.h"
 #include "JzWindow.h"
 #include "JzWindowSettings.h"
 #include "JzRHIETypes.h"
-#include "JzRHIFactory.h"
 #include "JzRHIDevice.h"
 #include "JzRHICommandQueue.h"
 #include "JzServiceContainer.h"

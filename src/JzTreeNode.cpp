@@ -1,4 +1,10 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #include "JzTreeNode.h"
+#include <imgui.h>
 
 JzRE::JzTreeNode::JzTreeNode(const String &p_name, Bool arrowClickToOpen) :
     JzDataWidget(name),

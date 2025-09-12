@@ -1,3 +1,8 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #include "JzOpenGLShader.h"
 
 JzRE::JzOpenGLShader::JzOpenGLShader(const JzRE::JzShaderDesc &desc) :

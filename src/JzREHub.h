@@ -1,21 +1,20 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #pragma once
 
-#include "CommonTypes.h"
-#include "JzRHIFactory.h"
+#include <memory>
+#include <optional>
+#include <filesystem>
+#include "JzRETypes.h"
 #include "JzRHIDevice.h"
 #include "JzWindow.h"
-#include "JzWindowSettings.h"
 #include "JzUIManager.h"
 #include "JzCanvas.h"
 #include "JzPanelWindow.h"
 #include "JzButton.h"
-#include "JzGroup.h"
-#include "JzText.h"
-#include "JzInputText.h"
-#include "JzSpacing.h"
-#include "JzSeparator.h"
-#include "JzColumns.h"
-#include "JzOpenFileDialog.h"
 
 namespace JzRE {
 

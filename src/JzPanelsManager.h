@@ -1,6 +1,12 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #pragma once
 
-#include "CommonTypes.h"
+#include <memory>
+#include "JzRETypes.h"
 #include "JzCanvas.h"
 #include "JzMenuBar.h"
 #include "JzPanel.h"

@@ -1,4 +1,10 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #include "JzButton.h"
+#include "JzConverter.h"
 
 JzRE::JzButton::JzButton(const JzRE::String &label, JzRE::Bool disabled) :
     label(label),

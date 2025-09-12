@@ -1,11 +1,16 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #pragma once
 
-#include "CommonTypes.h"
+#include <memory>
+#include "JzRETypes.h"
 #include "JzCamera.h"
 #include "JzCameraController.h"
 #include "JzImage.h"
 #include "JzPanelWindow.h"
-#include "JzRHIFramebuffer.h"
 #include "JzRHIRenderer.h"
 #include "JzScene.h"
 

@@ -1,4 +1,10 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #include "JzPanelWindow.h"
+#include "JzConverter.h"
 
 JzRE::JzPanelWindow::JzPanelWindow(const JzRE::String &name, JzRE::Bool is_opened) :
     name(name),
