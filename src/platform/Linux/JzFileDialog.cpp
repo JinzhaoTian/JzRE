@@ -3,30 +3,24 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzFileDialogLinux.h"
+#include "JzFileDialog.h"
 
 #ifdef __linux__
 #include <gtk/gtk.h>
 #include <filesystem>
 #include <iostream>
 
-JzRE::JzFileDialogLinux::JzFileDialogLinux(const JzRE::String &p_dialogTitle) :
+JzRE::JzFileDialog::JzFileDialog(const JzRE::String &p_dialogTitle) :
     m_dialogTitle(p_dialogTitle),
     m_initialDirectory(""),
-    m_succeeded(false),
-    m_openFile(true) { }
+    m_succeeded(false) { }
 
-void JzRE::JzFileDialogLinux::SetInitialDirectory(const JzRE::String &p_initialDirectory)
+void JzRE::JzOpenFileDialog::SetInitialDirectory(const JzRE::String &p_initialDirectory)
 {
     m_initialDirectory = p_initialDirectory;
 }
 
-void JzRE::JzFileDialogLinux::SetOpenFileType(Bool openFile)
-{
-    m_openFile = openFile;
-}
-
-void JzRE::JzFileDialogLinux::Show()
+void JzRE::JzOpenFileDialog::Show()
 {
     m_succeeded = false;
     m_filepath.clear();
@@ -97,69 +91,35 @@ void JzRE::JzFileDialogLinux::Show()
     }
 }
 
-JzRE::Bool JzRE::JzFileDialogLinux::HasSucceeded() const
+JzRE::Bool JzRE::JzFileDialog::HasSucceeded() const
 {
     return m_succeeded;
 }
 
-JzRE::String JzRE::JzFileDialogLinux::GetSelectedFileName()
+JzRE::String JzRE::JzFileDialog::GetSelectedFileName()
 {
     return m_filename;
 }
 
-JzRE::String JzRE::JzFileDialogLinux::GetSelectedFilePath()
+JzRE::String JzRE::JzFileDialog::GetSelectedFilePath()
 {
     return m_filepath;
 }
 
-JzRE::String JzRE::JzFileDialogLinux::GetErrorInfo()
+JzRE::String JzRE::JzFileDialog::GetErrorInfo()
 {
     return m_error;
 }
 
-JzRE::Bool JzRE::JzFileDialogLinux::IsFileExisting() const
+JzRE::Bool JzRE::JzFileDialog::IsFileExisting() const
 {
     return std::filesystem::exists(m_filepath);
 }
 
-void JzRE::JzFileDialogLinux::AddFileType(const JzRE::String &p_label, const JzRE::String &p_filter)
-{
-    if (!m_filter.empty()) {
-        m_filter += "|";
-    }
-    m_filter += p_label + ":" + p_filter;
-}
-
-void JzRE::JzFileDialogLinux::HandleError()
+void JzRE::JzFileDialog::HandleError()
 {
     // TODO: Implement proper error handling
-    m_error = "Linux file dialog error occurred";
-}
-
-void JzRE::JzFileDialogLinux::ShowFallback()
-{
-    // Fallback: Simple console-based fallback
-    std::cout << m_dialogTitle << std::endl;
-    if (!m_initialDirectory.empty()) {
-        std::cout << "Initial directory: " << m_initialDirectory << std::endl;
-    }
-    std::cout << "Please enter the full path to the file: ";
-    std::getline(std::cin, m_filepath);
-
-    if (!m_filepath.empty() && std::filesystem::exists(m_filepath)) {
-        m_succeeded = true;
-    } else {
-        m_error = "File does not exist or invalid path";
-    }
-
-    if (m_succeeded) {
-        m_filename.clear();
-        if (!m_filepath.empty()) {
-            for (auto it = m_filepath.rbegin(); it != m_filepath.rend() && *it != '\\' && *it != '/'; ++it)
-                m_filename += *it;
-            std::reverse(m_filename.begin(), m_filename.end());
-        }
-    }
+    m_error = "file dialog error occurred";
 }
 
 #endif // __linux__

@@ -5,7 +5,6 @@
 
 #pragma once
 
-#include <memory>
 #include "JzRETypes.h"
 
 namespace JzRE {
@@ -16,12 +15,11 @@ namespace JzRE {
 class JzFileDialog {
 public:
     /**
-     * @brief Factory method to create platform-specific file dialog
+     * @brief Constructor
      *
-     * @param p_dialogTitle Dialog window title
-     * @return std::unique_ptr<JzFileDialog> Platform-specific implementation
+     * @param p_dialogTitle
      */
-    static std::unique_ptr<JzFileDialog> Create(const String &p_dialogTitle);
+    JzFileDialog(const String &p_dialogTitle);
 
     /**
      * @brief Destructor
@@ -33,62 +31,59 @@ public:
      *
      * @param p_initialDirectory
      */
-    virtual void SetInitialDirectory(const String &p_initialDirectory) = 0;
-
-    /**
-     * @brief Set Open File or Folder
-     *
-     * @param openFile true if open file, false if open file folder
-     */
-    virtual void SetOpenFileType(Bool openFile) = 0;
+    void SetInitialDirectory(const String &p_initialDirectory);
 
     /**
      * @brief Show the file dialog
      */
-    virtual void Show() = 0;
+    virtual void Show();
 
     /**
      * @brief Has Succeeded
      *
      * @return true if the file action succeeded
      */
-    virtual Bool HasSucceeded() const = 0;
+    Bool HasSucceeded() const;
 
     /**
      * @brief Get the selected file name (Make sure that HasSucceeded() returned true before calling this method)
      *
      * @return selected file name
      */
-    virtual String GetSelectedFileName() = 0;
+    String GetSelectedFileName();
 
     /**
      * @brief Get the selected file path (Make sure that HasSucceeded() returned true before calling this method)
      *
      * @return selected file path
      */
-    virtual String GetSelectedFilePath() = 0;
+    String GetSelectedFilePath();
 
     /**
      * @brief Get some information about the last error (Make sure that HasSucceeded() returned false before calling this method)
      *
      * @return some information about the last error
      */
-    virtual String GetErrorInfo() = 0;
+    String GetErrorInfo();
 
     /**
      * @brief Is the selected file exists
      *
      * @return true if the selected file exists
      */
-    virtual Bool IsFileExisting() const = 0;
+    Bool IsFileExisting() const;
 
-    /**
-     * @brief Add a supported file type to the dialog window
-     *
-     * @param p_label
-     * @param p_filter
-     */
-    virtual void AddFileType(const String &p_label, const String &p_filter) = 0;
+private:
+    void HandleError();
+
+protected:
+    String m_dialogTitle;
+    String m_initialDirectory;
+    String m_filter;
+    String m_error;
+    String m_filename;
+    String m_filepath;
+    Bool   m_succeeded;
 };
 
 } // namespace JzRE

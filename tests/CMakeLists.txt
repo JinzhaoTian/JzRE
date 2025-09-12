@@ -1,9 +1,6 @@
 # find gtest package
 find_package(GTest CONFIG REQUIRED)
 
-# enable testing
-enable_testing()
-
 # set test source files
 file(GLOB TEST_SOURCES CONFIGURE_DEPENDS "*.cpp")
 

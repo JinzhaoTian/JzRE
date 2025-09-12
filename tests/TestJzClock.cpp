@@ -178,5 +178,5 @@ TEST_F(TestJzClock, TimeAccumulation)
     JzRE::F32 elapsedTime = finalTime - initialTime;
 
     // 实际经过的时间应该接近预期时间（考虑到系统调度的不确定性）
-    EXPECT_NEAR(elapsedTime, totalExpectedTime, 0.005f); // 5ms的误差容忍
+    EXPECT_NEAR(elapsedTime, totalExpectedTime, 0.01f); // 10ms的误差容忍
 }

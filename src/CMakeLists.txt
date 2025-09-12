@@ -35,13 +35,15 @@ file(GLOB JzRE_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/Jz*.cpp")
 
 # set project platform-specific sources
 if(WIN32)
-    file(GLOB PLATFORM_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/platform/Windows/*.cpp")
+    file(GLOB PLATFORM_SOURCES CONFIGURE_DEPENDS 
+         "platform/Windows/*.cpp")
 elseif(APPLE)
-    file(GLOB PLATFORM_SOURCES 
+    file(GLOB PLATFORM_SOURCES CONFIGURE_DEPENDS
          "platform/macOS/*.cpp"
          "platform/macOS/*.mm")
 elseif(UNIX AND NOT APPLE)
-    file(GLOB PLATFORM_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/platform/Linux/*.cpp")
+    file(GLOB PLATFORM_SOURCES CONFIGURE_DEPENDS
+         "platform/Linux/*.cpp")
 endif()
 
 # create library target

@@ -28,5 +28,8 @@ add_subdirectory(src)
 # add tests module
 option(BUILD_TESTS "Build the tests" ON)
 if(BUILD_TESTS)
+    # enable testing
+    enable_testing()
+    
     add_subdirectory(tests)
 endif()

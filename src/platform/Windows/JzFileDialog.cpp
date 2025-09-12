@@ -3,30 +3,24 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzFileDialogWindows.h"
+#include "JzFileDialog.h"
 
 #ifdef _WIN32
 #include <windows.h>
 #include <commdlg.h>
 #include <filesystem>
 
-JzRE::JzFileDialogWindows::JzFileDialogWindows(const JzRE::String &p_dialogTitle) :
+JzRE::JzFileDialog::JzFileDialog(const JzRE::String &p_dialogTitle) :
     m_dialogTitle(p_dialogTitle),
     m_initialDirectory(""),
-    m_succeeded(false),
-    m_openFile(true) { }
+    m_succeeded(false) { }
 
-void JzRE::JzFileDialogWindows::SetInitialDirectory(const JzRE::String &p_initialDirectory)
+void JzRE::JzFileDialog::SetInitialDirectory(const JzRE::String &p_initialDirectory)
 {
     m_initialDirectory = p_initialDirectory;
 }
 
-void JzRE::JzFileDialogWindows::SetOpenFileType(JzRE::Bool openFile)
-{
-    m_openFile = openFile;
-}
-
-void JzRE::JzFileDialogWindows::Show()
+void JzRE::JzFileDialog::Show()
 {
     m_succeeded = false;
     m_filepath.clear();
@@ -78,43 +72,35 @@ void JzRE::JzFileDialogWindows::Show()
     }
 }
 
-JzRE::Bool JzRE::JzFileDialogWindows::HasSucceeded() const
+JzRE::Bool JzRE::JzFileDialog::HasSucceeded() const
 {
     return m_succeeded;
 }
 
-JzRE::String JzRE::JzFileDialogWindows::GetSelectedFileName()
+JzRE::String JzRE::JzFileDialog::GetSelectedFileName()
 {
     return m_filename;
 }
 
-JzRE::String JzRE::JzFileDialogWindows::GetSelectedFilePath()
+JzRE::String JzRE::JzFileDialog::GetSelectedFilePath()
 {
     return m_filepath;
 }
 
-JzRE::String JzRE::JzFileDialogWindows::GetErrorInfo()
+JzRE::String JzRE::JzFileDialog::GetErrorInfo()
 {
     return m_error;
 }
 
-JzRE::Bool JzRE::JzFileDialogWindows::IsFileExisting() const
+JzRE::Bool JzRE::JzFileDialog::IsFileExisting() const
 {
     return std::filesystem::exists(m_filepath);
 }
 
-void JzRE::JzFileDialogWindows::AddFileType(const JzRE::String &p_label, const JzRE::String &p_filter)
-{
-    if (!m_filter.empty()) {
-        m_filter += "|";
-    }
-    m_filter += p_label + ":" + p_filter;
-}
-
-void JzRE::JzFileDialogWindows::HandleError()
+void JzRE::JzOpenFileDialog::HandleError()
 {
     // TODO: Implement proper error handling
-    m_error = "Windows file dialog error occurred";
+    m_error = "file dialog error occurred";
 }
 
 #endif // _WIN32

@@ -4,6 +4,7 @@
  */
 
 #include "JzRHICommandQueue.h"
+#include <thread>
 
 JzRE::JzRHICommandQueue::JzRHICommandQueue() { }
 

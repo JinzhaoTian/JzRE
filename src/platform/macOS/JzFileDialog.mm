@@ -3,27 +3,24 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzFileDialogMacOS.h"
+#include "JzFileDialog.h"
 
 #ifdef __APPLE__
+
 #include <Cocoa/Cocoa.h>
 #include <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 #include <filesystem>
 
-JzRE::JzFileDialogMacOS::JzFileDialogMacOS(const JzRE::String &p_dialogTitle)
-    : m_dialogTitle(p_dialogTitle), m_initialDirectory(""), m_succeeded(false),
-      m_openFile(true) {}
+JzRE::JzFileDialog::JzFileDialog(const JzRE::String &p_dialogTitle)
+    : m_dialogTitle(p_dialogTitle), m_initialDirectory(""), m_succeeded(false) {
+}
 
-void JzRE::JzFileDialogMacOS::SetInitialDirectory(
+void JzRE::JzFileDialog::SetInitialDirectory(
     const JzRE::String &p_initialDirectory) {
   m_initialDirectory = p_initialDirectory;
 }
 
-void JzRE::JzFileDialogMacOS::SetOpenFileType(JzRE::Bool openFile) {
-  m_openFile = openFile;
-}
-
-void JzRE::JzFileDialogMacOS::Show() {
+void JzRE::JzFileDialog::Show() {
   m_succeeded = false;
   m_filepath.clear();
   m_filename.clear();
@@ -32,13 +29,8 @@ void JzRE::JzFileDialogMacOS::Show() {
     NSOpenPanel *openPanel = [NSOpenPanel openPanel];
 
     [openPanel setTitle:@(m_dialogTitle.c_str())];
-    if (m_openFile) {
-      [openPanel setCanChooseFiles:YES];
-      [openPanel setCanChooseDirectories:NO];
-    } else {
-      [openPanel setCanChooseFiles:NO];
-      [openPanel setCanChooseDirectories:YES];
-    }
+    [openPanel setCanChooseFiles:YES];
+    [openPanel setCanChooseDirectories:YES];
     [openPanel setAllowsMultipleSelection:NO];
 
     // Set initial directory
@@ -120,33 +112,21 @@ void JzRE::JzFileDialogMacOS::Show() {
   }
 }
 
-JzRE::Bool JzRE::JzFileDialogMacOS::HasSucceeded() const { return m_succeeded; }
+JzRE::Bool JzRE::JzFileDialog::HasSucceeded() const { return m_succeeded; }
 
-JzRE::String JzRE::JzFileDialogMacOS::GetSelectedFileName() {
-  return m_filename;
-}
+JzRE::String JzRE::JzFileDialog::GetSelectedFileName() { return m_filename; }
 
-JzRE::String JzRE::JzFileDialogMacOS::GetSelectedFilePath() {
-  return m_filepath;
-}
+JzRE::String JzRE::JzFileDialog::GetSelectedFilePath() { return m_filepath; }
 
-JzRE::String JzRE::JzFileDialogMacOS::GetErrorInfo() { return m_error; }
+JzRE::String JzRE::JzFileDialog::GetErrorInfo() { return m_error; }
 
-JzRE::Bool JzRE::JzFileDialogMacOS::IsFileExisting() const {
+JzRE::Bool JzRE::JzFileDialog::IsFileExisting() const {
   return std::filesystem::exists(m_filepath);
 }
 
-void JzRE::JzFileDialogMacOS::AddFileType(const JzRE::String &p_label,
-                                          const JzRE::String &p_filter) {
-  if (!m_filter.empty()) {
-    m_filter += "|";
-  }
-  m_filter += p_label + ":" + p_filter;
-}
-
-void JzRE::JzFileDialogMacOS::HandleError() {
+void JzRE::JzFileDialog::HandleError() {
   // TODO: Implement proper error handling
-  m_error = "macOS file dialog error occurred";
+  m_error = "file dialog error occurred";
 }
 
 #endif // __APPLE__

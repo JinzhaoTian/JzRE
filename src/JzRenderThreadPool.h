@@ -7,6 +7,7 @@
 
 #include <functional>
 #include <queue>
+#include <thread>
 #include "JzRETypes.h"
 #include "JzRHICommandList.h"
 #include "JzRenderTask.h"
