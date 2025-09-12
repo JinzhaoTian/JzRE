@@ -1,8 +1,8 @@
 #pragma once
 
-#include "CommonTypes.h"
+#include <glad/glad.h>
+#include "JzRETypes.h"
 #include "JzRHIBuffer.h"
-#include "JzRHIETypes.h"
 
 namespace JzRE {
 /**

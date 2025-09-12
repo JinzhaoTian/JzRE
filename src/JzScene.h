@@ -1,6 +1,7 @@
 #pragma once
 
-#include "CommonTypes.h"
+#include <memory>
+#include "JzRETypes.h"
 #include "JzCamera.h"
 #include "JzISerializable.h"
 #include "JzLight.h"

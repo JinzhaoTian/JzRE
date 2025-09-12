@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CommonTypes.h"
+#include "JzRETypes.h"
 #include "JzEMemory.h"
 #include "JzWidget.h"
 

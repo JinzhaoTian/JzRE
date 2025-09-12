@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CommonTypes.h"
+#include "JzRETypes.h"
 #include "JzOpenGLFramebuffer.h"
 #include "JzOpenGLPipeline.h"
 #include "JzOpenGLVertexArray.h"

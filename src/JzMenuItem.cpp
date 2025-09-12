@@ -1,4 +1,5 @@
 #include "JzMenuItem.h"
+#include <imgui.h>
 
 JzRE::JzMenuItem::JzMenuItem(const String &name, const String &shortcut, Bool is_checkable, Bool is_checked) :
     JzDataWidget(m_selected),

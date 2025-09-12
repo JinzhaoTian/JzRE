@@ -1,6 +1,7 @@
 #pragma once
 
-#include "CommonTypes.h"
+#include <memory>
+#include "JzRETypes.h"
 #include "JzRHIBuffer.h"
 #include "JzRHIPipeline.h"
 #include "JzRHITexture.h"

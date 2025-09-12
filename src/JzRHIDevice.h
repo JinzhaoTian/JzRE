@@ -1,11 +1,13 @@
 #pragma once
 
-#include "CommonTypes.h"
+#include "JzRETypes.h"
 #include "JzRHICommandList.h"
 #include "JzRHIDescription.h"
 #include "JzRHIETypes.h"
 #include "JzRHIFramebuffer.h"
 #include "JzRHIShader.h"
+
+#include <memory>
 
 namespace JzRE {
 /**

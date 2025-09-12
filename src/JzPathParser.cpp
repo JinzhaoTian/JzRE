@@ -1,4 +1,5 @@
 #include "JzPathParser.h"
+#include <algorithm>
 
 JzRE::String JzRE::JzPathParser::MakeWindowsStyle(const JzRE::String &p_path)
 {

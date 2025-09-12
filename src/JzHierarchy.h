@@ -1,9 +1,7 @@
 #pragma once
 
-#include "CommonTypes.h"
-#include "JzGroup.h"
+#include "JzRETypes.h"
 #include "JzPanelWindow.h"
-#include "JzSeparator.h"
 #include "JzTreeNode.h"
 #include "JzWidgetContainer.h"
 

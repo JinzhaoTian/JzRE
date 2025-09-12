@@ -1,4 +1,5 @@
 #include "JzText.h"
+#include <imgui.h>
 
 JzRE::JzText::JzText(const String &p_content) :
     JzDataWidget(content),

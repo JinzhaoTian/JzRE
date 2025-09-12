@@ -1,6 +1,8 @@
 #pragma once
 
-#include "CommonTypes.h"
+#include <imgui.h>
+#include <array>
+#include "JzRETypes.h"
 #include "JzWidget.h"
 #include "JzWidgetContainer.h"
 

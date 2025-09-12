@@ -1,4 +1,5 @@
 #include "JzMenuList.h"
+#include <imgui.h>
 
 JzRE::JzMenuList::JzMenuList(const String &name, Bool is_locked) :
     name(name),

@@ -1,7 +1,6 @@
 #pragma once
 
-#include "CommonTypes.h"
-#include "JzConverter.h"
+#include "JzRETypes.h"
 #include "JzVector.h"
 #include "JzWidget.h"
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CommonTypes.h"
+#include "JzRETypes.h"
 #include "JzEMode.h"
 #include "JzEntity.h"
 #include "JzMatrix.h"

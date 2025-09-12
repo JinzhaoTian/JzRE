@@ -1,4 +1,5 @@
 #include "JzContext.h"
+#include "JzRHIFactory.h"
 
 JzRE::JzContext::JzContext(JzERHIType rhiType) :
     sceneManager()

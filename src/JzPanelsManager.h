@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CommonTypes.h"
+#include "JzRETypes.h"
 #include "JzCanvas.h"
 #include "JzMenuBar.h"
 #include "JzPanel.h"

@@ -1,10 +1,9 @@
 #pragma once
 
-#include "CommonTypes.h"
+#include "JzRETypes.h"
 #include "JzEvent.h"
 #include "JzWidget.h"
 #include "JzVector.h"
-#include "JzConverter.h"
 
 namespace JzRE {
 /**

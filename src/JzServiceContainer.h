@@ -1,6 +1,8 @@
 #pragma once
 
-#include "CommonTypes.h"
+#include <any>
+#include <unordered_map>
+#include "JzRETypes.h"
 
 namespace JzRE {
 /**

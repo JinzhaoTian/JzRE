@@ -1,12 +1,12 @@
 #pragma once
 
-#include "CommonTypes.h"
+#include "JzRETypes.h"
 
 namespace JzRE {
 /**
  * @brief Enums of File Types
  */
-enum class JzEFileType {
+enum class JzEFileType : U8 {
     UNKNOWN,
     MODEL,
     TEXTURE,

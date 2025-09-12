@@ -1,4 +1,6 @@
 #include "JzWidgetContainer.h"
+#include <algorithm>
+#include <ranges>
 
 JzRE::JzWidgetContainer::~JzWidgetContainer()
 {

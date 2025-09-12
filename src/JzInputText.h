@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CommonTypes.h"
+#include "JzRETypes.h"
 #include "JzDataWidget.h"
 #include "JzEvent.h"
 
@@ -27,7 +27,7 @@ public:
     String          content;
     String          label;
     Bool            selectAllOnClick = false;
-    F32             width = 200.0f;
+    F32             width            = 200.0f;
     JzEvent<String> ContentChangedEvent;
     JzEvent<String> EnterPressedEvent;
 };

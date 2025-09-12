@@ -1,6 +1,11 @@
 #pragma once
 
-#include "CommonTypes.h"
+#include <memory>
+#include <map>
+#include <assimp/Importer.hpp>
+#include <assimp/postprocess.h>
+#include <assimp/scene.h>
+#include "JzRETypes.h"
 #include "JzMesh.h"
 #include "JzRHIPipeline.h"
 #include "JzRHITexture.h"
@@ -33,14 +38,14 @@ public:
 
     /**
      * @brief Draw the model using RHI
-     * 
+     *
      * @param pipeline The pipeline to use for rendering
      */
     void Draw(std::shared_ptr<JzRHIPipeline> pipeline);
 
     /**
      * @brief Get all meshes in this model
-     * 
+     *
      * @return Reference to mesh vector
      */
     const std::vector<JzMesh> &GetMeshes() const
@@ -50,7 +55,7 @@ public:
 
     /**
      * @brief Get the directory path of the model
-     * 
+     *
      * @return The directory path
      */
     const String &GetDirectory() const
@@ -60,7 +65,7 @@ public:
 
     /**
      * @brief Check if gamma correction is enabled
-     * 
+     *
      * @return True if gamma correction is enabled
      */
     Bool IsGammaCorrectionEnabled() const

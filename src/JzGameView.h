@@ -1,9 +1,6 @@
 #pragma once
 
-#include "CommonTypes.h"
-#include "JzCamera.h"
-#include "JzScene.h"
-#include "JzSceneManager.h"
+#include "JzRETypes.h"
 #include "JzView.h"
 
 namespace JzRE {

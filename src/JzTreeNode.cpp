@@ -1,4 +1,5 @@
 #include "JzTreeNode.h"
+#include <imgui.h>
 
 JzRE::JzTreeNode::JzTreeNode(const String &p_name, Bool arrowClickToOpen) :
     JzDataWidget(name),

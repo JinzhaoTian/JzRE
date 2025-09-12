@@ -1,4 +1,5 @@
 #include "JzButton.h"
+#include "JzConverter.h"
 
 JzRE::JzButton::JzButton(const JzRE::String &label, JzRE::Bool disabled) :
     label(label),

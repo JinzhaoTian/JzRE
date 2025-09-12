@@ -1,4 +1,10 @@
 #include "JzEditor.h"
+#include "JzMenuBar.h"
+#include "JzSceneView.h"
+#include "JzConsole.h"
+#include "JzHierarchy.h"
+#include "JzMaterialEditor.h"
+#include "JzAssetBrowser.h"
 
 JzRE::JzEditor::JzEditor() :
     m_context(JzRE_CONTEXT()), // injection

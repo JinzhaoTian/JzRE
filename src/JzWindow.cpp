@@ -1,5 +1,15 @@
 #include "JzWindow.h"
 
+#if defined(_WIN32)
+#define GLFW_EXPOSE_NATIVE_WIN32
+#elif defined(__APPLE__)
+#define GLFW_EXPOSE_NATIVE_COCOA
+#elif defined(__linux__)
+#define GLFW_EXPOSE_NATIVE_X11
+#endif
+#include <GLFW/glfw3native.h>
+#include <stdexcept>
+
 std::unordered_map<GLFWwindow *, JzRE::JzWindow *> JzRE::JzWindow::__WINDOWS_MAP;
 
 JzRE::JzWindow::JzWindow(JzRE::JzERHIType rhiType, const JzRE::JzWindowSettings &windowSettings) :

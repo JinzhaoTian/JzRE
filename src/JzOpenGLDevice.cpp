@@ -1,4 +1,5 @@
 #include "JzOpenGLDevice.h"
+#include <iostream>
 #include "JzOpenGLBuffer.h"
 #include "JzOpenGLTexture.h"
 

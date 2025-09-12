@@ -1,10 +1,8 @@
 #pragma once
 
-#include "CommonTypes.h"
+#include <filesystem>
+#include "JzRETypes.h"
 #include "JzPanelWindow.h"
-#include "JzImage.h"
-#include "JzTextClickable.h"
-#include "JzPathParser.h"
 #include "JzGroup.h"
 #include "JzTreeNode.h"
 
@@ -42,7 +40,7 @@ private:
     void ConsiderItem(JzTreeNode *p_root, const std::filesystem::directory_entry &p_entry, Bool p_isEngineItem, Bool p_autoOpen = false, Bool p_scriptFolder = false);
 
 private:
-    JzGroup              *m_assetList;
+    JzGroup *m_assetList;
 };
 
 } // namespace JzRE

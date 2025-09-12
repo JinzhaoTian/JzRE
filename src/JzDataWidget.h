@@ -1,6 +1,5 @@
 #pragma once
 
-#include "CommonTypes.h"
 #include "JzDataDispatcher.h"
 #include "JzWidget.h"
 

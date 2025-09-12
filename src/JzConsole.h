@@ -1,11 +1,8 @@
 #pragma once
 
-#include "CommonTypes.h"
-#include "JzButton.h"
+#include "JzRETypes.h"
 #include "JzGroup.h"
 #include "JzPanelWindow.h"
-#include "JzSeparator.h"
-#include "JzSpacing.h"
 
 namespace JzRE {
 /**

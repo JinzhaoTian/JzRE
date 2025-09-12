@@ -12,8 +12,8 @@ Index:
   StandardLibrary: Yes          # 索引标准库
 
 Diagnostics:
-  UnusedIncludes: None          # 禁用未使用包含检查，避免宏定义误报
-  MissingIncludes: None
+  UnusedIncludes: Yes
+  MissingIncludes: Yes
 
 Completion:
   AllScopes: true               # 启用所有作用域的代码补全

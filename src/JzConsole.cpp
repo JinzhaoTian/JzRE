@@ -1,4 +1,7 @@
 #include "JzConsole.h"
+#include "JzButton.h"
+#include "JzSeparator.h"
+#include "JzSpacing.h"
 
 JzRE::JzConsole::JzConsole(const String &name, Bool is_opened) :
     JzPanelWindow(name, is_opened)

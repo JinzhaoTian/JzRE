@@ -1,11 +1,10 @@
 #pragma once
 
-#include "CommonTypes.h"
+#include "JzRETypes.h"
 #include "JzCamera.h"
 #include "JzCameraController.h"
 #include "JzImage.h"
 #include "JzPanelWindow.h"
-#include "JzRHIFramebuffer.h"
 #include "JzRHIRenderer.h"
 #include "JzScene.h"
 

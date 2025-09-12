@@ -1,4 +1,5 @@
 #include "JzImage.h"
+#include "JzConverter.h"
 
 JzRE::JzImage::JzImage(JzRE::U32 p_textureId, const JzRE::JzVec2 &p_size) :
     textureId{p_textureId},

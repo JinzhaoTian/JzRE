@@ -1,8 +1,9 @@
 #pragma once
 
-#include "CommonTypes.h"
+#include <functional>
+#include <queue>
+#include "JzRETypes.h"
 #include "JzRHICommandList.h"
-#include "JzRHIETypes.h"
 #include "JzRenderTask.h"
 #include "JzTaskComparator.h"
 

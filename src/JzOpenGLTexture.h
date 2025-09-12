@@ -1,6 +1,7 @@
 #pragma once
 
-#include "CommonTypes.h"
+#include <glad/glad.h>
+#include "JzRETypes.h"
 #include "JzRHIETypes.h"
 #include "JzRHITexture.h"
 

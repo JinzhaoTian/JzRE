@@ -1,4 +1,12 @@
 #include "JzREHub.h"
+#include "JzRHIFactory.h"
+#include "JzGroup.h"
+#include "JzText.h"
+#include "JzInputText.h"
+#include "JzSpacing.h"
+#include "JzSeparator.h"
+#include "JzColumns.h"
+#include "JzOpenFileDialog.h"
 
 JzRE::JzREHub::JzREHub()
 {

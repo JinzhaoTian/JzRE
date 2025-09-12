@@ -1,4 +1,6 @@
 #include "JzHierarchy.h"
+#include "JzGroup.h"
+#include "JzSeparator.h"
 
 JzRE::JzHierarchy::JzHierarchy(const JzRE::String &name, JzRE::Bool is_opened) :
     JzPanelWindow(name, is_opened),

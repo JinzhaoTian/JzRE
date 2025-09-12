@@ -1,10 +1,12 @@
 #pragma once
 
-#include "CommonTypes.h"
+#include "JzRETypes.h"
 #include "JzWindowSettings.h"
 #include "JzRHIETypes.h"
 #include "JzEvent.h"
 #include "JzVector.h"
+
+#include <GLFW/glfw3.h>
 
 namespace JzRE {
 
