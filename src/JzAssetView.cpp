@@ -1,3 +1,8 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #include "JzAssetView.h"
 
 JzRE::JzAssetView::JzAssetView(const JzRE::String &name, JzRE::Bool is_opened) :

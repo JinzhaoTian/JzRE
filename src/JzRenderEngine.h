@@ -1,6 +1,10 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #pragma once
 
-#include "JzClock.h"
 #include "JzContext.h"
 #include "JzEditor.h"
 

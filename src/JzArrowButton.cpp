@@ -1,3 +1,8 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #include "JzArrowButton.h"
 #include <imgui.h>
 

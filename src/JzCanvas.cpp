@@ -1,3 +1,8 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #include "JzCanvas.h"
 #include <imgui.h>
 #include <imgui_impl_glfw.h>

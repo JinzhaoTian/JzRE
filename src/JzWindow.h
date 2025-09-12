@@ -1,12 +1,17 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #pragma once
 
-#include "JzRETypes.h"
+#include <unordered_map>
+#include <GLFW/glfw3.h>
 #include "JzWindowSettings.h"
+#include "JzRETypes.h"
 #include "JzRHIETypes.h"
 #include "JzEvent.h"
 #include "JzVector.h"
-
-#include <GLFW/glfw3.h>
 
 namespace JzRE {
 

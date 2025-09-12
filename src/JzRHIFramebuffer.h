@@ -1,10 +1,13 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #pragma once
 
-#include "JzRETypes.h"
-#include "JzRHIDescription.h"
-#include "JzRHITexture.h"
-
 #include <memory>
+#include "JzRETypes.h"
+#include "JzRHITexture.h"
 
 namespace JzRE {
 /**

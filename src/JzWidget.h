@@ -1,3 +1,8 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #pragma once
 
 #include "JzRETypes.h"
@@ -5,10 +10,9 @@
 #include "JzIPluginable.h"
 
 namespace JzRE {
-class JzWidgetContainer;
-}
 
-namespace JzRE {
+class JzWidgetContainer;
+
 /**
  * @brief Base class for all widgets
  */

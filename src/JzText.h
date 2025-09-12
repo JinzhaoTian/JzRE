@@ -1,3 +1,8 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #pragma once
 
 #include "JzRETypes.h"
@@ -7,7 +12,7 @@ namespace JzRE {
 /**
  * @brief Text Widget
  */
-class JzText : public JzDataWidget<JzRE::String> {
+class JzText : public JzDataWidget<String> {
 public:
     /**
      * @brief Constructor

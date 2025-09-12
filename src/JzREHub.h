@@ -1,5 +1,11 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #pragma once
 
+#include <memory>
 #include <optional>
 #include <filesystem>
 #include "JzRETypes.h"

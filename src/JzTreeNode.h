@@ -1,8 +1,12 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #pragma once
 
 #include "JzRETypes.h"
 #include "JzDataWidget.h"
-#include "JzEPlugin.h"
 #include "JzEvent.h"
 #include "JzWidgetContainer.h"
 
@@ -10,7 +14,7 @@ namespace JzRE {
 /**
  * @brief Tree Node Widget
  */
-class JzTreeNode : public JzDataWidget<JzRE::String>, public JzWidgetContainer {
+class JzTreeNode : public JzDataWidget<String>, public JzWidgetContainer {
 public:
     /**
      * @brief Constructor

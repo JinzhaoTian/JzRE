@@ -1,3 +1,8 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #include "JzOpenFileDialog.h"
 
 JzRE::JzOpenFileDialog::JzOpenFileDialog(const JzRE::String &p_dialogTitle) :

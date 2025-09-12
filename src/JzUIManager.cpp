@@ -1,8 +1,12 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #include "JzUIManager.h"
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
-
 
 JzRE::JzUIManager::JzUIManager(GLFWwindow *glfwWindow, const String &glslVersion)
 {

@@ -1,5 +1,13 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #pragma once
 
+#include <unordered_map>
+#include <utility>
+#include <functional>
 #include "JzRETypes.h"
 #include "JzPanel.h"
 #include "JzPanelWindow.h"

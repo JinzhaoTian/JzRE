@@ -1,8 +1,12 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #pragma once
 
 #include "JzRETypes.h"
 #include "JzEGizmo.h"
-#include "JzSceneManager.h"
 #include "JzView.h"
 
 namespace JzRE {

@@ -1,11 +1,16 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #pragma once
 
+#include <memory>
+#include <mutex>
 #include "JzRETypes.h"
 #include "JzRHICommand.h"
 #include "JzRHIETypes.h"
 #include "JzRHIFramebuffer.h"
-
-#include <mutex>
 
 namespace JzRE {
 /**

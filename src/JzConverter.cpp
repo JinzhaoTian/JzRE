@@ -1,3 +1,8 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #include "JzConverter.h"
 
 ImVec2 JzRE::JzConverter::ToImVec2(const JzRE::JzVec2 &value)

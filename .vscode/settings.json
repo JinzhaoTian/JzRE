@@ -86,5 +86,25 @@
         "thread": "cpp",
         "typeinfo": "cpp",
         "variant": "cpp"
-    }
+    },
+    "doxdocgen.file.fileOrder": ["author", "copyright"],
+    "doxdocgen.file.copyrightTag": ["@copyright Copyright (c) {year} JzRE"],
+    "doxdocgen.generic.authorTag": "@author    {author}",
+    "doxdocgen.generic.dateFormat": "YYYY-MM-DD",
+    "doxdocgen.generic.dateTemplate": "@date {date}",
+    "doxdocgen.generic.order": ["brief", "empty", "tparam", "param", "return"],
+    "doxdocgen.generic.paramTemplate": "@param {param}",
+    "doxdocgen.generic.returnTemplate": "@return {type} ",
+    "doxdocgen.generic.splitCasingSmartText": true,
+    "doxdocgen.generic.includeTypeAtReturn": true,
+    "doxdocgen.generic.boolReturnsTrueFalse": false,
+    "doxdocgen.generic.linesToGet": 20,
+    "doxdocgen.generic.useGitUserName": true,
+    "doxdocgen.c.triggerSequence": "/",
+    "doxdocgen.c.commentPrefix": " * ",
+    "doxdocgen.c.firstLine": "/**",
+    "doxdocgen.c.lastLine": " */",
+    "doxdocgen.cpp.ctorText": "Constructor",
+    "doxdocgen.cpp.dtorText": "Destructor",
+    "doxdocgen.cpp.tparamTemplate": "@tparam {param} "
 }

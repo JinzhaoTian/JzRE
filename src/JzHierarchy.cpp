@@ -1,3 +1,8 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #include "JzHierarchy.h"
 #include "JzGroup.h"
 #include "JzSeparator.h"

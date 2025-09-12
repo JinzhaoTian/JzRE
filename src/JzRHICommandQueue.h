@@ -1,8 +1,12 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #pragma once
 
 #include "JzRETypes.h"
 #include "JzRHICommandList.h"
-#include "JzRHIETypes.h"
 
 namespace JzRE {
 /**

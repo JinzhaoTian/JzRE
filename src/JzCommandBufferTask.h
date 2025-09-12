@@ -1,4 +1,7 @@
-#pragma once
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
 
 #include "JzRETypes.h"
 #include "JzRHICommandList.h"
