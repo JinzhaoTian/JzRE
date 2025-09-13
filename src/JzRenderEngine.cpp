@@ -4,22 +4,35 @@
  */
 
 #include "JzRenderEngine.h"
+#include <memory>
+#include "JzContext.h"
 #include "JzClock.h"
 
-JzRE::JzRenderEngine::JzRenderEngine() :
-    m_context(),
-    m_editor() { }
+JzRE::JzRenderEngine::JzRenderEngine()
+{
+    auto &context = JzRE_CONTEXT();
+    if (!context.IsInitialized()) {
+        context.Initialize();
+    }
 
-JzRE::JzRenderEngine::~JzRenderEngine() { }
+    m_editor = std::make_unique<JzEditor>();
+}
+
+JzRE::JzRenderEngine::~JzRenderEngine()
+{
+    if (m_editor) {
+        m_editor.reset();
+    }
+}
 
 void JzRE::JzRenderEngine::Run()
 {
     JzRE::JzClock clock;
 
     while (IsRunning()) {
-        m_editor.PreUpdate();
-        m_editor.Update(clock.GetDeltaTime());
-        m_editor.PostUpdate();
+        m_editor->PreUpdate();
+        m_editor->Update(clock.GetDeltaTime());
+        m_editor->PostUpdate();
 
         clock.Update();
     }
@@ -27,5 +40,5 @@ void JzRE::JzRenderEngine::Run()
 
 JzRE::Bool JzRE::JzRenderEngine::IsRunning() const
 {
-    return !m_context.window->ShouldClose();
+    return !JzRE_CONTEXT().GetWindow().ShouldClose();
 }

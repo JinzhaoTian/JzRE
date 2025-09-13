@@ -11,7 +11,6 @@
 #include "JzRHIETypes.h"
 #include "JzRHIDevice.h"
 #include "JzRHICommandQueue.h"
-#include "JzServiceContainer.h"
 #include "JzInputManager.h"
 #include "JzSceneManager.h"
 #include "JzUIManager.h"
@@ -22,11 +21,11 @@ namespace JzRE {
  * @brief JzRE Macro Definitions
  */
 #define JzRE_CONTEXT() \
-    JzRE::JzServiceContainer::Get<JzRE::JzContext>()
+    JzContext::GetInstance()
 #define JzRE_DEVICE() \
-    JzRE::JzServiceContainer::Get<JzRE::JzContext>().GetDevice()
+    JzContext::GetInstance().GetDevice()
 #define JzRE_DEVICE_TYPE() \
-    JzRE::JzServiceContainer::Get<JzRE::JzContext>().GetRHIType()
+    JzContext::GetInstance().GetRHIType()
 
 /**
  * @brief Context of JzRE
@@ -34,75 +33,109 @@ namespace JzRE {
 class JzContext {
 public:
     /**
-     * @brief Construct a new Context object
-     */
-    JzContext(JzERHIType rhiType = JzERHIType::OpenGL);
-
-    /**
-     * @brief Delete copy constructor
-     */
-    JzContext(const JzContext &) = delete;
-
-    /**
-     * @brief Delete copy assignment operator
-     */
-    JzContext &operator=(const JzContext &) = delete;
-
-    /**
-     * @brief Destroy the Context object
-     */
-    virtual ~JzContext();
-
-    /**
-     * @brief Get the device
+     * @brief Get single instance Context
      *
-     * @return The RHI device
+     * @return JzContext&
      */
-    std::shared_ptr<JzRHIDevice> GetDevice() const;
+    static JzContext &GetInstance();
 
     /**
-     * @brief Get the input manager
+     * @brief Initialize Context
      *
-     * @return The Input Manager
+     * @param rhiType Graphics API Types
+     * @return Bool
      */
-    JzInputManager &GetInputManager() const;
+    Bool Initialize(JzERHIType rhiType = JzERHIType::OpenGL);
+
+    /**
+     * @brief Is Context initialized
+     *
+     * @return Bool
+     */
+    Bool IsInitialized() const;
+
+    /**
+     * @brief Shutdown
+     */
+    void Shutdown();
+
+    /**
+     * @brief Get the window
+     *
+     * @return JzWindow& The window
+     */
+    JzWindow &GetWindow() const;
 
     /**
      * @brief Get the RHI type
+     *
      * @return The RHI type
      */
     JzERHIType GetRHIType() const;
 
     /**
-     * @brief Get the command queue
-     * @return The command queue
+     * @brief Get the RHI device
+     *
+     * @return JzRHIDevice& The RHI device
      */
-    std::shared_ptr<JzRHICommandQueue> GetCommandQueue() const;
+    JzRHIDevice &GetDevice() const;
+
+    /**
+     * @brief Get the input manager
+     *
+     * @return JzInputManager& The input manager
+     */
+    JzInputManager &GetInputManager() const;
+
+    /**
+     * @brief Get the UI manager
+     *
+     * @return JzUIManager& The UI Manager
+     */
+    JzUIManager &GetUIManager() const;
+
+    /**
+     * @brief Get the scene manager
+     *
+     * @return JzSceneManager& The scene manager
+     */
+    JzSceneManager &GetSceneManager() const;
+
+    /**
+     * @brief Get the command queue
+     *
+     * @return JzRHICommandQueue& The command queue
+     */
+    JzRHICommandQueue &GetCommandQueue() const;
 
     /**
      * @brief Set the thread count
+     *
      * @param threadCount The thread count
      */
     void SetThreadCount(U32 threadCount);
 
     /**
      * @brief Get the thread count
+     *
      * @return The thread count
      */
     U32 GetThreadCount() const;
 
-public:
-    std::unique_ptr<JzWindow>       window;
-    std::unique_ptr<JzInputManager> inputManager;
-    std::unique_ptr<JzUIManager>    uiManager;
-
-    JzSceneManager sceneManager;
-
-    JzWindowSettings windowSettings;
+private:
+    JzContext()                             = default;
+    ~JzContext()                            = default;
+    JzContext(const JzContext &)            = delete;
+    JzContext &operator=(const JzContext &) = delete;
 
 private:
-    std::shared_ptr<JzRHIDevice>       m_device;
-    std::shared_ptr<JzRHICommandQueue> m_commandQueue;
+    JzWindowSettings                   m_windowSettings;
+    std::unique_ptr<JzWindow>          m_window;
+    std::unique_ptr<JzRHIDevice>       m_device;
+    std::unique_ptr<JzInputManager>    m_inputManager;
+    std::unique_ptr<JzUIManager>       m_uiManager;
+    std::unique_ptr<JzSceneManager>    m_sceneManager;
+    std::unique_ptr<JzRHICommandQueue> m_commandQueue;
 };
 
 } // namespace JzRE

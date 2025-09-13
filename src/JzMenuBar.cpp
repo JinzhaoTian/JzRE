@@ -28,15 +28,16 @@ JzRE::JzMenuBar::JzMenuBar()
 
 void JzRE::JzMenuBar::HandleShortcuts(F32 deltaTime)
 {
-    auto &inputManager = JzRE_CONTEXT().GetInputManager();
+    auto &inputMgr = JzRE_CONTEXT().GetInputManager();
 
-    if (inputManager.GetKeyState(JzEInputKey::KEY_LEFT_CONTROL) == JzEInputKeyState::KEY_DOWN) {
-        if (inputManager.IsKeyPressed(JzEInputKey::KEY_N)) {
-            JzRE_CONTEXT().sceneManager.LoadDefaultScene();
+    if (inputMgr.GetKeyState(JzEInputKey::KEY_LEFT_CONTROL) == JzEInputKeyState::KEY_DOWN) {
+        if (inputMgr.IsKeyPressed(JzEInputKey::KEY_N)) {
+            auto &sceneMgr = JzRE_CONTEXT().GetSceneManager();
+            sceneMgr.LoadDefaultScene();
         }
 
-        if (inputManager.IsKeyPressed(JzEInputKey::KEY_S)) {
-            if (inputManager.GetKeyState(JzEInputKey::KEY_LEFT_SHIFT) == JzEInputKeyState::KEY_UP) {
+        if (inputMgr.IsKeyPressed(JzEInputKey::KEY_S)) {
+            if (inputMgr.GetKeyState(JzEInputKey::KEY_LEFT_SHIFT) == JzEInputKeyState::KEY_UP) {
                 // EDITOR_EXEC(SaveSceneChanges());
             } else {
                 // EDITOR_EXEC(SaveAs());
@@ -116,7 +117,7 @@ void JzRE::JzMenuBar::CreateFileMenu()
     fileMenu.CreateWidget<JzSeparator>();
 
     auto &exitMenu         = fileMenu.CreateWidget<JzMenuItem>("Exit", "ALT + F4");
-    exitMenu.ClickedEvent += [] { JzRE_CONTEXT().window->SetShouldClose(true); };
+    exitMenu.ClickedEvent += [] { JzRE_CONTEXT().GetWindow().SetShouldClose(true); };
 }
 
 void JzRE::JzMenuBar::CreateBuildMenu()

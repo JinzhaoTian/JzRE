@@ -5,40 +5,64 @@
 
 #include "JzContext.h"
 #include "JzRHIFactory.h"
+#include "JzSceneManager.h"
 
-JzRE::JzContext::JzContext(JzERHIType rhiType) :
-    sceneManager()
+JzRE::JzContext &JzRE::JzContext::GetInstance()
+{
+    static JzContext instance;
+    return instance;
+}
+
+JzRE::Bool JzRE::JzContext::Initialize(JzERHIType rhiType)
 {
     /* Window */
-    window = std::make_unique<JzRE::JzWindow>(rhiType, windowSettings);
+    m_window = std::make_unique<JzRE::JzWindow>(rhiType, m_windowSettings);
 
-    window->MakeCurrentContext();
+    m_window->MakeCurrentContext();
 
-    window->SetAlignCentered();
+    m_window->SetFullscreen(true);
 
     /* Device */
     auto devicePtr = JzRHIFactory::CreateDevice(rhiType);
     if (!devicePtr) {
-        return;
+        return false;
     }
 
-    m_device = std::shared_ptr<JzRHIDevice>(devicePtr.release());
+    m_device = std::move(devicePtr);
 
-    m_commandQueue = std::make_shared<JzRHICommandQueue>();
+    m_commandQueue = std::make_unique<JzRHICommandQueue>();
+
+    m_sceneManager = std::make_unique<JzRE::JzSceneManager>();
 
     /* Input Manager */
-    inputManager = std::make_unique<JzRE::JzInputManager>(*window);
+    m_inputManager = std::make_unique<JzRE::JzInputManager>(*m_window);
 
     /* UI Manager */
-    uiManager = std::make_unique<JzRE::JzUIManager>(window->GetGLFWWindow());
-    uiManager->SetDocking(true);
+    m_uiManager = std::make_unique<JzRE::JzUIManager>(m_window->GetGLFWWindow());
+    m_uiManager->SetDocking(true);
 
-    /* Service Providing */
-    JzServiceContainer::Provide<JzContext>(*this);
+    return true;
 }
 
-JzRE::JzContext::~JzContext()
+JzRE::Bool JzRE::JzContext::IsInitialized() const
 {
+    return m_device != nullptr;
+}
+
+void JzRE::JzContext::Shutdown()
+{
+    if (m_uiManager) {
+        m_uiManager.reset();
+    }
+
+    if (m_inputManager) {
+        m_inputManager.reset();
+    }
+
+    if (m_sceneManager) {
+        m_sceneManager.reset();
+    }
+
     if (m_commandQueue) {
         m_commandQueue.reset();
     }
@@ -46,16 +70,10 @@ JzRE::JzContext::~JzContext()
     if (m_device) {
         m_device.reset();
     }
-}
 
-std::shared_ptr<JzRE::JzRHIDevice> JzRE::JzContext::GetDevice() const
-{
-    return m_device;
-}
-
-JzRE::JzInputManager &JzRE::JzContext::GetInputManager() const
-{
-    return *inputManager;
+    if (m_window) {
+        m_window.reset();
+    }
 }
 
 JzRE::JzERHIType JzRE::JzContext::GetRHIType() const
@@ -63,9 +81,34 @@ JzRE::JzERHIType JzRE::JzContext::GetRHIType() const
     return m_device ? m_device->GetRHIType() : JzERHIType::Unknown;
 }
 
-std::shared_ptr<JzRE::JzRHICommandQueue> JzRE::JzContext::GetCommandQueue() const
+JzRE::JzRHIDevice &JzRE::JzContext::GetDevice() const
 {
-    return m_commandQueue;
+    return *m_device;
+}
+
+JzRE::JzWindow &JzRE::JzContext::GetWindow() const
+{
+    return *m_window;
+}
+
+JzRE::JzInputManager &JzRE::JzContext::GetInputManager() const
+{
+    return *m_inputManager;
+}
+
+JzRE::JzUIManager &JzRE::JzContext::GetUIManager() const
+{
+    return *m_uiManager;
+}
+
+JzRE::JzSceneManager &JzRE::JzContext::GetSceneManager() const
+{
+    return *m_sceneManager;
+}
+
+JzRE::JzRHICommandQueue &JzRE::JzContext::GetCommandQueue() const
+{
+    return *m_commandQueue;
 }
 
 void JzRE::JzContext::SetThreadCount(JzRE::U32 threadCount)

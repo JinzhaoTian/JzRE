@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "JzContext.h"
+#include <memory>
 #include "JzEditor.h"
 
 namespace JzRE {
@@ -37,7 +37,6 @@ public:
     Bool IsRunning() const;
 
 private:
-    JzContext m_context;
-    JzEditor  m_editor;
+    std::unique_ptr<JzEditor> m_editor;
 };
 } // namespace JzRE

@@ -163,10 +163,7 @@ std::shared_ptr<JzRE::JzRHITexture> JzRE::JzModel::LoadTexture(const JzRE::Strin
         return it->second;
     }
 
-    auto device = JzRE_DEVICE();
-    if (!device) {
-        return nullptr;
-    }
+    auto &device = JzRE_DEVICE();
 
     // Create texture description
     JzTextureDesc textureDesc{};
@@ -185,7 +182,7 @@ std::shared_ptr<JzRE::JzRHITexture> JzRE::JzModel::LoadTexture(const JzRE::Strin
     textureDesc.height = 1;
     textureDesc.data   = nullptr; // Would be loaded from file
 
-    auto texture = device->CreateTexture(textureDesc);
+    auto texture = device.CreateTexture(textureDesc);
     if (texture) {
         m_loadedTextures[path] = texture;
     }

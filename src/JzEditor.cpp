@@ -28,19 +28,24 @@ JzRE::JzEditor::JzEditor() :
     m_panelsManager.GetPanelAs<JzMenuBar>("Menu Bar").InitializeSettingsMenu();
 
     m_canvas.SetDockspace(true);
-    m_context.uiManager->SetCanvas(m_canvas);
 
-    m_context.sceneManager.LoadDefaultScene();
+    auto &uiMgr = m_context.GetUIManager();
+    uiMgr.SetCanvas(m_canvas);
+
+    auto &sceneMgr = m_context.GetSceneManager();
+    sceneMgr.LoadDefaultScene();
 }
 
 JzRE::JzEditor::~JzEditor()
 {
-    m_context.sceneManager.UnloadCurrentScene();
+    auto &sceneMgr = m_context.GetSceneManager();
+    sceneMgr.UnloadCurrentScene();
 }
 
 void JzRE::JzEditor::PreUpdate()
 {
-    m_context.window->PollEvents();
+    auto &window = m_context.GetWindow();
+    window.PollEvents();
 }
 
 void JzRE::JzEditor::Update(JzRE::F32 deltaTime)
@@ -54,8 +59,12 @@ void JzRE::JzEditor::Update(JzRE::F32 deltaTime)
 
 void JzRE::JzEditor::PostUpdate()
 {
-    m_context.window->SwapBuffers();
-    m_context.inputManager->ClearEvents();
+    auto &window = m_context.GetWindow();
+    window.SwapBuffers();
+
+    auto inputMgr = m_context.GetInputManager();
+    inputMgr.ClearEvents();
+
     ++m_elapsedFrames;
 }
 
@@ -94,5 +103,5 @@ void JzRE::JzEditor::UpdateEditorPanels(JzRE::F32 deltaTime)
 
 void JzRE::JzEditor::RenderEditorUI(JzRE::F32 deltaTime)
 {
-    m_context.uiManager->Render();
+    m_context.GetUIManager().Render();
 }

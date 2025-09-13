@@ -26,20 +26,20 @@ void JzRE::JzMesh::Draw(std::shared_ptr<JzRE::JzRHIPipeline> pipeline)
         SetupMesh();
     }
 
-    auto device = JzRE_DEVICE();
-    if (!device || !m_vertexArray || indices.empty()) {
+    auto &device = JzRE_DEVICE();
+    if (!m_vertexArray || indices.empty()) {
         return;
     }
 
     // Bind textures using RHI
     for (U32 i = 0; i < this->textures.size(); i++) {
-        device->BindTexture(this->textures[i], i);
+        device.BindTexture(this->textures[i], i);
     }
 
     // Bind vertex array and pipeline
-    device->BindVertexArray(m_vertexArray);
+    device.BindVertexArray(m_vertexArray);
     if (pipeline) {
-        device->BindPipeline(pipeline);
+        device.BindPipeline(pipeline);
     }
 
     // Draw indexed using RHI
@@ -51,7 +51,7 @@ void JzRE::JzMesh::Draw(std::shared_ptr<JzRE::JzRHIPipeline> pipeline)
     drawParams.vertexOffset  = 0;
     drawParams.firstInstance = 0;
 
-    device->DrawIndexed(drawParams);
+    device.DrawIndexed(drawParams);
 }
 
 void JzRE::JzMesh::SetupMesh()
@@ -60,10 +60,7 @@ void JzRE::JzMesh::SetupMesh()
         return;
     }
 
-    auto device = JzRE_DEVICE();
-    if (!device) {
-        return;
-    }
+    auto &device = JzRE_DEVICE();
 
     // Create vertex buffer
     JzBufferDesc vertexBufferDesc{};
@@ -73,7 +70,7 @@ void JzRE::JzMesh::SetupMesh()
     vertexBufferDesc.data      = vertices.data();
     vertexBufferDesc.debugName = "MeshVertexBuffer";
 
-    m_vertexBuffer = device->CreateBuffer(vertexBufferDesc);
+    m_vertexBuffer = device.CreateBuffer(vertexBufferDesc);
     if (!m_vertexBuffer) {
         return;
     }
@@ -86,13 +83,13 @@ void JzRE::JzMesh::SetupMesh()
     indexBufferDesc.data      = indices.data();
     indexBufferDesc.debugName = "MeshIndexBuffer";
 
-    m_indexBuffer = device->CreateBuffer(indexBufferDesc);
+    m_indexBuffer = device.CreateBuffer(indexBufferDesc);
     if (!m_indexBuffer) {
         return;
     }
 
     // Create vertex array object
-    m_vertexArray = device->CreateVertexArray("MeshVertexArray");
+    m_vertexArray = device.CreateVertexArray("MeshVertexArray");
     if (!m_vertexArray) {
         return;
     }

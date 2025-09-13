@@ -12,10 +12,8 @@ JzRE::JzRHIClearCommand::JzRHIClearCommand(const JzClearParams &params) :
 
 void JzRE::JzRHIClearCommand::Execute()
 {
-    auto device = JzRE_DEVICE();
-    if (device) {
-        device->Clear(m_params);
-    }
+    auto &device = JzRE_DEVICE();
+    device.Clear(m_params);
 }
 
 JzRE::JzRHIDrawCommand::JzRHIDrawCommand(const JzRE::JzDrawParams &params) :
@@ -24,10 +22,8 @@ JzRE::JzRHIDrawCommand::JzRHIDrawCommand(const JzRE::JzDrawParams &params) :
 
 void JzRE::JzRHIDrawCommand::Execute()
 {
-    auto device = JzRE_DEVICE();
-    if (device) {
-        device->Draw(m_params);
-    }
+    auto &device = JzRE_DEVICE();
+    device.Draw(m_params);
 }
 
 JzRE::JzRHIDrawIndexedCommand::JzRHIDrawIndexedCommand(const JzRE::JzDrawIndexedParams &params) :
@@ -36,10 +32,8 @@ JzRE::JzRHIDrawIndexedCommand::JzRHIDrawIndexedCommand(const JzRE::JzDrawIndexed
 
 void JzRE::JzRHIDrawIndexedCommand::Execute()
 {
-    auto device = JzRE_DEVICE();
-    if (device) {
-        device->DrawIndexed(m_params);
-    }
+    auto &device = JzRE_DEVICE();
+    device.DrawIndexed(m_params);
 }
 
 JzRE::JzRHIBindPipelineCommand::JzRHIBindPipelineCommand(std::shared_ptr<JzRE::JzRHIPipeline> pipeline) :
@@ -48,10 +42,8 @@ JzRE::JzRHIBindPipelineCommand::JzRHIBindPipelineCommand(std::shared_ptr<JzRE::J
 
 void JzRE::JzRHIBindPipelineCommand::Execute()
 {
-    auto device = JzRE_DEVICE();
-    if (device) {
-        device->BindPipeline(m_pipeline);
-    }
+    auto &device = JzRE_DEVICE();
+    device.BindPipeline(m_pipeline);
 }
 
 JzRE::JzRHIBindVertexArrayCommand::JzRHIBindVertexArrayCommand(std::shared_ptr<JzRE::JzRHIVertexArray> vertexArray) :
@@ -60,10 +52,8 @@ JzRE::JzRHIBindVertexArrayCommand::JzRHIBindVertexArrayCommand(std::shared_ptr<J
 
 void JzRE::JzRHIBindVertexArrayCommand::Execute()
 {
-    auto device = JzRE_DEVICE();
-    if (device) {
-        device->BindVertexArray(m_vertexArray);
-    }
+    auto &device = JzRE_DEVICE();
+    device.BindVertexArray(m_vertexArray);
 }
 
 JzRE::JzRHIBindTextureCommand::JzRHIBindTextureCommand(std::shared_ptr<JzRE::JzRHITexture> texture, U32 slot) :
@@ -73,10 +63,8 @@ JzRE::JzRHIBindTextureCommand::JzRHIBindTextureCommand(std::shared_ptr<JzRE::JzR
 
 void JzRE::JzRHIBindTextureCommand::Execute()
 {
-    auto device = JzRE_DEVICE();
-    if (device) {
-        device->BindTexture(m_texture, m_slot);
-    }
+    auto &device = JzRE_DEVICE();
+    device.BindTexture(m_texture, m_slot);
 }
 
 JzRE::JzRHISetViewportCommand::JzRHISetViewportCommand(const JzRE::JzViewport &viewport) :
@@ -85,10 +73,8 @@ JzRE::JzRHISetViewportCommand::JzRHISetViewportCommand(const JzRE::JzViewport &v
 
 void JzRE::JzRHISetViewportCommand::Execute()
 {
-    auto device = JzRE_DEVICE();
-    if (device) {
-        device->SetViewport(m_viewport);
-    }
+    auto &device = JzRE_DEVICE();
+    device.SetViewport(m_viewport);
 }
 
 JzRE::JzRHISetScissorCommand::JzRHISetScissorCommand(const JzRE::JzScissorRect &scissor) :
@@ -97,10 +83,8 @@ JzRE::JzRHISetScissorCommand::JzRHISetScissorCommand(const JzRE::JzScissorRect &
 
 void JzRE::JzRHISetScissorCommand::Execute()
 {
-    auto device = JzRE_DEVICE();
-    if (device) {
-        device->SetScissor(m_scissorRect);
-    }
+    auto &device = JzRE_DEVICE();
+    device.SetScissor(m_scissorRect);
 }
 
 JzRE::JzRHIBeginRenderPassCommand::JzRHIBeginRenderPassCommand(std::shared_ptr<JzRE::JzRHIFramebuffer> framebuffer) :
