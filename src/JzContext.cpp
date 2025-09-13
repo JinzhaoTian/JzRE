@@ -15,6 +15,8 @@ JzRE::JzContext &JzRE::JzContext::GetInstance()
 
 JzRE::Bool JzRE::JzContext::Initialize(JzERHIType rhiType)
 {
+    m_workspacePath = std::filesystem::current_path();
+
     /* Window */
     m_window = std::make_unique<JzRE::JzWindow>(rhiType, m_windowSettings);
 
@@ -39,6 +41,14 @@ JzRE::Bool JzRE::JzContext::Initialize(JzERHIType rhiType)
 
     /* UI Manager */
     m_uiManager = std::make_unique<JzRE::JzUIManager>(m_window->GetGLFWWindow());
+
+    const auto fontPath = m_workspacePath / "assets" / "fonts" / "Roboto-Regular.ttf";
+
+    m_uiManager->LoadFont("roboto-regular-22", fontPath.string(), 22);
+    m_uiManager->LoadFont("roboto-regular-18", fontPath.string(), 18);
+    m_uiManager->LoadFont("roboto-regular-14", fontPath.string(), 14);
+    m_uiManager->UseFont("roboto-regular-18");
+
     m_uiManager->SetDocking(true);
 
     return true;

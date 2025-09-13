@@ -89,3 +89,43 @@ void JzRE::JzUIManager::ResetLayout(const JzRE::String &configPath) const
 {
     ImGui::LoadIniSettingsFromDisk(configPath.c_str());
 }
+
+JzRE::Bool JzRE::JzUIManager::LoadFont(const JzRE::String &fontId, const JzRE::String &fontPath, JzRE::F32 fontSize)
+{
+    if (m_fonts.find(fontId) == m_fonts.end()) {
+        auto   &io           = ImGui::GetIO();
+        ImFont *fontInstance = io.Fonts->AddFontFromFileTTF(fontPath.c_str(),
+                                                            fontSize,
+                                                            nullptr,
+                                                            io.Fonts->GetGlyphRangesChineseFull());
+        if (fontInstance) {
+            m_fonts[fontId] = fontInstance;
+            return true;
+        }
+    }
+    return false;
+}
+
+JzRE::Bool JzRE::JzUIManager::UnloadFont(const JzRE::String &fontId)
+{
+    if (m_fonts.find(fontId) != m_fonts.end()) {
+        m_fonts.erase(fontId);
+        return true;
+    }
+    return false;
+}
+
+JzRE::Bool JzRE::JzUIManager::UseFont(const JzRE::String &fontId)
+{
+    auto foundFont = m_fonts.find(fontId);
+    if (foundFont != m_fonts.end()) {
+        ImGui::GetIO().FontDefault = foundFont->second;
+        return true;
+    }
+    return false;
+}
+
+void JzRE::JzUIManager::UseDefaultFont()
+{
+    ImGui::GetIO().FontDefault = nullptr;
+}

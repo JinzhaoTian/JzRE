@@ -5,11 +5,14 @@
 
 #pragma once
 
+#include <unordered_map>
 #include <GLFW/glfw3.h>
+#include <imgui.h>
 #include "JzRETypes.h"
 #include "JzCanvas.h"
 
 namespace JzRE {
+
 /**
  * @brief UI Manager of JzRE
  */
@@ -26,22 +29,26 @@ public:
     ~JzUIManager();
 
     /**
-     * @brief Set docking
-     */
-    void SetDocking(Bool value);
-
-    /**
-     * @brief Get docking
-     */
-    Bool IsDocking() const;
-
-    /**
      * @brief Render
      */
     void Render();
 
     /**
-     * @brief Set canvas
+     * @brief Set docking
+     */
+    void SetDocking(Bool value);
+
+    /**
+     * @brief Is docking
+     *
+     * @return Bool
+     */
+    Bool IsDocking() const;
+
+    /**
+     * @brief Set the Canvas
+     *
+     * @param canvas
      */
     void SetCanvas(JzCanvas &canvas);
 
@@ -62,17 +69,54 @@ public:
 
     /**
      * @brief Set editor layout save filename
+     *
+     * @param filename
      */
     void SetEditorLayoutSaveFilename(const String &filename);
 
     /**
      * @brief Reset layout
+     *
+     * @param configPath
      */
     void ResetLayout(const String &configPath) const;
 
+    /**
+     * @brief Load a font
+     *
+     * @param fontId
+     * @param fontPath
+     * @param fontSize
+     * @return Bool
+     */
+    Bool LoadFont(const String &fontId, const String &fontPath, F32 fontSize);
+
+    /**
+     * @brief Unload a font (Returns true on success)
+     *
+     * @param fontId
+     * @return Bool
+     */
+    Bool UnloadFont(const String &fontId);
+
+    /**
+     * @brief Set the given font as the current one
+     *
+     * @param fontId
+     * @return Bool
+     */
+    Bool UseFont(const String &fontId);
+
+    /**
+     * @brief Use the default font
+     */
+    void UseDefaultFont();
+
 private:
-    Bool      m_dockingState;
-    JzCanvas *m_canvas             = nullptr;
-    String    m_layoutSaveFilename = "imgui.ini";
+    Bool                                      m_dockingState;
+    JzCanvas                                 *m_canvas             = nullptr;
+    String                                    m_layoutSaveFilename = "imgui.ini";
+    std::unordered_map<std::string, ImFont *> m_fonts;
 };
+
 } // namespace JzRE

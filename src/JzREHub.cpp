@@ -42,6 +42,11 @@ JzRE::JzREHub::JzREHub()
     m_device = JzRHIFactory::CreateDevice(rhiType);
 
     m_uiManager = std::make_unique<JzUIManager>(m_window->GetGLFWWindow());
+
+    const auto fontPath = std::filesystem::current_path() / "assets" / "fonts" / "Roboto-Regular.ttf";
+    m_uiManager->LoadFont("roboto-regular-16", fontPath.string(), 16);
+    m_uiManager->UseFont("roboto-regular-16");
+
     m_uiManager->SetDocking(false);
 
     m_canvas   = std::make_unique<JzCanvas>();
@@ -156,11 +161,6 @@ JzRE::JzREHubPanel::JzREHubPanel() :
     CreateWidget<JzSpacing>(2);
     CreateWidget<JzSeparator>();
     CreateWidget<JzSpacing>(2);
-
-    auto &historyTitle     = CreateWidget<JzText>("Recent Open:");
-    historyTitle.lineBreak = true;
-
-    CreateWidget<JzSpacing>(1);
 
     auto &columns  = CreateWidget<JzColumns<2>>();
     columns.widths = {512.0f, 200.0f};

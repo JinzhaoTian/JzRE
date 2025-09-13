@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <memory>
+#include <filesystem>
 #include "JzRETypes.h"
 #include "JzWindow.h"
 #include "JzWindowSettings.h"
@@ -136,6 +138,7 @@ private:
     std::unique_ptr<JzUIManager>       m_uiManager;
     std::unique_ptr<JzSceneManager>    m_sceneManager;
     std::unique_ptr<JzRHICommandQueue> m_commandQueue;
+    std::filesystem::path              m_workspacePath;
 };
 
 } // namespace JzRE
