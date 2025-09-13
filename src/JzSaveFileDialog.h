@@ -32,7 +32,7 @@ public:
     /**
      * @brief Show Dialog
      */
-    virtual void Show() override;
+    virtual void Show(JzEFileDialogType type = JzEFileDialogType::SAVEFILE) override;
 
 private:
     void _addExtensionToFilePathAndName();

@@ -6,6 +6,7 @@
 #pragma once
 
 #include "JzRETypes.h"
+#include "JzEFileDialogType.h"
 
 namespace JzRE {
 
@@ -36,7 +37,7 @@ public:
     /**
      * @brief Show the file dialog
      */
-    virtual void Show();
+    virtual void Show(JzEFileDialogType type = JzEFileDialogType::DEFAULT);
 
     /**
      * @brief Has Succeeded

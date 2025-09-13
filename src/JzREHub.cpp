@@ -86,9 +86,9 @@ JzRE::JzREHubPanel::JzREHubPanel() :
     openButton.size                 = m_buttonSize;
     openButton.lineBreak            = false;
     openButton.ClickedEvent        += [this] {
-        JzOpenFileDialog dialog("Open Floder");
+        JzOpenFileDialog dialog("Open Folder");
         dialog.AddFileType("*", "*.*");
-        dialog.Show();
+        dialog.Show(JzEFileDialogType::OPENFOLDER);
 
         const std::filesystem::path projectFile   = dialog.GetSelectedFilePath();
         const std::filesystem::path projectFolder = projectFile.parent_path();

@@ -20,7 +20,7 @@ void JzRE::JzFileDialog::SetInitialDirectory(
   m_initialDirectory = p_initialDirectory;
 }
 
-void JzRE::JzFileDialog::Show() {
+void JzRE::JzFileDialog::Show(JzEFileDialogType type) {
   m_succeeded = false;
   m_filepath.clear();
   m_filename.clear();
@@ -29,8 +29,24 @@ void JzRE::JzFileDialog::Show() {
     NSOpenPanel *openPanel = [NSOpenPanel openPanel];
 
     [openPanel setTitle:@(m_dialogTitle.c_str())];
-    [openPanel setCanChooseFiles:YES];
-    [openPanel setCanChooseDirectories:YES];
+    switch (type) {
+    case JzRE::JzEFileDialogType::DEFAULT:
+      [openPanel setCanChooseFiles:YES];
+      [openPanel setCanChooseDirectories:YES];
+      break;
+    case JzRE::JzEFileDialogType::OPENFILE:
+      [openPanel setCanChooseFiles:YES];
+      [openPanel setCanChooseDirectories:NO];
+      break;
+    case JzRE::JzEFileDialogType::OPENFOLDER:
+      [openPanel setCanChooseFiles:NO];
+      [openPanel setCanChooseDirectories:YES];
+      break;
+    case JzRE::JzEFileDialogType::SAVEFILE:
+    default:
+      [openPanel setCanChooseFiles:YES];
+      [openPanel setCanChooseDirectories:YES];
+    }
     [openPanel setAllowsMultipleSelection:NO];
 
     // Set initial directory

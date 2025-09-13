@@ -16,9 +16,9 @@ void JzRE::JzSaveFileDialog::DefineExtension(const JzRE::String &p_label, const 
     m_extension = p_extension;
 }
 
-void JzRE::JzSaveFileDialog::Show()
+void JzRE::JzSaveFileDialog::Show(JzEFileDialogType type)
 {
-    JzFileDialog::Show();
+    JzFileDialog::Show(type);
 
     if (m_succeeded)
         _addExtensionToFilePathAndName();

@@ -20,7 +20,7 @@ void JzRE::JzOpenFileDialog::SetInitialDirectory(const JzRE::String &p_initialDi
     m_initialDirectory = p_initialDirectory;
 }
 
-void JzRE::JzOpenFileDialog::Show()
+void JzRE::JzOpenFileDialog::Show(JzEFileDialogType type)
 {
     m_succeeded = false;
     m_filepath.clear();

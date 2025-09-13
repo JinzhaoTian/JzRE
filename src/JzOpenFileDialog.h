@@ -28,5 +28,10 @@ public:
      * @param p_filter
      */
     void AddFileType(const String &p_label, const String &p_filter);
+
+    /**
+     * @brief Show Dialog
+     */
+    virtual void Show(JzEFileDialogType type) override;
 };
 } // namespace JzRE

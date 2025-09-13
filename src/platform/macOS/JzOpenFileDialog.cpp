@@ -19,4 +19,9 @@ void JzRE::JzOpenFileDialog::AddFileType(const JzRE::String &p_label,
     m_filter += p_label + ":" + p_filter;
 }
 
+void JzRE::JzOpenFileDialog::Show(JzRE::JzEFileDialogType type)
+{
+    JzFileDialog::Show(type);
+}
+
 #endif // __APPLE__
