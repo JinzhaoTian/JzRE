@@ -4,20 +4,27 @@
  */
 
 #include "JzREHub.h"
+#include <fstream>
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <limits.h>
+#include <unistd.h>
+#endif
+#include <nlohmann/json.hpp>
 #include "JzRHIFactory.h"
+#include "JzOpenFileDialog.h"
 #include "JzGroup.h"
 #include "JzText.h"
 #include "JzInputText.h"
 #include "JzSpacing.h"
 #include "JzSeparator.h"
 #include "JzColumns.h"
-#include "JzOpenFileDialog.h"
 
 JzRE::JzREHub::JzREHub()
 {
     auto rhiType = JzERHIType::OpenGL;
 
-    /* Settings */
     JzWindowSettings windowSettings;
     windowSettings.title       = "JzRE Hub";
     windowSettings.x           = 50;
@@ -28,25 +35,45 @@ JzRE::JzREHub::JzREHub()
     windowSettings.isResizable = false;
     windowSettings.isDecorated = true;
 
-    /* Window creation */
     m_window = std::make_unique<JzRE::JzWindow>(rhiType, windowSettings);
     m_window->MakeCurrentContext();
     m_window->SetAlignCentered();
 
-    /* Device */
     m_device = JzRHIFactory::CreateDevice(rhiType);
 
     m_uiManager = std::make_unique<JzUIManager>(m_window->GetGLFWWindow());
     m_uiManager->SetDocking(false);
 
-    /* JzRE Hub Panel */
+    m_canvas   = std::make_unique<JzCanvas>();
     m_hubPanel = std::make_unique<JzREHubPanel>();
 
-    m_uiManager->SetCanvas(m_canvas);
-    m_canvas.AddPanel(*m_hubPanel);
+    m_canvas->AddPanel(*m_hubPanel);
+
+    m_uiManager->SetCanvas(*m_canvas);
 }
 
-JzRE::JzREHub::~JzREHub() { }
+JzRE::JzREHub::~JzREHub()
+{
+    if (m_hubPanel) {
+        m_hubPanel.reset();
+    }
+
+    if (m_canvas) {
+        m_canvas.reset();
+    }
+
+    if (m_uiManager) {
+        m_uiManager.reset();
+    }
+
+    if (m_device) {
+        m_device.reset();
+    }
+
+    if (m_window) {
+        m_window.reset();
+    }
+}
 
 std::optional<std::filesystem::path> JzRE::JzREHub::Run()
 {
@@ -64,7 +91,21 @@ std::optional<std::filesystem::path> JzRE::JzREHub::Run()
 }
 
 JzRE::JzREHubPanel::JzREHubPanel() :
-    JzPanelWindow("JzRE Hub", true)
+    JzPanelWindow("JzRE Hub", true),
+    m_workspaceFilePath([]() -> std::filesystem::path {
+#ifdef _WIN32
+        wchar_t path[MAX_PATH] = {0};
+        GetModuleFileNameW(nullptr, path, MAX_PATH);
+        return std::filesystem::path(path).parent_path() / "config" / "workspace.json";
+#else
+        char    result[PATH_MAX];
+        ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);
+        if (count != -1) {
+            return std::filesystem::path(result).parent_path() / "config" / "workspace.json";
+        }
+        return std::filesystem::current_path() / "config" / "workspace.json";
+#endif
+    }())
 {
     resizable = false;
     movable   = false;
@@ -90,12 +131,11 @@ JzRE::JzREHubPanel::JzREHubPanel() :
         dialog.AddFileType("*", "*.*");
         dialog.Show(JzEFileDialogType::OPENFOLDER);
 
-        const std::filesystem::path projectFile   = dialog.GetSelectedFilePath();
-        const std::filesystem::path projectFolder = projectFile.parent_path();
+        const std::filesystem::path openPath = dialog.GetSelectedFilePath();
 
         if (dialog.HasSucceeded()) {
-            if (!_OnFinish({projectFolder})) {
-                _OnFailedToOpenPath(projectFolder);
+            if (!_OnFinish({openPath})) {
+                _OnFailedToOpenPath(openPath);
             }
         }
     };
@@ -117,12 +157,17 @@ JzRE::JzREHubPanel::JzREHubPanel() :
     CreateWidget<JzSeparator>();
     CreateWidget<JzSpacing>(2);
 
+    auto &historyTitle     = CreateWidget<JzText>("Recent Open:");
+    historyTitle.lineBreak = true;
+
+    CreateWidget<JzSpacing>(1);
+
     auto &columns  = CreateWidget<JzColumns<2>>();
     columns.widths = {512.0f, 200.0f};
 
-    auto pathes = std::vector<String>{"sda", "sd", "snba"}; // TODO
+    _LoadHistory();
 
-    for (const auto &path : pathes) {
+    for (const auto &path : m_history) {
         auto &_text = columns.CreateWidget<JzText>(path);
 
         auto &_actions = columns.CreateWidget<JzGroup>();
@@ -135,6 +180,7 @@ JzRE::JzREHubPanel::JzREHubPanel() :
             if (!_OnFinish(path)) {
                 _text.Destroy();
                 _actions.Destroy();
+                _DeleteFromHistory(path);
                 _OnFailedToOpenPath(path);
             }
         };
@@ -146,8 +192,14 @@ JzRE::JzREHubPanel::JzREHubPanel() :
         _deleteBtn.ClickedEvent        += [this, &_text, &_actions, path] {
             _text.Destroy();
             _actions.Destroy();
+            _DeleteFromHistory(path);
         };
     }
+}
+
+JzRE::JzREHubPanel::~JzREHubPanel()
+{
+    _SaveHistory();
 }
 
 std::optional<std::filesystem::path> JzRE::JzREHubPanel::GetResult() const
@@ -165,6 +217,113 @@ void JzRE::JzREHubPanel::Draw()
     ImGui::PopStyleVar(2);
 }
 
+void JzRE::JzREHubPanel::_LoadHistory()
+{
+    m_history.clear();
+
+    std::filesystem::create_directories(m_workspaceFilePath.parent_path());
+
+    std::ifstream file(m_workspaceFilePath);
+    if (!file.is_open()) {
+        return;
+    }
+
+    try {
+        nlohmann::json jsonObj;
+        file >> jsonObj;
+
+        if (jsonObj.contains("lastOpenFiles") && jsonObj["lastOpenFiles"].is_array()) {
+            for (const auto &item : jsonObj["lastOpenFiles"]) {
+                if (item.is_string()) {
+                    std::string utf8Path = item.get<std::string>();
+                    m_history.push_back(_Utf8ToPath(utf8Path));
+
+                    // 限制历史记录数量
+                    if (m_history.size() >= m_maxHistorySize) {
+                        break;
+                    }
+                }
+            }
+        }
+    } catch (const std::exception &e) {
+        // TODO
+    }
+
+    file.close();
+}
+
+void JzRE::JzREHubPanel::_SaveHistory()
+{
+    std::filesystem::create_directories(m_workspaceFilePath.parent_path());
+
+    std::ofstream file(m_workspaceFilePath);
+    if (!file.is_open()) {
+        return;
+    }
+
+    try {
+        nlohmann::json jsonObj;
+        jsonObj["lastOpenFiles"] = nlohmann::json::array();
+
+        for (const auto &path : m_history) {
+            jsonObj["lastOpenFiles"].push_back(_PathToUtf8(path));
+        }
+
+        file << jsonObj.dump(4); // 使用4空格缩进美化输出
+    } catch (const std::exception &e) {
+        // TODO
+    }
+
+    file.close();
+}
+
+void JzRE::JzREHubPanel::_AddToHistory(const std::filesystem::path &path)
+{
+    auto it = std::find(m_history.begin(), m_history.end(), path);
+    if (it != m_history.end()) {
+        // 如果已存在，移动到最前面
+        m_history.erase(it);
+    }
+
+    m_history.insert(m_history.begin(), path);
+
+    if (m_history.size() > m_maxHistorySize) {
+        m_history.pop_back();
+    }
+
+    _SaveHistory();
+}
+
+void JzRE::JzREHubPanel::_DeleteFromHistory(const std::filesystem::path &path)
+{
+    auto it = std::find(m_history.begin(), m_history.end(), path);
+    if (it != m_history.end()) {
+        m_history.erase(it);
+    }
+
+    _SaveHistory();
+}
+
+JzRE::String JzRE::JzREHubPanel::_PathToUtf8(const std::filesystem::path &path) const
+{
+#ifdef _WIN32
+    std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converter;
+    return converter.to_bytes(path.wstring());
+#else
+    return path.string();
+#endif
+}
+
+std::filesystem::path JzRE::JzREHubPanel::_Utf8ToPath(const JzRE::String &utf8Str) const
+{
+#ifdef _WIN32
+    std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converter;
+    return std::filesystem::path(converter.from_bytes(utf8Str));
+#else
+    return std::filesystem::path(utf8Str);
+#endif
+}
+
 void JzRE::JzREHubPanel::_OnUpdateGoButton(const JzRE::String &p_path)
 {
     const Bool validPath            = !p_path.empty();
@@ -179,6 +338,8 @@ void JzRE::JzREHubPanel::_OnFailedToOpenPath(const std::filesystem::path &p_path
 
 JzRE::Bool JzRE::JzREHubPanel::_OnFinish(const std::filesystem::path p_result)
 {
+    _AddToHistory(p_result);
+
     m_result = p_result;
     Close();
     return true;
