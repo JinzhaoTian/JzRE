@@ -21,10 +21,8 @@
 #include "JzSeparator.h"
 #include "JzColumns.h"
 
-JzRE::JzREHub::JzREHub()
+JzRE::JzREHub::JzREHub(JzERHIType rhiType)
 {
-    auto rhiType = JzERHIType::OpenGL;
-
     JzWindowSettings windowSettings;
     windowSettings.title       = "JzRE Hub";
     windowSettings.x           = 50;
@@ -41,12 +39,12 @@ JzRE::JzREHub::JzREHub()
 
     m_device = JzRHIFactory::CreateDevice(rhiType);
 
-    m_uiManager = std::make_unique<JzUIManager>(m_window->GetGLFWWindow());
+    m_uiManager = std::make_unique<JzUIManager>(*m_window);
 
-    const auto fontPath = std::filesystem::current_path() / "assets" / "fonts" / "Roboto-Regular.ttf";
+    const auto fontPath = std::filesystem::current_path() / "fonts" / "Roboto-Regular.ttf";
     m_uiManager->LoadFont("roboto-regular-16", fontPath.string(), 16);
     m_uiManager->UseFont("roboto-regular-16");
-
+    m_uiManager->EnableEditorLayoutSave(false);
     m_uiManager->SetDocking(false);
 
     m_canvas   = std::make_unique<JzCanvas>();

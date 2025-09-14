@@ -45,9 +45,10 @@ public:
      * @brief Initialize Context
      *
      * @param rhiType Graphics API Types
+     * @param openDirectory Current open directory
      * @return Bool
      */
-    Bool Initialize(JzERHIType rhiType = JzERHIType::OpenGL);
+    Bool Initialize(JzERHIType rhiType, std::filesystem::path &openDirectory);
 
     /**
      * @brief Is Context initialized
@@ -138,7 +139,8 @@ private:
     std::unique_ptr<JzUIManager>       m_uiManager;
     std::unique_ptr<JzSceneManager>    m_sceneManager;
     std::unique_ptr<JzRHICommandQueue> m_commandQueue;
-    std::filesystem::path              m_workspacePath;
+    std::filesystem::path              m_workDirectory;
+    std::filesystem::path              m_openDirectory;
 };
 
 } // namespace JzRE

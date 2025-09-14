@@ -10,6 +10,7 @@
 #include <imgui.h>
 #include "JzRETypes.h"
 #include "JzCanvas.h"
+#include "JzWindow.h"
 
 namespace JzRE {
 
@@ -21,7 +22,7 @@ public:
     /**
      * @brief Constructor
      */
-    JzUIManager(GLFWwindow *glfwWindow, const String &glslVersion = "#version 150");
+    JzUIManager(JzWindow &window);
 
     /**
      * @brief Destructor

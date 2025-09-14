@@ -8,11 +8,11 @@
 #include "JzContext.h"
 #include "JzClock.h"
 
-JzRE::JzRenderEngine::JzRenderEngine()
+JzRE::JzRenderEngine::JzRenderEngine(JzERHIType rhiType, std::filesystem::path &openDirectory)
 {
     auto &context = JzRE_CONTEXT();
     if (!context.IsInitialized()) {
-        context.Initialize();
+        context.Initialize(rhiType, openDirectory);
     }
 
     m_editor = std::make_unique<JzEditor>();

@@ -28,8 +28,10 @@ class JzREHub {
 public:
     /**
      * @brief Constructor
+     *
+     * @param rhiType
      */
-    JzREHub();
+    JzREHub(JzERHIType rhiType);
 
     /**
      * @brief Destructor

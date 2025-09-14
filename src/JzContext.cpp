@@ -13,42 +13,39 @@ JzRE::JzContext &JzRE::JzContext::GetInstance()
     return instance;
 }
 
-JzRE::Bool JzRE::JzContext::Initialize(JzERHIType rhiType)
+JzRE::Bool JzRE::JzContext::Initialize(JzERHIType rhiType, std::filesystem::path &openDirectory)
 {
-    m_workspacePath = std::filesystem::current_path();
+    m_workDirectory = std::filesystem::current_path();
+    m_openDirectory = openDirectory;
 
-    /* Window */
+    m_windowSettings.title  = "JzRE";
+    m_windowSettings.width  = 1280;
+    m_windowSettings.height = 720;
+
     m_window = std::make_unique<JzRE::JzWindow>(rhiType, m_windowSettings);
-
     m_window->MakeCurrentContext();
+    m_window->SetAlignCentered();
 
-    m_window->SetFullscreen(true);
-
-    /* Device */
-    auto devicePtr = JzRHIFactory::CreateDevice(rhiType);
-    if (!devicePtr) {
-        return false;
-    }
-
-    m_device = std::move(devicePtr);
+    m_device = JzRHIFactory::CreateDevice(rhiType);
 
     m_commandQueue = std::make_unique<JzRHICommandQueue>();
 
     m_sceneManager = std::make_unique<JzRE::JzSceneManager>();
 
-    /* Input Manager */
     m_inputManager = std::make_unique<JzRE::JzInputManager>(*m_window);
 
-    /* UI Manager */
-    m_uiManager = std::make_unique<JzRE::JzUIManager>(m_window->GetGLFWWindow());
+    m_uiManager = std::make_unique<JzRE::JzUIManager>(*m_window);
 
-    const auto fontPath = m_workspacePath / "assets" / "fonts" / "Roboto-Regular.ttf";
+    const auto layoutConfigPath = std::filesystem::current_path() / "config" / "layout.ini";
+    m_uiManager->ResetLayout(layoutConfigPath.string());
+    m_uiManager->SetEditorLayoutSaveFilename("layout.ini");
+    m_uiManager->EnableEditorLayoutSave(true);
 
-    m_uiManager->LoadFont("roboto-regular-22", fontPath.string(), 22);
+    const auto fontPath = m_workDirectory / "fonts" / "Roboto-Regular.ttf";
     m_uiManager->LoadFont("roboto-regular-18", fontPath.string(), 18);
+    m_uiManager->LoadFont("roboto-regular-16", fontPath.string(), 16);
     m_uiManager->LoadFont("roboto-regular-14", fontPath.string(), 14);
-    m_uiManager->UseFont("roboto-regular-18");
-
+    m_uiManager->UseFont("roboto-regular-16");
     m_uiManager->SetDocking(true);
 
     return true;

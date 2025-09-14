@@ -6,6 +6,7 @@
 #pragma once
 
 #include <memory>
+#include <filesystem>
 #include "JzEditor.h"
 
 namespace JzRE {
@@ -17,7 +18,7 @@ public:
     /**
      * @brief Constructor
      */
-    JzRenderEngine();
+    JzRenderEngine(JzERHIType rhiType, std::filesystem::path &openDirectory);
 
     /**
      * @brief Destructor

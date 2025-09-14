@@ -8,7 +8,7 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
-JzRE::JzUIManager::JzUIManager(GLFWwindow *glfwWindow, const String &glslVersion)
+JzRE::JzUIManager::JzUIManager(JzWindow &window)
 {
     ImGui::CreateContext();
 
@@ -16,9 +16,8 @@ JzRE::JzUIManager::JzUIManager(GLFWwindow *glfwWindow, const String &glslVersion
 
     SetDocking(false);
 
-    ImGui_ImplGlfw_InitForOpenGL(glfwWindow, true);
-    ImGui_ImplOpenGL3_Init(glslVersion.c_str());
-
+    ImGui_ImplGlfw_InitForOpenGL(window.GetGLFWWindow(), true);
+    ImGui_ImplOpenGL3_Init("#version 150");
     ImGui::StyleColorsDark();
 }
 
