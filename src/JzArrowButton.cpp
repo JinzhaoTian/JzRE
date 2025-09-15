@@ -6,9 +6,8 @@
 #include "JzArrowButton.h"
 #include <imgui.h>
 
-JzRE::JzArrowButton::JzArrowButton(JzRE::JzEArrowDirection p_direction, JzRE::JzEAlign p_align) :
-    arrowDirection(p_direction),
-    buttonAlign(p_align) { }
+JzRE::JzArrowButton::JzArrowButton(JzRE::JzEArrowDirection p_direction) :
+    arrowDirection(p_direction) { }
 
 void JzRE::JzArrowButton::_Draw_Impl()
 {
@@ -33,17 +32,6 @@ void JzRE::JzArrowButton::_Draw_Impl()
 
     if (isDisabled) {
         ImGui::BeginDisabled();
-    }
-
-    switch (buttonAlign) {
-        case JzEAlign::LEFT:
-            break;
-        case JzEAlign::CENTER:
-            ImGui::SameLine(ImGui::GetWindowWidth() * 0.5f - 15);
-            break;
-        case JzEAlign::RIGHT:
-            ImGui::SameLine(ImGui::GetWindowWidth() - 30);
-            break;
     }
 
     if (ImGui::ArrowButton(m_widgetID.c_str(), _mapping(arrowDirection))) {

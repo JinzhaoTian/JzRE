@@ -7,6 +7,8 @@
 #include <filesystem>
 #include <imgui.h>
 #include "JzContext.h"
+#include "JzGroup.h"
+#include "JzEAlignment.h"
 #include "JzText.h"
 #include "JzArrowButton.h"
 #include "JzSeparator.h"
@@ -166,7 +168,8 @@ void JzRE::JzMenuBar::CreateHelpMenu()
 
 void JzRE::JzMenuBar::CreateRunButton()
 {
-    auto &runButton = CreateWidget<JzArrowButton>(JzEArrowDirection::RIGHT);
+    auto &action    = CreateWidget<JzGroup>(JzEHorizontalAlignment::CENTER);
+    auto &runButton = action.CreateWidget<JzArrowButton>(JzEArrowDirection::RIGHT);
 }
 
 void JzRE::JzMenuBar::UpdateToggleableItems()

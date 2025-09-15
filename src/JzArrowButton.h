@@ -19,12 +19,6 @@ enum class JzEArrowDirection : U8 {
     DOWN  = 4,
 };
 
-enum class JzEAlign : U8 {
-    LEFT   = 0,
-    CENTER = 1,
-    RIGHT  = 2,
-};
-
 /**
  * @brief Arrow Button Widget
  */
@@ -35,7 +29,7 @@ public:
      *
      * @param p_direction
      */
-    JzArrowButton(JzEArrowDirection p_direction = JzEArrowDirection::NONE, JzEAlign p_align = JzEAlign::CENTER);
+    JzArrowButton(JzEArrowDirection p_direction = JzEArrowDirection::NONE);
 
 protected:
     /**
@@ -52,7 +46,6 @@ public:
 public:
     Bool              disabled = false;
     JzEArrowDirection arrowDirection;
-    JzEAlign          buttonAlign;
 };
 
 } // namespace JzRE
