@@ -5,6 +5,7 @@
 
 #include "JzREHub.h"
 #include <fstream>
+#include <memory>
 #ifdef _WIN32
 #define NOMINMAX
 #include <windows.h>
@@ -46,9 +47,12 @@ JzRE::JzREHub::JzREHub(JzERHIType rhiType)
     m_uiManager->EnableEditorLayoutSave(false);
     m_uiManager->SetDocking(false);
 
-    m_canvas   = std::make_unique<JzCanvas>();
-    m_hubPanel = std::make_unique<JzREHubPanel>();
+    m_canvas = std::make_unique<JzCanvas>();
 
+    m_menuBar = std::make_unique<JzREHubMenuBar>();
+    m_canvas->AddPanel(*m_menuBar);
+
+    m_hubPanel = std::make_unique<JzREHubPanel>();
     m_canvas->AddPanel(*m_hubPanel);
 
     m_uiManager->SetCanvas(*m_canvas);
@@ -92,22 +96,39 @@ std::optional<std::filesystem::path> JzRE::JzREHub::Run()
     return m_hubPanel->GetResult();
 }
 
+JzRE::JzREHubMenuBar::JzREHubMenuBar()
+{
+    auto &actions = CreateWidget<JzGroup>(JzEHorizontalAlignment::RIGHT, JzVec2(90.f, 0.f));
+
+    auto &minimizeButton               = actions.CreateWidget<JzButton>("_");
+    minimizeButton.idleBackgroundColor = {0.1333f, 0.1529f, 0.1804f, 1.0f};
+    minimizeButton.size                = m_buttonSize;
+    minimizeButton.lineBreak           = false;
+
+    auto &maximizeButton               = actions.CreateWidget<JzButton>("□");
+    maximizeButton.idleBackgroundColor = {0.1333f, 0.1529f, 0.1804f, 1.0f};
+    maximizeButton.size                = m_buttonSize;
+    maximizeButton.lineBreak           = false;
+
+    auto &closeButton               = actions.CreateWidget<JzButton>("x");
+    closeButton.idleBackgroundColor = {0.1333f, 0.1529f, 0.1804f, 1.0f};
+    closeButton.size                = m_buttonSize;
+    closeButton.lineBreak           = true;
+}
+
+void JzRE::JzREHubMenuBar::_Draw_Impl()
+{
+    ImGui::PushStyleColor(ImGuiCol_MenuBarBg, ImVec4(0.1333f, 0.1529f, 0.1804f, 1.0f));
+    if (!m_widgets.empty() && ImGui::BeginMainMenuBar()) {
+        DrawWidgets();
+        ImGui::EndMainMenuBar();
+    }
+    ImGui::PopStyleColor();
+}
+
 JzRE::JzREHubPanel::JzREHubPanel() :
     JzPanelWindow("JzRE Hub", true),
-    m_workspaceFilePath([]() -> std::filesystem::path {
-#ifdef _WIN32
-        wchar_t path[MAX_PATH] = {0};
-        GetModuleFileNameW(nullptr, path, MAX_PATH);
-        return std::filesystem::path(path).parent_path() / "config" / "workspace.json";
-#else
-        char    result[PATH_MAX];
-        ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);
-        if (count != -1) {
-            return std::filesystem::path(result).parent_path() / "config" / "workspace.json";
-        }
-        return std::filesystem::current_path() / "config" / "workspace.json";
-#endif
-    }())
+    m_workspaceFilePath(std::filesystem::current_path() / "config" / "workspace.json")
 {
     resizable = false;
     movable   = false;
@@ -206,12 +227,14 @@ std::optional<std::filesystem::path> JzRE::JzREHubPanel::GetResult() const
 
 void JzRE::JzREHubPanel::Draw()
 {
+    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.1333f, 0.1529f, 0.1804f, 1.0f));
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {50.0f, 50.0f});
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 
     JzPanelWindow::Draw();
 
     ImGui::PopStyleVar(2);
+    ImGui::PopStyleColor(1);
 }
 
 void JzRE::JzREHubPanel::_LoadHistory()

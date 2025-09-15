@@ -14,11 +14,14 @@
 #include "JzWindow.h"
 #include "JzUIManager.h"
 #include "JzCanvas.h"
+#include "JzPanel.h"
 #include "JzPanelWindow.h"
 #include "JzButton.h"
+#include "JzVector.h"
 
 namespace JzRE {
 
+class JzREHubMenuBar;
 class JzREHubPanel;
 
 /**
@@ -44,11 +47,32 @@ public:
     std::optional<std::filesystem::path> Run();
 
 private:
-    std::unique_ptr<JzWindow>     m_window;
-    std::unique_ptr<JzRHIDevice>  m_device;
-    std::unique_ptr<JzUIManager>  m_uiManager;
-    std::unique_ptr<JzCanvas>     m_canvas;
-    std::unique_ptr<JzREHubPanel> m_hubPanel;
+    std::unique_ptr<JzWindow>       m_window;
+    std::unique_ptr<JzRHIDevice>    m_device;
+    std::unique_ptr<JzUIManager>    m_uiManager;
+    std::unique_ptr<JzCanvas>       m_canvas;
+    std::unique_ptr<JzREHubMenuBar> m_menuBar;
+    std::unique_ptr<JzREHubPanel>   m_hubPanel;
+};
+
+/**
+ * @brief JzRE Hub Panel Menu Bar
+ */
+class JzREHubMenuBar : public JzPanel {
+public:
+    /**
+     * @brief Constructor
+     */
+    JzREHubMenuBar();
+
+protected:
+    /**
+     * @brief Implementation of the Draw method
+     */
+    void _Draw_Impl() override;
+
+private:
+    JzVec2 m_buttonSize = {24.0f, 0.0f};
 };
 
 /**
@@ -90,8 +114,8 @@ private:
 private:
     std::optional<std::filesystem::path> m_result;
     JzButton                            *m_goButton        = nullptr;
-    JzVec2                               m_windowSize      = {800.0f, 500.0f};
-    JzVec2                               m_windowPosition  = {0.0f, 0.0f};
+    JzVec2                               m_windowSize      = {800.0f, 480.0f};
+    JzVec2                               m_windowPosition  = {0.0f, 20.0f};
     JzVec2                               m_buttonSize      = {90.0f, 0.0f};
     F32                                  m_inputFieldWidth = 504.0f;
     std::vector<std::filesystem::path>   m_history;
