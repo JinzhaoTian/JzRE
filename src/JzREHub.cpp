@@ -119,10 +119,12 @@ JzRE::JzREHubMenuBar::JzREHubMenuBar()
 void JzRE::JzREHubMenuBar::_Draw_Impl()
 {
     ImGui::PushStyleColor(ImGuiCol_MenuBarBg, ImVec4(0.1333f, 0.1529f, 0.1804f, 1.0f));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
     if (!m_widgets.empty() && ImGui::BeginMainMenuBar()) {
         DrawWidgets();
         ImGui::EndMainMenuBar();
     }
+    ImGui::PopStyleVar();
     ImGui::PopStyleColor();
 }
 
@@ -230,10 +232,11 @@ void JzRE::JzREHubPanel::Draw()
     ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.1333f, 0.1529f, 0.1804f, 1.0f));
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {50.0f, 50.0f});
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
 
     JzPanelWindow::Draw();
 
-    ImGui::PopStyleVar(2);
+    ImGui::PopStyleVar(3);
     ImGui::PopStyleColor(1);
 }
 
