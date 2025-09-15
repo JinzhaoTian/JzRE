@@ -14,9 +14,9 @@ namespace JzRE {
  */
 enum class JzEFileDialogType : U8 {
     DEFAULT,
-    OPENFILE,
-    OPENFOLDER,
-    SAVEFILE
+    OpenFile,
+    OpenFolder,
+    SaveFile
 };
 
 } // namespace JzRE

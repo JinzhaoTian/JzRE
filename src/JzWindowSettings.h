@@ -27,13 +27,13 @@ struct JzWindowSettings {
     I16    maxWidth     = DefaultValue;                   // Window's Maximum Width
     I16    maxHeight    = DefaultValue;                   // Window's Maximum Height
     Bool   isFullscreen = false;                          // Window's State of Fullscreen
-    Bool   isDecorated  = true;                           // Window's
+    Bool   isDecorated  = true;                           // Window's State of title bar
     Bool   isResizable  = true;                           // Window's State of Resizable
     Bool   isFocused    = true;                           // Window's State of Focused
     Bool   isMaximized  = false;                          // Window's State of Maximized
     Bool   isVisible    = true;                           // Window's State of Visible
-    Bool   isFloating   = true;                           // Window's State of Floating
-    Bool   autoIconify  = true;                           // Window's automatically iconify
+    Bool   isFloating   = false;                          // Window's State of Floating
+    Bool   autoIconify  = false;                          // Window's automatically iconify
     U32    refreshRate  = JzWindowSettings::DefaultValue; // Window's Refresh Rate
     U8     samples      = 4;                              // Window's Anti-Aliasing Samples
 };

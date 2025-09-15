@@ -34,15 +34,15 @@ void JzRE::JzFileDialog::Show(JzEFileDialogType type) {
       [openPanel setCanChooseFiles:YES];
       [openPanel setCanChooseDirectories:YES];
       break;
-    case JzRE::JzEFileDialogType::OPENFILE:
+    case JzRE::JzEFileDialogType::OpenFile:
       [openPanel setCanChooseFiles:YES];
       [openPanel setCanChooseDirectories:NO];
       break;
-    case JzRE::JzEFileDialogType::OPENFOLDER:
+    case JzRE::JzEFileDialogType::OpenFolder:
       [openPanel setCanChooseFiles:NO];
       [openPanel setCanChooseDirectories:YES];
       break;
-    case JzRE::JzEFileDialogType::SAVEFILE:
+    case JzRE::JzEFileDialogType::SaveFile:
     default:
       [openPanel setCanChooseFiles:YES];
       [openPanel setCanChooseDirectories:YES];

@@ -6,6 +6,7 @@
 #include "JzREHub.h"
 #include <fstream>
 #ifdef _WIN32
+#define NOMINMAX
 #include <windows.h>
 #else
 #include <limits.h>
@@ -29,9 +30,7 @@ JzRE::JzREHub::JzREHub(JzERHIType rhiType)
     windowSettings.y           = 50;
     windowSettings.width       = 800;
     windowSettings.height      = 500;
-    windowSettings.isMaximized = false;
     windowSettings.isResizable = false;
-    windowSettings.isDecorated = true;
 
     m_window = std::make_unique<JzRE::JzWindow>(rhiType, windowSettings);
     m_window->MakeCurrentContext();
@@ -41,9 +40,9 @@ JzRE::JzREHub::JzREHub(JzERHIType rhiType)
 
     m_uiManager = std::make_unique<JzUIManager>(*m_window);
 
-    const auto fontPath = std::filesystem::current_path() / "fonts" / "Roboto-Regular.ttf";
-    m_uiManager->LoadFont("roboto-regular-16", fontPath.string(), 16);
-    m_uiManager->UseFont("roboto-regular-16");
+    const auto fontPath = std::filesystem::current_path() / "fonts" / "SourceHanSansCN-Regular.otf";
+    m_uiManager->LoadFont("sourcehansanscn-regular-16", fontPath.string(), 16);
+    m_uiManager->UseFont("sourcehansanscn-regular-16");
     m_uiManager->EnableEditorLayoutSave(false);
     m_uiManager->SetDocking(false);
 
@@ -132,7 +131,7 @@ JzRE::JzREHubPanel::JzREHubPanel() :
     openButton.ClickedEvent        += [this] {
         JzOpenFileDialog dialog("Open Folder");
         dialog.AddFileType("*", "*.*");
-        dialog.Show(JzEFileDialogType::OPENFOLDER);
+        dialog.Show(JzEFileDialogType::OpenFolder);
 
         const std::filesystem::path openPath = dialog.GetSelectedFilePath();
 
@@ -166,7 +165,7 @@ JzRE::JzREHubPanel::JzREHubPanel() :
     _LoadHistory();
 
     for (const auto &path : m_history) {
-        auto &_text = columns.CreateWidget<JzText>(path);
+        auto &_text = columns.CreateWidget<JzText>(_PathToUtf8(path));
 
         auto &_actions = columns.CreateWidget<JzGroup>();
 
@@ -233,7 +232,7 @@ void JzRE::JzREHubPanel::_LoadHistory()
         if (jsonObj.contains("lastOpenFiles") && jsonObj["lastOpenFiles"].is_array()) {
             for (const auto &item : jsonObj["lastOpenFiles"]) {
                 if (item.is_string()) {
-                    std::string utf8Path = item.get<std::string>();
+                    auto utf8Path = item.get<JzRE::String>();
                     m_history.push_back(_Utf8ToPath(utf8Path));
 
                     // 限制历史记录数量
@@ -304,22 +303,13 @@ void JzRE::JzREHubPanel::_DeleteFromHistory(const std::filesystem::path &path)
 
 JzRE::String JzRE::JzREHubPanel::_PathToUtf8(const std::filesystem::path &path) const
 {
-#ifdef _WIN32
-    std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converter;
-    return converter.to_bytes(path.wstring());
-#else
-    return path.string();
-#endif
+    auto u8str = path.generic_u8string();
+    return JzRE::String(u8str.begin(), u8str.end());
 }
 
 std::filesystem::path JzRE::JzREHubPanel::_Utf8ToPath(const JzRE::String &utf8Str) const
 {
-#ifdef _WIN32
-    std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converter;
-    return std::filesystem::path(converter.from_bytes(utf8Str));
-#else
-    return std::filesystem::path(utf8Str);
-#endif
+    return std::filesystem::path(std::string_view(utf8Str.data(), utf8Str.size()));
 }
 
 void JzRE::JzREHubPanel::_OnUpdateGoButton(const JzRE::String &p_path)

@@ -15,12 +15,12 @@ JzRE::JzFileDialog::JzFileDialog(const JzRE::String &p_dialogTitle) :
     m_initialDirectory(""),
     m_succeeded(false) { }
 
-void JzRE::JzOpenFileDialog::SetInitialDirectory(const JzRE::String &p_initialDirectory)
+void JzRE::JzFileDialog::SetInitialDirectory(const JzRE::String &p_initialDirectory)
 {
     m_initialDirectory = p_initialDirectory;
 }
 
-void JzRE::JzOpenFileDialog::Show(JzEFileDialogType type)
+void JzRE::JzFileDialog::Show(JzEFileDialogType type)
 {
     m_succeeded = false;
     m_filepath.clear();

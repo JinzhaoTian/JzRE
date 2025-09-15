@@ -87,7 +87,7 @@ void JzRE::JzMenuBar::CreateFileMenu()
     openFileMenu.ClickedEvent += [] {
         JzOpenFileDialog dialog("Open File");
         dialog.AddFileType("*", "*.*");
-        dialog.Show(JzEFileDialogType::OPENFILE);
+        dialog.Show(JzEFileDialogType::OpenFile);
 
         const std::filesystem::path projectFile = dialog.GetSelectedFilePath();
 
@@ -100,7 +100,7 @@ void JzRE::JzMenuBar::CreateFileMenu()
     openFileFolderMenu.ClickedEvent += [] {
         JzOpenFileDialog dialog("Open Folder");
         dialog.AddFileType("*", "*.*");
-        dialog.Show(JzEFileDialogType::OPENFOLDER);
+        dialog.Show(JzEFileDialogType::OpenFolder);
 
         const std::filesystem::path projectFile = dialog.GetSelectedFilePath();
 

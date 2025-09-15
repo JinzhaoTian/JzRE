@@ -41,11 +41,11 @@ JzRE::Bool JzRE::JzContext::Initialize(JzERHIType rhiType, std::filesystem::path
     m_uiManager->SetEditorLayoutSaveFilename("layout.ini");
     m_uiManager->EnableEditorLayoutSave(true);
 
-    const auto fontPath = m_workDirectory / "fonts" / "Roboto-Regular.ttf";
-    m_uiManager->LoadFont("roboto-regular-18", fontPath.string(), 18);
-    m_uiManager->LoadFont("roboto-regular-16", fontPath.string(), 16);
-    m_uiManager->LoadFont("roboto-regular-14", fontPath.string(), 14);
-    m_uiManager->UseFont("roboto-regular-16");
+    const auto fontPath = m_workDirectory / "fonts" / "SourceHanSansCN-Regular.otf";
+    m_uiManager->LoadFont("sourcehansanscn-regular-18", fontPath.string(), 18);
+    m_uiManager->LoadFont("sourcehansanscn-regular-16", fontPath.string(), 16);
+    m_uiManager->LoadFont("sourcehansanscn-regular-14", fontPath.string(), 14);
+    m_uiManager->UseFont("sourcehansanscn-regular-16");
     m_uiManager->SetDocking(true);
 
     return true;
