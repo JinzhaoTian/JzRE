@@ -72,7 +72,7 @@ protected:
     void _Draw_Impl() override;
 
 private:
-    JzVec2 m_buttonSize = {24.0f, 0.0f};
+    JzVec2 m_buttonSize = {30.0f, 0.0f};
 };
 
 /**

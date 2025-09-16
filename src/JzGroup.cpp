@@ -7,14 +7,16 @@
 #include <imgui.h>
 #include "JzConverter.h"
 
-JzRE::JzGroup::JzGroup(JzRE::JzEHorizontalAlignment p_horizontalAlignment, JzRE::JzVec2 p_size) :
+JzRE::JzGroup::JzGroup(JzRE::JzEHorizontalAlignment p_horizontalAlignment, JzRE::JzVec2 p_size, JzRE::JzVec2 p_spacing) :
     horizontalAlignment(p_horizontalAlignment),
-    size{p_size} { }
+    size{p_size},
+    spacing(p_spacing) { }
 
 void JzRE::JzGroup::_Draw_Impl()
 {
-    ImVec2 windowSize = ImGui::GetContentRegionAvail();
-    ImVec2 groupSize  = JzConverter::ToImVec2(size);
+    ImVec2 windowSize   = ImGui::GetContentRegionAvail();
+    ImVec2 groupSize    = JzConverter::ToImVec2(size);
+    ImVec2 groupSpacing = JzConverter::ToImVec2(spacing);
 
     ImVec2 cursorPos = ImGui::GetCursorPos();
     switch (horizontalAlignment) {
@@ -31,6 +33,8 @@ void JzRE::JzGroup::_Draw_Impl()
     ImGui::SetCursorPos(cursorPos);
 
     ImGui::BeginGroup();
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, groupSpacing);
     DrawWidgets();
+    ImGui::PopStyleVar();
     ImGui::EndGroup();
 }

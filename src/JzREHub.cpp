@@ -98,19 +98,19 @@ std::optional<std::filesystem::path> JzRE::JzREHub::Run()
 
 JzRE::JzREHubMenuBar::JzREHubMenuBar()
 {
-    auto &actions = CreateWidget<JzGroup>(JzEHorizontalAlignment::RIGHT, JzVec2(90.f, 0.f));
+    auto &actions = CreateWidget<JzGroup>(JzEHorizontalAlignment::RIGHT, JzVec2(80.f, 0.f), JzVec2(0.f, 0.f));
 
     auto &minimizeButton               = actions.CreateWidget<JzButton>("_");
     minimizeButton.idleBackgroundColor = {0.1333f, 0.1529f, 0.1804f, 1.0f};
     minimizeButton.size                = m_buttonSize;
     minimizeButton.lineBreak           = false;
 
-    auto &maximizeButton               = actions.CreateWidget<JzButton>("□");
+    auto &maximizeButton               = actions.CreateWidget<JzButton>("||");
     maximizeButton.idleBackgroundColor = {0.1333f, 0.1529f, 0.1804f, 1.0f};
     maximizeButton.size                = m_buttonSize;
     maximizeButton.lineBreak           = false;
 
-    auto &closeButton               = actions.CreateWidget<JzButton>("x");
+    auto &closeButton               = actions.CreateWidget<JzButton>("X");
     closeButton.idleBackgroundColor = {0.1333f, 0.1529f, 0.1804f, 1.0f};
     closeButton.size                = m_buttonSize;
     closeButton.lineBreak           = true;

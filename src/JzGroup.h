@@ -23,7 +23,7 @@ public:
      * @param p_horizontalAlignment
      * @param p_size
      */
-    JzGroup(JzEHorizontalAlignment p_horizontalAlignment = JzEHorizontalAlignment::LEFT, JzVec2 p_size = {150.f, 0.f});
+    JzGroup(JzEHorizontalAlignment p_horizontalAlignment = JzEHorizontalAlignment::LEFT, JzVec2 p_size = {150.f, 0.f}, JzVec2 p_spacing = {8.f, 4.f});
 
 protected:
     /**
@@ -33,6 +33,7 @@ protected:
 
 public:
     JzVec2                 size;
+    JzVec2                 spacing;
     JzEHorizontalAlignment horizontalAlignment;
 };
 
