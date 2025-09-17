@@ -63,7 +63,7 @@ public:
     /**
      * @brief Constructor
      */
-    JzREHubMenuBar();
+    JzREHubMenuBar(JzWindow &window);
 
 protected:
     /**
@@ -72,7 +72,12 @@ protected:
     void _Draw_Impl() override;
 
 private:
-    JzVec2 m_buttonSize = {30.0f, 0.0f};
+    JzWindow m_window;
+    Bool     m_isDragging = false;
+    JzIVec2  m_dragStartPos;
+    JzIVec2  m_lastMousePos;
+    JzIVec2  m_windowStartPos;
+    JzVec2   m_buttonSize = {30.0f, 0.0f};
 };
 
 /**

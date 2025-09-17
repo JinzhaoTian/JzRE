@@ -5,6 +5,7 @@
 
 #include "JzWindow.h"
 #include <stdexcept>
+#include <GLFW/glfw3.h>
 #if defined(_WIN32)
 #define GLFW_EXPOSE_NATIVE_WIN32
 #elif defined(__APPLE__)
@@ -89,12 +90,25 @@ JzRE::String JzRE::JzWindow::GetTitle() const
 
 void JzRE::JzWindow::SetPosition(JzRE::JzIVec2 p_position)
 {
-    glfwSetWindowPos(m_glfwWindow, p_position.x(), p_position.y());
+    if (!m_fullscreen) {
+        glfwSetWindowPos(m_glfwWindow, p_position.x(), p_position.y());
+        m_position = p_position;
+    }
+}
+
+JzRE::JzIVec2 JzRE::JzWindow::GetPosition() const
+{
+    I32 x, y;
+    glfwGetWindowPos(m_glfwWindow, &x, &y);
+    return {x, y};
 }
 
 void JzRE::JzWindow::SetSize(JzRE::JzIVec2 p_size)
 {
-    glfwSetWindowSize(m_glfwWindow, p_size.x(), p_size.y());
+    if (!m_fullscreen) {
+        glfwSetWindowSize(m_glfwWindow, p_size.x(), p_size.y());
+        m_size = p_size;
+    }
 }
 
 JzRE::JzIVec2 JzRE::JzWindow::GetSize() const

@@ -76,6 +76,13 @@ public:
     void SetPosition(JzIVec2 p_position);
 
     /**
+     * @brief Get the Position of the window
+     *
+     * @return JzIVec2
+     */
+    JzIVec2 GetPosition() const;
+
+    /**
      * @brief Set the size for the window
      */
     void SetSize(JzIVec2 p_size);
