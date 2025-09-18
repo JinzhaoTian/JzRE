@@ -72,12 +72,14 @@ protected:
     void _Draw_Impl() override;
 
 private:
+    void HandleDragging();
+
+private:
     JzWindow m_window;
-    Bool     m_isDragging = false;
-    JzIVec2  m_dragStartPos;
-    JzIVec2  m_lastMousePos;
-    JzIVec2  m_windowStartPos;
     JzVec2   m_buttonSize = {30.0f, 0.0f};
+    Bool     m_isDragging = false;
+    JzIVec2  m_dragStartMousePos;
+    JzIVec2  m_dragStartWindowPos;
 };
 
 /**

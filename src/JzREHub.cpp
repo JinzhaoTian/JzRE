@@ -123,28 +123,7 @@ void JzRE::JzREHubMenuBar::_Draw_Impl()
     ImGui::PushStyleColor(ImGuiCol_MenuBarBg, ImVec4(0.1333f, 0.1529f, 0.1804f, 1.0f));
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
     if (!m_widgets.empty() && ImGui::BeginMainMenuBar()) {
-        ImVec2 menuBarMin = ImGui::GetWindowPos();
-        ImVec2 menuBarMax = ImVec2(menuBarMin.x + ImGui::GetWindowWidth(), menuBarMin.y + ImGui::GetWindowHeight());
-
-        ImGuiIO &io                 = ImGui::GetIO();
-        Bool     isMouseOverMenuBar = ImGui::IsMouseHoveringRect(menuBarMin, menuBarMax);
-
-        if (isMouseOverMenuBar && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
-            m_dragStartPos   = JzIVec2(io.MousePos.x, io.MousePos.y);
-            m_windowStartPos = m_window.GetPosition();
-            m_isDragging     = true;
-        }
-
-        if (m_isDragging) {
-            if (ImGui::IsMouseDragging(ImGuiMouseButton_Left)) {
-                JzIVec2 currentMousePos(io.MousePos.x, io.MousePos.y);
-                JzIVec2 delta = currentMousePos - m_dragStartPos;
-                m_window.SetPosition(m_windowStartPos + delta);
-            }
-            if (ImGui::IsMouseReleased(ImGuiMouseButton_Left)) {
-                m_isDragging = false;
-            }
-        }
+        HandleDragging();
 
         DrawWidgets();
 
@@ -152,6 +131,34 @@ void JzRE::JzREHubMenuBar::_Draw_Impl()
     }
     ImGui::PopStyleVar();
     ImGui::PopStyleColor();
+}
+
+void JzRE::JzREHubMenuBar::HandleDragging()
+{
+    ImVec2 menuBarMin = ImGui::GetWindowPos();
+    ImVec2 menuBarMax = ImVec2(menuBarMin.x + ImGui::GetWindowWidth(), menuBarMin.y + ImGui::GetWindowHeight());
+
+    ImGuiIO &io                 = ImGui::GetIO();
+    Bool     isMouseOverMenuBar = ImGui::IsMouseHoveringRect(menuBarMin, menuBarMax);
+
+    const JzIVec2 windowScreenPos       = m_window.GetPosition();
+    const JzIVec2 currentMouseScreenPos = windowScreenPos + JzIVec2(io.MousePos.x, io.MousePos.y);
+
+    if (isMouseOverMenuBar && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+        m_dragStartWindowPos = windowScreenPos;
+        m_dragStartMousePos  = currentMouseScreenPos;
+        m_isDragging         = true;
+    }
+
+    if (m_isDragging) {
+        if (ImGui::IsMouseDragging(ImGuiMouseButton_Left)) {
+            const JzIVec2 delta = currentMouseScreenPos - m_dragStartMousePos;
+            m_window.SetPosition(m_dragStartWindowPos + delta);
+        }
+        if (ImGui::IsMouseReleased(ImGuiMouseButton_Left)) {
+            m_isDragging = false;
+        }
+    }
 }
 
 JzRE::JzREHubPanel::JzREHubPanel() :
