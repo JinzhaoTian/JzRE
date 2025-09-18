@@ -6,6 +6,7 @@ find_package(imgui CONFIG REQUIRED)
 find_package(assimp CONFIG REQUIRED)
 find_package(Stb REQUIRED)
 find_package(Threads REQUIRED)
+find_package(spdlog CONFIG REQUIRED)
 
 # add platform-specific libraries and OpenGL
 if(WIN32)
@@ -66,6 +67,7 @@ target_link_libraries(JzRELib PUBLIC
     imgui::imgui
     assimp::assimp
     Threads::Threads
+    spdlog::spdlog
 )
 
 # set library target output

@@ -39,6 +39,14 @@
         {
             "name": "nlohmann-json",
             "version>=": "3.12.0"
+        },
+        {
+            "name": "spdlog",
+            "version>=": "1.14.1"
+        },
+        {
+            "name": "fmt",
+            "version>=": "11.0.2"
         }
     ],
     "builtin-baseline": "5d8a81e7e232ca70c62f645b0ff434ac5574e921"

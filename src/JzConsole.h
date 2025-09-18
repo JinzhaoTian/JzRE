@@ -6,8 +6,10 @@
 #pragma once
 
 #include "JzRETypes.h"
-#include "JzGroup.h"
 #include "JzPanelWindow.h"
+#include "JzLogger.h"
+#include "JzGroup.h"
+#include "JzText.h"
 
 namespace JzRE {
 /**
@@ -39,17 +41,20 @@ public:
     void TruncateLogs();
 
 private:
+    void OnLogMessage(const JzLogMessage &msg);
     void SetShowDefaultLogs(Bool value);
     void SetShowInfoLogs(Bool value);
     void SetShowWarningLogs(Bool value);
     void SetShowErrorLogs(Bool value);
+    Bool IsAllowedByFilter(JzELogLevel level);
 
 private:
-    JzGroup *m_logGroup;
-    Bool     m_clearOnPlay    = true;
-    Bool     m_showDefaultLog = true;
-    Bool     m_showInfoLog    = true;
-    Bool     m_showWarningLog = true;
-    Bool     m_showErrorLog   = true;
+    JzGroup                                  *m_logGroup;
+    std::unordered_map<JzText *, JzELogLevel> m_logTextWidgets;
+    Bool                                      m_clearOnPlay    = true;
+    Bool                                      m_showDefaultLog = true;
+    Bool                                      m_showInfoLog    = true;
+    Bool                                      m_showWarningLog = true;
+    Bool                                      m_showErrorLog   = true;
 };
 } // namespace JzRE
