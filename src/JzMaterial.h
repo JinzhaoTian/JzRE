@@ -5,11 +5,11 @@
 
 #pragma once
 
+#include <memory>
+#include <vector>
 #include "JzResource.h"
-#include "JzRHIDevice.h"
 #include "JzRHIPipeline.h"
 #include "JzRHITexture.h"
-#include <vector>
 
 namespace JzRE {
 
@@ -29,18 +29,24 @@ public:
      *
      * @return std::shared_ptr<JzRHIPipeline>
      */
-    std::shared_ptr<JzRHIPipeline> GetPipeline() const { return m_pipeline; }
+    std::shared_ptr<JzRHIPipeline> GetPipeline() const
+    {
+        return m_pipeline;
+    }
 
     /**
      * @brief Get the Textures
      *
      * @return const std::vector<std::shared_ptr<JzRHITexture>>&
      */
-    const std::vector<std::shared_ptr<JzRHITexture>>& GetTextures() const { return m_textures; }
+    const std::vector<std::shared_ptr<JzRHITexture>> &GetTextures() const
+    {
+        return m_textures;
+    }
 
 protected:
-    // RHI resources
-    std::shared_ptr<JzRHIPipeline>                m_pipeline;
+    // GPU-side RHI resources
+    std::shared_ptr<JzRHIPipeline>             m_pipeline;
     std::vector<std::shared_ptr<JzRHITexture>> m_textures;
 };
 

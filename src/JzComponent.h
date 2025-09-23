@@ -46,7 +46,7 @@ struct MaterialComponent {
  */
 struct CameraComponent {
     JzVec3 target{0.0f, 0.0f, 0.0f};
-    float  fov{45.0f};
+    F32    fov{45.0f};
 };
 
 } // namespace JzRE

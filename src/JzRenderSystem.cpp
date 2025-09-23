@@ -9,12 +9,10 @@
 #include "JzMesh.h"
 #include "JzMaterial.h"
 
-namespace JzRE {
-
-JzRenderSystem::JzRenderSystem(std::shared_ptr<JzRHIDevice> device) :
+JzRE::JzRenderSystem::JzRenderSystem(std::shared_ptr<JzRE::JzRHIDevice> device) :
     m_device(device) { }
 
-void JzRenderSystem::Update(JzEntityManager &manager, F32 delta)
+void JzRE::JzRenderSystem::Update(JzRE::JzEntityManager &manager, JzRE::F32 delta)
 {
     if (!m_device) {
         return;
@@ -55,7 +53,7 @@ void JzRenderSystem::Update(JzEntityManager &manager, F32 delta)
         m_device->BindPipeline(pipeline);
 
         // Bind textures
-        for (uint32_t i = 0; i < textures.size(); ++i) {
+        for (Size i = 0; i < textures.size(); ++i) {
             m_device->BindTexture(textures[i], i);
         }
 
@@ -76,5 +74,3 @@ void JzRenderSystem::Update(JzEntityManager &manager, F32 delta)
         m_device->DrawIndexed(drawParams);
     }
 }
-
-} // namespace JzRE
