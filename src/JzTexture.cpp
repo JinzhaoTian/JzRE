@@ -4,33 +4,39 @@
  */
 
 #include "JzTexture.h"
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
 #include "JzContext.h"
 #include "JzRHIDevice.h"
 #include "JzRHIDescription.h"
 
-// vcpkg provides stb_image, so we can include it directly.
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
+JzRE::JzTexture::JzTexture(std::shared_ptr<JzRE::JzRHITexture> rhiTexture) :
+    m_rhiTexture(rhiTexture)
+{
+    m_state = JzEResourceState::Loaded;
+}
 
-namespace JzRE {
-
-JzTexture::JzTexture(const std::string& path) : m_path(path) {
+JzRE::JzTexture::JzTexture(const std::string &path) :
+    m_path(path)
+{
     m_state = JzEResourceState::Unloaded;
 }
 
-JzTexture::~JzTexture() {
+JzRE::JzTexture::~JzTexture()
+{
     Unload();
 }
 
-Bool JzTexture::Load() {
+JzRE::Bool JzRE::JzTexture::Load()
+{
     if (m_state == JzEResourceState::Loaded) {
         return true;
     }
     m_state = JzEResourceState::Loading;
 
-    int width, height, channels;
+    I32 width, height, channels;
     // Force 4 channels (RGBA) for consistency
-    stbi_uc* pixels = stbi_load(m_path.c_str(), &width, &height, &channels, STBI_rgb_alpha);
+    stbi_uc *pixels = stbi_load(m_path.c_str(), &width, &height, &channels, STBI_rgb_alpha);
 
     if (!pixels) {
         m_state = JzEResourceState::Error;
@@ -38,7 +44,7 @@ Bool JzTexture::Load() {
         return false;
     }
 
-    auto& device = JzRE_DEVICE();
+    auto &device = JzRE_DEVICE();
 
     JzTextureDesc textureDesc;
     textureDesc.width     = width;
@@ -60,9 +66,8 @@ Bool JzTexture::Load() {
     }
 }
 
-void JzTexture::Unload() {
+void JzRE::JzTexture::Unload()
+{
     m_rhiTexture = nullptr;
     m_state      = JzEResourceState::Unloaded;
 }
-
-} // namespace JzRE

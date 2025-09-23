@@ -18,11 +18,7 @@
         {
             "name": "imgui",
             "version>=": "1.91.9",
-            "features": [
-                "glfw-binding",
-                "opengl3-binding",
-                "docking-experimental"
-            ]
+            "features": ["glfw-binding", "opengl3-binding", "docking-experimental"]
         },
         {
             "name": "assimp",
@@ -47,6 +43,10 @@
         {
             "name": "fmt",
             "version>=": "11.0.2"
+        },
+        {
+            "name": "freetype",
+            "version>=": "2.13.3"
         }
     ],
     "builtin-baseline": "5d8a81e7e232ca70c62f645b0ff434ac5574e921"

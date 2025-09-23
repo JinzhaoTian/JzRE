@@ -5,11 +5,11 @@
 
 #pragma once
 
+#include <memory>
+#include <vector>
 #include "JzResource.h"
 #include "JzRHIPipeline.h"
 #include "JzRHITexture.h"
-#include <memory>
-#include <vector>
 
 namespace JzRE {
 
@@ -19,6 +19,13 @@ namespace JzRE {
  */
 class JzMaterial : public JzResource {
 public:
+    /**
+     * @brief Constructor.
+     *
+     * @param path File path to the material.
+     */
+    JzMaterial(const String &path);
+
     /**
      * @brief Destructor
      */
@@ -41,17 +48,23 @@ public:
      *
      * @return std::shared_ptr<JzRHIPipeline>
      */
-    std::shared_ptr<JzRHIPipeline> GetPipeline() const { return m_pipeline; }
+    std::shared_ptr<JzRHIPipeline> GetPipeline() const
+    {
+        return m_pipeline;
+    }
 
     /**
      * @brief Get the Textures
      *
      * @return const std::vector<std::shared_ptr<JzRHITexture>>&
      */
-    const std::vector<std::shared_ptr<JzRHITexture>>& GetTextures() const { return m_textures; }
+    const std::vector<std::shared_ptr<JzRHITexture>> &GetTextures() const
+    {
+        return m_textures;
+    }
 
 protected:
-    // RHI resources
+    // GPU-side RHI resources
     std::shared_ptr<JzRHIPipeline>             m_pipeline;
     std::vector<std::shared_ptr<JzRHITexture>> m_textures;
 };

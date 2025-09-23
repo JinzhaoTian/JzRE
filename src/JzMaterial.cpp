@@ -8,9 +8,8 @@
 #include "JzRHIDevice.h"
 #include "JzRHIDescription.h"
 
-namespace JzRE {
-
-Bool JzMaterial::Load() {
+JzRE::Bool JzRE::JzMaterial::Load()
+{
     if (m_state == JzEResourceState::Loaded) {
         return true;
     }
@@ -20,7 +19,7 @@ Bool JzMaterial::Load() {
     // then load the specified shader, and create a pipeline based on it.
     // Here, we'll just create a placeholder pipeline.
 
-    auto& device = JzRE_DEVICE();
+    auto &device = JzRE_DEVICE();
 
     JzPipelineDesc pipelineDesc;
     // pipelineDesc.shader = ... load shader from resource manager ...
@@ -37,11 +36,10 @@ Bool JzMaterial::Load() {
     }
 }
 
-void JzMaterial::Unload() {
+void JzRE::JzMaterial::Unload()
+{
     m_pipeline = nullptr;
     m_textures.clear();
     m_textures.shrink_to_fit();
     m_state = JzEResourceState::Unloaded;
 }
-
-} // namespace JzRE

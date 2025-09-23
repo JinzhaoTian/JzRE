@@ -219,11 +219,11 @@ void JzRE::JzRHIRenderer::RenderImmediate(std::shared_ptr<JzRE::JzScene> scene)
     m_defaultPipeline->SetUniform("projection", modelMatrix);
 
     // render scene
-    for (const auto &model : scene->GetModels()) {
-        if (model) {
-            model->Draw(m_defaultPipeline);
-        }
-    }
+    // for (const auto &model : scene->GetModels()) {
+    //     if (model) {
+    //         model->Draw(m_defaultPipeline);
+    //     }
+    // }
 
     device.BindFramebuffer(nullptr);
 }

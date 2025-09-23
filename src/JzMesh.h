@@ -5,11 +5,11 @@
 
 #pragma once
 
+#include <vector>
 #include "JzResource.h"
 #include "JzVertex.h"
 #include "JzRHIBuffer.h"
 #include "JzRHIVertexArray.h"
-#include <vector>
 
 namespace JzRE {
 
@@ -21,6 +21,13 @@ class JzRHIDevice; // Forward declaration
  */
 class JzMesh : public JzResource {
 public:
+    /**
+     * @brief Constructor for file-based meshes.
+     *
+     * @param path File path to the mesh.
+     */
+    JzMesh(const String &path);
+
     /**
      * @brief Constructor for procedural meshes.
      *

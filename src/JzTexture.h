@@ -5,9 +5,9 @@
 
 #pragma once
 
+#include <memory>
 #include "JzResource.h"
 #include "JzRHITexture.h"
-#include <memory>
 
 namespace JzRE {
 
@@ -17,11 +17,18 @@ namespace JzRE {
 class JzTexture : public JzResource {
 public:
     /**
+     * @brief Constructor for wrapping an existing RHI texture.
+     *
+     * @param rhiTexture An existing RHI texture resource.
+     */
+    JzTexture(std::shared_ptr<JzRHITexture> rhiTexture);
+
+    /**
      * @brief Constructor.
      *
      * @param path The file path to the image.
      */
-    JzTexture(const std::string& path);
+    JzTexture(const String &path);
 
     /**
      * @brief Destructor.
@@ -45,10 +52,13 @@ public:
      *
      * @return std::shared_ptr<JzRHITexture>
      */
-    std::shared_ptr<JzRHITexture> GetRhiTexture() const { return m_rhiTexture; }
+    std::shared_ptr<JzRHITexture> GetRhiTexture() const
+    {
+        return m_rhiTexture;
+    }
 
 private:
-    std::string m_path;
+    String                        m_path;
     std::shared_ptr<JzRHITexture> m_rhiTexture;
 };
 
