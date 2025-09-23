@@ -5,9 +5,14 @@
 
 #pragma once
 
+#include "JzRETypes.h"
+
 namespace JzRE {
+
 /**
- * @brief Entity Base Class
+ * @brief Represents an entity in the ECS. It's just an identifier.
  */
-class JzEntity { };
+using JzEntity                = U32;
+const JzEntity INVALID_ENTITY = -1;
+
 } // namespace JzRE

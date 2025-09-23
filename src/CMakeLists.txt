@@ -32,7 +32,9 @@ elseif(UNIX AND NOT APPLE)
 endif()
 
 # set project source files
-file(GLOB JzRE_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/Jz*.cpp")
+file(GLOB JzRE_SOURCES CONFIGURE_DEPENDS 
+    "${CMAKE_CURRENT_SOURCE_DIR}/Jz*.cpp"
+)
 
 # set project platform-specific sources
 if(WIN32)

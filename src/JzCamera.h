@@ -7,7 +7,6 @@
 
 #include "JzRETypes.h"
 #include "JzEMode.h"
-#include "JzEntity.h"
 #include "JzMatrix.h"
 #include "JzVector.h"
 
@@ -15,7 +14,7 @@ namespace JzRE {
 /**
  * @brief Camera
  */
-class JzCamera : public JzEntity {
+class JzCamera {
 public:
     /**
      * @brief Constructor
