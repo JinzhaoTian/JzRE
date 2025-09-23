@@ -5,72 +5,62 @@
 
 #pragma once
 
-#include <memory>
-#include "JzRETypes.h"
+#include "JzResource.h"
 #include "JzRHIBuffer.h"
-#include "JzRHIPipeline.h"
-#include "JzRHITexture.h"
+#include "JzRHIDevice.h"
 #include "JzRHIVertexArray.h"
-#include "JzVertex.h"
+#include <vector>
 
 namespace JzRE {
-/**
- * @brief Mesh class - Platform-independent mesh using RHI
- */
-class JzMesh {
-public:
-    /**
-     * @brief Constructor
-     */
-    JzMesh(std::vector<JzVertex> vertices, std::vector<U32> indices, std::vector<std::shared_ptr<JzRHITexture>> textures);
 
+/**
+ * @brief Represents a mesh asset, containing vertex and index data.
+ *        It manages both CPU data and its corresponding GPU (RHI) resource.
+ */
+class JzMesh : public JzResource {
+public:
     /**
      * @brief Destructor
      */
-    ~JzMesh();
+    virtual ~JzMesh() = default;
 
     /**
-     * @brief Draw the mesh using RHI
+     * @brief Get the Vertex Buffer RHI Resource.
      *
-     * @param pipeline The pipeline to use for rendering
+     * @return std::shared_ptr<JzRHIBuffer>
      */
-    void Draw(std::shared_ptr<JzRHIPipeline> pipeline);
+    std::shared_ptr<JzRHIBuffer> GetVertexBuffer() const { return m_vertexBuffer; }
 
     /**
-     * @brief Setup mesh for rendering (create RHI resources)
-     */
-    void SetupMesh();
-
-    /**
-     * @brief Get the vertex array object
+     * @brief Get the Index Buffer RHI Resource.
      *
-     * @return The vertex array
+     * @return std::shared_ptr<JzRHIBuffer>
      */
-    std::shared_ptr<JzRHIVertexArray> GetVertexArray() const
-    {
-        return m_vertexArray;
-    }
+    std::shared_ptr<JzRHIBuffer> GetIndexBuffer() const { return m_indexBuffer; }
 
     /**
-     * @brief Get the number of indices
+     * @brief Get the Vertex Array RHI Resource.
      *
-     * @return The index count
+     * @return std::shared_ptr<JzRHIVertexArray>
      */
-    U32 GetIndexCount() const
-    {
-        return static_cast<U32>(indices.size());
-    }
+    std::shared_ptr<JzRHIVertexArray> GetVertexArray() const { return m_vertexArray; }
 
-public:
-    std::vector<JzVertex>                      vertices;
-    std::vector<U32>                           indices;
-    std::vector<std::shared_ptr<JzRHITexture>> textures;
+    /**
+     * @brief Get the number of indices in the mesh.
+     *
+     * @return uint32_t
+     */
+    uint32_t GetIndexCount() const { return static_cast<uint32_t>(m_indices.size()); }
 
-private:
+protected:
+    // CPU-side data
+    std::vector<float>    m_vertices;
+    std::vector<uint32_t> m_indices;
+
+    // GPU-side RHI resources
+    std::shared_ptr<JzRHIBuffer>     m_vertexBuffer;
+    std::shared_ptr<JzRHIBuffer>     m_indexBuffer;
     std::shared_ptr<JzRHIVertexArray> m_vertexArray;
-    std::shared_ptr<JzRHIBuffer>      m_vertexBuffer;
-    std::shared_ptr<JzRHIBuffer>      m_indexBuffer;
-    Bool                              m_isSetup = false;
 };
 
 } // namespace JzRE

@@ -6,6 +6,8 @@
 #pragma once
 
 #include "JzVector.h"
+#include "JzResource.h"
+#include <memory>
 
 namespace JzRE {
 
@@ -23,6 +25,28 @@ struct TransformComponent {
  */
 struct VelocityComponent {
     JzVec3 velocity{0.0f, 0.0f, 0.0f};
+};
+
+/**
+ * @brief Component that holds a reference to a mesh resource.
+ */
+struct MeshComponent {
+    std::shared_ptr<JzResource> mesh;
+};
+
+/**
+ * @brief Component that holds a reference to a material resource.
+ */
+struct MaterialComponent {
+    std::shared_ptr<JzResource> material;
+};
+
+/**
+ * @brief Component for camera properties.
+ */
+struct CameraComponent {
+    JzVec3 target{0.0f, 0.0f, 0.0f};
+    float  fov{45.0f};
 };
 
 } // namespace JzRE
