@@ -83,8 +83,9 @@ cmake --build build
 -   **Doxygen Specification**: All comments for file headers, classes, functions, enums, etc., **must** strictly conform to the Doxygen specification.
 -   **Comment Language**: All comments (including file headers and inline comments) **must** be written in **English**.
 -   **Comment Content**:
-    -   File Header Comment: Must include `@author`, `@copyright`.
-    -   Function Comment: Must include `@brief`, `@param` (for each parameter), `@return` (return value), and `@throw` (exceptions thrown).
+    -   File Header Comment: Only include `@author`, `@copyright`.
+    -   Class Comment: Must include `@brief`.
+    -   Function Comment: Must include `@brief`, `@param` (for each parameter), `@return` (return value), and `@throw` (exceptions thrown). Add a extra line between each types.
     -   Key Algorithms or Complex Logic: Add clear English inline comments within the code block to explain the "why" behind the logic, not just the "what".
 
 ## 7. Development Principles
