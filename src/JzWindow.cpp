@@ -123,6 +123,16 @@ JzRE::Bool JzRE::JzWindow::IsMinimized() const
     return glfwGetWindowAttrib(m_glfwWindow, GLFW_MAXIMIZED) == GLFW_FALSE;
 }
 
+void JzRE::JzWindow::Minimize() const
+{
+    glfwIconifyWindow(m_glfwWindow);
+}
+
+void JzRE::JzWindow::Restore() const
+{
+    glfwRestoreWindow(m_glfwWindow);
+}
+
 void JzRE::JzWindow::SetMinimumSize(JzRE::JzIVec2 minimumSize)
 {
     m_minimumSize = minimumSize;
@@ -138,6 +148,11 @@ JzRE::JzIVec2 JzRE::JzWindow::GetMinimumSize() const
 JzRE::Bool JzRE::JzWindow::IsMaximized() const
 {
     return glfwGetWindowAttrib(m_glfwWindow, GLFW_MAXIMIZED) == GLFW_TRUE;
+}
+
+void JzRE::JzWindow::Maximize() const
+{
+    glfwMaximizeWindow(m_glfwWindow);
 }
 
 void JzRE::JzWindow::SetMaximumSize(JzRE::JzIVec2 maximumSize)
@@ -185,6 +200,36 @@ void JzRE::JzWindow::SetAlignCentered()
     glfwGetWindowSize(m_glfwWindow, &winWidth, &winHeight);
 
     glfwSetWindowPos(m_glfwWindow, monWidth / 2 - winWidth / 2, monHeight / 2 - winHeight / 2);
+}
+
+JzRE::Bool JzRE::JzWindow::IsHidden() const
+{
+    return glfwGetWindowAttrib(m_glfwWindow, GLFW_VISIBLE) == GLFW_FALSE;
+}
+
+JzRE::Bool JzRE::JzWindow::IsVisible() const
+{
+    return glfwGetWindowAttrib(m_glfwWindow, GLFW_VISIBLE) == GLFW_TRUE;
+}
+
+void JzRE::JzWindow::Hide() const
+{
+    glfwHideWindow(m_glfwWindow);
+}
+
+void JzRE::JzWindow::Show() const
+{
+    glfwShowWindow(m_glfwWindow);
+}
+
+JzRE::Bool JzRE::JzWindow::IsFocused() const
+{
+    return glfwGetWindowAttrib(m_glfwWindow, GLFW_FOCUSED) == GLFW_TRUE;
+}
+
+void JzRE::JzWindow::Focus() const
+{
+    glfwFocusWindow(m_glfwWindow);
 }
 
 void JzRE::JzWindow::PollEvents() const

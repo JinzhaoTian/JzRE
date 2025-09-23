@@ -75,11 +75,11 @@ private:
     void HandleDragging();
 
 private:
-    JzWindow m_window;
-    JzVec2   m_buttonSize = {30.0f, 0.0f};
-    Bool     m_isDragging = false;
-    JzIVec2  m_dragStartMousePos;
-    JzIVec2  m_dragStartWindowPos;
+    JzWindow &m_window;
+    JzVec2    m_buttonSize = {30.0f, 0.0f};
+    Bool      m_isDragging = false;
+    JzIVec2   m_dragStartMousePos;
+    JzIVec2   m_dragStartWindowPos;
 };
 
 /**
@@ -114,9 +114,9 @@ private:
     void                  _DeleteFromHistory(const std::filesystem::path &path);
     String                _PathToUtf8(const std::filesystem::path &path) const;
     std::filesystem::path _Utf8ToPath(const String &utf8Str) const;
-    void                  _OnUpdateGoButton(const String &p_path);
-    void                  _OnFailedToOpenPath(const std::filesystem::path &p_path);
-    Bool                  _OnFinish(const std::filesystem::path p_result);
+    void                  _OnUpdateGoButton(const String &path);
+    void                  _OnFailedToOpenPath(const std::filesystem::path &path);
+    Bool                  _OnFinish(const std::filesystem::path path);
 
 private:
     std::optional<std::filesystem::path> m_result;

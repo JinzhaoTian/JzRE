@@ -4,6 +4,7 @@
  */
 
 #include "JzConsole.h"
+#include "JzLogger.h"
 #include "JzButton.h"
 #include "JzRETypes.h"
 #include "JzSeparator.h"
@@ -16,11 +17,11 @@ JzRE::JzConsole::JzConsole(const String &name, Bool is_opened) :
 
     auto &clearButton         = CreateWidget<JzButton>("Clear");
     clearButton.ClickedEvent += std::bind(&JzConsole::Clear, this);
-    clearButton.lineBreak     = false;
+    clearButton.lineBreak     = true;
 
     CreateWidget<JzSpacing>();
-
     CreateWidget<JzSeparator>();
+    CreateWidget<JzSpacing>();
 
     m_logGroup = &CreateWidget<JzGroup>();
     m_logGroup->ReverseDrawOrder();
@@ -82,14 +83,16 @@ void JzRE::JzConsole::SetShowErrorLogs(JzRE::Bool value)
 JzRE::Bool JzRE::JzConsole::IsAllowedByFilter(JzELogLevel level)
 {
     switch (level) {
+        case JzELogLevel::Trace:
+        case JzELogLevel::Debug:
+        case JzELogLevel::Critical:
+            return m_showDefaultLog;
         case JzELogLevel::Info:
             return m_showInfoLog;
         case JzELogLevel::Warning:
             return m_showWarningLog;
         case JzELogLevel::Error:
             return m_showErrorLog;
-        case JzELogLevel::Debug:
-            return m_showDefaultLog;
     }
 
     return false;

@@ -7,9 +7,9 @@
 
 #include "JzRETypes.h"
 #include "JzPanelWindow.h"
-#include "JzLogger.h"
 #include "JzGroup.h"
 #include "JzText.h"
+#include "JzELog.h"
 
 namespace JzRE {
 /**

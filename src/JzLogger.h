@@ -5,97 +5,77 @@
 
 #pragma once
 
-#include <vector>
-#include "spdlog/spdlog.h"
-#include "spdlog/sinks/base_sink.h"
+#include <spdlog/logger.h>
 #include "JzRETypes.h"
 #include "JzEvent.h"
+#include "JzELog.h"
 
 namespace JzRE {
 
-class JzLogger;
-
-enum class JzELogLevel {
-    Info,
-    Warning,
-    Error,
-    Debug
-};
-
-struct JzLogMessage {
-    String      message;
-    JzELogLevel level;
-};
-
-template <typename Mutex>
-class JzLogSink : public spdlog::sinks::base_sink<Mutex> {
-public:
-    JzLogSink(JzLogger &logger) :
-        m_logger(logger) { }
-
-protected:
-    void sink_it_(const spdlog::details::log_msg &msg) override;
-
-    void flush_() override { }
-
-private:
-    JzLogger &m_logger;
-};
+#define JzRE_LOG_INFO(...) \
+    JzLogger::GetInstance().Info(__VA_ARGS__)
+#define JzRE_LOG_WARN(...) \
+    JzLogger::GetInstance().Warn(__VA_ARGS__)
+#define JzRE_LOG_ERROR(...) \
+    JzLogger::GetInstance().Error(__VA_ARGS__)
+#define JzRE_LOG_DEBUG(...) \
+    JzLogger::GetInstance().Debug(__VA_ARGS__)
 
 /**
- * @brief A singleton logger class
+ * @brief Singleton logger class
  */
 class JzLogger {
 public:
     /**
      * @brief Get the singleton instance
+     *
      * @return
      */
     static JzLogger &GetInstance();
 
+    void Log(const String &message, JzELogLevel level);
+
     /**
-     * @brief Log a message
+     * @brief Log a trace message
+     *
      * @param message
-     * @param level
      */
-    void Log(const String &message, JzELogLevel level = JzELogLevel::Info);
+    void Trace(const String &message);
+
+    /**
+     * @brief Log a debug message
+     *
+     * @param message
+     */
+    void Debug(const String &message);
 
     /**
      * @brief Log an info message
+     *
      * @param message
      */
     void Info(const String &message);
 
     /**
      * @brief Log a warning message
+     *
      * @param message
      */
     void Warn(const String &message);
 
     /**
      * @brief Log an error message
+     *
      * @param message
      */
     void Error(const String &message);
 
     /**
-     * @brief Log a debug message
+     * @brief Log a critical message
+     *
      * @param message
      */
-    void Debug(const String &message);
-
-    /**
-     * @brief Get all log messages
-     * @return
-     */
-    const std::vector<JzLogMessage> &GetMessages() const;
-
-    /**
-     * @brief Clear all log messages
-     */
-    void Clear();
-
-    JzEvent<const JzLogMessage &> OnLogMessage;
+    void Critical(const String &message);
 
 private:
     JzLogger();
@@ -103,7 +83,10 @@ private:
     JzLogger(const JzLogger &)            = delete;
     JzLogger &operator=(const JzLogger &) = delete;
 
-    std::vector<JzLogMessage>       m_messages;
+public:
+    JzEvent<const JzLogMessage &> OnLogMessage;
+
+private:
     std::shared_ptr<spdlog::logger> m_logger;
 };
 } // namespace JzRE

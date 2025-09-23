@@ -14,6 +14,7 @@
 #include <unistd.h>
 #endif
 #include <nlohmann/json.hpp>
+#include "JzLogger.h"
 #include "JzRHIFactory.h"
 #include "JzOpenFileDialog.h"
 #include "JzGroup.h"
@@ -102,20 +103,33 @@ JzRE::JzREHubMenuBar::JzREHubMenuBar(JzRE::JzWindow &window) :
 {
     auto &actions = CreateWidget<JzGroup>(JzEHorizontalAlignment::RIGHT, JzVec2(80.f, 0.f), JzVec2(0.f, 0.f));
 
-    auto &minimizeButton               = actions.CreateWidget<JzButton>("_");
-    minimizeButton.idleBackgroundColor = {0.1333f, 0.1529f, 0.1804f, 1.0f};
-    minimizeButton.size                = m_buttonSize;
-    minimizeButton.lineBreak           = false;
+    auto &minimizeButton                = actions.CreateWidget<JzButton>("小");
+    minimizeButton.idleBackgroundColor  = {0.1333f, 0.1529f, 0.1804f, 1.0f};
+    minimizeButton.size                 = m_buttonSize;
+    minimizeButton.lineBreak            = false;
+    minimizeButton.ClickedEvent        += [this]() {
+        if (m_window.IsMinimized())
+            m_window.Restore();
+        else
+            m_window.Minimize();
+    };
 
-    auto &maximizeButton               = actions.CreateWidget<JzButton>("||");
-    maximizeButton.idleBackgroundColor = {0.1333f, 0.1529f, 0.1804f, 1.0f};
-    maximizeButton.size                = m_buttonSize;
-    maximizeButton.lineBreak           = false;
+    auto &maximizeButton                = actions.CreateWidget<JzButton>("大");
+    maximizeButton.idleBackgroundColor  = {0.1333f, 0.1529f, 0.1804f, 1.0f};
+    maximizeButton.size                 = m_buttonSize;
+    maximizeButton.lineBreak            = false;
+    maximizeButton.ClickedEvent        += [this]() {
+        if (m_window.IsMaximized())
+            m_window.Restore();
+        else
+            m_window.Maximize();
+    };
 
-    auto &closeButton               = actions.CreateWidget<JzButton>("X");
-    closeButton.idleBackgroundColor = {0.1333f, 0.1529f, 0.1804f, 1.0f};
-    closeButton.size                = m_buttonSize;
-    closeButton.lineBreak           = true;
+    auto &closeButton                = actions.CreateWidget<JzButton>("关");
+    closeButton.idleBackgroundColor  = {0.1333f, 0.1529f, 0.1804f, 1.0f};
+    closeButton.size                 = m_buttonSize;
+    closeButton.lineBreak            = true;
+    closeButton.ClickedEvent        += [this]() { m_window.SetShouldClose(true); };
 }
 
 void JzRE::JzREHubMenuBar::_Draw_Impl()
@@ -383,11 +397,16 @@ void JzRE::JzREHubPanel::_OnFailedToOpenPath(const std::filesystem::path &p_path
     // TODO
 }
 
-JzRE::Bool JzRE::JzREHubPanel::_OnFinish(const std::filesystem::path p_result)
+JzRE::Bool JzRE::JzREHubPanel::_OnFinish(const std::filesystem::path path)
 {
-    _AddToHistory(p_result);
+    if (!std::filesystem::exists(path)) {
+        JzRE_LOG_ERROR("Path is not existed.");
+        return false;
+    }
 
-    m_result = p_result;
+    _AddToHistory(path);
+
+    m_result = path;
     Close();
     return true;
 }

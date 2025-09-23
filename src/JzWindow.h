@@ -84,53 +84,86 @@ public:
 
     /**
      * @brief Set the size for the window
+     *
+     * @param p_size
      */
     void SetSize(JzIVec2 p_size);
 
     /**
      * @brief Get the current size of the window
+     *
+     * @return JzIVec2
      */
     JzIVec2 GetSize() const;
 
     /**
-     * @brief Return true if the windows is minimized
+     * @brief Is the windows minimized
+     *
+     * @return Bool
      */
     Bool IsMinimized() const;
 
     /**
+     * @brief Minimize the window if it was previously visible
+     */
+    void Minimize() const;
+
+    /**
+     * @brief Restore the window if it was previously minimized
+     */
+    void Restore() const;
+
+    /**
      * @brief Set a minimum size for the window
+     *
+     * @param minimumSize
      */
     void SetMinimumSize(JzIVec2 minimumSize);
 
     /**
      * @brief Get the current minimum size of the window
-     * @note -1 (WindowSettings::DontCare) values means no limitation
+     *
+     * @return JzIVec2
      */
     JzIVec2 GetMinimumSize() const;
 
     /**
-     * @brief Return true if the windows is maximized
+     * @brief Is the windows maximized
+     *
+     * @return Bool
      */
     Bool IsMaximized() const;
 
     /**
+     * @brief Maximize the window
+     */
+    void Maximize() const;
+
+    /**
      * @brief Set a maximum size for the window
+     *
+     * @param maximumSize
      */
     void SetMaximumSize(JzIVec2 maximumSize);
 
     /**
      * @brief Get the current maximum size of the window
-     * @note -1 (WindowSettings::DontCare) values means no limitation
+     *
+     * @return JzIVec2
      */
     JzIVec2 GetMaximumSize() const;
 
     /**
      * @brief Set the window in fullscreen mode
+     *
+     * @param p_value
      */
     void SetFullscreen(Bool p_value);
 
     /**
-     * @brief Return true if the window is fullscreen
+     * @brief Is the window fullscreen
+     *
+     * @return Bool
      */
     Bool IsFullscreen() const;
 
@@ -138,6 +171,42 @@ public:
      * @brief Set the window align centered
      */
     void SetAlignCentered();
+
+    /**
+     * @brief Is the window hidden
+     *
+     * @return bool
+     */
+    Bool IsHidden() const;
+
+    /**
+     * @brief Is the window visible
+     *
+     * @return Bool
+     */
+    Bool IsVisible() const;
+
+    /**
+     * @brief Hides the window if it was previously visible
+     */
+    void Hide() const;
+
+    /**
+     * @brief Show the window if it was previously hidden
+     */
+    void Show() const;
+
+    /**
+     * @brief Is the windows focused
+     *
+     * @return Bool
+     */
+    Bool IsFocused() const;
+
+    /**
+     * @brief Focus the window
+     */
+    void Focus() const;
 
     /**
      * @brief Poll events
