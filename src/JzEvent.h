@@ -83,4 +83,4 @@ private:
 };
 } // namespace JzRE
 
-#include "JzEvent.inl"
+#include "JzEvent.inl" // IWYU pragma: keep

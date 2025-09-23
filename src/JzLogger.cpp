@@ -69,6 +69,8 @@ void JzRE::JzLogger::Log(const JzRE::String &message, JzRE::JzELogLevel level)
                 return spdlog::level::err;
             case JzELogLevel::Critical:
                 return spdlog::level::critical;
+            default:
+                return spdlog::level::info;
         }
     }(),
                   message);
