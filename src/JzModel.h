@@ -78,13 +78,6 @@ public:
         return gammaCorrection;
     }
 
-private:
-    void                                       LoadModel(const String &path);
-    void                                       ProcessNode(aiNode *node, const aiScene *scene);
-    JzMesh                                     ProcessMesh(aiMesh *mesh, const aiScene *scene);
-    std::vector<std::shared_ptr<JzRHITexture>> LoadMaterialTextures(aiMaterial *mat, aiTextureType type, String typeName);
-    std::shared_ptr<JzRHITexture>              LoadTexture(const String &path, const String &typeName);
-
 public:
     std::vector<JzMesh> meshes;
     String              directory;

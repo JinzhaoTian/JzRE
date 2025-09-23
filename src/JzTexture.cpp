@@ -4,60 +4,65 @@
  */
 
 #include "JzTexture.h"
-#include "JzLogger.h"
-#include "JzServiceContainer.h"
-#include "JzResourceManager.h"
+#include "JzContext.h"
+#include "JzRHIDevice.h"
+#include "JzRHIDescription.h"
 
-// For now, we assume the existence of a function to create RHI textures.
-// In a real scenario, this would come from the RHI device.
-JzRE::JzRHITexture *CreateRHITextureFromFile(const JzRE::String &path);
+// vcpkg provides stb_image, so we can include it directly.
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
 
-JzRE::JzTexture::JzTexture(const JzRE::String &name)
-{
-    m_name = name;
+namespace JzRE {
+
+JzTexture::JzTexture(const std::string& path) : m_path(path) {
+    m_state = JzEResourceState::Unloaded;
 }
 
-JzRE::Bool JzRE::JzTexture::Load()
-{
+JzTexture::~JzTexture() {
+    Unload();
+}
+
+Bool JzTexture::Load() {
+    if (m_state == JzEResourceState::Loaded) {
+        return true;
+    }
     m_state = JzEResourceState::Loading;
 
-    auto  &resourceManager = JzServiceContainer::Get<JzResourceManager>();
-    String fullPath        = resourceManager.FindFullPath(m_name);
+    int width, height, channels;
+    // Force 4 channels (RGBA) for consistency
+    stbi_uc* pixels = stbi_load(m_path.c_str(), &width, &height, &channels, STBI_rgb_alpha);
 
-    if (fullPath.empty()) {
-        JzLogger::GetInstance().Error(fmt::format("Texture file not found: {0}", m_name));
+    if (!pixels) {
         m_state = JzEResourceState::Error;
+        // In a real engine, log an error here.
         return false;
     }
 
-    // In a real implementation, you would load the image data from the file (e.g., using stb_image)
-    // and then create the RHI texture from that data.
-    // For this example, we'll assume a helper function exists.
-    m_rhiTexture.reset(CreateRHITextureFromFile(fullPath));
+    auto& device = JzRE_DEVICE();
+
+    JzTextureDesc textureDesc;
+    textureDesc.width     = width;
+    textureDesc.height    = height;
+    textureDesc.format    = JzETextureFormat::RGBA8;
+    textureDesc.debugName = m_path;
+    textureDesc.data      = pixels;
+
+    m_rhiTexture = device.CreateTexture(textureDesc);
+
+    stbi_image_free(pixels);
 
     if (m_rhiTexture) {
-        JzLogger::GetInstance().Info(fmt::format("Texture loaded: {0}", m_name));
         m_state = JzEResourceState::Loaded;
         return true;
     } else {
-        JzLogger::GetInstance().Error(fmt::format("Failed to create RHI texture for: {0}", m_name));
         m_state = JzEResourceState::Error;
         return false;
     }
 }
 
-void JzRE::JzTexture::Unload()
-{
-    m_state = JzEResourceState::Unloaded;
-    m_rhiTexture.reset();
-    JzLogger::GetInstance().Info(fmt::format("Texture unloaded: {0}", m_name));
+void JzTexture::Unload() {
+    m_rhiTexture = nullptr;
+    m_state      = JzEResourceState::Unloaded;
 }
 
-// Dummy implementation for the example
-JzRE::JzRHITexture *CreateRHITextureFromFile(const JzRE::String &path)
-{
-    // This is a placeholder. In a real engine, you would get the RHI device
-    // (e.g., from JzServiceContainer) and call a method like device->CreateTexture2D(path);
-    // For now, we can't create a real RHI texture, so we return nullptr to avoid breaking compilation.
-    return nullptr;
-}
+} // namespace JzRE

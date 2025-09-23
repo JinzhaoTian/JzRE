@@ -6,12 +6,14 @@
 #pragma once
 
 #include "JzResource.h"
+#include "JzVertex.h"
 #include "JzRHIBuffer.h"
-#include "JzRHIDevice.h"
 #include "JzRHIVertexArray.h"
 #include <vector>
 
 namespace JzRE {
+
+class JzRHIDevice; // Forward declaration
 
 /**
  * @brief Represents a mesh asset, containing vertex and index data.
@@ -20,46 +22,64 @@ namespace JzRE {
 class JzMesh : public JzResource {
 public:
     /**
+     * @brief Constructor for procedural meshes.
+     *
+     * @param vertices Vector of vertices.
+     * @param indices Vector of indices.
+     */
+    JzMesh(std::vector<JzVertex> vertices, std::vector<U32> indices);
+
+    /**
      * @brief Destructor
      */
-    virtual ~JzMesh() = default;
+    virtual ~JzMesh();
 
     /**
-     * @brief Get the Vertex Buffer RHI Resource.
+     * @brief Load a resource. For meshes, this is used to create GPU resources.
      *
-     * @return std::shared_ptr<JzRHIBuffer>
+     * @return Bool True if successful.
      */
-    std::shared_ptr<JzRHIBuffer> GetVertexBuffer() const { return m_vertexBuffer; }
+    virtual Bool Load() override;
 
     /**
-     * @brief Get the Index Buffer RHI Resource.
-     *
-     * @return std::shared_ptr<JzRHIBuffer>
+     * @brief Unload a resource. Releases GPU resources and clears CPU data.
      */
-    std::shared_ptr<JzRHIBuffer> GetIndexBuffer() const { return m_indexBuffer; }
+    virtual void Unload() override;
 
     /**
      * @brief Get the Vertex Array RHI Resource.
      *
      * @return std::shared_ptr<JzRHIVertexArray>
      */
-    std::shared_ptr<JzRHIVertexArray> GetVertexArray() const { return m_vertexArray; }
+    std::shared_ptr<JzRHIVertexArray> GetVertexArray() const
+    {
+        return m_vertexArray;
+    }
 
     /**
      * @brief Get the number of indices in the mesh.
      *
-     * @return uint32_t
+     * @return U32
      */
-    uint32_t GetIndexCount() const { return static_cast<uint32_t>(m_indices.size()); }
+    U32 GetIndexCount() const
+    {
+        return static_cast<U32>(m_indices.size());
+    }
 
-protected:
+private:
+    /**
+     * @brief Creates RHI resources (buffers and vertex array) for the mesh.
+     */
+    void SetupMesh();
+
+private:
     // CPU-side data
-    std::vector<float>    m_vertices;
-    std::vector<uint32_t> m_indices;
+    std::vector<JzVertex> m_vertices;
+    std::vector<U32>      m_indices;
 
     // GPU-side RHI resources
-    std::shared_ptr<JzRHIBuffer>     m_vertexBuffer;
-    std::shared_ptr<JzRHIBuffer>     m_indexBuffer;
+    std::shared_ptr<JzRHIBuffer>      m_vertexBuffer;
+    std::shared_ptr<JzRHIBuffer>      m_indexBuffer;
     std::shared_ptr<JzRHIVertexArray> m_vertexArray;
 };
 

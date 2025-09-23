@@ -4,115 +4,58 @@
  */
 
 #include "JzMesh.h"
-#include "JzContext.h"
 
-JzRE::JzMesh::JzMesh(std::vector<JzRE::JzVertex> vertices, std::vector<JzRE::U32> indices, std::vector<std::shared_ptr<JzRE::JzRHITexture>> textures) :
-    vertices(std::move(vertices)),
-    indices(std::move(indices)),
-    textures(std::move(textures))
+namespace JzRE {
+
+JzMesh::JzMesh(std::vector<JzVertex> vertices, std::vector<uint32_t> indices) :
+    m_vertices(std::move(vertices)), m_indices(std::move(indices))
 {
-    // Setup the mesh when we have all the required data
-    SetupMesh();
+    m_state = JzEResourceState::Unloaded;
 }
 
-JzRE::JzMesh::~JzMesh()
+JzMesh::~JzMesh()
+{
+    Unload();
+}
+
+Bool JzMesh::Load()
+{
+    if (m_state == JzEResourceState::Loaded) {
+        return true;
+    }
+
+    m_state = JzEResourceState::Loading;
+
+    SetupMesh();
+
+    // If setup fails, vertex array will be null
+    if (m_vertexArray) {
+        m_state = JzEResourceState::Loaded;
+        return true;
+    } else {
+        m_state = JzEResourceState::Error;
+        return false;
+    }
+}
+
+void JzMesh::Unload()
 {
     // RHI resources will be automatically cleaned up by shared_ptr
+    m_vertexBuffer = nullptr;
+    m_indexBuffer  = nullptr;
+    m_vertexArray  = nullptr;
+
+    // Clear CPU data to free memory
+    m_vertices.clear();
+    m_vertices.shrink_to_fit();
+    m_indices.clear();
+    m_indices.shrink_to_fit();
+
+    m_state = JzEResourceState::Unloaded;
 }
 
-void JzRE::JzMesh::Draw(std::shared_ptr<JzRE::JzRHIPipeline> pipeline)
+void JzMesh::SetupMesh()
 {
-    if (!m_isSetup) {
-        SetupMesh();
-    }
-
-    auto &device = JzRE_DEVICE();
-    if (!m_vertexArray || indices.empty()) {
-        return;
-    }
-
-    // Bind textures using RHI
-    for (U32 i = 0; i < this->textures.size(); i++) {
-        device.BindTexture(this->textures[i], i);
-    }
-
-    // Bind vertex array and pipeline
-    device.BindVertexArray(m_vertexArray);
-    if (pipeline) {
-        device.BindPipeline(pipeline);
-    }
-
-    // Draw indexed using RHI
-    JzDrawIndexedParams drawParams{};
-    drawParams.primitiveType = JzEPrimitiveType::Triangles;
-    drawParams.indexCount    = static_cast<U32>(indices.size());
-    drawParams.instanceCount = 1;
-    drawParams.firstIndex    = 0;
-    drawParams.vertexOffset  = 0;
-    drawParams.firstInstance = 0;
-
-    device.DrawIndexed(drawParams);
 }
 
-void JzRE::JzMesh::SetupMesh()
-{
-    if (m_isSetup) {
-        return;
-    }
-
-    auto &device = JzRE_DEVICE();
-
-    // Create vertex buffer
-    JzBufferDesc vertexBufferDesc{};
-    vertexBufferDesc.type      = JzEBufferType::Vertex;
-    vertexBufferDesc.usage     = JzEBufferUsage::StaticDraw;
-    vertexBufferDesc.size      = vertices.size() * sizeof(JzVertex);
-    vertexBufferDesc.data      = vertices.data();
-    vertexBufferDesc.debugName = "MeshVertexBuffer";
-
-    m_vertexBuffer = device.CreateBuffer(vertexBufferDesc);
-    if (!m_vertexBuffer) {
-        return;
-    }
-
-    // Create index buffer
-    JzBufferDesc indexBufferDesc{};
-    indexBufferDesc.type      = JzEBufferType::Index;
-    indexBufferDesc.usage     = JzEBufferUsage::StaticDraw;
-    indexBufferDesc.size      = indices.size() * sizeof(U32);
-    indexBufferDesc.data      = indices.data();
-    indexBufferDesc.debugName = "MeshIndexBuffer";
-
-    m_indexBuffer = device.CreateBuffer(indexBufferDesc);
-    if (!m_indexBuffer) {
-        return;
-    }
-
-    // Create vertex array object
-    m_vertexArray = device.CreateVertexArray("MeshVertexArray");
-    if (!m_vertexArray) {
-        return;
-    }
-
-    // Bind vertex and index buffers to vertex array
-    m_vertexArray->BindVertexBuffer(m_vertexBuffer, 0);
-    m_vertexArray->BindIndexBuffer(m_indexBuffer);
-
-    // Set vertex attributes
-    // Position (location 0): vec3
-    m_vertexArray->SetVertexAttribute(0, 3, sizeof(JzVertex), offsetof(JzVertex, Position));
-    // Normal (location 1): vec3
-    m_vertexArray->SetVertexAttribute(1, 3, sizeof(JzVertex), offsetof(JzVertex, Normal));
-    // TexCoords (location 2): vec2
-    m_vertexArray->SetVertexAttribute(2, 2, sizeof(JzVertex), offsetof(JzVertex, TexCoords));
-    // Tangent (location 3): vec3
-    m_vertexArray->SetVertexAttribute(3, 3, sizeof(JzVertex), offsetof(JzVertex, Tangent));
-    // Bitangent (location 4): vec3
-    m_vertexArray->SetVertexAttribute(4, 3, sizeof(JzVertex), offsetof(JzVertex, Bitangent));
-    // BoneIDs (location 5): ivec4
-    m_vertexArray->SetVertexAttribute(5, 4, sizeof(JzVertex), offsetof(JzVertex, BoneIDs));
-    // Weights (location 6): vec4
-    m_vertexArray->SetVertexAttribute(6, 4, sizeof(JzVertex), offsetof(JzVertex, Weights));
-
-    m_isSetup = true;
-}
+} // namespace JzRE

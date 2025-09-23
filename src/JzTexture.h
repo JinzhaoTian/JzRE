@@ -5,53 +5,51 @@
 
 #pragma once
 
-#include <memory>
 #include "JzResource.h"
 #include "JzRHITexture.h"
+#include <memory>
 
 namespace JzRE {
 
 /**
- * @brief Texture resource
+ * @brief Represents a texture asset loaded from an image file.
  */
 class JzTexture : public JzResource {
 public:
     /**
-     * @brief Constructor
+     * @brief Constructor.
      *
-     * @param name
+     * @param path The file path to the image.
      */
-    JzTexture(const String &name);
+    JzTexture(const std::string& path);
 
     /**
-     * @brief Destructor
+     * @brief Destructor.
      */
-    virtual ~JzTexture() = default;
+    virtual ~JzTexture();
 
     /**
-     * @brief Load
+     * @brief Loads the image from file and creates a GPU texture.
      *
-     * @return Bool
+     * @return Bool True if successful.
      */
     virtual Bool Load() override;
 
     /**
-     * @brief Unload
+     * @brief Unloads the texture, releasing CPU and GPU memory.
      */
     virtual void Unload() override;
 
     /**
-     * @brief Get RHI texture
+     * @brief Get the RHI Texture object.
      *
-     * @return JzRHITexture*
+     * @return std::shared_ptr<JzRHITexture>
      */
-    JzRHITexture *GetRHITexture() const
-    {
-        return m_rhiTexture.get();
-    }
+    std::shared_ptr<JzRHITexture> GetRhiTexture() const { return m_rhiTexture; }
 
 private:
-    std::unique_ptr<JzRHITexture> m_rhiTexture;
+    std::string m_path;
+    std::shared_ptr<JzRHITexture> m_rhiTexture;
 };
 
 } // namespace JzRE

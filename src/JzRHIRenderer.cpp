@@ -247,34 +247,34 @@ void JzRE::JzRHIRenderer::RenderWithCommandList(std::shared_ptr<JzRE::JzScene> s
         cmd->BindPipeline(m_defaultPipeline);
     }
 
-    // 遍历场景模型，录制绘制命令
-    for (const auto &model : scene->GetModels()) {
-        if (model) {
-            // For command list rendering, we need to record mesh draw commands
-            for (const auto &mesh : model->GetMeshes()) {
-                if (mesh.GetVertexArray() && mesh.GetIndexCount() > 0) {
-                    // Bind vertex array
-                    cmd->BindVertexArray(mesh.GetVertexArray());
+    // // 遍历场景模型，录制绘制命令
+    // for (const auto &model : scene->GetModels()) {
+    //     if (model) {
+    //         // For command list rendering, we need to record mesh draw commands
+    //         for (const auto &mesh : model->GetMeshes()) {
+    //             if (mesh.GetVertexArray() && mesh.GetIndexCount() > 0) {
+    //                 // Bind vertex array
+    //                 cmd->BindVertexArray(mesh.GetVertexArray());
 
-                    // Bind textures
-                    for (U32 i = 0; i < mesh.textures.size(); i++) {
-                        cmd->BindTexture(mesh.textures[i], i);
-                    }
+    //                 // Bind textures
+    //                 for (U32 i = 0; i < mesh.textures.size(); i++) {
+    //                     cmd->BindTexture(mesh.textures[i], i);
+    //                 }
 
-                    // Record draw indexed command
-                    JzDrawIndexedParams drawParams{};
-                    drawParams.primitiveType = JzEPrimitiveType::Triangles;
-                    drawParams.indexCount    = mesh.GetIndexCount();
-                    drawParams.instanceCount = 1;
-                    drawParams.firstIndex    = 0;
-                    drawParams.vertexOffset  = 0;
-                    drawParams.firstInstance = 0;
+    //                 // Record draw indexed command
+    //                 JzDrawIndexedParams drawParams{};
+    //                 drawParams.primitiveType = JzEPrimitiveType::Triangles;
+    //                 drawParams.indexCount    = mesh.GetIndexCount();
+    //                 drawParams.instanceCount = 1;
+    //                 drawParams.firstIndex    = 0;
+    //                 drawParams.vertexOffset  = 0;
+    //                 drawParams.firstInstance = 0;
 
-                    cmd->DrawIndexed(drawParams);
-                }
-            }
-        }
-    }
+    //                 cmd->DrawIndexed(drawParams);
+    //             }
+    //         }
+    //     }
+    // }
 
     cmd->End();
     device.ExecuteCommandList(cmd);
