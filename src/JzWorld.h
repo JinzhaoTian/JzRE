@@ -8,7 +8,6 @@
 #include <vector>
 #include <memory>
 #include "JzEntityManager.h"
-#include "JzComponentPool.h"
 #include "JzSystem.h"
 
 namespace JzRE {
@@ -18,72 +17,6 @@ namespace JzRE {
  */
 class JzWorld {
 public:
-    /**
-     * @brief Create a entity
-     *
-     * @return JzEntity
-     */
-    JzEntity CreateEntity();
-
-    /**
-     * @brief Destroy a entity
-     *
-     * @param entity
-     */
-    void DestroyEntity(JzEntity entity);
-
-    /**
-     * @brief Registers a new component
-     *
-     * @tparam T
-     */
-    template <typename T>
-    void RegisterComponent();
-
-    /**
-     * @brief Add a component
-     *
-     * @tparam T
-     *
-     * @param entity
-     * @param component
-     *
-     * @return T&
-     */
-    template <typename T>
-    T &AddComponent(JzEntity entity, T &&component);
-
-    /**
-     * @brief Remove a component
-     *
-     * @tparam T
-     *
-     * @param entity
-     */
-    template <typename T>
-    void RemoveComponent(JzEntity entity);
-
-    /**
-     * @brief Get the Component object
-     *
-     * @tparam T
-     *
-     * @param entity
-     *
-     * @return T&
-     */
-    template <typename T>
-    T &GetComponent(JzEntity entity);
-
-    /**
-     * @brief Get the Component Pool object
-     *
-     * @tparam T
-     * @return std::shared_ptr<JzComponentPool<T>>
-     */
-    template <typename T>
-    std::shared_ptr<JzComponentPool<T>> GetComponentPool();
-
     /**
      * @brief Registers a new system.
      *
@@ -112,9 +45,8 @@ public:
     }
 
 private:
-    JzEntityManager                                m_entityManager;
-    std::vector<std::shared_ptr<JzIComponentPool>> m_componentPools;
-    std::vector<std::shared_ptr<JzSystem>>         m_systems;
+    JzEntityManager                        m_entityManager;
+    std::vector<std::shared_ptr<JzSystem>> m_systems;
 };
 
 } // namespace JzRE
