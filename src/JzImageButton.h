@@ -5,10 +5,12 @@
 
 #pragma once
 
+#include <memory>
 #include "JzRETypes.h"
 #include "JzEvent.h"
 #include "JzWidget.h"
 #include "JzVector.h"
+#include "JzRHITexture.h"
 
 namespace JzRE {
 
@@ -20,10 +22,10 @@ public:
     /**
      * @brief Constructor
      *
-     * @param p_textureId
+     * @param p_texture
      * @param p_size
      */
-    JzImageButton(U32 p_textureId, const JzVec2 &p_size);
+    JzImageButton(std::shared_ptr<JzRHITexture> p_texture, const JzVec2 &p_size);
 
 protected:
     /**
@@ -38,7 +40,7 @@ public:
     JzEvent<> ClickedEvent;
 
 public:
-    U32    textureId;
+    std::shared_ptr<JzRHITexture> m_texture;
     Bool   disabled = false;
     JzVec2 size;
     JzVec4 backgroundColor;

@@ -43,11 +43,11 @@ public:
     void GenerateMipmaps() override;
 
     /**
-     * @brief Get the handle of the texture
+     * @brief Get the native texture ID for rendering
      *
-     * @return The handle of the texture
+     * @return The native texture ID
      */
-    U32 GetHandle() const override;
+    void* GetTextureID() const override;
 
     /**
      * @brief Get the target of the texture

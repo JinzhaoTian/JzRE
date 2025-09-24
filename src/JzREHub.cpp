@@ -16,7 +16,10 @@
 #include <nlohmann/json.hpp>
 #include "JzLogger.h"
 #include "JzRHIFactory.h"
+#include "JzTexture.h"
+#include "JzTextureFactory.h"
 #include "JzOpenFileDialog.h"
+#include "JzImageButton.h"
 #include "JzGroup.h"
 #include "JzText.h"
 #include "JzInputText.h"
@@ -39,6 +42,10 @@ JzRE::JzREHub::JzREHub(JzERHIType rhiType)
     m_window->MakeCurrentContext();
     m_window->SetAlignCentered();
 
+    m_resourceManager = std::make_unique<JzResourceManager>();
+    m_resourceManager->RegisterFactory<JzTexture>(std::make_unique<JzTextureFactory>());
+    m_resourceManager->AddSearchPath("./icons");
+
     m_device = JzRHIFactory::CreateDevice(rhiType);
 
     m_uiManager = std::make_unique<JzUIManager>(*m_window);
@@ -51,7 +58,7 @@ JzRE::JzREHub::JzREHub(JzERHIType rhiType)
 
     m_canvas = std::make_unique<JzCanvas>();
 
-    m_menuBar = std::make_unique<JzREHubMenuBar>(*m_window);
+    m_menuBar = std::make_unique<JzREHubMenuBar>(*m_window, *m_resourceManager);
     m_canvas->AddPanel(*m_menuBar);
 
     m_hubPanel = std::make_unique<JzREHubPanel>();
@@ -78,6 +85,10 @@ JzRE::JzREHub::~JzREHub()
         m_device.reset();
     }
 
+    if (m_resourceManager) {
+        m_resourceManager.reset();
+    }
+
     if (m_window) {
         m_window.reset();
     }
@@ -98,16 +109,17 @@ std::optional<std::filesystem::path> JzRE::JzREHub::Run()
     return m_hubPanel->GetResult();
 }
 
-JzRE::JzREHubMenuBar::JzREHubMenuBar(JzRE::JzWindow &window) :
-    m_window(window)
+JzRE::JzREHubMenuBar::JzREHubMenuBar(JzRE::JzWindow &window, JzRE::JzResourceManager &resourceManager) :
+    m_window(window),
+    m_resourceManager(resourceManager)
 {
     auto &actions = CreateWidget<JzGroup>(JzEHorizontalAlignment::RIGHT, JzVec2(80.f, 0.f), JzVec2(0.f, 0.f));
 
-    auto &minimizeButton                = actions.CreateWidget<JzButton>("小");
-    minimizeButton.idleBackgroundColor  = {0.1333f, 0.1529f, 0.1804f, 1.0f};
-    minimizeButton.size                 = m_buttonSize;
-    minimizeButton.lineBreak            = false;
-    minimizeButton.ClickedEvent        += [this]() {
+    auto  minimizeIcon           = resourceManager.GetResource<JzTexture>("icons/window-minimize.png");
+    auto &minimizeButton         = actions.CreateWidget<JzImageButton>(minimizeIcon->GetRhiTexture(), m_buttonSize);
+    minimizeButton.size          = m_buttonSize;
+    minimizeButton.lineBreak     = false;
+    minimizeButton.ClickedEvent += [this]() {
         if (m_window.IsMinimized())
             m_window.Restore();
         else

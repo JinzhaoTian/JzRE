@@ -16,9 +16,9 @@ public:
     JzVulkanTexture(const JzTextureDesc &desc);
     ~JzVulkanTexture() override;
 
-    void UpdateData(const void *data, U32 mipLevel = 0, U32 arrayIndex = 0) override;
-    void GenerateMipmaps() override;
-    U32  GetHandle() const override
+    void  UpdateData(const void *data, U32 mipLevel = 0, U32 arrayIndex = 0) override;
+    void  GenerateMipmaps() override;
+    void *GetTextureID() const override
     {
         return 0;
     } // Stub implementation
