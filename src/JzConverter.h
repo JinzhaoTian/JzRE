@@ -46,5 +46,15 @@ public:
      * @param p_value
      */
     static JzVec4 ToJzVec4(const ImVec4 &value);
+
+    /**
+     * @brief Convert the given Hex to JzVec4
+     *
+     * @param hexColor
+     * @param alpha
+     *
+     * @return ImColor
+     */
+    static ImColor HexToImColor(const String &hexColor, float alpha = 1.0f);
 };
 } // namespace JzRE

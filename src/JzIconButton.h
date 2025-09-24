@@ -43,6 +43,7 @@ public:
     JzVec4 hoveredBackgroundColor;
     JzVec4 clickedBackgroundColor;
     JzVec4 iconColor;
+    JzVec4 hoveredIconColor;
 
 private:
     std::shared_ptr<JzRHITexture> m_texture;

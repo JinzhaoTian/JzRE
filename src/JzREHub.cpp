@@ -119,42 +119,51 @@ JzRE::JzREHubMenuBar::JzREHubMenuBar(JzRE::JzWindow &window, JzRE::JzResourceMan
 {
     auto &actions = CreateWidget<JzGroup>(JzEHorizontalAlignment::RIGHT, JzVec2(80.f, 0.f), JzVec2(0.f, 0.f));
 
-    auto  minimizeIcon                  = resourceManager.GetResource<JzTexture>("icons/window-minimize.png");
-    auto &minimizeButton                = actions.CreateWidget<JzIconButton>(minimizeIcon->GetRhiTexture());
-    minimizeButton.idleBackgroundColor  = {0.1333f, 0.1529f, 0.1804f, 1.0f};
-    minimizeButton.buttonSize           = m_buttonSize;
-    minimizeButton.iconColor            = {1.f, 1.f, 1.f, 1.f};
-    minimizeButton.iconSize             = m_iconSize;
-    minimizeButton.lineBreak            = false;
-    minimizeButton.ClickedEvent        += [this]() {
+    auto  minimizeIcon                     = resourceManager.GetResource<JzTexture>("icons/window-minimize.png");
+    auto &minimizeButton                   = actions.CreateWidget<JzIconButton>(minimizeIcon->GetRhiTexture());
+    minimizeButton.idleBackgroundColor     = {0.1333f, 0.1529f, 0.1804f, 1.0f};
+    minimizeButton.hoveredBackgroundColor  = {51 / 255.0f, 56 / 255.0f, 60 / 255.0f, 1.0f};
+    minimizeButton.clickedBackgroundColor  = {117 / 255.0f, 131 / 255.0f, 144 / 255.0f, 1.0f};
+    minimizeButton.buttonSize              = m_buttonSize;
+    minimizeButton.iconColor               = {1.f, 1.f, 1.f, 1.f};
+    minimizeButton.hoveredIconColor        = {1.f, 1.f, 1.f, 1.f};
+    minimizeButton.iconSize                = m_iconSize;
+    minimizeButton.lineBreak               = false;
+    minimizeButton.ClickedEvent           += [this]() {
         if (m_window.IsMinimized())
             m_window.Restore();
         else
             m_window.Minimize();
     };
 
-    auto  maximizeIcon                  = resourceManager.GetResource<JzTexture>("icons/window-maximize.png");
-    auto &maximizeButton                = actions.CreateWidget<JzIconButton>(maximizeIcon->GetRhiTexture());
-    maximizeButton.idleBackgroundColor  = {0.1333f, 0.1529f, 0.1804f, 1.0f};
-    maximizeButton.buttonSize           = m_buttonSize;
-    maximizeButton.iconColor            = {1.f, 1.f, 1.f, 1.f};
-    maximizeButton.iconSize             = m_iconSize;
-    maximizeButton.lineBreak            = false;
-    maximizeButton.ClickedEvent        += [this]() {
+    auto  maximizeIcon                     = resourceManager.GetResource<JzTexture>("icons/window-maximize.png");
+    auto &maximizeButton                   = actions.CreateWidget<JzIconButton>(maximizeIcon->GetRhiTexture());
+    maximizeButton.idleBackgroundColor     = {0.1333f, 0.1529f, 0.1804f, 1.0f};
+    maximizeButton.hoveredBackgroundColor  = {51 / 255.0f, 56 / 255.0f, 60 / 255.0f, 1.0f};
+    maximizeButton.clickedBackgroundColor  = {117 / 255.0f, 131 / 255.0f, 144 / 255.0f, 1.0f};
+    maximizeButton.buttonSize              = m_buttonSize;
+    maximizeButton.iconColor               = {1.f, 1.f, 1.f, 1.f};
+    maximizeButton.hoveredIconColor        = {1.f, 1.f, 1.f, 1.f};
+    maximizeButton.iconSize                = m_iconSize;
+    maximizeButton.lineBreak               = false;
+    maximizeButton.ClickedEvent           += [this]() {
         if (m_window.IsMaximized())
             m_window.Restore();
         else
             m_window.Maximize();
     };
 
-    auto  closeIcon                  = resourceManager.GetResource<JzTexture>("icons/x.png");
-    auto &closeButton                = actions.CreateWidget<JzIconButton>(closeIcon->GetRhiTexture());
-    closeButton.idleBackgroundColor  = {0.1333f, 0.1529f, 0.1804f, 1.0f};
-    closeButton.buttonSize           = m_buttonSize;
-    closeButton.iconColor            = {1.f, 1.f, 1.f, 1.f};
-    closeButton.iconSize             = m_iconSize;
-    closeButton.lineBreak            = true;
-    closeButton.ClickedEvent        += [this]() { m_window.SetShouldClose(true); };
+    auto  closeIcon                     = resourceManager.GetResource<JzTexture>("icons/x.png");
+    auto &closeButton                   = actions.CreateWidget<JzIconButton>(closeIcon->GetRhiTexture());
+    closeButton.idleBackgroundColor     = {0.1333f, 0.1529f, 0.1804f, 1.0f};
+    closeButton.hoveredBackgroundColor  = {211 / 255.0f, 56 / 255.0f, 60 / 255.0f, 1.0f};
+    closeButton.clickedBackgroundColor  = {254 / 255.0f, 95 / 255.0f, 87 / 255.0f, 1.0f};
+    closeButton.buttonSize              = m_buttonSize;
+    closeButton.iconColor               = {1.f, 1.f, 1.f, 1.f};
+    closeButton.hoveredIconColor        = {1.f, 1.f, 1.f, 1.f};
+    closeButton.iconSize                = m_iconSize;
+    closeButton.lineBreak               = true;
+    closeButton.ClickedEvent           += [this]() { m_window.SetShouldClose(true); };
 }
 
 void JzRE::JzREHubMenuBar::_Draw_Impl()
