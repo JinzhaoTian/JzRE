@@ -21,6 +21,7 @@
 #include "JzTexture.h"
 #include "JzTextureFactory.h"
 #include "JzOpenFileDialog.h"
+#include "JzIconButton.h"
 #include "JzGroup.h"
 #include "JzText.h"
 #include "JzInputText.h"
@@ -118,9 +119,12 @@ JzRE::JzREHubMenuBar::JzREHubMenuBar(JzRE::JzWindow &window, JzRE::JzResourceMan
 {
     auto &actions = CreateWidget<JzGroup>(JzEHorizontalAlignment::RIGHT, JzVec2(80.f, 0.f), JzVec2(0.f, 0.f));
 
-    auto &minimizeButton                = actions.CreateWidget<JzButton>("小");
+    auto  minimizeIcon                  = resourceManager.GetResource<JzTexture>("icons/window-minimize.png");
+    auto &minimizeButton                = actions.CreateWidget<JzIconButton>(minimizeIcon->GetRhiTexture());
     minimizeButton.idleBackgroundColor  = {0.1333f, 0.1529f, 0.1804f, 1.0f};
-    minimizeButton.size                 = m_buttonSize;
+    minimizeButton.buttonSize           = m_buttonSize;
+    minimizeButton.iconColor            = {1.f, 1.f, 1.f, 1.f};
+    minimizeButton.iconSize             = m_iconSize;
     minimizeButton.lineBreak            = false;
     minimizeButton.ClickedEvent        += [this]() {
         if (m_window.IsMinimized())
@@ -129,9 +133,12 @@ JzRE::JzREHubMenuBar::JzREHubMenuBar(JzRE::JzWindow &window, JzRE::JzResourceMan
             m_window.Minimize();
     };
 
-    auto &maximizeButton                = actions.CreateWidget<JzButton>("大");
+    auto  maximizeIcon                  = resourceManager.GetResource<JzTexture>("icons/window-maximize.png");
+    auto &maximizeButton                = actions.CreateWidget<JzIconButton>(maximizeIcon->GetRhiTexture());
     maximizeButton.idleBackgroundColor  = {0.1333f, 0.1529f, 0.1804f, 1.0f};
-    maximizeButton.size                 = m_buttonSize;
+    maximizeButton.buttonSize           = m_buttonSize;
+    maximizeButton.iconColor            = {1.f, 1.f, 1.f, 1.f};
+    maximizeButton.iconSize             = m_iconSize;
     maximizeButton.lineBreak            = false;
     maximizeButton.ClickedEvent        += [this]() {
         if (m_window.IsMaximized())
@@ -140,9 +147,12 @@ JzRE::JzREHubMenuBar::JzREHubMenuBar(JzRE::JzWindow &window, JzRE::JzResourceMan
             m_window.Maximize();
     };
 
-    auto &closeButton                = actions.CreateWidget<JzButton>("关");
+    auto  closeIcon                  = resourceManager.GetResource<JzTexture>("icons/x.png");
+    auto &closeButton                = actions.CreateWidget<JzIconButton>(closeIcon->GetRhiTexture());
     closeButton.idleBackgroundColor  = {0.1333f, 0.1529f, 0.1804f, 1.0f};
-    closeButton.size                 = m_buttonSize;
+    closeButton.buttonSize           = m_buttonSize;
+    closeButton.iconColor            = {1.f, 1.f, 1.f, 1.f};
+    closeButton.iconSize             = m_iconSize;
     closeButton.lineBreak            = true;
     closeButton.ClickedEvent        += [this]() { m_window.SetShouldClose(true); };
 }
