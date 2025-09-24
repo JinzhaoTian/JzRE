@@ -15,6 +15,11 @@ namespace JzRE {
 class JzResourceFactory {
 public:
     /**
+     * @brief Destructor
+     */
+    virtual ~JzResourceFactory() = default;
+
+    /**
      * @brief create a resource method
      *
      * @param name
