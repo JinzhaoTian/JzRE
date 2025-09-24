@@ -40,11 +40,13 @@ public:
     JzEvent<> ClickedEvent;
 
 public:
-    std::shared_ptr<JzRHITexture> m_texture;
     Bool   disabled = false;
     JzVec2 size;
     JzVec4 backgroundColor;
     JzVec4 textureColor;
+
+private:
+    std::shared_ptr<JzRHITexture> m_texture;
 };
 
 } // namespace JzRE
