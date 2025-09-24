@@ -120,7 +120,7 @@ JzRE::JzREHubMenuBar::JzREHubMenuBar(JzRE::JzWindow &window, JzRE::JzResourceMan
     auto &actions = CreateWidget<JzGroup>(JzEHorizontalAlignment::RIGHT, JzVec2(80.f, 0.f), JzVec2(0.f, 0.f));
 
     auto  minimizeIcon           = resourceManager.GetResource<JzTexture>("icons/window-minimize.png");
-    auto &minimizeButton         = actions.CreateWidget<JzImageButton>(minimizeIcon->GetRhiTexture(), m_buttonSize);
+    auto &minimizeButton         = actions.CreateWidget<JzImageButton>(minimizeIcon->GetRhiTexture(), m_iconSize);
     minimizeButton.size          = m_buttonSize;
     minimizeButton.lineBreak     = false;
     minimizeButton.ClickedEvent += [this]() {
