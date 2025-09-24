@@ -4,6 +4,7 @@
  */
 
 #include "JzContext.h"
+#include "JzServiceContainer.h"
 #include "JzRHIFactory.h"
 #include "JzSceneManager.h"
 
@@ -30,11 +31,11 @@ JzRE::Bool JzRE::JzContext::Initialize(JzERHIType rhiType, std::filesystem::path
 
     m_commandQueue = std::make_unique<JzRHICommandQueue>();
 
-    m_sceneManager = std::make_unique<JzRE::JzSceneManager>();
+    m_sceneManager = std::make_unique<JzSceneManager>();
 
-    m_inputManager = std::make_unique<JzRE::JzInputManager>(*m_window);
+    m_inputManager = std::make_unique<JzInputManager>(*m_window);
 
-    m_uiManager = std::make_unique<JzRE::JzUIManager>(*m_window);
+    m_uiManager = std::make_unique<JzUIManager>(*m_window);
 
     const auto layoutConfigPath = std::filesystem::current_path() / "config" / "layout.ini";
     m_uiManager->ResetLayout(layoutConfigPath.string());
@@ -47,6 +48,9 @@ JzRE::Bool JzRE::JzContext::Initialize(JzERHIType rhiType, std::filesystem::path
     m_uiManager->LoadFont("sourcehansanscn-regular-14", fontPath.string(), 14);
     m_uiManager->UseFont("sourcehansanscn-regular-16");
     m_uiManager->SetDocking(true);
+
+    JzServiceContainer::Provide<JzRHIDevice>(*m_device);
+    JzServiceContainer::Provide<JzInputManager>(*m_inputManager);
 
     return true;
 }

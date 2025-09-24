@@ -20,22 +20,12 @@
 namespace JzRE {
 
 /**
- * @brief JzRE Macro Definitions
- */
-#define JzRE_CONTEXT() \
-    JzContext::GetInstance()
-#define JzRE_DEVICE() \
-    JzContext::GetInstance().GetDevice()
-#define JzRE_DEVICE_TYPE() \
-    JzContext::GetInstance().GetRHIType()
-
-/**
  * @brief Context of JzRE
  */
 class JzContext {
 public:
     /**
-     * @brief Get single instance Context
+     * @brief Get singleton instance Context
      *
      * @return JzContext&
      */

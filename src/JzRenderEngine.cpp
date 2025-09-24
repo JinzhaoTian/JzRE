@@ -10,7 +10,7 @@
 
 JzRE::JzRenderEngine::JzRenderEngine(JzERHIType rhiType, std::filesystem::path &openDirectory)
 {
-    auto &context = JzRE_CONTEXT();
+    auto &context = JzContext::GetInstance();
     if (!context.IsInitialized()) {
         context.Initialize(rhiType, openDirectory);
     }
@@ -40,5 +40,5 @@ void JzRE::JzRenderEngine::Run()
 
 JzRE::Bool JzRE::JzRenderEngine::IsRunning() const
 {
-    return !JzRE_CONTEXT().GetWindow().ShouldClose();
+    return !JzContext::GetInstance().GetWindow().ShouldClose();
 }

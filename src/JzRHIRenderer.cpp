@@ -5,6 +5,8 @@
 
 #include "JzRHIRenderer.h"
 #include "JzContext.h"
+#include "JzRHIDevice.h"
+#include "JzServiceContainer.h"
 
 JzRE::JzRHIRenderer::JzRHIRenderer() { }
 
@@ -51,19 +53,19 @@ JzRE::Bool JzRE::JzRHIRenderer::IsUsingCommandList() const
 
 void JzRE::JzRHIRenderer::SetThreadCount(JzRE::U32 threadCount)
 {
-    auto &queue = JzRE_CONTEXT().GetCommandQueue();
+    auto &queue = JzContext::GetInstance().GetCommandQueue();
     queue.SetThreadCount(threadCount);
 }
 
 JzRE::U32 JzRE::JzRHIRenderer::GetThreadCount() const
 {
-    auto &queue = JzRE_CONTEXT().GetCommandQueue();
+    auto &queue = JzContext::GetInstance().GetCommandQueue();
     return queue.GetThreadCount();
 }
 
 JzRE::Bool JzRE::JzRHIRenderer::CreateFramebuffer()
 {
-    auto &device = JzRE_DEVICE();
+    auto &device = JzServiceContainer::Get<JzRHIDevice>();
 
     // create default framebuffer
     m_framebuffer = device.CreateFramebuffer("RendererDefaultFB");
@@ -104,7 +106,7 @@ JzRE::Bool JzRE::JzRHIRenderer::CreateFramebuffer()
 
 JzRE::Bool JzRE::JzRHIRenderer::CreateDefaultPipeline()
 {
-    auto &device = JzRE_DEVICE();
+    auto &device = JzServiceContainer::Get<JzRHIDevice>();
 
     const char *vsSrc = R"(
         #version 330 core
@@ -183,7 +185,7 @@ void JzRE::JzRHIRenderer::RenderImmediate(std::shared_ptr<JzRE::JzScene> scene)
         return;
     }
 
-    auto &device = JzRE_DEVICE();
+    auto &device = JzServiceContainer::Get<JzRHIDevice>();
 
     // bind frame buffer
     device.BindFramebuffer(m_framebuffer);
@@ -234,7 +236,7 @@ void JzRE::JzRHIRenderer::RenderWithCommandList(std::shared_ptr<JzRE::JzScene> s
         return;
     }
 
-    auto &device = JzRE_DEVICE();
+    auto &device = JzServiceContainer::Get<JzRHIDevice>();
 
     auto cmd = device.CreateCommandList("RendererCmdList");
     if (!cmd) {
@@ -282,7 +284,7 @@ void JzRE::JzRHIRenderer::RenderWithCommandList(std::shared_ptr<JzRE::JzScene> s
 
 void JzRE::JzRHIRenderer::SetupViewport()
 {
-    auto &device = JzRE_DEVICE();
+    auto &device = JzServiceContainer::Get<JzRHIDevice>();
 
     if (m_colorTexture) {
         JzViewport vp{};
@@ -298,7 +300,7 @@ void JzRE::JzRHIRenderer::SetupViewport()
 
 void JzRE::JzRHIRenderer::ClearBuffers()
 {
-    auto &device = JzRE_DEVICE();
+    auto &device = JzServiceContainer::Get<JzRHIDevice>();
 
     JzClearParams clearParams{};
     clearParams.clearColor   = true;
@@ -344,19 +346,19 @@ JzRE::Bool JzRE::JzRHIRenderer::Initialize()
 
 void JzRE::JzRHIRenderer::BeginFrame()
 {
-    auto &device = JzRE_DEVICE();
+    auto &device = JzServiceContainer::Get<JzRHIDevice>();
     device.BeginFrame();
 }
 
 void JzRE::JzRHIRenderer::EndFrame()
 {
-    auto &device = JzRE_DEVICE();
+    auto &device = JzServiceContainer::Get<JzRHIDevice>();
     device.EndFrame();
 }
 
 void JzRE::JzRHIRenderer::BindFramebuffer(std::shared_ptr<JzRE::JzRHIFramebuffer> framebuffer)
 {
-    auto &device = JzRE_DEVICE();
+    auto &device = JzServiceContainer::Get<JzRHIDevice>();
 
     if (framebuffer) {
         device.BindFramebuffer(framebuffer);
@@ -367,7 +369,7 @@ void JzRE::JzRHIRenderer::BindFramebuffer(std::shared_ptr<JzRE::JzRHIFramebuffer
 
 void JzRE::JzRHIRenderer::SetRenderState(const JzRE::JzRenderState &state)
 {
-    auto &device = JzRE_DEVICE();
+    auto &device = JzServiceContainer::Get<JzRHIDevice>();
     device.SetRenderState(state);
 }
 

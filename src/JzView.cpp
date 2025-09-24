@@ -85,7 +85,7 @@ JzRE::JzCamera *JzRE::JzView::GetCamera()
 
 JzRE::JzScene *JzRE::JzView::GetScene()
 {
-    return JzRE_CONTEXT().GetSceneManager().GetCurrentScene();
+    return JzContext::GetInstance().GetSceneManager().GetCurrentScene();
 }
 
 void JzRE::JzView::ResetCameraTransform()

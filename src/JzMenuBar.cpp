@@ -30,11 +30,11 @@ JzRE::JzMenuBar::JzMenuBar()
 
 void JzRE::JzMenuBar::HandleShortcuts(F32 deltaTime)
 {
-    auto &inputMgr = JzRE_CONTEXT().GetInputManager();
+    auto &inputMgr = JzContext::GetInstance().GetInputManager();
 
     if (inputMgr.GetKeyState(JzEInputKey::KEY_LEFT_CONTROL) == JzEInputKeyState::KEY_DOWN) {
         if (inputMgr.IsKeyPressed(JzEInputKey::KEY_N)) {
-            auto &sceneMgr = JzRE_CONTEXT().GetSceneManager();
+            auto &sceneMgr = JzContext::GetInstance().GetSceneManager();
             sceneMgr.LoadDefaultScene();
         }
 
@@ -119,7 +119,7 @@ void JzRE::JzMenuBar::CreateFileMenu()
     fileMenu.CreateWidget<JzSeparator>();
 
     auto &exitMenu         = fileMenu.CreateWidget<JzMenuItem>("Exit", "ALT + F4");
-    exitMenu.ClickedEvent += [] { JzRE_CONTEXT().GetWindow().SetShouldClose(true); };
+    exitMenu.ClickedEvent += [] { JzContext::GetInstance().GetWindow().SetShouldClose(true); };
 }
 
 void JzRE::JzMenuBar::CreateBuildMenu()

@@ -6,7 +6,7 @@
 #include "JzShader.h"
 #include <fstream>
 #include <sstream>
-#include "JzContext.h"
+#include "JzServiceContainer.h"
 #include "JzRHIDevice.h"
 #include "JzRHIDescription.h"
 
@@ -43,7 +43,7 @@ JzRE::Bool JzRE::JzShader::Load()
         return false;
     }
 
-    auto        &device = JzRE_DEVICE();
+    auto        &device = JzServiceContainer::Get<JzRHIDevice>();
     JzShaderDesc shaderDesc;
     shaderDesc.type      = m_type;
     shaderDesc.source    = source;

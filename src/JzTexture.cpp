@@ -6,7 +6,7 @@
 #include "JzTexture.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
-#include "JzContext.h"
+#include "JzServiceContainer.h"
 #include "JzRHIDevice.h"
 #include "JzRHIDescription.h"
 
@@ -44,7 +44,7 @@ JzRE::Bool JzRE::JzTexture::Load()
         return false;
     }
 
-    auto &device = JzRE_DEVICE();
+    auto &device = JzServiceContainer::Get<JzRHIDevice>();
 
     JzTextureDesc textureDesc;
     textureDesc.width     = width;

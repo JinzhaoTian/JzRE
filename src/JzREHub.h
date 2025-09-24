@@ -79,7 +79,7 @@ private:
 private:
     JzWindow          &m_window;
     JzResourceManager &m_resourceManager;
-    JzVec2             m_buttonSize = {30.0f, 0.0f};
+    JzVec2             m_buttonSize = {30.0f, 12.0f};
     Bool               m_isDragging = false;
     JzIVec2            m_dragStartMousePos;
     JzIVec2            m_dragStartWindowPos;

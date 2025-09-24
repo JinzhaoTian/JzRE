@@ -14,6 +14,8 @@
 #include <unistd.h>
 #endif
 #include <nlohmann/json.hpp>
+#include "JzServiceContainer.h"
+#include "JzRHIDevice.h"
 #include "JzLogger.h"
 #include "JzRHIFactory.h"
 #include "JzTexture.h"
@@ -42,11 +44,13 @@ JzRE::JzREHub::JzREHub(JzERHIType rhiType)
     m_window->MakeCurrentContext();
     m_window->SetAlignCentered();
 
+    m_device = JzRHIFactory::CreateDevice(rhiType);
+    JzServiceContainer::Provide<JzRHIDevice>(*m_device);
+
     m_resourceManager = std::make_unique<JzResourceManager>();
     m_resourceManager->RegisterFactory<JzTexture>(std::make_unique<JzTextureFactory>());
     m_resourceManager->AddSearchPath("./icons");
-
-    m_device = JzRHIFactory::CreateDevice(rhiType);
+    JzServiceContainer::Provide<JzResourceManager>(*m_resourceManager);
 
     m_uiManager = std::make_unique<JzUIManager>(*m_window);
 
@@ -81,12 +85,12 @@ JzRE::JzREHub::~JzREHub()
         m_uiManager.reset();
     }
 
-    if (m_device) {
-        m_device.reset();
-    }
-
     if (m_resourceManager) {
         m_resourceManager.reset();
+    }
+
+    if (m_device) {
+        m_device.reset();
     }
 
     if (m_window) {
