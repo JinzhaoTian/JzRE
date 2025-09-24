@@ -44,11 +44,11 @@ public:
     virtual void GenerateMipmaps() = 0;
 
     /**
-     * @brief Get the handle of the texture
+     * @brief Get the native texture ID for rendering
      *
-     * @return The handle of the texture (implementation-specific)
+     * @return The native texture ID
      */
-    virtual U32 GetHandle() const = 0;
+    virtual void *GetTextureID() const = 0;
 
     /**
      * @brief Get the type of the texture

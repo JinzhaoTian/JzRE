@@ -47,7 +47,7 @@ void JzRE::JzView::Render()
         if (m_image) {
             auto currentTexture = m_renderer->GetCurrentTexture();
             m_image->size       = JzVec2(static_cast<F32>(winSize.x()), static_cast<F32>(winSize.y()));
-            m_image->textureId  = currentTexture->GetHandle();
+            m_image->textureId  = (GLuint)(uintptr_t)currentTexture->GetTextureID();
         }
     }
 }
@@ -85,7 +85,7 @@ JzRE::JzCamera *JzRE::JzView::GetCamera()
 
 JzRE::JzScene *JzRE::JzView::GetScene()
 {
-    return JzRE_CONTEXT().GetSceneManager().GetCurrentScene();
+    return JzContext::GetInstance().GetSceneManager().GetCurrentScene();
 }
 
 void JzRE::JzView::ResetCameraTransform()

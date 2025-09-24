@@ -5,93 +5,97 @@
 
 #pragma once
 
-#include <memory>
-#include <map>
-#include <assimp/Importer.hpp>
-#include <assimp/postprocess.h>
 #include <assimp/scene.h>
-#include "JzRETypes.h"
+#include "JzResource.h"
 #include "JzMesh.h"
-#include "JzRHIPipeline.h"
-#include "JzRHITexture.h"
+#include "JzMaterial.h"
 
 namespace JzRE {
+
 /**
- * @brief Model class - Platform-independent model using RHI
+ * @brief A composite resource representing a model file (e.g., .gltf, .fbx).
+ *        It contains the node hierarchy and references to all meshes and materials
+ *        loaded from the file.
  */
-class JzModel {
+class JzModel : public JzResource {
 public:
     /**
-     * @brief Constructor
-     *
-     * @param path The path to the model
-     * @param gamma The gamma correction
+     * @brief Node structure mirroring the model file's scene graph.
      */
-    JzModel(const String &path, Bool gamma = false);
+    struct Node {
+        String           name;
+        JzMat4           transform;
+        std::vector<U32> meshIndices;
+        std::vector<U32> childrenIndices;
+    };
 
     /**
-     * @brief Constructor for programmatically created models
+     * @brief Constructor.
      *
-     * @param meshes The meshes to add to the model
+     * @param path The file path to the model.
      */
-    JzModel(std::vector<JzMesh> meshes);
+    JzModel(const String &path);
 
     /**
-     * @brief Destructor
+     * @brief Destructor.
      */
-    ~JzModel();
+    virtual ~JzModel();
 
     /**
-     * @brief Draw the model using RHI
+     * @brief Loads the model file and all its sub-resources.
      *
-     * @param pipeline The pipeline to use for rendering
+     * @return Bool True if successful.
      */
-    void Draw(std::shared_ptr<JzRHIPipeline> pipeline);
+    virtual Bool Load() override;
 
     /**
-     * @brief Get all meshes in this model
-     *
-     * @return Reference to mesh vector
+     * @brief Unloads the model and its sub-resources.
      */
-    const std::vector<JzMesh> &GetMeshes() const
+    virtual void Unload() override;
+
+    /**
+     * @brief Get the Nodes object
+     *
+     * @return const std::vector<Node>&
+     */
+    const std::vector<Node> &GetNodes() const
     {
-        return meshes;
+        return m_nodes;
     }
 
     /**
-     * @brief Get the directory path of the model
+     * @brief Get the Meshes object
      *
-     * @return The directory path
+     * @return const std::vector<std::shared_ptr<JzMesh>>&
      */
-    const String &GetDirectory() const
+    const std::vector<std::shared_ptr<JzMesh>> &GetMeshes() const
     {
-        return directory;
+        return m_meshes;
     }
 
     /**
-     * @brief Check if gamma correction is enabled
+     * @brief Get the Materials object
      *
-     * @return True if gamma correction is enabled
+     * @return const std::vector<std::shared_ptr<JzMaterial>>&
      */
-    Bool IsGammaCorrectionEnabled() const
+    const std::vector<std::shared_ptr<JzMaterial>> &GetMaterials() const
     {
-        return gammaCorrection;
+        return m_materials;
     }
 
 private:
-    void                                       LoadModel(const String &path);
-    void                                       ProcessNode(aiNode *node, const aiScene *scene);
-    JzMesh                                     ProcessMesh(aiMesh *mesh, const aiScene *scene);
-    std::vector<std::shared_ptr<JzRHITexture>> LoadMaterialTextures(aiMaterial *mat, aiTextureType type, String typeName);
-    std::shared_ptr<JzRHITexture>              LoadTexture(const String &path, const String &typeName);
-
-public:
-    std::vector<JzMesh> meshes;
-    String              directory;
-    Bool                gammaCorrection;
+    void                        ProcessNode(aiNode *node, const aiScene *scene);
+    std::shared_ptr<JzMesh>     ProcessMesh(aiMesh *mesh, const aiScene *scene);
+    std::shared_ptr<JzMaterial> ProcessMaterial(aiMaterial *mat, const aiScene *scene);
+    // Placeholder for texture loading logic
+    // std::shared_ptr<JzTexture> LoadTexture(const std::string& path);
 
 private:
-    // Cache for loaded textures to avoid duplicates
-    std::map<String, std::shared_ptr<JzRHITexture>> m_loadedTextures;
+    String                                   m_path;
+    String                                   m_directory;
+    std::vector<Node>                        m_nodes;
+    std::vector<std::shared_ptr<JzMesh>>     m_meshes;
+    std::vector<std::shared_ptr<JzMaterial>> m_materials;
 };
+
 } // namespace JzRE

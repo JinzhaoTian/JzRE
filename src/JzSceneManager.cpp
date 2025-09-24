@@ -44,8 +44,8 @@ void JzRE::JzSceneManager::LoadDefaultScene()
 
 void JzRE::JzSceneManager::LoadScene(const String &scenePath)
 {
-    auto model = std::make_shared<JzModel>(scenePath, false);
-    m_currentScene->AddModel(model);
+    // auto model = std::make_shared<JzModel>(scenePath, false);
+    // m_currentScene->AddModel(model);
 }
 
 void JzRE::JzSceneManager::UnloadCurrentScene()

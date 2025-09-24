@@ -5,46 +5,58 @@
 
 #pragma once
 
-#include <memory>
-#include "JzRETypes.h"
-#include "JzRHIBuffer.h"
-#include "JzRHIPipeline.h"
-#include "JzRHITexture.h"
-#include "JzRHIVertexArray.h"
+#include <vector>
+#include "JzResource.h"
 #include "JzVertex.h"
+#include "JzRHIBuffer.h"
+#include "JzRHIVertexArray.h"
 
 namespace JzRE {
+
+class JzRHIDevice; // Forward declaration
+
 /**
- * @brief Mesh class - Platform-independent mesh using RHI
+ * @brief Represents a mesh asset, containing vertex and index data.
+ *        It manages both CPU data and its corresponding GPU (RHI) resource.
  */
-class JzMesh {
+class JzMesh : public JzResource {
 public:
     /**
-     * @brief Constructor
+     * @brief Constructor for file-based meshes.
+     *
+     * @param path File path to the mesh.
      */
-    JzMesh(std::vector<JzVertex> vertices, std::vector<U32> indices, std::vector<std::shared_ptr<JzRHITexture>> textures);
+    JzMesh(const String &path);
+
+    /**
+     * @brief Constructor for procedural meshes.
+     *
+     * @param vertices Vector of vertices.
+     * @param indices Vector of indices.
+     */
+    JzMesh(std::vector<JzVertex> vertices, std::vector<U32> indices);
 
     /**
      * @brief Destructor
      */
-    ~JzMesh();
+    virtual ~JzMesh();
 
     /**
-     * @brief Draw the mesh using RHI
+     * @brief Load a resource. For meshes, this is used to create GPU resources.
      *
-     * @param pipeline The pipeline to use for rendering
+     * @return Bool True if successful.
      */
-    void Draw(std::shared_ptr<JzRHIPipeline> pipeline);
+    virtual Bool Load() override;
 
     /**
-     * @brief Setup mesh for rendering (create RHI resources)
+     * @brief Unload a resource. Releases GPU resources and clears CPU data.
      */
-    void SetupMesh();
+    virtual void Unload() override;
 
     /**
-     * @brief Get the vertex array object
+     * @brief Get the Vertex Array RHI Resource.
      *
-     * @return The vertex array
+     * @return std::shared_ptr<JzRHIVertexArray>
      */
     std::shared_ptr<JzRHIVertexArray> GetVertexArray() const
     {
@@ -52,25 +64,30 @@ public:
     }
 
     /**
-     * @brief Get the number of indices
+     * @brief Get the number of indices in the mesh.
      *
-     * @return The index count
+     * @return U32
      */
     U32 GetIndexCount() const
     {
-        return static_cast<U32>(indices.size());
+        return static_cast<U32>(m_indices.size());
     }
 
-public:
-    std::vector<JzVertex>                      vertices;
-    std::vector<U32>                           indices;
-    std::vector<std::shared_ptr<JzRHITexture>> textures;
+private:
+    /**
+     * @brief Creates RHI resources (buffers and vertex array) for the mesh.
+     */
+    void SetupMesh();
 
 private:
-    std::shared_ptr<JzRHIVertexArray> m_vertexArray;
+    // CPU-side data
+    std::vector<JzVertex> m_vertices;
+    std::vector<U32>      m_indices;
+
+    // GPU-side RHI resources
     std::shared_ptr<JzRHIBuffer>      m_vertexBuffer;
     std::shared_ptr<JzRHIBuffer>      m_indexBuffer;
-    Bool                              m_isSetup = false;
+    std::shared_ptr<JzRHIVertexArray> m_vertexArray;
 };
 
 } // namespace JzRE

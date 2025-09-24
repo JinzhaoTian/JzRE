@@ -16,7 +16,7 @@ void JzRE::JzSceneView::Update(JzRE::F32 deltaTime)
 {
     JzView::Update(deltaTime);
 
-    auto &inputManager = JzRE_CONTEXT().GetInputManager();
+    auto &inputManager = JzContext::GetInstance().GetInputManager();
     if (IsFocused() && !m_cameraController.IsRightMousePressed()) {
         if (inputManager.IsKeyPressed(JzEInputKey::KEY_W)) {
             SetGizmoOperation(JzEGizmoOperation::TRANSLATE);
@@ -45,7 +45,7 @@ JzRE::JzEGizmoOperation JzRE::JzSceneView::GetGizmoOperation() const
 
 void JzRE::JzSceneView::HandleActorPicking()
 {
-    auto &inputManager = JzRE_CONTEXT().GetInputManager();
+    auto &inputManager = JzContext::GetInstance().GetInputManager();
     if (inputManager.IsMouseButtonReleased(JzEInputMouseButton::MOUSE_BUTTON_LEFT)) {
         // m_gizmoOperations.StopPicking();
     }

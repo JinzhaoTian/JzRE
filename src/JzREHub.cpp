@@ -14,9 +14,14 @@
 #include <unistd.h>
 #endif
 #include <nlohmann/json.hpp>
+#include "JzServiceContainer.h"
+#include "JzRHIDevice.h"
 #include "JzLogger.h"
 #include "JzRHIFactory.h"
+#include "JzTexture.h"
+#include "JzTextureFactory.h"
 #include "JzOpenFileDialog.h"
+#include "JzIconButton.h"
 #include "JzGroup.h"
 #include "JzText.h"
 #include "JzInputText.h"
@@ -40,6 +45,12 @@ JzRE::JzREHub::JzREHub(JzERHIType rhiType)
     m_window->SetAlignCentered();
 
     m_device = JzRHIFactory::CreateDevice(rhiType);
+    JzServiceContainer::Provide<JzRHIDevice>(*m_device);
+
+    m_resourceManager = std::make_unique<JzResourceManager>();
+    m_resourceManager->RegisterFactory<JzTexture>(std::make_unique<JzTextureFactory>());
+    m_resourceManager->AddSearchPath("./icons");
+    JzServiceContainer::Provide<JzResourceManager>(*m_resourceManager);
 
     m_uiManager = std::make_unique<JzUIManager>(*m_window);
 
@@ -51,7 +62,7 @@ JzRE::JzREHub::JzREHub(JzERHIType rhiType)
 
     m_canvas = std::make_unique<JzCanvas>();
 
-    m_menuBar = std::make_unique<JzREHubMenuBar>(*m_window);
+    m_menuBar = std::make_unique<JzREHubMenuBar>(*m_window, *m_resourceManager);
     m_canvas->AddPanel(*m_menuBar);
 
     m_hubPanel = std::make_unique<JzREHubPanel>();
@@ -72,6 +83,10 @@ JzRE::JzREHub::~JzREHub()
 
     if (m_uiManager) {
         m_uiManager.reset();
+    }
+
+    if (m_resourceManager) {
+        m_resourceManager.reset();
     }
 
     if (m_device) {
@@ -98,14 +113,18 @@ std::optional<std::filesystem::path> JzRE::JzREHub::Run()
     return m_hubPanel->GetResult();
 }
 
-JzRE::JzREHubMenuBar::JzREHubMenuBar(JzRE::JzWindow &window) :
-    m_window(window)
+JzRE::JzREHubMenuBar::JzREHubMenuBar(JzRE::JzWindow &window, JzRE::JzResourceManager &resourceManager) :
+    m_window(window),
+    m_resourceManager(resourceManager)
 {
     auto &actions = CreateWidget<JzGroup>(JzEHorizontalAlignment::RIGHT, JzVec2(80.f, 0.f), JzVec2(0.f, 0.f));
 
-    auto &minimizeButton                = actions.CreateWidget<JzButton>("小");
+    auto  minimizeIcon                  = resourceManager.GetResource<JzTexture>("icons/window-minimize.png");
+    auto &minimizeButton                = actions.CreateWidget<JzIconButton>(minimizeIcon->GetRhiTexture());
     minimizeButton.idleBackgroundColor  = {0.1333f, 0.1529f, 0.1804f, 1.0f};
-    minimizeButton.size                 = m_buttonSize;
+    minimizeButton.buttonSize           = m_buttonSize;
+    minimizeButton.iconColor            = {1.f, 1.f, 1.f, 1.f};
+    minimizeButton.iconSize             = m_iconSize;
     minimizeButton.lineBreak            = false;
     minimizeButton.ClickedEvent        += [this]() {
         if (m_window.IsMinimized())
@@ -114,9 +133,12 @@ JzRE::JzREHubMenuBar::JzREHubMenuBar(JzRE::JzWindow &window) :
             m_window.Minimize();
     };
 
-    auto &maximizeButton                = actions.CreateWidget<JzButton>("大");
+    auto  maximizeIcon                  = resourceManager.GetResource<JzTexture>("icons/window-maximize.png");
+    auto &maximizeButton                = actions.CreateWidget<JzIconButton>(maximizeIcon->GetRhiTexture());
     maximizeButton.idleBackgroundColor  = {0.1333f, 0.1529f, 0.1804f, 1.0f};
-    maximizeButton.size                 = m_buttonSize;
+    maximizeButton.buttonSize           = m_buttonSize;
+    maximizeButton.iconColor            = {1.f, 1.f, 1.f, 1.f};
+    maximizeButton.iconSize             = m_iconSize;
     maximizeButton.lineBreak            = false;
     maximizeButton.ClickedEvent        += [this]() {
         if (m_window.IsMaximized())
@@ -125,9 +147,12 @@ JzRE::JzREHubMenuBar::JzREHubMenuBar(JzRE::JzWindow &window) :
             m_window.Maximize();
     };
 
-    auto &closeButton                = actions.CreateWidget<JzButton>("关");
+    auto  closeIcon                  = resourceManager.GetResource<JzTexture>("icons/x.png");
+    auto &closeButton                = actions.CreateWidget<JzIconButton>(closeIcon->GetRhiTexture());
     closeButton.idleBackgroundColor  = {0.1333f, 0.1529f, 0.1804f, 1.0f};
-    closeButton.size                 = m_buttonSize;
+    closeButton.buttonSize           = m_buttonSize;
+    closeButton.iconColor            = {1.f, 1.f, 1.f, 1.f};
+    closeButton.iconSize             = m_iconSize;
     closeButton.lineBreak            = true;
     closeButton.ClickedEvent        += [this]() { m_window.SetShouldClose(true); };
 }

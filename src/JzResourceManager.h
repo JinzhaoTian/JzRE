@@ -21,7 +21,13 @@ namespace JzRE {
  */
 class JzResourceManager {
 public:
-    // Registers a factory for a given resource type T
+    /**
+     * @brief Registers a factory for a given resource type T
+     *
+     * @tparam T
+     *
+     * @param factory
+     */
     template <typename T>
     void RegisterFactory(std::unique_ptr<JzResourceFactory> factory);
 
@@ -29,7 +35,9 @@ public:
      * @brief Get the Resource object
      *
      * @tparam T
+     *
      * @param name
+     *
      * @return std::shared_ptr<T>
      */
     template <typename T>
@@ -50,20 +58,21 @@ public:
      *
      * @param path
      */
-    void AddSearchPath(const std::string &path);
+    void AddSearchPath(const String &path);
 
     /**
      * @brief Find full path
      *
      * @param relativePath
+     *
      * @return String
      */
     String FindFullPath(const String &relativePath);
 
 private:
     std::unordered_map<std::type_index, std::unique_ptr<JzResourceFactory>> m_factories;
-    std::unordered_map<std::string, std::weak_ptr<JzResource>>              m_resourceCache;
-    std::vector<std::string>                                                m_searchPaths;
+    std::unordered_map<String, std::weak_ptr<JzResource>>                   m_resourceCache;
+    std::vector<String>                                                     m_searchPaths;
     std::mutex                                                              m_cacheMutex;
 
     // TODO: Add async loading members (queue, threads, etc.)

@@ -4,7 +4,8 @@
  */
 
 #include "JzRHICommand.h"
-#include "JzContext.h"
+#include "JzRHIDevice.h"
+#include "JzServiceContainer.h"
 
 JzRE::JzRHIClearCommand::JzRHIClearCommand(const JzClearParams &params) :
     JzRHICommand(JzRHIECommandType::Clear),
@@ -12,7 +13,7 @@ JzRE::JzRHIClearCommand::JzRHIClearCommand(const JzClearParams &params) :
 
 void JzRE::JzRHIClearCommand::Execute()
 {
-    auto &device = JzRE_DEVICE();
+    auto &device = JzServiceContainer::Get<JzRHIDevice>();
     device.Clear(m_params);
 }
 
@@ -22,7 +23,7 @@ JzRE::JzRHIDrawCommand::JzRHIDrawCommand(const JzRE::JzDrawParams &params) :
 
 void JzRE::JzRHIDrawCommand::Execute()
 {
-    auto &device = JzRE_DEVICE();
+    auto &device = JzServiceContainer::Get<JzRHIDevice>();
     device.Draw(m_params);
 }
 
@@ -32,7 +33,7 @@ JzRE::JzRHIDrawIndexedCommand::JzRHIDrawIndexedCommand(const JzRE::JzDrawIndexed
 
 void JzRE::JzRHIDrawIndexedCommand::Execute()
 {
-    auto &device = JzRE_DEVICE();
+    auto &device = JzServiceContainer::Get<JzRHIDevice>();
     device.DrawIndexed(m_params);
 }
 
@@ -42,7 +43,7 @@ JzRE::JzRHIBindPipelineCommand::JzRHIBindPipelineCommand(std::shared_ptr<JzRE::J
 
 void JzRE::JzRHIBindPipelineCommand::Execute()
 {
-    auto &device = JzRE_DEVICE();
+    auto &device = JzServiceContainer::Get<JzRHIDevice>();
     device.BindPipeline(m_pipeline);
 }
 
@@ -52,7 +53,7 @@ JzRE::JzRHIBindVertexArrayCommand::JzRHIBindVertexArrayCommand(std::shared_ptr<J
 
 void JzRE::JzRHIBindVertexArrayCommand::Execute()
 {
-    auto &device = JzRE_DEVICE();
+    auto &device = JzServiceContainer::Get<JzRHIDevice>();
     device.BindVertexArray(m_vertexArray);
 }
 
@@ -63,7 +64,7 @@ JzRE::JzRHIBindTextureCommand::JzRHIBindTextureCommand(std::shared_ptr<JzRE::JzR
 
 void JzRE::JzRHIBindTextureCommand::Execute()
 {
-    auto &device = JzRE_DEVICE();
+    auto &device = JzServiceContainer::Get<JzRHIDevice>();
     device.BindTexture(m_texture, m_slot);
 }
 
@@ -73,7 +74,7 @@ JzRE::JzRHISetViewportCommand::JzRHISetViewportCommand(const JzRE::JzViewport &v
 
 void JzRE::JzRHISetViewportCommand::Execute()
 {
-    auto &device = JzRE_DEVICE();
+    auto &device = JzServiceContainer::Get<JzRHIDevice>();
     device.SetViewport(m_viewport);
 }
 
@@ -83,7 +84,7 @@ JzRE::JzRHISetScissorCommand::JzRHISetScissorCommand(const JzRE::JzScissorRect &
 
 void JzRE::JzRHISetScissorCommand::Execute()
 {
-    auto &device = JzRE_DEVICE();
+    auto &device = JzServiceContainer::Get<JzRHIDevice>();
     device.SetScissor(m_scissorRect);
 }
 

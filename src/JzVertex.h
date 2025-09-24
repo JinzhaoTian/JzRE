@@ -5,22 +5,24 @@
 
 #pragma once
 
-#include "JzRETypes.h"
 #include "JzVector.h"
+#include "JzMatrix.h"
 
 namespace JzRE {
+
 /**
- * @brief Vertex class
+ * @brief Represents a vertex in a mesh, containing graphical attributes.
  */
-class JzVertex {
-public:
-    JzVec3 Position;   // The vertex's Position
-    JzVec3 Normal;     // The vertex's Normal
-    JzVec2 TexCoords;  // The vertex's Texture coordinates
-    JzVec3 Tangent;    // The vertex's Tangent
-    JzVec3 Bitangent;  // The vertex's Bitangent
-    I32    BoneIDs[4]; // The vertex's Bone IDs
-    F32    Weights[4]; // The vertex's Weights
+struct JzVertex {
+    JzVec3 Position;
+    JzVec3 Normal;
+    JzVec2 TexCoords;
+    JzVec3 Tangent;
+    JzVec3 Bitangent;
+
+    // Placeholder for skinning/animation data
+    // int BoneIDs[4];
+    // float Weights[4];
 };
 
 } // namespace JzRE

@@ -32,7 +32,7 @@ T &JzEntityManager::GetComponent(JzEntity entity)
 }
 
 template <typename T>
-bool JzEntityManager::HasComponent(JzEntity entity)
+Bool JzEntityManager::HasComponent(JzEntity entity)
 {
     return GetPool<T>()->Has(entity);
 }

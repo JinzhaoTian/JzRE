@@ -12,46 +12,54 @@
 namespace JzRE {
 
 /**
- * @brief Texture resource
+ * @brief Represents a texture asset loaded from an image file.
  */
 class JzTexture : public JzResource {
 public:
     /**
-     * @brief Constructor
+     * @brief Constructor for wrapping an existing RHI texture.
      *
-     * @param name
+     * @param rhiTexture An existing RHI texture resource.
      */
-    JzTexture(const String &name);
+    JzTexture(std::shared_ptr<JzRHITexture> rhiTexture);
 
     /**
-     * @brief Destructor
+     * @brief Constructor.
+     *
+     * @param path The file path to the image.
      */
-    virtual ~JzTexture() = default;
+    JzTexture(const String &path);
 
     /**
-     * @brief Load
+     * @brief Destructor.
+     */
+    virtual ~JzTexture();
+
+    /**
+     * @brief Loads the image from file and creates a GPU texture.
      *
-     * @return Bool
+     * @return Bool True if successful.
      */
     virtual Bool Load() override;
 
     /**
-     * @brief Unload
+     * @brief Unloads the texture, releasing CPU and GPU memory.
      */
     virtual void Unload() override;
 
     /**
-     * @brief Get RHI texture
+     * @brief Get the RHI Texture object.
      *
-     * @return JzRHITexture*
+     * @return std::shared_ptr<JzRHITexture>
      */
-    JzRHITexture *GetRHITexture() const
+    std::shared_ptr<JzRHITexture> GetRhiTexture() const
     {
-        return m_rhiTexture.get();
+        return m_rhiTexture;
     }
 
 private:
-    std::unique_ptr<JzRHITexture> m_rhiTexture;
+    String                        m_path;
+    std::shared_ptr<JzRHITexture> m_rhiTexture;
 };
 
 } // namespace JzRE

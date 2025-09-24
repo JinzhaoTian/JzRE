@@ -7,8 +7,8 @@
 
 #include <vector>
 #include <memory>
-#include "JzSystem.h"
 #include "JzEntityManager.h"
+#include "JzSystem.h"
 
 namespace JzRE {
 
@@ -41,20 +41,14 @@ public:
      */
     JzEntityManager &GetManager()
     {
-        return m_manager;
+        return m_entityManager;
     }
 
 private:
-    JzEntityManager                        m_manager;
+    JzEntityManager                        m_entityManager;
     std::vector<std::shared_ptr<JzSystem>> m_systems;
 };
 
-template <typename T>
-std::shared_ptr<T> JzWorld::RegisterSystem()
-{
-    auto system = std::make_shared<T>();
-    m_systems.push_back(system);
-    return system;
-}
-
 } // namespace JzRE
+
+#include "JzWorld.inl" // IWYU pragma: keep

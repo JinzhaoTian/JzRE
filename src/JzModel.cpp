@@ -4,188 +4,105 @@
  */
 
 #include "JzModel.h"
-#include <iostream>
-#include "JzContext.h"
+#include <assimp/Importer.hpp>
+#include <assimp/postprocess.h>
 
-JzRE::JzModel::JzModel(const JzRE::String &path, JzRE::Bool gamma) :
-    gammaCorrection(gamma)
+JzRE::JzModel::JzModel(const JzRE::String &path) :
+    m_path(path)
 {
-    LoadModel(path);
-}
-
-JzRE::JzModel::JzModel(std::vector<JzRE::JzMesh> meshes) :
-    meshes(std::move(meshes)), gammaCorrection(false)
-{
-    // No need to load from file for programmatically created models
+    m_directory = path.substr(0, path.find_last_of('/'));
+    m_state     = JzEResourceState::Unloaded;
 }
 
 JzRE::JzModel::~JzModel()
 {
-    // RHI resources will be automatically cleaned up by shared_ptr
-    m_loadedTextures.clear();
+    Unload();
 }
 
-void JzRE::JzModel::Draw(std::shared_ptr<JzRE::JzRHIPipeline> pipeline)
+JzRE::Bool JzRE::JzModel::Load()
 {
-    for (auto &mesh : this->meshes) {
-        mesh.Draw(pipeline);
-    }
-}
+    if (m_state == JzEResourceState::Loaded) return true;
+    m_state = JzEResourceState::Loading;
 
-void JzRE::JzModel::LoadModel(const JzRE::String &path)
-{
-    // read file via ASSIMP
     Assimp::Importer importer;
-    const aiScene   *scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
+    const aiScene   *scene = importer.ReadFile(m_path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
 
-    // check for errors
-    if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // if is Not Zero
-    {
-        std::cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << std::endl;
-        return;
+    if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
+        // In a real engine, log: importer.GetErrorString()
+        m_state = JzEResourceState::Error;
+        return false;
     }
-    // retrieve the directory path of the filepath
-    this->directory = path.substr(0, path.find_last_of('/'));
 
-    // process ASSIMP's root node recursively
     ProcessNode(scene->mRootNode, scene);
+
+    m_state = JzEResourceState::Loaded;
+    return true;
 }
 
-// processes a node in a recursive fashion. Processes each individual mesh located at the node and repeats this process on its children nodes (if any).
+void JzRE::JzModel::Unload()
+{
+    m_nodes.clear();
+    m_meshes.clear();
+    m_materials.clear();
+    m_state = JzEResourceState::Unloaded;
+}
+
 void JzRE::JzModel::ProcessNode(aiNode *node, const aiScene *scene)
 {
-    // process each mesh located at the current node
-    for (U32 i = 0; i < node->mNumMeshes; i++) {
-        // the node object only contains indices to index the actual objects in the scene.
-        // the scene contains all the data, node is just to keep stuff organized (like relations between nodes).
+    Node newNode;
+    newNode.name = node->mName.C_Str();
+    // Assimp matrices need to be converted to JzMat4
+    // newNode.transform = ConvertAssimpMatrix(node->mTransformation);
+
+    for (unsigned int i = 0; i < node->mNumMeshes; i++) {
         aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
-        this->meshes.push_back(ProcessMesh(mesh, scene));
+        m_meshes.push_back(ProcessMesh(mesh, scene));
+        newNode.meshIndices.push_back(m_meshes.size() - 1);
     }
 
-    // after we've processed all of the meshes (if any) we then recursively process each of the children nodes
-    for (U32 i = 0; i < node->mNumChildren; i++) {
+    m_nodes.push_back(newNode);
+    uint32_t currentNodeIndex = m_nodes.size() - 1;
+
+    for (unsigned int i = 0; i < node->mNumChildren; i++) {
         ProcessNode(node->mChildren[i], scene);
+        m_nodes[currentNodeIndex].childrenIndices.push_back(m_nodes.size() - 1);
     }
 }
 
-JzRE::JzMesh JzRE::JzModel::ProcessMesh(aiMesh *mesh, const aiScene *scene)
+std::shared_ptr<JzRE::JzMesh> JzRE::JzModel::ProcessMesh(aiMesh *mesh, const aiScene *scene)
 {
-    // data to fill
-    std::vector<JzVertex>                      vertices;
-    std::vector<U32>                           indices;
-    std::vector<std::shared_ptr<JzRHITexture>> textures;
+    std::vector<JzVertex> vertices;
+    std::vector<uint32_t> indices;
 
-    // walk through each of the mesh's vertices
-    for (U32 i = 0; i < mesh->mNumVertices; i++) {
+    for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
         JzVertex vertex;
-
-        // positions
-        vertex.Position = JzVec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z);
-
-        // normals
+        vertex.Position = {mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z};
         if (mesh->HasNormals()) {
-            vertex.Normal = JzVec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);
+            vertex.Normal = {mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z};
         }
-
-        // texture coordinates
-        if (mesh->mTextureCoords[0]) // does the mesh contain texture coordinates?
-        {
-            // a vertex can contain up to 8 different texture coordinates. We thus make the assumption that we won't
-            // use models where a vertex can have multiple texture coordinates so we always take the first set (0).
-            vertex.TexCoords = JzVec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
-            // tangent
-            vertex.Tangent = JzVec3(mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z);
-            // bitangent
-            vertex.Bitangent = JzVec3(mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z);
-        } else {
-            vertex.TexCoords = JzVec2(0.0f, 0.0f);
+        if (mesh->mTextureCoords[0]) {
+            vertex.TexCoords = {mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y};
         }
-
-        vertices.push_back(std::move(vertex));
+        if (mesh->HasTangentsAndBitangents()) {
+            vertex.Tangent   = {mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z};
+            vertex.Bitangent = {mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z};
+        }
+        vertices.push_back(vertex);
     }
 
-    // now wak through each of the mesh's faces (a face is a mesh its triangle) and retrieve the corresponding vertex indices.
-    for (U32 i = 0; i < mesh->mNumFaces; i++) {
+    for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
         aiFace face = mesh->mFaces[i];
-        // retrieve all indices of the face and store them in the indices vector
-        for (U32 j = 0; j < face.mNumIndices; j++)
+        for (unsigned int j = 0; j < face.mNumIndices; j++) {
             indices.push_back(face.mIndices[j]);
-    }
-
-    // process materials
-    aiMaterial *material = scene->mMaterials[mesh->mMaterialIndex];
-    // we assume a convention for sampler names in the shaders. Each diffuse texture should be named
-    // as 'texture_diffuseN' where N is a sequential number ranging from 1 to MAX_SAMPLER_NUMBER.
-    // Same applies to other texture as the following list summarizes:
-    // diffuse: texture_diffuseN
-    // specular: texture_specularN
-    // normal: texture_normalN
-
-    // 1. diffuse maps
-    auto diffuseMaps = LoadMaterialTextures(material, aiTextureType_DIFFUSE, "material.diffuse");
-    textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
-    // 2. specular maps
-    auto specularMaps = LoadMaterialTextures(material, aiTextureType_SPECULAR, "material.specular");
-    textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
-    // 3. normal maps
-    auto normalMaps = LoadMaterialTextures(material, aiTextureType_NORMALS, "material.normal");
-    textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
-    // 4. height maps
-    auto heightMaps = LoadMaterialTextures(material, aiTextureType_HEIGHT, "material.height");
-    textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
-
-    // return a mesh object created from the extracted mesh data
-    return JzMesh(vertices, indices, textures);
-}
-
-std::vector<std::shared_ptr<JzRE::JzRHITexture>> JzRE::JzModel::LoadMaterialTextures(aiMaterial *mat, aiTextureType type, JzRE::String typeName)
-{
-    std::vector<std::shared_ptr<JzRHITexture>> textures;
-    for (U32 i = 0; i < mat->GetTextureCount(type); i++) {
-        aiString str;
-        mat->GetTexture(type, i, &str);
-        String textureName = typeName + "[" + std::to_string(i) + "]";
-        String texturePath = this->directory + '/' + str.C_Str();
-
-        auto texture = LoadTexture(texturePath, textureName);
-        if (texture) {
-            textures.push_back(texture);
         }
     }
-    return textures;
+
+    // In a real implementation, you would also process materials here.
+    // aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+
+    auto meshResource = std::make_shared<JzMesh>(vertices, indices);
+    meshResource->Load(); // Create GPU resources
+    return meshResource;
 }
 
-std::shared_ptr<JzRE::JzRHITexture> JzRE::JzModel::LoadTexture(const JzRE::String &path, const JzRE::String &typeName)
-{
-    // Check if texture is already loaded
-    auto it = m_loadedTextures.find(path);
-    if (it != m_loadedTextures.end()) {
-        return it->second;
-    }
-
-    auto &device = JzRE_DEVICE();
-
-    // Create texture description
-    JzTextureDesc textureDesc{};
-    textureDesc.type      = JzETextureType::Texture2D;
-    textureDesc.format    = JzETextureFormat::RGBA8;
-    textureDesc.minFilter = JzETextureFilter::Linear;
-    textureDesc.magFilter = JzETextureFilter::Linear;
-    textureDesc.wrapS     = JzETextureWrap::Repeat;
-    textureDesc.wrapT     = JzETextureWrap::Repeat;
-    textureDesc.debugName = typeName;
-
-    // Note: In a real implementation, you would load image data from file here
-    // For now, we create the texture without initial data
-    // The specific implementation would depend on your image loading library
-    textureDesc.width  = 1; // Placeholder values
-    textureDesc.height = 1;
-    textureDesc.data   = nullptr; // Would be loaded from file
-
-    auto texture = device.CreateTexture(textureDesc);
-    if (texture) {
-        m_loadedTextures[path] = texture;
-    }
-
-    return texture;
-}
+// ProcessMaterial and texture loading would be implemented here.

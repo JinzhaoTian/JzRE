@@ -43,7 +43,7 @@ void JzRE::JzOpenGLFramebuffer::AttachColorTexture(std::shared_ptr<JzRE::JzRHITe
 
     // Attach color texture
     GLenum attachment = GL_COLOR_ATTACHMENT0 + attachmentIndex;
-    glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, glTexture->GetTarget(), glTexture->GetHandle(), 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, glTexture->GetTarget(), (GLuint)(uintptr_t)glTexture->GetTextureID(), 0);
 
     // Store attached texture
     if (attachmentIndex >= m_colorAttachments.size()) {
@@ -73,7 +73,7 @@ void JzRE::JzOpenGLFramebuffer::AttachDepthTexture(std::shared_ptr<JzRE::JzRHITe
     glBindFramebuffer(GL_FRAMEBUFFER, m_handle);
 
     // Attach depth texture
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, glTexture->GetTarget(), glTexture->GetHandle(), 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, glTexture->GetTarget(), (GLuint)(uintptr_t)glTexture->GetTextureID(), 0);
 
     // Store attached texture
     m_depthAttachment = texture;
@@ -100,7 +100,7 @@ void JzRE::JzOpenGLFramebuffer::AttachDepthStencilTexture(std::shared_ptr<JzRE::
     glBindFramebuffer(GL_FRAMEBUFFER, m_handle);
 
     // Attach depth stencil texture
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, glTexture->GetTarget(), glTexture->GetHandle(), 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, glTexture->GetTarget(), (GLuint)(uintptr_t)glTexture->GetTextureID(), 0);
 
     // Store attached texture
     m_depthStencilAttachment = texture;

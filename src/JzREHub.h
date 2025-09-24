@@ -11,6 +11,7 @@
 #include <vector>
 #include "JzRETypes.h"
 #include "JzRHIDevice.h"
+#include "JzResourceManager.h"
 #include "JzWindow.h"
 #include "JzUIManager.h"
 #include "JzCanvas.h"
@@ -47,12 +48,13 @@ public:
     std::optional<std::filesystem::path> Run();
 
 private:
-    std::unique_ptr<JzWindow>       m_window;
-    std::unique_ptr<JzRHIDevice>    m_device;
-    std::unique_ptr<JzUIManager>    m_uiManager;
-    std::unique_ptr<JzCanvas>       m_canvas;
-    std::unique_ptr<JzREHubMenuBar> m_menuBar;
-    std::unique_ptr<JzREHubPanel>   m_hubPanel;
+    std::unique_ptr<JzWindow>          m_window;
+    std::unique_ptr<JzResourceManager> m_resourceManager;
+    std::unique_ptr<JzRHIDevice>       m_device;
+    std::unique_ptr<JzUIManager>       m_uiManager;
+    std::unique_ptr<JzCanvas>          m_canvas;
+    std::unique_ptr<JzREHubMenuBar>    m_menuBar;
+    std::unique_ptr<JzREHubPanel>      m_hubPanel;
 };
 
 /**
@@ -63,7 +65,7 @@ public:
     /**
      * @brief Constructor
      */
-    JzREHubMenuBar(JzWindow &window);
+    JzREHubMenuBar(JzWindow &window, JzResourceManager &resourceManager);
 
 protected:
     /**
@@ -75,11 +77,13 @@ private:
     void HandleDragging();
 
 private:
-    JzWindow &m_window;
-    JzVec2    m_buttonSize = {30.0f, 0.0f};
-    Bool      m_isDragging = false;
-    JzIVec2   m_dragStartMousePos;
-    JzIVec2   m_dragStartWindowPos;
+    JzWindow          &m_window;
+    JzResourceManager &m_resourceManager;
+    JzVec2             m_iconSize   = {12.0f, 12.0f};
+    JzVec2             m_buttonSize = {30.0f, 20.0f};
+    Bool               m_isDragging = false;
+    JzIVec2            m_dragStartMousePos;
+    JzIVec2            m_dragStartWindowPos;
 };
 
 /**

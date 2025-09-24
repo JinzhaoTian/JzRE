@@ -102,9 +102,9 @@ void JzRE::JzOpenGLTexture::GenerateMipmaps()
     glBindTexture(m_target, 0);
 }
 
-JzRE::U32 JzRE::JzOpenGLTexture::GetHandle() const
+void *JzRE::JzOpenGLTexture::GetTextureID() const
 {
-    return static_cast<U32>(m_handle);
+    return reinterpret_cast<void *>(static_cast<uintptr_t>(m_handle));
 }
 
 GLenum JzRE::JzOpenGLTexture::GetTarget() const

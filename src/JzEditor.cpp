@@ -12,7 +12,7 @@
 #include "JzAssetBrowser.h"
 
 JzRE::JzEditor::JzEditor() :
-    m_context(JzRE_CONTEXT()), // injection
+    m_context(JzContext::GetInstance()), // injection
     m_panelsManager(m_canvas)
 {
     m_panelsManager.CreatePanel<JzMenuBar>("Menu Bar");

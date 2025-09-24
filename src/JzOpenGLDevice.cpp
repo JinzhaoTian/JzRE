@@ -4,6 +4,7 @@
  */
 
 #include "JzOpenGLDevice.h"
+#include <cstdint>
 #include <iostream>
 #include "JzOpenGLBuffer.h"
 #include "JzOpenGLTexture.h"
@@ -227,7 +228,7 @@ void JzRE::JzOpenGLDevice::BindTexture(std::shared_ptr<JzRE::JzRHITexture> textu
     auto glTexture = std::static_pointer_cast<JzOpenGLTexture>(texture);
     if (glTexture) {
         glActiveTexture(GL_TEXTURE0 + slot);
-        glBindTexture(glTexture->GetTarget(), glTexture->GetHandle());
+        glBindTexture(glTexture->GetTarget(), (GLuint)(uintptr_t)glTexture->GetTextureID());
     }
 }
 
