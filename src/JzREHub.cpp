@@ -21,7 +21,6 @@
 #include "JzTexture.h"
 #include "JzTextureFactory.h"
 #include "JzOpenFileDialog.h"
-#include "JzImageButton.h"
 #include "JzGroup.h"
 #include "JzText.h"
 #include "JzInputText.h"
@@ -119,11 +118,11 @@ JzRE::JzREHubMenuBar::JzREHubMenuBar(JzRE::JzWindow &window, JzRE::JzResourceMan
 {
     auto &actions = CreateWidget<JzGroup>(JzEHorizontalAlignment::RIGHT, JzVec2(80.f, 0.f), JzVec2(0.f, 0.f));
 
-    auto  minimizeIcon           = resourceManager.GetResource<JzTexture>("icons/window-minimize.png");
-    auto &minimizeButton         = actions.CreateWidget<JzImageButton>(minimizeIcon->GetRhiTexture(), m_iconSize);
-    minimizeButton.size          = m_buttonSize;
-    minimizeButton.lineBreak     = false;
-    minimizeButton.ClickedEvent += [this]() {
+    auto &minimizeButton                = actions.CreateWidget<JzButton>("小");
+    minimizeButton.idleBackgroundColor  = {0.1333f, 0.1529f, 0.1804f, 1.0f};
+    minimizeButton.size                 = m_buttonSize;
+    minimizeButton.lineBreak            = false;
+    minimizeButton.ClickedEvent        += [this]() {
         if (m_window.IsMinimized())
             m_window.Restore();
         else

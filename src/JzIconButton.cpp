@@ -44,7 +44,7 @@ void JzRE::JzIconButton::_Draw_Impl()
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, JzConverter::ToImVec4(hoveredBackgroundColor));
     ImGui::PushStyleColor(ImGuiCol_ButtonActive, JzConverter::ToImVec4(clickedBackgroundColor));
 
-    if (ImGui::Button("", JzConverter::ToImVec2(buttonSize))) {
+    if (ImGui::Button(("##IconButton" + m_widgetID).c_str(), JzConverter::ToImVec2(buttonSize))) {
         ClickedEvent.Invoke();
     }
 
