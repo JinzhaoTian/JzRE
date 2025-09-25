@@ -19,9 +19,8 @@ JzRE::Bool JzRE::JzContext::Initialize(JzERHIType rhiType, std::filesystem::path
     m_workDirectory = std::filesystem::current_path();
     m_openDirectory = openDirectory;
 
-    m_windowSettings.title  = "JzRE";
-    m_windowSettings.width  = 1280;
-    m_windowSettings.height = 720;
+    m_windowSettings.title = "JzRE";
+    m_windowSettings.size  = {1280, 720};
 
     m_window = std::make_unique<JzRE::JzWindow>(rhiType, m_windowSettings);
     m_window->MakeCurrentContext();

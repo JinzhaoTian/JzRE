@@ -291,9 +291,11 @@ private:
     GLFWwindow *m_glfwWindow;
     String      m_title;
     JzIVec2     m_size;
+    JzIVec2     m_position;
     JzIVec2     m_minimumSize;
     JzIVec2     m_maximumSize;
-    JzIVec2     m_position;
+    JzIVec2     m_windowedSize;
+    JzIVec2     m_windowedPos;
     Bool        m_fullscreen;
     I32         m_refreshRate;
 };

@@ -65,7 +65,7 @@ public:
     /**
      * @brief Constructor
      */
-    JzREHubMenuBar(JzWindow &window, JzResourceManager &resourceManager);
+    JzREHubMenuBar(JzWindow &window);
 
 protected:
     /**
@@ -77,13 +77,12 @@ private:
     void HandleDragging();
 
 private:
-    JzWindow          &m_window;
-    JzResourceManager &m_resourceManager;
-    JzVec2             m_buttonSize;
-    String             m_backgroudColor;
-    Bool               m_isDragging;
-    JzIVec2            m_dragStartMousePos;
-    JzIVec2            m_dragStartWindowPos;
+    JzWindow &m_window;
+    JzVec2    m_buttonSize;
+    String    m_backgroudColor;
+    Bool      m_isDragging;
+    JzIVec2   m_dragStartMousePos;
+    JzIVec2   m_dragStartWindowPos;
 };
 
 /**
@@ -112,6 +111,7 @@ public:
     std::optional<std::filesystem::path> GetResult() const;
 
 private:
+    JzVec2                _CalculateContentSize();
     void                  _LoadHistory();
     void                  _SaveHistory();
     void                  _AddToHistory(const std::filesystem::path &path);

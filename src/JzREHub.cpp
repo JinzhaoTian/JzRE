@@ -34,10 +34,7 @@ JzRE::JzREHub::JzREHub(JzERHIType rhiType)
 {
     JzWindowSettings windowSettings;
     windowSettings.title       = "JzRE Hub";
-    windowSettings.x           = 50;
-    windowSettings.y           = 50;
-    windowSettings.width       = 800;
-    windowSettings.height      = 500;
+    windowSettings.size        = {800, 500};
     windowSettings.isResizable = false;
     windowSettings.isDecorated = false;
 
@@ -63,7 +60,7 @@ JzRE::JzREHub::JzREHub(JzERHIType rhiType)
 
     m_canvas = std::make_unique<JzCanvas>();
 
-    m_menuBar = std::make_unique<JzREHubMenuBar>(*m_window, *m_resourceManager);
+    m_menuBar = std::make_unique<JzREHubMenuBar>(*m_window);
     m_canvas->AddPanel(*m_menuBar);
 
     m_hubPanel = std::make_unique<JzREHubPanel>();
@@ -114,13 +111,14 @@ std::optional<std::filesystem::path> JzRE::JzREHub::Run()
     return m_hubPanel->GetResult();
 }
 
-JzRE::JzREHubMenuBar::JzREHubMenuBar(JzRE::JzWindow &window, JzRE::JzResourceManager &resourceManager) :
+JzRE::JzREHubMenuBar::JzREHubMenuBar(JzRE::JzWindow &window) :
     m_window(window),
-    m_resourceManager(resourceManager),
     m_buttonSize({30.0f, 20.0f}),
     m_backgroudColor("#2A2A2A"),
     m_isDragging(false)
 {
+    auto &resourceManager = JzServiceContainer::Get<JzResourceManager>();
+
     auto &actions = CreateWidget<JzGroup>(JzEHorizontalAlignment::RIGHT, JzVec2(80.f, 0.f), JzVec2(0.f, 0.f));
 
     auto  minimizeIcon              = resourceManager.GetResource<JzTexture>("icons/minimize-64.png");
@@ -141,10 +139,10 @@ JzRE::JzREHubMenuBar::JzREHubMenuBar(JzRE::JzWindow &window, JzRE::JzResourceMan
     maximizeButton.buttonIdleColor  = m_backgroudColor;
     maximizeButton.lineBreak        = false;
     maximizeButton.ClickedEvent    += [this]() {
-        if (m_window.IsMaximized())
-            m_window.Restore();
+        if (m_window.IsFullscreen())
+            m_window.SetFullscreen(false);
         else
-            m_window.Maximize();
+            m_window.SetFullscreen(true);
     };
 
     auto  closeIcon                 = resourceManager.GetResource<JzTexture>("icons/close-64.png");
@@ -208,9 +206,6 @@ JzRE::JzREHubPanel::JzREHubPanel() :
     resizable = false;
     movable   = false;
     titleBar  = false;
-
-    SetSize(m_windowSize);
-    SetPosition(m_windowPosition);
 
     auto &pathField                = CreateWidget<JzInputText>("");
     pathField.width                = m_inputFieldWidth;
@@ -303,8 +298,20 @@ std::optional<std::filesystem::path> JzRE::JzREHubPanel::GetResult() const
 
 void JzRE::JzREHubPanel::Draw()
 {
+    const ImGuiViewport *viewport = ImGui::GetMainViewport();
+
+    const JzVec2 panelPos  = {viewport->WorkPos.x, viewport->WorkPos.y};
+    const JzVec2 panelSize = {viewport->WorkSize.x, viewport->WorkSize.y};
+
+    SetPosition(panelPos);
+    SetSize(panelSize);
+
+    const JzVec2 contentSize = _CalculateContentSize();
+
+    JzVec2 padding = {std::max((panelSize.x() - contentSize.x()) * 0.5f, 0.0f), 50.f};
+
     ImGui::PushStyleColor(ImGuiCol_WindowBg, JzConverter::HexToImVec4(m_backgroudColor));
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {50.0f, 50.0f});
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, JzConverter::ToImVec2(padding));
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
 
@@ -312,6 +319,27 @@ void JzRE::JzREHubPanel::Draw()
 
     ImGui::PopStyleVar(3);
     ImGui::PopStyleColor(1);
+}
+
+JzRE::JzVec2 JzRE::JzREHubPanel::_CalculateContentSize()
+{
+    const F32 contentWidth = 700.0f;
+
+    F32 contentHeight = 0.0f;
+
+    const ImGuiStyle &style           = ImGui::GetStyle();
+    const F32         frameHeight     = ImGui::GetFrameHeightWithSpacing();
+    const F32         separatorHeight = style.ItemSpacing.y * 4;
+
+    contentHeight += frameHeight;
+
+    contentHeight += separatorHeight;
+
+    if (!m_history.empty()) {
+        contentHeight += m_history.size() * frameHeight;
+    }
+
+    return {contentWidth, contentHeight};
 }
 
 void JzRE::JzREHubPanel::_LoadHistory()

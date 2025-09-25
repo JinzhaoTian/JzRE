@@ -20,10 +20,12 @@ std::unordered_map<GLFWwindow *, JzRE::JzWindow *> JzRE::JzWindow::__WINDOWS_MAP
 JzRE::JzWindow::JzWindow(JzRE::JzERHIType rhiType, const JzRE::JzWindowSettings &windowSettings) :
     m_rhiType(rhiType),
     m_title(windowSettings.title),
-    m_size{windowSettings.width, windowSettings.height},
-    m_position{windowSettings.x, windowSettings.y},
-    m_minimumSize{windowSettings.minWidth, windowSettings.minHeight},
-    m_maximumSize{windowSettings.maxWidth, windowSettings.maxHeight},
+    m_size(windowSettings.size),
+    m_position(windowSettings.position),
+    m_windowedSize(windowSettings.size),
+    m_windowedPos(windowSettings.position),
+    m_minimumSize(windowSettings.minSize),
+    m_maximumSize(windowSettings.maxSize),
     m_fullscreen(windowSettings.isFullscreen),
     m_refreshRate(windowSettings.refreshRate)
 {
@@ -120,7 +122,7 @@ JzRE::JzIVec2 JzRE::JzWindow::GetSize() const
 
 JzRE::Bool JzRE::JzWindow::IsMinimized() const
 {
-    return glfwGetWindowAttrib(m_glfwWindow, GLFW_MAXIMIZED) == GLFW_FALSE;
+    return glfwGetWindowAttrib(m_glfwWindow, GLFW_ICONIFIED) == GLFW_TRUE;
 }
 
 void JzRE::JzWindow::Minimize() const
@@ -167,27 +169,40 @@ JzRE::JzIVec2 JzRE::JzWindow::GetMaximumSize() const
     return m_maximumSize;
 }
 
-void JzRE::JzWindow::SetFullscreen(JzRE::Bool p_value)
+void JzRE::JzWindow::SetFullscreen(JzRE::Bool value)
 {
-    if (p_value)
-        m_fullscreen = true;
+    if (value) {
+        m_fullscreen   = true;
+        m_windowedSize = m_size;
+        m_windowedPos  = m_position;
 
-    glfwSetWindowMonitor(
-        m_glfwWindow,
-        p_value ? glfwGetPrimaryMonitor() : nullptr,
-        static_cast<I32>(m_position.x()),
-        static_cast<I32>(m_position.y()),
-        static_cast<I32>(m_size.x()),
-        static_cast<I32>(m_size.y()),
-        m_refreshRate);
-
-    if (!p_value)
+        glfwSetWindowMonitor(
+            m_glfwWindow,
+            glfwGetPrimaryMonitor(),
+            static_cast<I32>(m_position.x()),
+            static_cast<I32>(m_position.y()),
+            static_cast<I32>(m_size.x()),
+            static_cast<I32>(m_size.y()),
+            m_refreshRate);
+    } else {
         m_fullscreen = false;
+        m_size       = m_windowedSize;
+        m_position   = m_windowedPos;
+
+        glfwSetWindowMonitor(
+            m_glfwWindow,
+            nullptr,
+            static_cast<I32>(m_position.x()),
+            static_cast<I32>(m_position.y()),
+            static_cast<I32>(m_size.x()),
+            static_cast<I32>(m_size.y()),
+            m_refreshRate);
+    }
 }
 
 JzRE::Bool JzRE::JzWindow::IsFullscreen() const
 {
-    return m_fullscreen;
+    return glfwGetWindowMonitor(m_glfwWindow) != nullptr;
 }
 
 void JzRE::JzWindow::SetAlignCentered()
