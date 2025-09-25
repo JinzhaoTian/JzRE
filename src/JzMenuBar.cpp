@@ -13,6 +13,7 @@
 #include "JzArrowButton.h"
 #include "JzSeparator.h"
 #include "JzOpenFileDialog.h"
+#include "JzConverter.h"
 
 JzRE::JzMenuBar::JzMenuBar()
 {
@@ -75,10 +76,14 @@ void JzRE::JzMenuBar::InitializeSettingsMenu()
 
 void JzRE::JzMenuBar::_Draw_Impl()
 {
+    ImGui::PushStyleColor(ImGuiCol_MenuBarBg, JzConverter::HexToImVec4(m_backgroudColor));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
     if (!m_widgets.empty() && ImGui::BeginMainMenuBar()) {
         DrawWidgets();
         ImGui::EndMainMenuBar();
     }
+    ImGui::PopStyleVar();
+    ImGui::PopStyleColor();
 }
 
 void JzRE::JzMenuBar::CreateFileMenu()

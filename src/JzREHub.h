@@ -80,12 +80,6 @@ private:
     JzWindow          &m_window;
     JzResourceManager &m_resourceManager;
     JzVec2             m_buttonSize;
-    String             m_buttonIdleColor;
-    String             m_buttonHoveredColor;
-    String             m_buttonClickedColor;
-    JzVec2             m_iconSize;
-    String             m_iconIdleColor;
-    String             m_iconHoveredColor;
     String             m_backgroudColor;
     Bool               m_isDragging;
     JzIVec2            m_dragStartMousePos;

@@ -9,7 +9,14 @@
 #include "JzConverter.h"
 
 JzRE::JzIconButton::JzIconButton(std::shared_ptr<JzRE::JzRHITexture> texture) :
-    m_texture(texture) { }
+    m_texture(texture),
+    buttonSize({20.0f, 20.0f}),
+    buttonIdleColor("#2A2A2A"),
+    buttonHoveredColor("#414243"),
+    buttonClickedColor("#c2c2c2"),
+    iconSize({12.0f, 12.0f}),
+    iconIdleColor("#f3f3f3"),
+    iconHoveredColor("#f3f3f3") { }
 
 void JzRE::JzIconButton::_Draw_Impl()
 {

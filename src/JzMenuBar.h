@@ -69,7 +69,8 @@ private:
 private:
     std::unordered_map<std::string, std::pair<std::reference_wrapper<JzPanelWindow>, std::reference_wrapper<JzMenuItem>>> m_panels;
 
-    JzMenuList *m_settingsMenu = nullptr;
-    JzMenuList *m_windowMenu   = nullptr;
+    JzMenuList *m_settingsMenu   = nullptr;
+    JzMenuList *m_windowMenu     = nullptr;
+    String      m_backgroudColor = "#2A2A2A";
 };
 } // namespace JzRE
