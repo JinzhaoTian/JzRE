@@ -129,7 +129,7 @@ JzRE::JzREHubMenuBar::JzREHubMenuBar(JzRE::JzWindow &window, JzRE::JzResourceMan
 {
     auto &actions = CreateWidget<JzGroup>(JzEHorizontalAlignment::RIGHT, JzVec2(80.f, 0.f), JzVec2(0.f, 0.f));
 
-    auto  minimizeIcon                 = resourceManager.GetResource<JzTexture>("icons/window-minimize.png");
+    auto  minimizeIcon                 = resourceManager.GetResource<JzTexture>("icons/minimize-64.png");
     auto &minimizeButton               = actions.CreateWidget<JzIconButton>(minimizeIcon->GetRhiTexture());
     minimizeButton.buttonSize          = m_buttonSize;
     minimizeButton.buttonIdleColor     = m_buttonIdleColor;
@@ -146,7 +146,7 @@ JzRE::JzREHubMenuBar::JzREHubMenuBar(JzRE::JzWindow &window, JzRE::JzResourceMan
             m_window.Minimize();
     };
 
-    auto  maximizeIcon                 = resourceManager.GetResource<JzTexture>("icons/window-maximize.png");
+    auto  maximizeIcon                 = resourceManager.GetResource<JzTexture>("icons/maximize-64.png");
     auto &maximizeButton               = actions.CreateWidget<JzIconButton>(maximizeIcon->GetRhiTexture());
     maximizeButton.buttonSize          = m_buttonSize;
     maximizeButton.buttonIdleColor     = m_buttonIdleColor;
@@ -163,13 +163,13 @@ JzRE::JzREHubMenuBar::JzREHubMenuBar(JzRE::JzWindow &window, JzRE::JzResourceMan
             m_window.Maximize();
     };
 
-    auto  closeIcon                 = resourceManager.GetResource<JzTexture>("icons/window-x.png");
+    auto  closeIcon                 = resourceManager.GetResource<JzTexture>("icons/close-64.png");
     auto &closeButton               = actions.CreateWidget<JzIconButton>(closeIcon->GetRhiTexture());
     closeButton.buttonSize          = m_buttonSize;
     closeButton.buttonIdleColor     = m_buttonIdleColor;
     closeButton.buttonHoveredColor  = "#e81123";
     closeButton.buttonClickedColor  = "#ec6c77";
-    closeButton.iconSize            = m_iconSize;
+    closeButton.iconSize            = {14.f, 14.f};
     closeButton.iconIdleColor       = m_iconIdleColor;
     closeButton.iconHoveredColor    = m_iconHoveredColor;
     closeButton.lineBreak           = true;
