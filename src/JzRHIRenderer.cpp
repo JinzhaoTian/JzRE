@@ -207,7 +207,7 @@ void JzRE::JzRHIRenderer::RenderImmediate(std::shared_ptr<JzRE::JzScene> scene)
     clearParams.clearColor   = true;
     clearParams.clearDepth   = true;
     clearParams.clearStencil = false;
-    clearParams.colorR       = 1.0f;
+    clearParams.colorR       = 0.1f;
     clearParams.colorG       = 0.1f;
     clearParams.colorB       = 0.1f;
     clearParams.colorA       = 1.0f;

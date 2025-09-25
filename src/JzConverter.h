@@ -48,7 +48,27 @@ public:
     static JzVec4 ToJzVec4(const ImVec4 &value);
 
     /**
-     * @brief Convert the given Hex to JzVec4
+     * @brief Convert the given Hex to ImVec4
+     *
+     * @param hexColor
+     * @param alpha
+     *
+     * @return ImVec4
+     */
+    static ImVec4 HexToImVec4(const String &hexColor, JzRE::F32 alpha = 1.0f);
+
+    /**
+     * @brief Convert the given ImVec4 color to Hex
+     *
+     * @param color
+     * @param includeAlpha
+     *
+     * @return String
+     */
+    static String ImVec4ToImHex(const ImVec4 &color, Bool includeAlpha = false);
+
+    /**
+     * @brief Convert the given Hex to ImColor
      *
      * @param hexColor
      * @param alpha

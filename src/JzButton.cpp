@@ -12,10 +12,10 @@ JzRE::JzButton::JzButton(const JzRE::String &label, JzRE::Bool disabled) :
 {
     auto &style = ImGui::GetStyle();
 
-    idleBackgroundColor    = JzConverter::ToJzVec4(style.Colors[ImGuiCol_Button]);
-    hoveredBackgroundColor = JzConverter::ToJzVec4(style.Colors[ImGuiCol_ButtonHovered]);
-    clickedBackgroundColor = JzConverter::ToJzVec4(style.Colors[ImGuiCol_ButtonActive]);
-    textColor              = JzConverter::ToJzVec4(style.Colors[ImGuiCol_Text]);
+    buttonIdleColor    = JzConverter::ImVec4ToImHex(style.Colors[ImGuiCol_Button]);
+    buttonHoveredColor = JzConverter::ImVec4ToImHex(style.Colors[ImGuiCol_ButtonHovered]);
+    buttonClickedColor = JzConverter::ImVec4ToImHex(style.Colors[ImGuiCol_ButtonActive]);
+    buttonLabelColor   = JzConverter::ImVec4ToImHex(style.Colors[ImGuiCol_Text]);
 }
 
 void JzRE::JzButton::_Draw_Impl()
@@ -27,10 +27,10 @@ void JzRE::JzButton::_Draw_Impl()
     auto defaultClickedColor = style.Colors[ImGuiCol_ButtonActive];
     auto defaultTextColor    = style.Colors[ImGuiCol_Text];
 
-    style.Colors[ImGuiCol_Button]        = JzConverter::ToImVec4(idleBackgroundColor);
-    style.Colors[ImGuiCol_ButtonHovered] = JzConverter::ToImVec4(hoveredBackgroundColor);
-    style.Colors[ImGuiCol_ButtonActive]  = JzConverter::ToImVec4(clickedBackgroundColor);
-    style.Colors[ImGuiCol_Text]          = JzConverter::ToImVec4(textColor);
+    style.Colors[ImGuiCol_Button]        = JzConverter::HexToImVec4(buttonIdleColor);
+    style.Colors[ImGuiCol_ButtonHovered] = JzConverter::HexToImVec4(buttonHoveredColor);
+    style.Colors[ImGuiCol_ButtonActive]  = JzConverter::HexToImVec4(buttonClickedColor);
+    style.Colors[ImGuiCol_Text]          = JzConverter::HexToImVec4(buttonLabelColor);
 
     const bool isDisabled = disabled;
 
@@ -38,7 +38,7 @@ void JzRE::JzButton::_Draw_Impl()
         ImGui::BeginDisabled();
     }
 
-    if (ImGui::Button((label + m_widgetID).c_str(), JzConverter::ToImVec2(size))) {
+    if (ImGui::Button((label + m_widgetID).c_str(), JzConverter::ToImVec2(buttonSize))) {
         ClickedEvent.Invoke();
     }
 

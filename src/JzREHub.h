@@ -79,9 +79,15 @@ private:
 private:
     JzWindow          &m_window;
     JzResourceManager &m_resourceManager;
-    JzVec2             m_iconSize   = {12.0f, 12.0f};
-    JzVec2             m_buttonSize = {30.0f, 20.0f};
-    Bool               m_isDragging = false;
+    JzVec2             m_buttonSize;
+    String             m_buttonIdleColor;
+    String             m_buttonHoveredColor;
+    String             m_buttonClickedColor;
+    JzVec2             m_iconSize;
+    String             m_iconIdleColor;
+    String             m_iconHoveredColor;
+    String             m_backgroudColor;
+    Bool               m_isDragging;
     JzIVec2            m_dragStartMousePos;
     JzIVec2            m_dragStartWindowPos;
 };
@@ -127,6 +133,7 @@ private:
     JzButton                            *m_goButton        = nullptr;
     JzVec2                               m_windowSize      = {800.0f, 480.0f};
     JzVec2                               m_windowPosition  = {0.0f, 20.0f};
+    String                               m_backgroudColor  = "#2A2A2A";
     JzVec2                               m_buttonSize      = {90.0f, 0.0f};
     F32                                  m_inputFieldWidth = 504.0f;
     std::vector<std::filesystem::path>   m_history;

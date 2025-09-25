@@ -6,9 +6,9 @@
 
 JzRE::JzImageButton::JzImageButton(std::shared_ptr<JzRHITexture> p_texture, const JzVec2 &p_size) :
     m_texture(p_texture),
-    size(p_size),
-    backgroundColor({0, 0, 0, 0}),
-    textureColor({1, 1, 1, 1}) { }
+    buttonSize(p_size),
+    buttonIdleColor("#000000"),
+    buttonTextureColor("#f3f3f3") { }
 
 void JzRE::JzImageButton::_Draw_Impl()
 {
@@ -20,11 +20,11 @@ void JzRE::JzImageButton::_Draw_Impl()
 
     if (ImGui::ImageButton(m_widgetID.c_str(),
                            (ImTextureID)(uintptr_t)m_texture->GetTextureID(),
-                           JzConverter::ToImVec2(size),
+                           JzConverter::ToImVec2(buttonSize),
                            ImVec2(0.f, 1.f),
                            ImVec2(1.f, 0.f),
-                           JzConverter::ToImVec4(backgroundColor),
-                           JzConverter::ToImVec4(textureColor))) {
+                           JzConverter::HexToImVec4(buttonIdleColor),
+                           JzConverter::HexToImVec4(buttonTextureColor))) {
         ClickedEvent.Invoke();
     }
 

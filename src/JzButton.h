@@ -39,10 +39,10 @@ public:
 public:
     String label;
     Bool   disabled = false;
-    JzVec2 size;
-    JzVec4 idleBackgroundColor;
-    JzVec4 hoveredBackgroundColor;
-    JzVec4 clickedBackgroundColor;
-    JzVec4 textColor;
+    JzVec2 buttonSize;
+    String buttonIdleColor;
+    String buttonHoveredColor;
+    String buttonClickedColor;
+    String buttonLabelColor;
 };
 } // namespace JzRE

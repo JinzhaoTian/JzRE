@@ -28,6 +28,7 @@
 #include "JzSpacing.h"
 #include "JzSeparator.h"
 #include "JzColumns.h"
+#include "JzConverter.h"
 
 JzRE::JzREHub::JzREHub(JzERHIType rhiType)
 {
@@ -115,60 +116,69 @@ std::optional<std::filesystem::path> JzRE::JzREHub::Run()
 
 JzRE::JzREHubMenuBar::JzREHubMenuBar(JzRE::JzWindow &window, JzRE::JzResourceManager &resourceManager) :
     m_window(window),
-    m_resourceManager(resourceManager)
+    m_resourceManager(resourceManager),
+    m_buttonSize({30.0f, 20.0f}),
+    m_buttonIdleColor("#2A2A2A"),
+    m_buttonHoveredColor("#414243"),
+    m_buttonClickedColor("#c2c2c2"),
+    m_iconSize({12.0f, 12.0f}),
+    m_iconIdleColor("#f3f3f3"),
+    m_iconHoveredColor("#f3f3f3"),
+    m_backgroudColor("#2A2A2A"),
+    m_isDragging(false)
 {
     auto &actions = CreateWidget<JzGroup>(JzEHorizontalAlignment::RIGHT, JzVec2(80.f, 0.f), JzVec2(0.f, 0.f));
 
-    auto  minimizeIcon                     = resourceManager.GetResource<JzTexture>("icons/window-minimize.png");
-    auto &minimizeButton                   = actions.CreateWidget<JzIconButton>(minimizeIcon->GetRhiTexture());
-    minimizeButton.idleBackgroundColor     = {0.1333f, 0.1529f, 0.1804f, 1.0f};
-    minimizeButton.hoveredBackgroundColor  = {51 / 255.0f, 56 / 255.0f, 60 / 255.0f, 1.0f};
-    minimizeButton.clickedBackgroundColor  = {117 / 255.0f, 131 / 255.0f, 144 / 255.0f, 1.0f};
-    minimizeButton.buttonSize              = m_buttonSize;
-    minimizeButton.iconColor               = {1.f, 1.f, 1.f, 1.f};
-    minimizeButton.hoveredIconColor        = {1.f, 1.f, 1.f, 1.f};
-    minimizeButton.iconSize                = m_iconSize;
-    minimizeButton.lineBreak               = false;
-    minimizeButton.ClickedEvent           += [this]() {
+    auto  minimizeIcon                 = resourceManager.GetResource<JzTexture>("icons/window-minimize.png");
+    auto &minimizeButton               = actions.CreateWidget<JzIconButton>(minimizeIcon->GetRhiTexture());
+    minimizeButton.buttonSize          = m_buttonSize;
+    minimizeButton.buttonIdleColor     = m_buttonIdleColor;
+    minimizeButton.buttonHoveredColor  = m_buttonHoveredColor;
+    minimizeButton.buttonClickedColor  = m_buttonClickedColor;
+    minimizeButton.iconSize            = m_iconSize;
+    minimizeButton.iconIdleColor       = m_iconIdleColor;
+    minimizeButton.iconHoveredColor    = m_iconHoveredColor;
+    minimizeButton.lineBreak           = false;
+    minimizeButton.ClickedEvent       += [this]() {
         if (m_window.IsMinimized())
             m_window.Restore();
         else
             m_window.Minimize();
     };
 
-    auto  maximizeIcon                     = resourceManager.GetResource<JzTexture>("icons/window-maximize.png");
-    auto &maximizeButton                   = actions.CreateWidget<JzIconButton>(maximizeIcon->GetRhiTexture());
-    maximizeButton.idleBackgroundColor     = {0.1333f, 0.1529f, 0.1804f, 1.0f};
-    maximizeButton.hoveredBackgroundColor  = {51 / 255.0f, 56 / 255.0f, 60 / 255.0f, 1.0f};
-    maximizeButton.clickedBackgroundColor  = {117 / 255.0f, 131 / 255.0f, 144 / 255.0f, 1.0f};
-    maximizeButton.buttonSize              = m_buttonSize;
-    maximizeButton.iconColor               = {1.f, 1.f, 1.f, 1.f};
-    maximizeButton.hoveredIconColor        = {1.f, 1.f, 1.f, 1.f};
-    maximizeButton.iconSize                = m_iconSize;
-    maximizeButton.lineBreak               = false;
-    maximizeButton.ClickedEvent           += [this]() {
+    auto  maximizeIcon                 = resourceManager.GetResource<JzTexture>("icons/window-maximize.png");
+    auto &maximizeButton               = actions.CreateWidget<JzIconButton>(maximizeIcon->GetRhiTexture());
+    maximizeButton.buttonSize          = m_buttonSize;
+    maximizeButton.buttonIdleColor     = m_buttonIdleColor;
+    maximizeButton.buttonHoveredColor  = m_buttonHoveredColor;
+    maximizeButton.buttonClickedColor  = m_buttonClickedColor;
+    maximizeButton.iconSize            = m_iconSize;
+    maximizeButton.iconIdleColor       = m_iconIdleColor;
+    maximizeButton.iconHoveredColor    = m_iconHoveredColor;
+    maximizeButton.lineBreak           = false;
+    maximizeButton.ClickedEvent       += [this]() {
         if (m_window.IsMaximized())
             m_window.Restore();
         else
             m_window.Maximize();
     };
 
-    auto  closeIcon                     = resourceManager.GetResource<JzTexture>("icons/x.png");
-    auto &closeButton                   = actions.CreateWidget<JzIconButton>(closeIcon->GetRhiTexture());
-    closeButton.idleBackgroundColor     = {0.1333f, 0.1529f, 0.1804f, 1.0f};
-    closeButton.hoveredBackgroundColor  = {211 / 255.0f, 56 / 255.0f, 60 / 255.0f, 1.0f};
-    closeButton.clickedBackgroundColor  = {254 / 255.0f, 95 / 255.0f, 87 / 255.0f, 1.0f};
-    closeButton.buttonSize              = m_buttonSize;
-    closeButton.iconColor               = {1.f, 1.f, 1.f, 1.f};
-    closeButton.hoveredIconColor        = {1.f, 1.f, 1.f, 1.f};
-    closeButton.iconSize                = m_iconSize;
-    closeButton.lineBreak               = true;
-    closeButton.ClickedEvent           += [this]() { m_window.SetShouldClose(true); };
+    auto  closeIcon                 = resourceManager.GetResource<JzTexture>("icons/window-x.png");
+    auto &closeButton               = actions.CreateWidget<JzIconButton>(closeIcon->GetRhiTexture());
+    closeButton.buttonSize          = m_buttonSize;
+    closeButton.buttonIdleColor     = m_buttonIdleColor;
+    closeButton.buttonHoveredColor  = "#e81123";
+    closeButton.buttonClickedColor  = "#ec6c77";
+    closeButton.iconSize            = m_iconSize;
+    closeButton.iconIdleColor       = m_iconIdleColor;
+    closeButton.iconHoveredColor    = m_iconHoveredColor;
+    closeButton.lineBreak           = true;
+    closeButton.ClickedEvent       += [this]() { m_window.SetShouldClose(true); };
 }
 
 void JzRE::JzREHubMenuBar::_Draw_Impl()
 {
-    ImGui::PushStyleColor(ImGuiCol_MenuBarBg, ImVec4(0.1333f, 0.1529f, 0.1804f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_MenuBarBg, JzConverter::HexToImVec4(m_backgroudColor));
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
     if (!m_widgets.empty() && ImGui::BeginMainMenuBar()) {
         HandleDragging();
@@ -228,11 +238,11 @@ JzRE::JzREHubPanel::JzREHubPanel() :
         _OnUpdateGoButton(pathField.content);
     };
 
-    auto &openButton                = CreateWidget<JzButton>("Open Folder");
-    openButton.idleBackgroundColor  = {0.7f, 0.5f, 0.0f, 1.0f};
-    openButton.size                 = m_buttonSize;
-    openButton.lineBreak            = false;
-    openButton.ClickedEvent        += [this] {
+    auto &openButton            = CreateWidget<JzButton>("Open Folder");
+    openButton.buttonIdleColor  = "#c96924";
+    openButton.buttonSize       = m_buttonSize;
+    openButton.lineBreak        = false;
+    openButton.ClickedEvent    += [this] {
         JzOpenFileDialog dialog("Open Folder");
         dialog.AddFileType("*", "*.*");
         dialog.Show(JzEFileDialogType::OpenFolder);
@@ -246,12 +256,12 @@ JzRE::JzREHubPanel::JzREHubPanel() :
         }
     };
 
-    m_goButton                       = &CreateWidget<JzButton>("GO");
-    m_goButton->idleBackgroundColor  = {0.1f, 0.1f, 0.1f, 1.0f};
-    m_goButton->size                 = m_buttonSize;
-    m_goButton->disabled             = true;
-    m_goButton->lineBreak            = true;
-    m_goButton->ClickedEvent        += [this, &pathField] {
+    m_goButton                   = &CreateWidget<JzButton>("GO");
+    m_goButton->buttonIdleColor  = "#36373a";
+    m_goButton->buttonSize       = m_buttonSize;
+    m_goButton->disabled         = true;
+    m_goButton->lineBreak        = true;
+    m_goButton->ClickedEvent    += [this, &pathField] {
         const std::filesystem::path path = pathField.content;
 
         if (!_OnFinish({path})) {
@@ -273,11 +283,11 @@ JzRE::JzREHubPanel::JzREHubPanel() :
 
         auto &_actions = columns.CreateWidget<JzGroup>();
 
-        auto &_openBtn                = _actions.CreateWidget<JzButton>("Open");
-        _openBtn.idleBackgroundColor  = {0.7f, 0.5f, 0.0f, 1.0f};
-        _openBtn.size                 = m_buttonSize;
-        _openBtn.lineBreak            = false;
-        _openBtn.ClickedEvent        += [this, &_text, &_actions, path] {
+        auto &_openBtn            = _actions.CreateWidget<JzButton>("Open");
+        _openBtn.buttonIdleColor  = "#195a56";
+        _openBtn.buttonSize       = m_buttonSize;
+        _openBtn.lineBreak        = false;
+        _openBtn.ClickedEvent    += [this, &_text, &_actions, path] {
             if (!_OnFinish(path)) {
                 _text.Destroy();
                 _actions.Destroy();
@@ -286,11 +296,11 @@ JzRE::JzREHubPanel::JzREHubPanel() :
             }
         };
 
-        auto &_deleteBtn                = _actions.CreateWidget<JzButton>("Delete");
-        _deleteBtn.idleBackgroundColor  = {0.3f, 0.0f, 0.0f, 1.0f};
-        _deleteBtn.size                 = {90.0f, 0.0f};
-        _deleteBtn.lineBreak            = true;
-        _deleteBtn.ClickedEvent        += [this, &_text, &_actions, path] {
+        auto &_deleteBtn            = _actions.CreateWidget<JzButton>("Delete");
+        _deleteBtn.buttonIdleColor  = "#9d1e31";
+        _deleteBtn.buttonSize       = m_buttonSize;
+        _deleteBtn.lineBreak        = true;
+        _deleteBtn.ClickedEvent    += [this, &_text, &_actions, path] {
             _text.Destroy();
             _actions.Destroy();
             _DeleteFromHistory(path);
@@ -310,7 +320,7 @@ std::optional<std::filesystem::path> JzRE::JzREHubPanel::GetResult() const
 
 void JzRE::JzREHubPanel::Draw()
 {
-    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.1333f, 0.1529f, 0.1804f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_WindowBg, JzConverter::HexToImVec4(m_backgroudColor));
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {50.0f, 50.0f});
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
@@ -342,7 +352,6 @@ void JzRE::JzREHubPanel::_LoadHistory()
                     auto utf8Path = item.get<JzRE::String>();
                     m_history.push_back(_Utf8ToPath(utf8Path));
 
-                    // 限制历史记录数量
                     if (m_history.size() >= m_maxHistorySize) {
                         break;
                     }
@@ -373,7 +382,7 @@ void JzRE::JzREHubPanel::_SaveHistory()
             jsonObj["lastOpenFiles"].push_back(_PathToUtf8(path));
         }
 
-        file << jsonObj.dump(4); // 使用4空格缩进美化输出
+        file << jsonObj.dump(4);
     } catch (const std::exception &e) {
         // TODO
     }
@@ -385,7 +394,6 @@ void JzRE::JzREHubPanel::_AddToHistory(const std::filesystem::path &path)
 {
     auto it = std::find(m_history.begin(), m_history.end(), path);
     if (it != m_history.end()) {
-        // 如果已存在，移动到最前面
         m_history.erase(it);
     }
 
@@ -421,9 +429,9 @@ std::filesystem::path JzRE::JzREHubPanel::_Utf8ToPath(const JzRE::String &utf8St
 
 void JzRE::JzREHubPanel::_OnUpdateGoButton(const JzRE::String &p_path)
 {
-    const Bool validPath            = !p_path.empty();
-    m_goButton->disabled            = !validPath;
-    m_goButton->idleBackgroundColor = validPath ? JzVec4(0.0f, 0.5f, 0.0f, 1.0f) : JzVec4(0.1f, 0.1f, 0.1f, 1.0f);
+    const Bool validPath        = !p_path.empty();
+    m_goButton->disabled        = !validPath;
+    m_goButton->buttonIdleColor = validPath ? "#26bbff" : "#36373a";
 }
 
 void JzRE::JzREHubPanel::_OnFailedToOpenPath(const std::filesystem::path &p_path)

@@ -21,9 +21,9 @@ void JzRE::JzIconButton::_Draw_Impl()
 
     ImGui::PushID(this);
 
-    ImGui::PushStyleColor(ImGuiCol_Button, JzConverter::ToImVec4(idleBackgroundColor));
-    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, JzConverter::ToImVec4(hoveredBackgroundColor));
-    ImGui::PushStyleColor(ImGuiCol_ButtonActive, JzConverter::ToImVec4(clickedBackgroundColor));
+    ImGui::PushStyleColor(ImGuiCol_Button, JzConverter::HexToImVec4(buttonIdleColor));
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, JzConverter::HexToImVec4(buttonHoveredColor));
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, JzConverter::HexToImVec4(buttonClickedColor));
 
     if (ImGui::Button(("##IconButton" + m_widgetID).c_str(), JzConverter::ToImVec2(buttonSize))) {
         ClickedEvent.Invoke();
@@ -38,10 +38,10 @@ void JzRE::JzIconButton::_Draw_Impl()
                                      iconMinPos.y + iconSize.y());
 
     if (m_texture) {
-        JzVec4 finalIconColor = iconColor;
+        String finalIconColor = iconIdleColor;
 
         if (isHovered) {
-            finalIconColor = hoveredIconColor;
+            finalIconColor = iconHoveredColor;
         }
 
         ImGui::GetWindowDrawList()->AddImage(
@@ -50,7 +50,7 @@ void JzRE::JzIconButton::_Draw_Impl()
             iconMaxPos,
             ImVec2(0.f, 0.f),
             ImVec2(1.f, 1.f),
-            ImColor(JzConverter::ToImVec4(finalIconColor)));
+            ImColor(JzConverter::HexToImVec4(finalIconColor)));
     }
 
     ImGui::PopStyleColor(3);

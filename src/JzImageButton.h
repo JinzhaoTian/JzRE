@@ -41,9 +41,9 @@ public:
 
 public:
     Bool   disabled = false;
-    JzVec2 size;
-    JzVec4 backgroundColor;
-    JzVec4 textureColor;
+    JzVec2 buttonSize;
+    String buttonIdleColor;
+    String buttonTextureColor;
 
 private:
     std::shared_ptr<JzRHITexture> m_texture;

@@ -5,6 +5,7 @@
 #pragma once
 
 #include <memory>
+#include "JzRETypes.h"
 #include "JzWidget.h"
 #include "JzEvent.h"
 #include "JzRHITexture.h"
@@ -38,12 +39,12 @@ public:
 public:
     Bool   disabled = false;
     JzVec2 buttonSize;
+    String buttonIdleColor;
+    String buttonHoveredColor;
+    String buttonClickedColor;
     JzVec2 iconSize;
-    JzVec4 idleBackgroundColor;
-    JzVec4 hoveredBackgroundColor;
-    JzVec4 clickedBackgroundColor;
-    JzVec4 iconColor;
-    JzVec4 hoveredIconColor;
+    String iconIdleColor;
+    String iconHoveredColor;
 
 private:
     std::shared_ptr<JzRHITexture> m_texture;
