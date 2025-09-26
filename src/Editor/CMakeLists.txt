@@ -13,6 +13,8 @@ target_sources(JzREEditor PRIVATE
 )
 
 target_link_libraries(JzREEditor
+    PUBLIC
+    imgui::imgui
     PRIVATE
     JzRECore
     JzRERHI
@@ -21,5 +23,4 @@ target_link_libraries(JzREEditor
     JzREResource
     JzREPlatform
     JzREUI
-    imgui::imgui
 )

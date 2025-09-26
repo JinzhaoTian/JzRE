@@ -13,6 +13,8 @@ target_link_libraries(JzRE
     JzRECore
     JzRERHI
     JzREGraphics
+    JzREResource
     JzREUI
+    JzREPlatform
     JzREEditor
 )

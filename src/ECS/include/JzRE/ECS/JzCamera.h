@@ -6,11 +6,12 @@
 #pragma once
 
 #include "JzRE/Core/JzRETypes.h"
-#include "JzRE/ECS/JzEMode.h"
 #include "JzRE/Core/JzMatrix.h"
 #include "JzRE/Core/JzVector.h"
+#include "JzRE/ECS/JzEMode.h"
 
 namespace JzRE {
+
 /**
  * @brief Camera
  */

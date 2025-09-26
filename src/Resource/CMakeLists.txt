@@ -10,9 +10,10 @@ target_include_directories(JzREResource PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-target_link_libraries(JzREResource 
-    PRIVATE
+target_link_libraries(JzREResource
+    PUBLIC
     assimp::assimp
+    PRIVATE
     JzRECore
     JzRERHI
     JzREGraphics

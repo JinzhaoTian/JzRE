@@ -4,7 +4,7 @@
  */
 
 #include "JzRE/Editor/JzRHIFactory.h"
-#include <ostream>
+#include <iostream>
 #include "JzRE/Graphics/JzOpenGLDevice.h"
 
 // RHIFactory实现

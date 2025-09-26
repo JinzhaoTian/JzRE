@@ -25,9 +25,10 @@ target_include_directories(JzREGraphics PUBLIC
 )
 
 target_link_libraries(JzREGraphics
-    PRIVATE
+    PUBLIC
     OPENGL_LIBS
     glad::glad
+    PRIVATE
     JzRECore
     JzRERHI
 )

@@ -11,6 +11,6 @@ target_include_directories(JzRECore PUBLIC
 )
 
 target_link_libraries(JzRECore
-    PRIVATE
+    PUBLIC
     spdlog::spdlog
 )

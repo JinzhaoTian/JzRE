@@ -35,7 +35,8 @@ target_include_directories(JzREPlatform PUBLIC
 )
 
 target_link_libraries(JzREPlatform
-    PRIVATE
+    PUBLIC
     PLATFORM_LIBS
+    PRIVATE
     JzRECore
 )
