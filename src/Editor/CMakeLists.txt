@@ -1,23 +1,22 @@
-add_library(JzEditor STATIC)
+add_library(JzREEditor STATIC)
 
-target_sources(JzEditor PRIVATE
-    JzEditor.cpp
-    JzHierarchy.cpp
-    JzAssetBrowser.cpp # ...
+file(GLOB JzREEditor_SOURCES CONFIGURE_DEPENDS 
+    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
 )
 
-target_include_directories(JzEditor PUBLIC
+target_include_directories(JzREEditor PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-# 编辑器模块依赖渲染、场景、资源和 UI
+target_sources(JzREEditor PRIVATE
+    ${JzREEditor_SOURCES}
+)
 
-target_link_libraries(JzEditor
+target_link_libraries(JzREEditor
     PUBLIC
-    JzRenderOpenGL # 或者只暴露 JzRHI，具体实现设为 PRIVATE
-    JzScene
-    JzResource
-    JzUI
+    JzRERHI
+    JzREUI
     PRIVATE
-    JzCore
+    JzRECore
+    imgui::imgui
 )

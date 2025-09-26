@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "JzRETypes.h"
+#include "JzREETypes.h"
 #include "JzEvent.h"
 #include "JzWidget.h"
 
