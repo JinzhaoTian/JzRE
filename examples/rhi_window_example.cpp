@@ -5,7 +5,7 @@
 
 #include "JzContext_RHI.h"
 #include "JzRHIDescription.h"
-#include "JzRHIETypes.h"
+#include "JzRE/RHI/JzRHIETypes.h"
 #include <iostream>
 
 namespace JzRE {

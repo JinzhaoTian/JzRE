@@ -5,10 +5,11 @@
 The resource layer is a critical component of JzRE, responsible for managing the lifecycle of all game assets (e.g., textures, models, materials, shaders). This design is based on three core concepts: `JzResource`, `JzResourceFactory`, and `JzResourceManager`.
 
 The primary goals of this architecture are:
-- **Automation**: Automate resource loading, unloading, and caching.
-- **Extensibility**: Easily support new resource types without modifying core manager code.
-- **Efficiency**: Use reference counting to manage memory and support asynchronous loading to avoid blocking the main thread.
-- **Decoupling**: Isolate resource management logic from the rest of the engine.
+
+-   **Automation**: Automate resource loading, unloading, and caching.
+-   **Extensibility**: Easily support new resource types without modifying core manager code.
+-   **Efficiency**: Use reference counting to manage memory and support asynchronous loading to avoid blocking the main thread.
+-   **Decoupling**: Isolate resource management logic from the rest of the engine.
 
 ## 2. Core Components
 
@@ -16,24 +17,24 @@ The primary goals of this architecture are:
 
 This is the abstract base class for all resource types.
 
-- **`State`**: Tracks the current status of the resource (`Unloaded`, `Loading`, `Loaded`, `Error`).
-- **`m_name`**: A unique string identifier for the resource, typically its relative path (e.g., "textures/player.png").
-- **`Load()` / `Unload()`**: Pure virtual functions that concrete resource classes must implement to handle their specific loading (e.g., from disk to GPU) and unloading logic.
+-   **`State`**: Tracks the current status of the resource (`Unloaded`, `Loading`, `Loaded`, `Error`).
+-   **`m_name`**: A unique string identifier for the resource, typically its relative path (e.g., "textures/player.png").
+-   **`Load()` / `Unload()`**: Pure virtual functions that concrete resource classes must implement to handle their specific loading (e.g., from disk to GPU) and unloading logic.
 
 ### 2.2. `JzResourceFactory`
 
 This is an abstract factory interface used to create instances of specific resource types.
 
-- For each concrete resource class, like `JzTexture`, a corresponding factory, `JzTextureFactory`, will be implemented.
-- The manager uses these factories to instantiate resources without needing to know their concrete types.
+-   For each concrete resource class, like `JzTexture`, a corresponding factory, `JzTextureFactory`, will be implemented.
+-   The manager uses these factories to instantiate resources without needing to know their concrete types.
 
 ### 2.3. `JzResourceManager`
 
 This is the central singleton or service that orchestrates all resource management. It is the only class that client code should interact with to obtain resources.
 
-- **Cache (`m_resourceCache`)**: An `std::unordered_map<std::string, std::weak_ptr<JzResource>>`. Using `std::weak_ptr` is key to automatic memory management. It allows the manager to track resources without preventing them from being deallocated when they are no longer in use (i.e., all `std::shared_ptr` instances are gone).
-- **Factories (`m_factories`)**: A map (`std::unordered_map<std::type_index, std::unique_ptr<JzResourceFactory>>`) to store and look up the appropriate factory for a given resource type.
-- **Search Paths (`m_searchPaths`)**: A list of directories where the manager should look for resource files.
+-   **Cache (`m_resourceCache`)**: An `std::unordered_map<std::string, std::weak_ptr<JzResource>>`. Using `std::weak_ptr` is key to automatic memory management. It allows the manager to track resources without preventing them from being deallocated when they are no longer in use (i.e., all `std::shared_ptr` instances are gone).
+-   **Factories (`m_factories`)**: A map (`std::unordered_map<std::type_index, std::unique_ptr<JzResourceFactory>>`) to store and look up the appropriate factory for a given resource type.
+-   **Search Paths (`m_searchPaths`)**: A list of directories where the manager should look for resource files.
 
 ## 3. Workflow
 
@@ -69,15 +70,15 @@ The internal process is as follows:
 
 1.  **Cache Lookup**: The manager first searches `m_resourceCache` using the resource `name`.
 2.  **Cache Hit**:
-    - If a `weak_ptr` is found and it's not expired (`!weak_ptr.expired()`), it means the resource is still active.
-    - The `weak_ptr` is promoted to a `shared_ptr` and returned immediately.
+    -   If a `weak_ptr` is found and it's not expired (`!weak_ptr.expired()`), it means the resource is still active.
+    -   The `weak_ptr` is promoted to a `shared_ptr` and returned immediately.
 3.  **Cache Miss**:
-    - If no entry is found or the `weak_ptr` has expired, a new resource must be created.
-    - The manager uses `typeid(T)` to find the corresponding `JzResourceFactory` in its `m_factories` map.
-    - The factory's `Create(name)` method is called to instantiate a new resource object, which is wrapped in a `std::shared_ptr`.
-    - The new `shared_ptr` is used to create a `weak_ptr` which is then stored in `m_resourceCache`.
-    - The resource's `Load()` method is called. This can be synchronous or asynchronous.
-    - The `shared_ptr` to the new resource is returned.
+    -   If no entry is found or the `weak_ptr` has expired, a new resource must be created.
+    -   The manager uses `typeid(T)` to find the corresponding `JzResourceFactory` in its `m_factories` map.
+    -   The factory's `Create(name)` method is called to instantiate a new resource object, which is wrapped in a `std::shared_ptr`.
+    -   The new `shared_ptr` is used to create a `weak_ptr` which is then stored in `m_resourceCache`.
+    -   The resource's `Load()` method is called. This can be synchronous or asynchronous.
+    -   The `shared_ptr` to the new resource is returned.
 
 ### 3.3. Asynchronous Loading
 
@@ -104,8 +105,8 @@ Unloading is handled automatically by reference counting.
 ```cpp
 #pragma once
 
-#include "JzRETypes.h"
-#include "JzResource.h"
+#include "JzRE/Core/JzRETypes.h"
+#include "JzRE/Resource/JzResource.h"
 #include "JzResourceFactory.h"
 #include <vector>
 #include <unordered_map>
@@ -128,7 +129,7 @@ public:
 
     // Called every frame to process async queue, etc.
     void Update();
-    
+
     // Cleans up expired weak_ptrs from the cache.
     void UnloadUnusedResources();
 
@@ -139,7 +140,7 @@ private:
     std::unordered_map<String, std::weak_ptr<JzResource>> m_resourceCache;
     std::vector<String> m_searchPaths;
     std::unordered_map<std::type_index, std::unique_ptr<JzResourceFactory>> m_factories;
-    
+
     std::mutex m_cacheMutex;
 
     // TODO: Add async loading members (queue, threads, etc.)
@@ -188,7 +189,7 @@ std::shared_ptr<T> JzResourceManager::GetResource(const String& name) {
 
 ```cpp
 // JzTexture.h
-#include "JzResource.h"
+#include "JzRE/Resource/JzResource.h"
 #include "JzRHITexture.h" // Assuming RHI texture exists
 
 class JzTexture : public JzResource {
@@ -214,6 +215,6 @@ public:
 
 ## 5. Future Work
 
-- **Resource Dependencies**: Implement a system where resources can depend on others (e.g., a `JzMaterial` depending on `JzShader` and `JzTexture`). Loading a material would automatically trigger the loading of its dependencies.
-- **Hot Reloading**: Monitor resource files on disk and automatically reload them in the editor when they change, allowing for rapid iteration.
-- **Streaming**: For very large resources like textures or models, implement streaming to load parts of the resource on demand.
+-   **Resource Dependencies**: Implement a system where resources can depend on others (e.g., a `JzMaterial` depending on `JzShader` and `JzTexture`). Loading a material would automatically trigger the loading of its dependencies.
+-   **Hot Reloading**: Monitor resource files on disk and automatically reload them in the editor when they change, allowing for rapid iteration.
+-   **Streaming**: For very large resources like textures or models, implement streaming to load parts of the resource on demand.
