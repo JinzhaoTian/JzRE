@@ -8,6 +8,12 @@ add_library(
     ${JzREResource_SOURCES}
 )
 
+target_compile_features(
+    JzREResource
+    PUBLIC
+    cxx_std_20
+)
+
 target_include_directories(
     JzREResource
     PUBLIC

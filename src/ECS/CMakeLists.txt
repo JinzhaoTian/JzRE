@@ -8,6 +8,12 @@ add_library(
     ${JzREECS_SOURCES}
 )
 
+target_compile_features(
+    JzREECS
+    PUBLIC
+    cxx_std_20
+)
+
 target_include_directories(
     JzREECS
     PUBLIC

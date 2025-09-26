@@ -8,6 +8,12 @@ add_library(
     ${JzREEditor_SOURCES}
 )
 
+target_compile_features(
+    JzREEditor
+    PUBLIC
+    cxx_std_20
+)
+
 target_include_directories(
     JzREEditor
     PUBLIC

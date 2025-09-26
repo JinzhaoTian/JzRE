@@ -1,6 +1,6 @@
 # set test source files
 file(GLOB TESTJzRECore_SOURCES CONFIGURE_DEPENDS 
-    "*.cpp"
+    "Test*.cpp"
 )
 
 # create test executable target

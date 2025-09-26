@@ -8,6 +8,12 @@ add_library(
     ${JzRECore_SOURCES}
 )
 
+target_compile_features(
+    JzRECore
+    PUBLIC
+    cxx_std_20
+)
+
 target_include_directories(
     JzRECore 
     PUBLIC 

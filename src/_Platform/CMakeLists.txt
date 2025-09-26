@@ -11,15 +11,26 @@ elseif(UNIX AND NOT APPLE)
          "Linux/*.cpp")
 endif()
 
-add_library(JzREPlatform STATIC
+add_library(
+    JzREPlatform
+    STATIC
     ${JzREPlatform_SOURCES}
 )
 
-target_include_directories(JzREPlatform PUBLIC
+target_compile_features(
+    JzREPlatform
+    PUBLIC
+    cxx_std_20
+)
+
+target_include_directories(
+    JzREPlatform
+    PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-target_link_libraries(JzREPlatform
+target_link_libraries(
+    JzREPlatform
     PUBLIC
     ${PLATFORM_LIBS}
     JzRECore
