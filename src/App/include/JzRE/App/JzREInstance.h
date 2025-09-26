@@ -12,17 +12,17 @@ namespace JzRE {
 /**
  * @brief Jz Render Engine
  */
-class JzRenderEngine {
+class JzREInstance {
 public:
     /**
      * @brief Constructor
      */
-    JzRenderEngine(JzERHIType rhiType, std::filesystem::path &openDirectory);
+    JzREInstance(JzERHIType rhiType, std::filesystem::path &openDirectory);
 
     /**
      * @brief Destructor
      */
-    ~JzRenderEngine();
+    ~JzREInstance();
 
     /**
      * @brief Run the render engine

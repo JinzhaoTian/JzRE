@@ -3,10 +3,10 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzRE/App/JzRenderEngine.h"
+#include "JzRE/App/JzREInstance.h"
 #include "JzRE/Core/JzClock.h"
 
-JzRE::JzRenderEngine::JzRenderEngine(JzERHIType rhiType, std::filesystem::path &openDirectory)
+JzRE::JzREInstance::JzREInstance(JzERHIType rhiType, std::filesystem::path &openDirectory)
 {
     auto &context = JzContext::GetInstance();
     if (!context.IsInitialized()) {
@@ -16,14 +16,14 @@ JzRE::JzRenderEngine::JzRenderEngine(JzERHIType rhiType, std::filesystem::path &
     m_editor = std::make_unique<JzEditor>();
 }
 
-JzRE::JzRenderEngine::~JzRenderEngine()
+JzRE::JzREInstance::~JzREInstance()
 {
     if (m_editor) {
         m_editor.reset();
     }
 }
 
-void JzRE::JzRenderEngine::Run()
+void JzRE::JzREInstance::Run()
 {
     JzRE::JzClock clock;
 
@@ -36,7 +36,7 @@ void JzRE::JzRenderEngine::Run()
     }
 }
 
-JzRE::Bool JzRE::JzRenderEngine::IsRunning() const
+JzRE::Bool JzRE::JzREInstance::IsRunning() const
 {
     return !JzContext::GetInstance().GetWindow().ShouldClose();
 }

@@ -1,26 +1,25 @@
 # set test source files
-file(GLOB TEST_JzRECore_SOURCES CONFIGURE_DEPENDS 
+file(GLOB TESTJzRECore_SOURCES CONFIGURE_DEPENDS 
     "*.cpp"
 )
 
 # create test executable target
 add_executable(
-    Test_JzRECore
-    ${TEST_JzRECore_SOURCES}
+    TESTJzRECore
+    ${TESTJzRECore_SOURCES}
 )
 
 # set test executable target compile properties
-target_compile_features(Test_JzRECore PUBLIC cxx_std_20)
+target_compile_features(TESTJzRECore PUBLIC cxx_std_20)
 
 # set test executable target link libraries
 target_link_libraries(
-    Test_JzRECore
+    TESTJzRECore
     PRIVATE
     JzRECore
-    GTest::gtest
     GTest::gtest_main
 )
 
 # add tests to CTest
 include(GoogleTest)
-gtest_discover_tests(Test_JzRECore)
+gtest_discover_tests(TESTJzRECore)

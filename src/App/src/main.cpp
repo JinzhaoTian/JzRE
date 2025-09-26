@@ -8,7 +8,7 @@
 #include <filesystem>
 #include "JzRE/RHI/JzRHIETypes.h"
 #include "JzRE/App/JzREHub.h"
-#include "JzRE/App/JzRenderEngine.h"
+#include "JzRE/App/JzREInstance.h"
 
 int main(int argc, char **argv)
 {
@@ -31,7 +31,7 @@ int main(int argc, char **argv)
             return EXIT_FAILURE;
         }
 
-        auto re = std::make_unique<JzRE::JzRenderEngine>(rhiType, openPath.value());
+        auto re = std::make_unique<JzRE::JzREInstance>(rhiType, openPath.value());
 
         if (re) {
             re->Run();
