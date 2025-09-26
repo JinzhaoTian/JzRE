@@ -6,7 +6,6 @@
 #pragma once
 
 #include "JzVector.h"
-#include "JzMatrix.h"
 
 namespace JzRE {
 
