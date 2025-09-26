@@ -13,7 +13,6 @@ target_include_directories(JzREUI PUBLIC
 target_link_libraries(JzREUI
     PUBLIC
     imgui::imgui
-    PRIVATE
     JzRECore
     JzRERHI
 )

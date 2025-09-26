@@ -1,18 +1,3 @@
-# add platform-specific libraries
-if(WIN32)
-    set(PLATFORM_LIBS opengl32 gdi32)
-elseif(APPLE)
-    find_library(COCOA_LIB Cocoa)
-    find_library(IOKIT_LIB IOKit)
-    find_library(COREVIDEO_LIB CoreVideo)
-    find_library(UNIFORMTYPEIDENTIFIERS_LIB UniformTypeIdentifiers)
-    set(PLATFORM_LIBS ${COCOA_LIB} ${IOKIT_LIB} ${COREVIDEO_LIB} ${UNIFORMTYPEIDENTIFIERS_LIB})
-elseif(UNIX AND NOT APPLE)
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(X11 REQUIRED x11)
-    set(PLATFORM_LIBS ${X11_LIBRARIES} ${CMAKE_DL_LIBS})
-endif()
-
 # set project platform-specific sources
 if(WIN32)
     file(GLOB JzREPlatform_SOURCES CONFIGURE_DEPENDS 
@@ -36,7 +21,6 @@ target_include_directories(JzREPlatform PUBLIC
 
 target_link_libraries(JzREPlatform
     PUBLIC
-    PLATFORM_LIBS
-    PRIVATE
+    ${PLATFORM_LIBS}
     JzRECore
 )

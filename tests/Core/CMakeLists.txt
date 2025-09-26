@@ -4,7 +4,8 @@ file(GLOB TEST_JzRECore_SOURCES CONFIGURE_DEPENDS
 )
 
 # create test executable target
-add_executable(Test_JzRECore
+add_executable(
+    Test_JzRECore
     ${TEST_JzRECore_SOURCES}
 )
 
@@ -12,7 +13,9 @@ add_executable(Test_JzRECore
 target_compile_features(Test_JzRECore PUBLIC cxx_std_20)
 
 # set test executable target link libraries
-target_link_libraries(Test_JzRECore PRIVATE
+target_link_libraries(
+    Test_JzRECore
+    PRIVATE
     JzRECore
     GTest::gtest
 )

@@ -4,18 +4,11 @@ file(GLOB JzRE_SOURCES CONFIGURE_DEPENDS
 
 add_executable(JzRE ${JzRE_SOURCES})
 
-target_include_directories(JzRECore PUBLIC 
+target_include_directories(JzRE PUBLIC 
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
 target_link_libraries(JzRE
-    PRIVATE
-    JzRECore
-    JzRERHI
-    JzREGraphics
-    JzREECS
-    JzREResource
-    JzREUI
-    JzREPlatform
+    PUBLIC
     JzREEditor
 )

@@ -11,6 +11,6 @@ target_include_directories(JzRERHI PUBLIC
 )
 
 target_link_libraries(JzRERHI
-    PRIVATE
+    PUBLIC
     JzRECore
 )

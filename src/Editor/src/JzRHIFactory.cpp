@@ -16,6 +16,7 @@ std::unique_ptr<JzRE::JzRHIDevice> JzRE::JzRHIFactory::CreateDevice(JzRE::JzERHI
 
     switch (rhiType) {
         case JzERHIType::OpenGL:
+            return std::make_unique<JzOpenGLDevice>();
         // case JzERHIType::Vulkan:
         //     return std::make_unique<JzVulkanDevice>();
         default:

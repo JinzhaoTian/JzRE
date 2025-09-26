@@ -81,4 +81,4 @@ private:
 
 } // namespace JzRE
 
-#include "JzResourceManager.inl" // IWYU pragma: keep
+#include "JzRE/Resource/JzResourceManager.inl" // IWYU pragma: keep

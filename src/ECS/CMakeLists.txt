@@ -2,16 +2,21 @@ file(GLOB JzREECS_SOURCES CONFIGURE_DEPENDS
     "src/*.cpp"
 )
 
-add_library(JzREECS STATIC
+add_library(
+    JzREECS
+    STATIC
     ${JzREECS_SOURCES}
 )
 
-target_include_directories(JzREECS PUBLIC 
+target_include_directories(
+    JzREECS
+    PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-target_link_libraries(JzREECS
-    PRIVATE
+target_link_libraries(
+    JzREECS
+    PUBLIC
     JzRECore
     JzRERHI
     JzREResource
