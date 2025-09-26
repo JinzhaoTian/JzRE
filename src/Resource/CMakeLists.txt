@@ -12,6 +12,8 @@ target_include_directories(JzREResource PUBLIC
 
 target_link_libraries(JzREResource 
     PRIVATE
+    assimp::assimp
     JzRECore
     JzRERHI
+    JzREGraphics
 )

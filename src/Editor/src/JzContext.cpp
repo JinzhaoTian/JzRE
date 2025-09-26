@@ -4,10 +4,8 @@
  */
 
 #include "JzRE/Editor/JzContext.h"
-#include "JzRE/Core/JzClock.h"
-#include "JzRE/Core/JzLogger.h"
 #include "JzRE/Core/JzServiceContainer.h"
-#include "JzRE/RHI/JzRHIFactory.h"
+#include "JzRE/Editor/JzRHIFactory.h"
 
 JzRE::JzContext &JzRE::JzContext::GetInstance()
 {

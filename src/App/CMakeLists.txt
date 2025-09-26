@@ -10,5 +10,9 @@ target_include_directories(JzRECore PUBLIC
 
 target_link_libraries(JzRE
     PRIVATE
+    JzRECore
+    JzRERHI
+    JzREGraphics
+    JzREUI
     JzREEditor
 )

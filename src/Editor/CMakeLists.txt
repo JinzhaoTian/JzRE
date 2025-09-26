@@ -16,6 +16,7 @@ target_link_libraries(JzREEditor
     PRIVATE
     JzRECore
     JzRERHI
+    JzREGraphics
     JzREECS
     JzREResource
     JzREPlatform

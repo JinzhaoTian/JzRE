@@ -11,7 +11,7 @@
 #include <windows.h>
 #endif
 #include <GLFW/glfw3.h>
-#include "JzWindowSettings.h"
+#include "JzRE/Editor/JzWindowSettings.h"
 #include "JzRE/Core/JzRETypes.h"
 #include "JzRE/Core/JzEvent.h"
 #include "JzRE/Core/JzVector.h"
