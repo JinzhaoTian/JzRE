@@ -3,7 +3,7 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzOpenFileDialog.h"
+#include "JzRE/Platform/JzOpenFileDialog.h"
 
 #ifdef __APPLE__
 

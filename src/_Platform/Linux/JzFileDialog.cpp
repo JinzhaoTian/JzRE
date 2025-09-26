@@ -3,7 +3,7 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzFileDialog.h"
+#include "JzRE/Platform/JzFileDialog.h"
 
 #ifdef __linux__
 #include <gtk/gtk.h>

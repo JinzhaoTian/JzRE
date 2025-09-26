@@ -6,8 +6,8 @@
 #pragma once
 
 #include <vector>
-#include "JzEntity.h"
-#include "JzIComponentPool.h"
+#include "JzRE/ECS/JzEntity.h"
+#include "JzRE/ECS/JzIComponentPool.h"
 
 namespace JzRE {
 

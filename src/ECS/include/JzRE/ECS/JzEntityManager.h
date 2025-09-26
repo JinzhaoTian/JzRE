@@ -8,9 +8,9 @@
 #include <vector>
 #include <unordered_map>
 #include <memory>
-#include "JzEntity.h"
-#include "JzIComponentPool.h"
-#include "JzComponentPool.h"
+#include "JzRE/ECS/JzEntity.h"
+#include "JzRE/ECS/JzIComponentPool.h"
+#include "JzRE/ECS/JzComponentPool.h"
 
 namespace JzRE {
 

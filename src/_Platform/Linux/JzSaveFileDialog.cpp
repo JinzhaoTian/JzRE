@@ -3,15 +3,14 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzSaveFileDialog.h"
+#include "JzRE/Platform/JzSaveFileDialog.h"
 
-#ifdef __APPLE__
+#ifdef __linux__
 
 JzRE::JzSaveFileDialog::JzSaveFileDialog(const JzRE::String &p_dialogTitle) :
     JzFileDialog(p_dialogTitle) { }
 
-void JzRE::JzSaveFileDialog::DefineExtension(const JzRE::String &p_label,
-                                             const JzRE::String &p_extension)
+void JzRE::JzSaveFileDialog::DefineExtension(const JzRE::String &p_label, const JzRE::String &p_extension)
 {
     m_filter    = p_label + '\0' + '*' + p_extension + '\0';
     m_extension = p_extension;
@@ -28,8 +27,7 @@ void JzRE::JzSaveFileDialog::Show(JzEFileDialogType type)
 void JzRE::JzSaveFileDialog::_addExtensionToFilePathAndName()
 {
     if (m_filename.size() >= m_extension.size()) {
-        String fileEnd(m_filename.data() + m_filename.size() - m_extension.size(),
-                       m_filename.data() + m_filename.size());
+        String fileEnd(m_filename.data() + m_filename.size() - m_extension.size(), m_filename.data() + m_filename.size());
 
         if (fileEnd != m_extension) {
             m_filepath += m_extension;
@@ -41,4 +39,4 @@ void JzRE::JzSaveFileDialog::_addExtensionToFilePathAndName()
     }
 }
 
-#endif // __APPLE__
+#endif // __linux__

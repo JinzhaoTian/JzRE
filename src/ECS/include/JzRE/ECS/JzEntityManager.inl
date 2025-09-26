@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "JzEntityManager.h"
+#include "JzRE/ECS/JzEntityManager.h"
 
 namespace JzRE {
 

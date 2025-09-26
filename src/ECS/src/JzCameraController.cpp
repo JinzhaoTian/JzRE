@@ -4,7 +4,6 @@
  */
 
 #include "JzRE/ECS/JzCameraController.h"
-#include "JzRE/Core/JzEvent.h"
 
 JzRE::JzCameraController::JzCameraController(JzRE::JzCamera &camera) :
     m_camera(camera)

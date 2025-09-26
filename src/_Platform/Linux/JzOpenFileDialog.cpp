@@ -5,9 +5,9 @@
 
 #include "JzRE/Platform/JzOpenFileDialog.h"
 
-#ifdef _WIN32
+#ifdef __linux__
 
-JzRE::JzOpenFileDialog::JzOpenFileDialog(const JzRE::String &p_dialogTitle) :
+JzRE::JzOpenFileDialog::JzFileDialogLinux(const JzRE::String &p_dialogTitle) :
     JzFileDialog(p_dialogTitle) { }
 
 void JzRE::JzOpenFileDialog::AddFileType(const JzRE::String &p_label, const JzRE::String &p_filter)
@@ -23,4 +23,4 @@ void JzRE::JzOpenFileDialog::Show(JzRE::JzEFileDialogType type)
     JzFileDialog::Show(type);
 }
 
-#endif // _WIN32
+#endif // __linux__

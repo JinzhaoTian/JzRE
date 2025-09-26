@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "JzComponentPool.h"
+#include "JzRE/ECS/JzComponentPool.h"
 #include <stdexcept>
 
 namespace JzRE {
