@@ -10,6 +10,7 @@
 #include "JzRE/Core/JzVector.h"
 
 namespace JzRE {
+
 /**
  * @brief Matrix Class
  */

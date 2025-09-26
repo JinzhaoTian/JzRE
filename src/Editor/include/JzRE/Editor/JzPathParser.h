@@ -6,9 +6,28 @@
 #pragma once
 
 #include "JzRE/Core/JzRETypes.h"
-#include "JzRE/Core/JzEFile.h"
 
 namespace JzRE {
+
+/**
+ * @brief Enums of File Types
+ */
+enum class JzEFileType : U8 {
+    UNKNOWN,
+    MODEL,
+    TEXTURE,
+    SHADER,
+    SHADER_PART,
+    MATERIAL,
+    SOUND,
+    SCENE,
+    SCRIPT,
+    FONT
+};
+
+/**
+ * @brief Path parser
+ */
 class JzPathParser {
 public:
     /**

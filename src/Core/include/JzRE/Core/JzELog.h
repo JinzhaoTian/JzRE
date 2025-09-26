@@ -8,6 +8,7 @@
 #include "JzRE/Core/JzRETypes.h"
 
 namespace JzRE {
+
 /**
  * @brief Enums of log level
  */

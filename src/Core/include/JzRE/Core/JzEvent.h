@@ -81,6 +81,7 @@ private:
     std::unordered_map<ListenerID, Callback> m_listeners;
     ListenerID                               m_availableListenerID = 0;
 };
+
 } // namespace JzRE
 
-#include "JzEvent.inl" // IWYU pragma: keep
+#include "JzRE/Core/JzEvent.inl" // IWYU pragma: keep

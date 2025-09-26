@@ -12,6 +12,9 @@
 
 namespace JzRE {
 
+/**
+ * @brief JzRE Log Macro
+ */
 #define JzRE_LOG_INFO(...) \
     JzLogger::GetInstance().Info(__VA_ARGS__)
 #define JzRE_LOG_WARN(...) \
@@ -22,7 +25,7 @@ namespace JzRE {
     JzLogger::GetInstance().Debug(__VA_ARGS__)
 
 /**
- * @brief Singleton logger class
+ * @brief JzRE Singleton logger
  */
 class JzLogger {
 public:
@@ -33,6 +36,12 @@ public:
      */
     static JzLogger &GetInstance();
 
+    /**
+     * @brief Log a message
+     *
+     * @param message
+     * @param level
+     */
     void Log(const String &message, JzELogLevel level);
 
     /**
@@ -89,4 +98,5 @@ public:
 private:
     std::shared_ptr<spdlog::logger> m_logger;
 };
+
 } // namespace JzRE

@@ -8,6 +8,7 @@
 #include "JzRE/Core/JzRETypes.h"
 
 namespace JzRE {
+
 /**
  * @brief Interface for Serializable Objects
  */
@@ -32,4 +33,5 @@ public:
      */
     virtual ~JzISerializable() = default;
 };
+
 } // namespace JzRE
