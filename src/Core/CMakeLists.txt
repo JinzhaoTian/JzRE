@@ -7,7 +7,7 @@ add_library(JzRECore STATIC
 )
 
 target_include_directories(JzRECore PUBLIC 
-    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
 target_link_libraries(JzRECore PUBLIC

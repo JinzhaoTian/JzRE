@@ -5,7 +5,7 @@ file(GLOB JzREECS_SOURCES CONFIGURE_DEPENDS
 )
 
 target_include_directories(JzREECS PUBLIC 
-    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
 target_sources(JzREECS PRIVATE

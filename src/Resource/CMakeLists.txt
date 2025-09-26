@@ -5,7 +5,7 @@ file(GLOB JzREResource_SOURCES CONFIGURE_DEPENDS
 )
 
 target_include_directories(JzREResource PUBLIC 
-    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
 target_sources(JzREResource PRIVATE

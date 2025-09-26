@@ -7,7 +7,7 @@ add_library(JzREUI STATIC
 )
 
 target_include_directories(JzREUI PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
 target_link_libraries(JzREUI 
