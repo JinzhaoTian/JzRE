@@ -3,8 +3,8 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzPanelWindow.h"
-#include "JzConverter.h"
+#include "JzRE/UI/JzPanelWindow.h"
+#include "JzRE/UI/JzConverter.h"
 
 JzRE::JzPanelWindow::JzPanelWindow(const JzRE::String &name, JzRE::Bool is_opened) :
     name(name),

@@ -7,10 +7,10 @@
 
 #include <memory>
 #include <mutex>
-#include "JzRETypes.h"
-#include "JzRHICommand.h"
-#include "JzRHIETypes.h"
-#include "JzRHIFramebuffer.h"
+#include "JzRE/Core/JzRETypes.h"
+#include "JzRE/RHI/JzRHICommand.h"
+#include "JzRE/RHI/JzRHIETypes.h"
+#include "JzRE/RHI/JzRHIFramebuffer.h"
 
 namespace JzRE {
 /**

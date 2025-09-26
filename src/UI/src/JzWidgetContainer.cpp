@@ -3,7 +3,7 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzWidgetContainer.h"
+#include "JzRE/UI/JzWidgetContainer.h"
 #include <algorithm>
 #include <ranges>
 

@@ -5,8 +5,8 @@
 
 #pragma once
 
-#include "JzDataDispatcher.h"
-#include "JzWidget.h"
+#include "JzRE/UI/JzDataDispatcher.h"
+#include "JzRE/UI/JzWidget.h"
 
 namespace JzRE {
 /**

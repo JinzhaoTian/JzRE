@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "JzEPlugin.h"
+#include "JzRE/UI/JzEPlugin.h"
 
 namespace JzRE {
 /**

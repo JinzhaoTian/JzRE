@@ -8,11 +8,11 @@
 #include <unordered_map>
 #include <utility>
 #include <functional>
-#include "JzRETypes.h"
-#include "JzPanel.h"
-#include "JzPanelWindow.h"
-#include "JzMenuItem.h"
-#include "JzMenuList.h"
+#include "JzRE/Core/JzRETypes.h"
+#include "JzRE/UI/JzPanel.h"
+#include "JzRE/UI/JzPanelWindow.h"
+#include "JzRE/UI/JzMenuItem.h"
+#include "JzRE/UI/JzMenuList.h"
 
 namespace JzRE {
 /**

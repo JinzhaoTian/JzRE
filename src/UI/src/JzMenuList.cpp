@@ -3,7 +3,7 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzMenuList.h"
+#include "JzRE/UI/JzMenuList.h"
 #include <imgui.h>
 
 JzRE::JzMenuList::JzMenuList(const String &name, Bool is_locked) :

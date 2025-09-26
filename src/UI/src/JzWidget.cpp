@@ -3,7 +3,7 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzWidget.h"
+#include "JzRE/UI/JzWidget.h"
 #include <imgui.h>
 
 uint64_t JzRE::JzWidget::__WIDGET_ID_INCREMENT = 0;

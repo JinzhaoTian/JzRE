@@ -3,10 +3,15 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzAssetBrowser.h"
-#include "JzPathParser.h"
-#include "JzImage.h"
-#include "JzTextClickable.h"
+#include "JzRE/Editor/JzAssetBrowser.h"
+#include "JzRE/Editor/JzEditor.h"
+#include "JzRE/Editor/JzPathParser.h"
+#include "JzRE/UI/JzImage.h"
+#include "JzRE/UI/JzText.h"
+#include "JzRE/UI/JzTextClickable.h"
+#include "JzRE/UI/JzWidgetContainer.h"
+#include "JzRE/Resource/JzResourceManager.h"
+#include "JzRE/Resource/JzTexture.h"
 
 JzRE::JzAssetBrowser::JzAssetBrowser(const JzRE::String &name, JzRE::Bool is_opened) :
     JzPanelWindow(name, is_opened)

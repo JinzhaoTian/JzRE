@@ -8,9 +8,9 @@
 #include <memory>
 #include <unordered_map>
 #include <glad/glad.h>
-#include "JzRETypes.h"
-#include "JzOpenGLShader.h"
-#include "JzRHIPipeline.h"
+#include "JzRE/Core/JzRETypes.h"
+#include "JzRE/Graphics/JzOpenGLShader.h"
+#include "JzRE/RHI/JzRHIPipeline.h"
 
 namespace JzRE {
 /**

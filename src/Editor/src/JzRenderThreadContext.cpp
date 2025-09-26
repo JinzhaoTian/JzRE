@@ -3,7 +3,7 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzRenderThreadContext.h"
+#include "JzRE/Editor/JzRenderThreadContext.h"
 
 JzRE::JzRenderThreadContext::JzRenderThreadContext(JzRE::U32 threadId) { }
 

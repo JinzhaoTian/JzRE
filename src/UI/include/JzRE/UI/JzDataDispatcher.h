@@ -6,9 +6,9 @@
 #pragma once
 
 #include <functional>
-#include "JzRETypes.h"
-#include "JzEPlugin.h"
-#include "JzPlugin.h"
+#include "JzRE/Core/JzRETypes.h"
+#include "JzRE/UI/JzEPlugin.h"
+#include "JzRE/UI/JzPlugin.h"
 
 namespace JzRE {
 /**

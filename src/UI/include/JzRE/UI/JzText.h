@@ -5,8 +5,8 @@
 
 #pragma once
 
-#include "JzRETypes.h"
-#include "JzDataWidget.h"
+#include "JzRE/Core/JzRETypes.h"
+#include "JzRE/UI/JzDataWidget.h"
 
 namespace JzRE {
 /**

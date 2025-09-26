@@ -5,9 +5,9 @@
 
 #include <imgui.h>
 #include <array>
-#include "JzRETypes.h"
-#include "JzWidget.h"
-#include "JzWidgetContainer.h"
+#include "JzRE/Core/JzRETypes.h"
+#include "JzRE/UI/JzWidget.h"
+#include "JzRE/UI/JzWidgetContainer.h"
 
 namespace JzRE {
 /**

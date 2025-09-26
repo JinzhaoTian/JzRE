@@ -3,8 +3,7 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzRHIFactory.h"
-#include <iostream>
+#include "JzRE/RHI/JzRHIFactory.h"
 #include "JzOpenGLDevice.h"
 // #include "JzVulkanDevice.h"
 

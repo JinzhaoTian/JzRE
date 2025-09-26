@@ -3,7 +3,7 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzOpenGLBuffer.h"
+#include "JzRE/Graphics/JzOpenGLBuffer.h"
 
 JzRE::JzOpenGLBuffer::JzOpenGLBuffer(const JzRE::JzBufferDesc &desc) :
     JzRE::JzRHIBuffer(desc)

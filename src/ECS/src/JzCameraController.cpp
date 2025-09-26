@@ -3,7 +3,8 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzCameraController.h"
+#include "JzRE/ECS/JzCameraController.h"
+#include "JzRE/Core/JzEvent.h"
 
 JzRE::JzCameraController::JzCameraController(JzRE::JzCamera &camera) :
     m_camera(camera)

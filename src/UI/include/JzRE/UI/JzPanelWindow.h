@@ -5,10 +5,10 @@
 
 #pragma once
 
-#include "JzEAlignment.h"
-#include "JzEvent.h"
-#include "JzPanel.h"
-#include "JzVector.h"
+#include "JzRE/Core/JzEvent.h"
+#include "JzRE/Core/JzVector.h"
+#include "JzRE/UI/JzEAlignment.h"
+#include "JzRE/UI/JzPanel.h"
 
 namespace JzRE {
 /**

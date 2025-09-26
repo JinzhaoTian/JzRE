@@ -3,8 +3,8 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzOpenGLFramebuffer.h"
-#include "JzOpenGLTexture.h"
+#include "JzRE/Graphics/JzOpenGLFramebuffer.h"
+#include "JzRE/Graphics/JzOpenGLTexture.h"
 
 JzRE::JzOpenGLFramebuffer::JzOpenGLFramebuffer(const JzRE::String &debugName) :
     JzRHIFramebuffer(debugName)

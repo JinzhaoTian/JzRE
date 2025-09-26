@@ -5,10 +5,9 @@
 
 #pragma once
 
-#include "JzEPlugin.h"
-#include "JzPlugin.h"
-
 #include <vector>
+#include "JzRE/UI/JzEPlugin.h"
+#include "JzRE/UI/JzPlugin.h"
 
 namespace JzRE {
 /**

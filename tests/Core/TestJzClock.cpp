@@ -3,10 +3,10 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzClock.h"
 #include <gtest/gtest.h>
 #include <thread>
 #include <chrono>
+#include "JzRE/Core/JzClock.h"
 
 class TestJzClock : public ::testing::Test {
 protected:

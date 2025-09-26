@@ -3,7 +3,7 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzText.h"
+#include "JzRE/UI/JzText.h"
 #include <imgui.h>
 
 JzRE::JzText::JzText(const String &p_content) :

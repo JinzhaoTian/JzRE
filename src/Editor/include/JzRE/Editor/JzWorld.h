@@ -7,8 +7,8 @@
 
 #include <vector>
 #include <memory>
-#include "JzEntityManager.h"
-#include "JzSystem.h"
+#include "JzRE/ECS/JzEntityManager.h"
+#include "JzRE/ECS/JzSystem.h"
 
 namespace JzRE {
 

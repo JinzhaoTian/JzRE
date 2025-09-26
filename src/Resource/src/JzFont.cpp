@@ -3,12 +3,12 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzFont.h"
+#include "JzRE/Resource/JzFont.h"
 #include <ft2build.h>
 #include FT_FREETYPE_H
-#include "JzServiceContainer.h"
-#include "JzRHIDevice.h"
-#include "JzRHIDescription.h"
+#include "JzRE/Core/JzServiceContainer.h"
+#include "JzRE/RHI/JzRHIDevice.h"
+#include "JzRE/RHI/JzRHIDescription.h"
 
 JzRE::JzFont::JzFont(const JzRE::String &path, JzRE::U32 size) :
     m_path(path),

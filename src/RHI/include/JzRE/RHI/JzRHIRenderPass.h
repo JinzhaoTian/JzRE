@@ -6,9 +6,8 @@
 #pragma once
 
 #include <memory>
-#include "JzRETypes.h"
-#include "JzRHIETypes.h"
-#include "JzScene.h"
+#include "JzRE/Core/JzRETypes.h"
+#include "JzRE/RHI/JzRHIETypes.h"
 
 namespace JzRE {
 /**
@@ -33,7 +32,7 @@ public:
      * @brief Execute the render pass
      * @param scene The scene to render
      */
-    virtual void Execute(std::shared_ptr<JzScene> scene) = 0;
+    // virtual void Execute(std::shared_ptr<JzScene> scene) = 0;
 
     /**
      * @brief Get the type of the render pass

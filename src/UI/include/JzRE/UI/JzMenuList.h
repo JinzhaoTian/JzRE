@@ -5,9 +5,9 @@
 
 #pragma once
 
-#include "JzRETypes.h"
-#include "JzEvent.h"
-#include "JzGroup.h"
+#include "JzRE/Core/JzRETypes.h"
+#include "JzRE/Core/JzEvent.h"
+#include "JzRE/UI/JzGroup.h"
 
 namespace JzRE {
 /**

@@ -3,7 +3,8 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzSceneManager.h"
+#include "JzRE/Editor/JzSceneManager.h"
+#include "JzRE/Editor/JzEditor.h"
 
 JzRE::JzSceneManager::JzSceneManager()
 {

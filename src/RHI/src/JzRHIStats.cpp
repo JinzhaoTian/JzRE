@@ -3,7 +3,7 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzRHIStats.h"
+#include "JzRE/RHI/JzRHIStats.h"
 
 // RHIStats实现
 void JzRE::JzRHIStats::Reset()

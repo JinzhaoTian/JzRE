@@ -3,9 +3,9 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzGroup.h"
+#include "JzRE/UI/JzGroup.h"
 #include <imgui.h>
-#include "JzConverter.h"
+#include "JzRE/UI/JzConverter.h"
 
 JzRE::JzGroup::JzGroup(JzRE::JzEHorizontalAlignment p_horizontalAlignment, JzRE::JzVec2 p_size, JzRE::JzVec2 p_spacing) :
     horizontalAlignment(p_horizontalAlignment),

@@ -6,11 +6,11 @@
 #pragma once
 
 #include <memory>
-#include "JzRETypes.h"
-#include "JzEvent.h"
-#include "JzWidget.h"
-#include "JzVector.h"
-#include "JzRHITexture.h"
+#include "JzRE/Core/JzRETypes.h"
+#include "JzRE/Core/JzEvent.h"
+#include "JzRE/Core/JzVector.h"
+#include "JzRE/RHI/JzRHITexture.h"
+#include "JzRE/UI/JzWidget.h"
 
 namespace JzRE {
 

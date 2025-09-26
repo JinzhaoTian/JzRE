@@ -7,9 +7,9 @@
 
 #include <memory>
 #include <vector>
-#include "JzResource.h"
-#include "JzRHIPipeline.h"
-#include "JzRHITexture.h"
+#include "JzRE/Resource/JzResource.h"
+#include "JzRE/RHI/JzRHIPipeline.h"
+#include "JzRE/RHI/JzRHITexture.h"
 
 namespace JzRE {
 

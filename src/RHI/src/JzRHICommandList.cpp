@@ -3,7 +3,7 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzRHICommandList.h"
+#include "JzRE/RHI/JzRHICommandList.h"
 #include <iostream>
 
 // RHICommandBuffer实现

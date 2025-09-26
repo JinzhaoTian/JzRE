@@ -1,7 +1,7 @@
 add_library(JzREEditor STATIC)
 
 file(GLOB JzREEditor_SOURCES CONFIGURE_DEPENDS 
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
+    "src/*.cpp"
 )
 
 target_include_directories(JzREEditor PUBLIC
@@ -14,9 +14,11 @@ target_sources(JzREEditor PRIVATE
 
 target_link_libraries(JzREEditor
     PUBLIC
-    JzRERHI
-    JzREUI
-    PRIVATE
     JzRECore
+    JzRERHI
+    JzREECS
+    JzREResource
+    JzREPlatform
+    JzREUI
     imgui::imgui
 )

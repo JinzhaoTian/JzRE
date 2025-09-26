@@ -5,13 +5,13 @@
 
 #pragma once
 
-#include "JzRETypes.h"
-#include "JzRHIETypes.h"
-#include "JzRHIFramebuffer.h"
-#include "JzRHIPipeline.h"
-#include "JzRHIResource.h"
-#include "JzRHITexture.h"
-#include "JzRHIVertexArray.h"
+#include "JzRE/Core/JzRETypes.h"
+#include "JzRE/RHI/JzRHIETypes.h"
+#include "JzRE/RHI/JzRHIFramebuffer.h"
+#include "JzRE/RHI/JzRHIPipeline.h"
+#include "JzRE/RHI/JzRHIResource.h"
+#include "JzRE/RHI/JzRHITexture.h"
+#include "JzRE/RHI/JzRHIVertexArray.h"
 
 namespace JzRE {
 

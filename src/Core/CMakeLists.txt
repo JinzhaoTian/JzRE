@@ -1,5 +1,5 @@
 file(GLOB JzRECore_SOURCES CONFIGURE_DEPENDS 
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
+    "src/*.cpp"
 )
 
 add_library(JzRECore STATIC

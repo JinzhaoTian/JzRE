@@ -3,7 +3,7 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzInputManager.h"
+#include "JzRE/Editor/JzInputManager.h"
 
 JzRE::JzInputManager::JzInputManager(JzWindow &window) :
     m_window(window)

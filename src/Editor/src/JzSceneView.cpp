@@ -3,8 +3,8 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzSceneView.h"
-#include "JzContext.h"
+#include "JzRE/Editor/JzSceneView.h"
+#include "JzRE/Editor/JzContext.h"
 
 JzRE::JzSceneView::JzSceneView(const JzRE::String &name, JzRE::Bool is_opened) :
     JzRE::JzView(name, is_opened)

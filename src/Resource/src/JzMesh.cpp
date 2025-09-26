@@ -3,7 +3,7 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzMesh.h"
+#include "JzRE/Resource/JzMesh.h"
 
 namespace JzRE {
 

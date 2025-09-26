@@ -3,7 +3,7 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzCamera.h"
+#include "JzRE/ECS/JzCamera.h"
 
 JzRE::JzCamera::JzCamera() :
     m_projectionMode(JzEProjectionMode::PERSPECTIVE),

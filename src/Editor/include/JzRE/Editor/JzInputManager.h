@@ -5,10 +5,10 @@
 
 #pragma once
 
-#include "JzRETypes.h"
-#include "JzEInput.h"
-#include "JzEvent.h"
-#include "JzWindow.h"
+#include "JzRE/Core/JzRETypes.h"
+#include "JzRE/Editor/JzEInput.h"
+#include "JzRE/Core/JzEvent.h"
+#include "JzRE/Editor/JzWindow.h"
 
 namespace JzRE {
 /**

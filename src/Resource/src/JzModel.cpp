@@ -3,7 +3,7 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzModel.h"
+#include "JzRE/Resource/JzModel.h"
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 

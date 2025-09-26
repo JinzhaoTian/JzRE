@@ -3,12 +3,13 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzConsole.h"
-#include "JzLogger.h"
-#include "JzButton.h"
-#include "JzRETypes.h"
-#include "JzSeparator.h"
-#include "JzSpacing.h"
+#include "JzRE/Editor/JzConsole.h"
+#include "JzRE/Core/JzRETypes.h"
+#include "JzRE/Core/JzLogger.h"
+#include "JzRE/UI/JzText.h"
+#include "JzRE/UI/JzButton.h"
+#include "JzRE/UI/JzSeparator.h"
+#include "JzRE/UI/JzSpacing.h"
 
 JzRE::JzConsole::JzConsole(const String &name, Bool is_opened) :
     JzPanelWindow(name, is_opened)

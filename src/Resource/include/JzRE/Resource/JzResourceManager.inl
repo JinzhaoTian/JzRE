@@ -5,8 +5,8 @@
 
 #pragma once
 
-#include "JzResourceManager.h"
-#include "JzLogger.h"
+#include "JzRE/Resource/JzResourceManager.h"
+#include "JzRE/Core/JzLogger.h"
 
 namespace JzRE {
 

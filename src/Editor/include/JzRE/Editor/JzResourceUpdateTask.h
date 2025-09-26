@@ -6,7 +6,7 @@
 #pragma once
 
 #include <functional>
-#include "JzRETypes.h"
+#include "JzRE/Core/JzRETypes.h"
 #include "JzRenderTask.h"
 
 namespace JzRE {

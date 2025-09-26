@@ -3,10 +3,10 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzIconButton.h"
+#include "JzRE/UI/JzIconButton.h"
 #include <cstdint>
 #include <imgui.h>
-#include "JzConverter.h"
+#include "JzRE/UI/JzConverter.h"
 
 JzRE::JzIconButton::JzIconButton(std::shared_ptr<JzRE::JzRHITexture> texture) :
     m_texture(texture),

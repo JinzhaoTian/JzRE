@@ -7,9 +7,9 @@
 
 #include <vector>
 #include <utility>
-#include "JzRETypes.h"
-#include "JzEMemory.h"
-#include "JzWidget.h"
+#include "JzRE/Core/JzRETypes.h"
+#include "JzRE/UI/JzEMemory.h"
+#include "JzRE/UI/JzWidget.h"
 
 namespace JzRE {
 /**

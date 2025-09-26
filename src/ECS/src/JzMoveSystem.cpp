@@ -3,9 +3,9 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzMoveSystem.h"
-#include "JzEntityManager.h"
-#include "JzComponent.h"
+#include "JzRE/ECS/JzMoveSystem.h"
+#include "JzRE/ECS/JzEntityManager.h"
+#include "JzRE/ECS/JzComponent.h"
 
 void JzRE::JzMoveSystem::Update(JzRE::JzEntityManager &manager, JzRE::F32 delta)
 {

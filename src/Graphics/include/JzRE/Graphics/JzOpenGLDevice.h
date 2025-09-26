@@ -5,13 +5,13 @@
 
 #pragma once
 
-#include "JzRETypes.h"
-#include "JzOpenGLFramebuffer.h"
-#include "JzOpenGLPipeline.h"
-#include "JzOpenGLVertexArray.h"
-#include "JzRHICapabilities.h"
-#include "JzRHIDevice.h"
-#include "JzRHIStats.h"
+#include "JzRE/Core/JzRETypes.h"
+#include "JzRE/RHI/JzRHICapabilities.h"
+#include "JzRE/RHI/JzRHIDevice.h"
+#include "JzRE/RHI/JzRHIStats.h"
+#include "JzRE/Graphics/JzOpenGLFramebuffer.h"
+#include "JzRE/Graphics/JzOpenGLPipeline.h"
+#include "JzRE/Graphics/JzOpenGLVertexArray.h"
 
 namespace JzRE {
 /**

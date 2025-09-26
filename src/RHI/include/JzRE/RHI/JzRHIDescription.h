@@ -6,8 +6,8 @@
 #pragma once
 
 #include <vector>
-#include "JzRETypes.h"
-#include "JzRHIETypes.h"
+#include "JzRE/Core/JzRETypes.h"
+#include "JzRE/RHI/JzRHIETypes.h"
 
 namespace JzRE {
 /**

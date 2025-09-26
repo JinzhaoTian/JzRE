@@ -3,7 +3,7 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzRenderThreadPool.h"
+#include "JzRE/Editor/JzRenderThreadPool.h"
 
 JzRE::JzRenderThreadPool::JzRenderThreadPool(JzRE::U32 threadCount) { }
 

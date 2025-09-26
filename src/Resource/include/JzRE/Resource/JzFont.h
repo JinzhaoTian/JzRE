@@ -6,9 +6,9 @@
 #pragma once
 
 #include <map>
-#include "JzResource.h"
-#include "JzTexture.h"
-#include "JzVector.h"
+#include "JzRE/Resource/JzResource.h"
+#include "JzRE/Resource/JzTexture.h"
+#include "JzRE/Core/JzVector.h"
 
 namespace JzRE {
 

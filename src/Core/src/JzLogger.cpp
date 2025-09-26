@@ -3,13 +3,13 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzLogger.h"
+#include "JzRE/Core/JzLogger.h"
 #include <spdlog/common.h>
 #include <spdlog/spdlog.h>
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/sinks/rotating_file_sink.h"
-#include "JzELog.h"
-#include "JzLogSink.h"
+#include "JzRE/Core/JzELog.h"
+#include "JzRE/Core/JzLogSink.h"
 
 JzRE::JzLogger::JzLogger()
 {

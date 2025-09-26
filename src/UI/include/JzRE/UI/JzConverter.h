@@ -6,7 +6,7 @@
 #pragma once
 
 #include <imgui.h>
-#include "JzVector.h"
+#include "JzRE/Core/JzVector.h"
 
 namespace JzRE {
 /**

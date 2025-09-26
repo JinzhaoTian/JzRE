@@ -3,7 +3,8 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzScene.h"
+#include "JzRE/Editor/JzScene.h"
+#include "JzRE/Resource/JzModel.h"
 
 JzRE::JzScene::JzScene() { }
 

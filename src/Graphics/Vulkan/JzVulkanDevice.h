@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "JzRHIETypes.h"
+#include "JzRE/RHI/JzRHIETypes.h"
 #include "JzRHIDevice.h"
 #include "JzRHICapabilities.h"
 #include "JzRHICommandList.h"

@@ -5,20 +5,16 @@
 
 #pragma once
 
-#include <memory>
-#include <optional>
 #include <filesystem>
-#include <vector>
-#include "JzRETypes.h"
-#include "JzRHIDevice.h"
-#include "JzResourceManager.h"
-#include "JzWindow.h"
-#include "JzUIManager.h"
-#include "JzCanvas.h"
-#include "JzPanel.h"
-#include "JzPanelWindow.h"
-#include "JzButton.h"
-#include "JzVector.h"
+#include <optional>
+#include "JzRE/Core/JzRETypes.h"
+#include "JzRE/Editor/JzWindow.h"
+#include "JzRE/RHI/JzRHIDevice.h"
+#include "JzRE/Editor/JzUIManager.h"
+#include "JzRE/Editor/JzCanvas.h"
+#include "JzRE/Resource/JzResourceManager.h"
+#include "JzRE/UI/JzPanelWindow.h"
+#include "JzRE/UI/JzButton.h"
 
 namespace JzRE {
 

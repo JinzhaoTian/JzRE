@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "JzVector.h"
+#include "JzRE/Core/JzVector.h"
 
 namespace JzRE {
 

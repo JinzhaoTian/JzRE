@@ -5,10 +5,10 @@
 
 #pragma once
 
-#include "JzRETypes.h"
-#include "JzRHIDescription.h"
-#include "JzRHIETypes.h"
-#include "JzRHIResource.h"
+#include "JzRE/Core/JzRETypes.h"
+#include "JzRE/RHI/JzRHIETypes.h"
+#include "JzRE/RHI/JzRHIDescription.h"
+#include "JzRE/RHI/JzRHIResource.h"
 
 namespace JzRE {
 /**

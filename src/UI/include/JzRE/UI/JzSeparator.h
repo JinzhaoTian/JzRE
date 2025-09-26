@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "JzWidget.h"
+#include "JzRE/UI/JzWidget.h"
 
 namespace JzRE {
 /**

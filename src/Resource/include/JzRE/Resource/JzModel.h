@@ -6,9 +6,9 @@
 #pragma once
 
 #include <assimp/scene.h>
-#include "JzResource.h"
-#include "JzMesh.h"
-#include "JzMaterial.h"
+#include "JzRE/Resource/JzResource.h"
+#include "JzRE/Resource/JzMesh.h"
+#include "JzRE/Resource/JzMaterial.h"
 
 namespace JzRE {
 

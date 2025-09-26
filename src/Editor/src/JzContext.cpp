@@ -3,10 +3,11 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzContext.h"
-#include "JzServiceContainer.h"
-#include "JzRHIFactory.h"
-#include "JzSceneManager.h"
+#include "JzRE/Editor/JzContext.h"
+#include "JzRE/Core/JzClock.h"
+#include "JzRE/Core/JzLogger.h"
+#include "JzRE/Core/JzServiceContainer.h"
+#include "JzRE/RHI/JzRHIFactory.h"
 
 JzRE::JzContext &JzRE::JzContext::GetInstance()
 {

@@ -3,7 +3,7 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzOpenGLTexture.h"
+#include "JzRE/Graphics/JzOpenGLTexture.h"
 
 JzRE::JzOpenGLTexture::JzOpenGLTexture(const JzRE::JzTextureDesc &desc) :
     JzRE::JzRHITexture(desc)

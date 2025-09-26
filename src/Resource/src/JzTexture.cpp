@@ -3,12 +3,12 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzTexture.h"
+#include "JzRE/Resource/JzTexture.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
-#include "JzServiceContainer.h"
-#include "JzRHIDevice.h"
-#include "JzRHIDescription.h"
+#include "JzRE/Core/JzServiceContainer.h"
+#include "JzRE/RHI/JzRHIDevice.h"
+#include "JzRE/RHI/JzRHIDescription.h"
 
 JzRE::JzTexture::JzTexture(std::shared_ptr<JzRE::JzRHITexture> rhiTexture) :
     m_rhiTexture(rhiTexture)

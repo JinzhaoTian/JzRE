@@ -5,9 +5,9 @@
 
 #pragma once
 
-#include "JzRETypes.h"
-#include "JzVector.h"
-#include "JzWidget.h"
+#include "JzRE/Core/JzRETypes.h"
+#include "JzRE/Core/JzVector.h"
+#include "JzRE/UI/JzWidget.h"
 
 namespace JzRE {
 /**

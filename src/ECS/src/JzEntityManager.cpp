@@ -3,7 +3,7 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzEntityManager.h"
+#include "JzRE/ECS/JzEntityManager.h"
 
 JzRE::JzEntity JzRE::JzEntityManager::CreateEntity()
 {

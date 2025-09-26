@@ -5,8 +5,8 @@
 
 #pragma once
 
-#include "JzRETypes.h"
-#include "JzEFile.h"
+#include "JzRE/Core/JzRETypes.h"
+#include "JzRE/Core/JzEFile.h"
 
 namespace JzRE {
 class JzPathParser {

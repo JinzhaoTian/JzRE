@@ -3,7 +3,7 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzRHICommand.h"
+#include "JzRE/RHI/JzRHICommand.h"
 #include "JzRHIDevice.h"
 #include "JzServiceContainer.h"
 

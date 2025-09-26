@@ -3,7 +3,7 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzArrowButton.h"
+#include "JzRE/UI/JzArrowButton.h"
 #include <imgui.h>
 
 JzRE::JzArrowButton::JzArrowButton(JzRE::JzEArrowDirection p_direction) :

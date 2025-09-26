@@ -1,5 +1,5 @@
 file(GLOB JzREUI_SOURCES CONFIGURE_DEPENDS 
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
+    "src/*.cpp"
 )
 
 add_library(JzREUI STATIC
@@ -12,6 +12,7 @@ target_include_directories(JzREUI PUBLIC
 
 target_link_libraries(JzREUI 
     PRIVATE
-    JzCore
+    JzRECore
+    JzRERHI
     imgui::imgui
 )

@@ -6,10 +6,10 @@
 #pragma once
 
 #include <vector>
-#include "JzResource.h"
-#include "JzVertex.h"
-#include "JzRHIBuffer.h"
-#include "JzRHIVertexArray.h"
+#include "JzRE/Resource/JzResource.h"
+#include "JzRE/Core/JzVertex.h"
+#include "JzRE/RHI/JzRHIBuffer.h"
+#include "JzRE/RHI/JzRHIVertexArray.h"
 
 namespace JzRE {
 

@@ -3,7 +3,7 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzTreeNode.h"
+#include "JzRE/UI/JzTreeNode.h"
 #include <imgui.h>
 
 JzRE::JzTreeNode::JzTreeNode(const String &p_name, Bool arrowClickToOpen) :

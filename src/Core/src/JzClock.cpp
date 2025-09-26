@@ -3,7 +3,7 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzClock.h"
+#include "JzRE/Core/JzClock.h"
 
 void JzRE::JzClock::Initialize()
 {

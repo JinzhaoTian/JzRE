@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "JzResource.h"
+#include "JzRE/Resource/JzResource.h"
 
 namespace JzRE {
 

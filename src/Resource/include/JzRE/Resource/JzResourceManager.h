@@ -10,9 +10,9 @@
 #include <memory>
 #include <typeindex>
 #include <mutex>
-#include "JzRETypes.h"
-#include "JzResource.h"
-#include "JzResourceFactory.h"
+#include "JzRE/Core/JzRETypes.h"
+#include "JzRE/Resource/JzResource.h"
+#include "JzRE/Resource/JzResourceFactory.h"
 
 namespace JzRE {
 

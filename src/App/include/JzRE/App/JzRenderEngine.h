@@ -5,9 +5,8 @@
 
 #pragma once
 
-#include <memory>
-#include <filesystem>
-#include "JzEditor.h"
+#include "JzRE/Core/JzRETypes.h"
+#include "JzRE/Editor/JzEditor.h"
 
 namespace JzRE {
 /**

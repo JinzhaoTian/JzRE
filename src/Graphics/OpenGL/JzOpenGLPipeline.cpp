@@ -3,7 +3,7 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzOpenGLPipeline.h"
+#include "JzRE/Graphics/JzOpenGLPipeline.h"
 
 JzRE::JzOpenGLPipeline::JzOpenGLPipeline(const JzRE::JzPipelineDesc &desc) :
     JzRE::JzRHIPipeline(desc)

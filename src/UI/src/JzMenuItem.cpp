@@ -3,7 +3,7 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzMenuItem.h"
+#include "JzRE/UI/JzMenuItem.h"
 #include <imgui.h>
 
 JzRE::JzMenuItem::JzMenuItem(const String &name, const String &shortcut, Bool is_checkable, Bool is_checked) :

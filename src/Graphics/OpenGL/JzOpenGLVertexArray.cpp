@@ -3,8 +3,8 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzOpenGLVertexArray.h"
-#include "JzOpenGLBuffer.h"
+#include "JzRE/Graphics/JzOpenGLVertexArray.h"
+#include "JzRE/Graphics/JzOpenGLBuffer.h"
 
 JzRE::JzOpenGLVertexArray::JzOpenGLVertexArray(const JzRE::String &debugName) :
     JzRHIVertexArray(debugName)

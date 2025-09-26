@@ -6,10 +6,10 @@
 #pragma once
 
 #include <filesystem>
-#include "JzRETypes.h"
-#include "JzPanelWindow.h"
-#include "JzGroup.h"
-#include "JzTreeNode.h"
+#include "JzRE/Core/JzRETypes.h"
+#include "JzRE/UI/JzPanelWindow.h"
+#include "JzRE/UI/JzGroup.h"
+#include "JzRE/UI/JzTreeNode.h"
 
 namespace JzRE {
 

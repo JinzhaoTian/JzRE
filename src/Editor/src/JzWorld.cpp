@@ -3,7 +3,7 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzWorld.h"
+#include "JzRE/Editor/JzWorld.h"
 
 void JzRE::JzWorld::Update(JzRE::F32 delta)
 {

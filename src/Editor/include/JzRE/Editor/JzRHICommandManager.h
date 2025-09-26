@@ -1,12 +1,12 @@
 #pragma once
 
 #include <chrono>
-#include "JzRETypes.h"
-#include "JzRHIBuffer.h"
-#include "JzRHICommandList.h"
-#include "JzRHIStats.h"
-#include "JzRenderThreadContext.h"
-#include "JzRenderThreadPool.h"
+#include "JzRE/Core/JzRETypes.h"
+#include "JzRE/RHI/JzRHIBuffer.h"
+#include "JzRE/RHI/JzRHICommandList.h"
+#include "JzRE/RHI/JzRHIStats.h"
+#include "JzRE/Editor/JzRenderThreadContext.h"
+#include "JzRE/Editor/JzRenderThreadPool.h"
 
 namespace JzRE {
 /**

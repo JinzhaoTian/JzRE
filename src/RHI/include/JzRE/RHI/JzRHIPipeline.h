@@ -5,12 +5,12 @@
 
 #pragma once
 
-#include "JzRETypes.h"
-#include "JzMatrix.h"
-#include "JzRHIDescription.h"
-#include "JzRHIETypes.h"
-#include "JzRHIResource.h"
-#include "JzVector.h"
+#include "JzRE/Core/JzRETypes.h"
+#include "JzRE/Core/JzVector.h"
+#include "JzRE/Core/JzMatrix.h"
+#include "JzRE/RHI/JzRHIDescription.h"
+#include "JzRE/RHI/JzRHIETypes.h"
+#include "JzRE/RHI/JzRHIResource.h"
 
 namespace JzRE {
 /**

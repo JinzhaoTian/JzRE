@@ -5,9 +5,9 @@
 
 #pragma once
 
-#include "JzSystem.h"
-#include "JzRHIDevice.h"
 #include <memory>
+#include "JzRE/RHI/JzRHIDevice.h"
+#include "JzRE/ECS/JzSystem.h"
 
 namespace JzRE {
 

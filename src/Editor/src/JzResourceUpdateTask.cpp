@@ -3,7 +3,7 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzResourceUpdateTask.h"
+#include "JzRE/Editor/JzResourceUpdateTask.h"
 
 JzRE::JzResourceUpdateTask::JzResourceUpdateTask(std::function<void()> updateFunc, U32 priority) :
     JzRE::JzRenderTask(JzRE::JzERenderTaskType::ResourceUpdate, priority) { }

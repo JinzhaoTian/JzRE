@@ -3,13 +3,16 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzEditor.h"
-#include "JzMenuBar.h"
-#include "JzSceneView.h"
-#include "JzConsole.h"
-#include "JzHierarchy.h"
-#include "JzMaterialEditor.h"
-#include "JzAssetBrowser.h"
+#include "JzRE/Editor/JzEditor.h"
+#include "JzRE/Editor/JzPanelsManager.h"
+#include "JzRE/Editor/JzSceneManager.h"
+#include "JzRE/Editor/JzAssetBrowser.h"
+#include "JzRE/Editor/JzAssetView.h"
+#include "JzRE/Editor/JzConsole.h"
+#include "JzRE/Editor/JzHierarchy.h"
+#include "JzRE/Editor/JzMaterialEditor.h"
+#include "JzRE/Editor/JzSceneView.h"
+#include "JzRE/Editor/JzGameView.h"
 
 JzRE::JzEditor::JzEditor() :
     m_context(JzContext::GetInstance()), // injection

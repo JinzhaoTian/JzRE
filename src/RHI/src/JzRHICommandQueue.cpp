@@ -3,7 +3,7 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzRHICommandQueue.h"
+#include "JzRE/RHI/JzRHICommandQueue.h"
 #include <thread>
 
 JzRE::JzRHICommandQueue::JzRHICommandQueue() { }

@@ -1,8 +1,8 @@
 
-#include "JzImageButton.h"
+#include "JzRE/UI/JzImageButton.h"
 #include <imgui.h>
-#include "JzRETypes.h"
-#include "JzConverter.h"
+#include "JzRE/Core/JzRETypes.h"
+#include "JzRE/UI/JzConverter.h"
 
 JzRE::JzImageButton::JzImageButton(std::shared_ptr<JzRHITexture> p_texture, const JzVec2 &p_size) :
     m_texture(p_texture),

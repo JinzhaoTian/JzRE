@@ -3,7 +3,7 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzTextClickable.h"
+#include "JzRE/UI/JzTextClickable.h"
 #include <imgui.h>
 
 JzRE::JzTextClickable::JzTextClickable(const JzRE::String &p_content) :

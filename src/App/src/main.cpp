@@ -6,9 +6,9 @@
 #include <memory>
 #include <optional>
 #include <filesystem>
-#include "JzRHIETypes.h"
-#include "JzREHub.h"
-#include "JzRenderEngine.h"
+#include "JzRE/RHI/JzRHIETypes.h"
+#include "JzRE/App/JzREHub.h"
+#include "JzRE/App/JzRenderEngine.h"
 
 int main(int argc, char **argv)
 {

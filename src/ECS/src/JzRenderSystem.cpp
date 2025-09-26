@@ -3,11 +3,11 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzRenderSystem.h"
-#include "JzEntityManager.h"
-#include "JzComponent.h"
-#include "JzMesh.h"
-#include "JzMaterial.h"
+#include "JzRE/ECS/JzRenderSystem.h"
+#include "JzRE/ECS/JzEntityManager.h"
+#include "JzRE/ECS/JzComponent.h"
+#include "JzRE/Resource/JzMesh.h"
+#include "JzRE/Resource/JzMaterial.h"
 
 JzRE::JzRenderSystem::JzRenderSystem(std::shared_ptr<JzRE::JzRHIDevice> device) :
     m_device(device) { }

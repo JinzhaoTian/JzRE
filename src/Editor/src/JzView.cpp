@@ -3,9 +3,9 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzView.h"
+#include "JzRE/Editor/JzView.h"
 #include <imgui.h>
-#include "JzContext.h"
+#include "JzRE/Editor/JzContext.h"
 
 JzRE::JzView::JzView(const JzRE::String &name, JzRE::Bool is_opened) :
     JzRE::JzPanelWindow(name, is_opened),

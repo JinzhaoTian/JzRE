@@ -6,12 +6,12 @@
 #pragma once
 
 #include <memory>
-#include "JzRETypes.h"
-#include "JzRHICommandList.h"
-#include "JzRHIDescription.h"
-#include "JzRHIETypes.h"
-#include "JzRHIFramebuffer.h"
-#include "JzRHIShader.h"
+#include "JzRE/Core/JzRETypes.h"
+#include "JzRE/RHI/JzRHICommandList.h"
+#include "JzRE/RHI/JzRHIDescription.h"
+#include "JzRE/RHI/JzRHIETypes.h"
+#include "JzRE/RHI/JzRHIFramebuffer.h"
+#include "JzRE/RHI/JzRHIShader.h"
 
 namespace JzRE {
 /**

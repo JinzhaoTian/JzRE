@@ -7,7 +7,7 @@
 
 #include <any>
 #include <unordered_map>
-#include "JzRETypes.h"
+#include "JzRE/Core/JzRETypes.h"
 
 namespace JzRE {
 /**

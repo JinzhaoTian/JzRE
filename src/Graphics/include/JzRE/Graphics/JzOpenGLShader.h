@@ -6,9 +6,9 @@
 #pragma once
 
 #include <glad/glad.h>
-#include "JzRETypes.h"
-#include "JzRHIETypes.h"
-#include "JzRHIShader.h"
+#include "JzRE/Core/JzRETypes.h"
+#include "JzRE/RHI/JzRHIETypes.h"
+#include "JzRE/RHI/JzRHIShader.h"
 
 namespace JzRE {
 /**

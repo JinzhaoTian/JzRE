@@ -3,10 +3,10 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzRHIRenderer.h"
-#include "JzContext.h"
-#include "JzRHIDevice.h"
-#include "JzServiceContainer.h"
+#include "JzRE/Editor/JzRHIRenderer.h"
+#include "JzRE/Editor/JzContext.h"
+#include "JzRE/RHI/JzRHIDevice.h"
+#include "JzRE/Core/JzServiceContainer.h"
 
 JzRE::JzRHIRenderer::JzRHIRenderer() { }
 

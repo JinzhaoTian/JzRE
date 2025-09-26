@@ -12,10 +12,10 @@
 #endif
 #include <GLFW/glfw3.h>
 #include "JzWindowSettings.h"
-#include "JzRETypes.h"
-#include "JzRHIETypes.h"
-#include "JzEvent.h"
-#include "JzVector.h"
+#include "JzRE/Core/JzRETypes.h"
+#include "JzRE/Core/JzEvent.h"
+#include "JzRE/Core/JzVector.h"
+#include "JzRE/RHI/JzRHIETypes.h"
 
 namespace JzRE {
 

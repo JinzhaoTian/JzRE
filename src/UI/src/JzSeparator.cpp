@@ -3,7 +3,7 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzSeparator.h"
+#include "JzRE/UI/JzSeparator.h"
 #include <imgui.h>
 
 void JzRE::JzSeparator::_Draw_Impl()

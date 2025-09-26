@@ -6,7 +6,7 @@
 #pragma once
 
 #include <chrono>
-#include "JzRETypes.h"
+#include "JzRE/Core/JzRETypes.h"
 
 namespace JzRE {
 /**

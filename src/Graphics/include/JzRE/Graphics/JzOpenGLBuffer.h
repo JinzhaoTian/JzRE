@@ -6,8 +6,8 @@
 #pragma once
 
 #include <glad/glad.h>
-#include "JzRETypes.h"
-#include "JzRHIBuffer.h"
+#include "JzRE/RHI/JzRHIBuffer.h"
+#include "JzRE/Core/JzRETypes.h"
 
 namespace JzRE {
 /**

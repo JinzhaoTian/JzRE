@@ -12,7 +12,7 @@
 #endif
 #include <GLFW/glfw3.h>
 #include <imgui.h>
-#include "JzRETypes.h"
+#include "JzRE/Core/JzRETypes.h"
 #include "JzCanvas.h"
 #include "JzWindow.h"
 

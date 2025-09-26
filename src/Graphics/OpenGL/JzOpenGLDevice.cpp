@@ -3,11 +3,11 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzOpenGLDevice.h"
+#include "JzRE/Graphics/JzOpenGLDevice.h"
 #include <cstdint>
 #include <iostream>
-#include "JzOpenGLBuffer.h"
-#include "JzOpenGLTexture.h"
+#include "JzRE/Graphics/JzOpenGLBuffer.h"
+#include "JzRE/Graphics/JzOpenGLTexture.h"
 
 JzRE::JzOpenGLDevice::JzOpenGLDevice() :
     JzRE::JzRHIDevice(JzERHIType::OpenGL)

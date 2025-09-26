@@ -3,7 +3,8 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzWindow.h"
+#include "JzRE/Editor/JzWindow.h"
+#include "JzRE/Core/JzEvent.h"
 #include <stdexcept>
 #include <GLFW/glfw3.h>
 #if defined(_WIN32)

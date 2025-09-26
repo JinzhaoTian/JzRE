@@ -6,8 +6,8 @@
 #pragma once
 
 #include <memory>
-#include "JzRETypes.h"
-#include "JzRHITexture.h"
+#include "JzRE/Core/JzRETypes.h"
+#include "JzRE/RHI/JzRHITexture.h"
 
 namespace JzRE {
 /**

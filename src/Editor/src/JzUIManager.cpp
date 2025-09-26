@@ -3,7 +3,9 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzUIManager.h"
+#include "JzRE/Editor/JzUIManager.h"
+#include "JzRE/Editor/JzWindow.h"
+#include "JzRE/UI/JzConverter.h"
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>

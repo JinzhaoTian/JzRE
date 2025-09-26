@@ -5,8 +5,8 @@
 
 #pragma once
 
-#include "JzResourceFactory.h"
-#include "JzModel.h"
+#include "JzRE/Resource/JzResourceFactory.h"
+#include "JzRE/Resource/JzModel.h"
 
 namespace JzRE {
 /**

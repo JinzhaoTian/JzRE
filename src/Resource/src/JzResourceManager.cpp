@@ -3,7 +3,7 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzResourceManager.h"
+#include "JzRE/Resource/JzResourceManager.h"
 #include <filesystem>
 
 void JzRE::JzResourceManager::Update()

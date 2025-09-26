@@ -5,8 +5,8 @@
 
 #pragma once
 
-#include "JzRETypes.h"
-#include "JzRHICommandList.h"
+#include "JzRE/Core/JzRETypes.h"
+#include "JzRE/RHI/JzRHICommandList.h"
 
 namespace JzRE {
 /**

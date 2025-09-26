@@ -3,7 +3,7 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzPanel.h"
+#include "JzRE/UI/JzPanel.h"
 
 JzRE::U64 JzRE::JzPanel::__PANEL_ID_INCREMENT = 0;
 

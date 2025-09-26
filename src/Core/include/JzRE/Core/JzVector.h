@@ -11,7 +11,7 @@
 #include <cassert>
 #include <cmath>
 #include <cstring>
-#include "JzRETypes.h"
+#include "JzRE/Core/JzRETypes.h"
 
 namespace JzRE {
 

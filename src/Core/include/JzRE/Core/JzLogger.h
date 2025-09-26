@@ -6,7 +6,7 @@
 #pragma once
 
 #include <spdlog/logger.h>
-#include "JzRETypes.h"
+#include "JzRE/Core/JzRETypes.h"
 #include "JzEvent.h"
 #include "JzELog.h"
 

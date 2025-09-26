@@ -3,17 +3,17 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzMenuBar.h"
+#include "JzRE/Editor/JzMenuBar.h"
 #include <filesystem>
 #include <imgui.h>
-#include "JzContext.h"
-#include "JzGroup.h"
-#include "JzEAlignment.h"
-#include "JzText.h"
-#include "JzArrowButton.h"
-#include "JzSeparator.h"
-#include "JzOpenFileDialog.h"
-#include "JzConverter.h"
+#include "JzRE/UI/JzGroup.h"
+#include "JzRE/UI/JzEAlignment.h"
+#include "JzRE/UI/JzText.h"
+#include "JzRE/UI/JzArrowButton.h"
+#include "JzRE/UI/JzSeparator.h"
+#include "JzRE/UI/JzConverter.h"
+#include "JzRE/Editor/JzContext.h"
+#include "JzRE/Platform/JzOpenFileDialog.h"
 
 JzRE::JzMenuBar::JzMenuBar()
 {

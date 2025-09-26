@@ -3,7 +3,7 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzOpenGLShader.h"
+#include "JzRE/Graphics/JzOpenGLShader.h"
 
 JzRE::JzOpenGLShader::JzOpenGLShader(const JzRE::JzShaderDesc &desc) :
     JzRE::JzRHIShader(desc)

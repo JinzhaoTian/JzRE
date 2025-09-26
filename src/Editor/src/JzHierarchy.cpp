@@ -3,9 +3,10 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzHierarchy.h"
-#include "JzGroup.h"
-#include "JzSeparator.h"
+#include "JzRE/Editor/JzHierarchy.h"
+#include "JzRE/UI/JzTreeNode.h"
+#include "JzRE/UI/JzGroup.h"
+#include "JzRE/UI/JzSeparator.h"
 
 JzRE::JzHierarchy::JzHierarchy(const JzRE::String &name, JzRE::Bool is_opened) :
     JzPanelWindow(name, is_opened),

@@ -6,9 +6,9 @@
 #pragma once
 
 #include <glad/glad.h>
-#include "JzRETypes.h"
-#include "JzRHIETypes.h"
-#include "JzRHITexture.h"
+#include "JzRE/Core/JzRETypes.h"
+#include "JzRE/RHI/JzRHIETypes.h"
+#include "JzRE/RHI/JzRHITexture.h"
 
 namespace JzRE {
 /**
@@ -47,7 +47,7 @@ public:
      *
      * @return The native texture ID
      */
-    void* GetTextureID() const override;
+    void *GetTextureID() const override;
 
     /**
      * @brief Get the target of the texture

@@ -6,11 +6,11 @@
 #pragma once
 
 #include <memory>
-#include "JzRETypes.h"
-#include "JzCamera.h"
-#include "JzISerializable.h"
-#include "JzLight.h"
-#include "JzModel.h"
+#include "JzRE/Core/JzRETypes.h"
+#include "JzRE/Core/JzISerializable.h"
+#include "JzRE/ECS/JzCamera.h"
+#include "JzRE/ECS/JzLight.h"
+#include "JzRE/Resource/JzModel.h"
 
 namespace JzRE {
 /**

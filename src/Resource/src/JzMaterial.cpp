@@ -3,10 +3,10 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzMaterial.h"
-#include "JzServiceContainer.h"
-#include "JzRHIDevice.h"
-#include "JzRHIDescription.h"
+#include "JzRE/Resource/JzMaterial.h"
+#include "JzRE/Core/JzServiceContainer.h"
+#include "JzRE/RHI/JzRHIDevice.h"
+#include "JzRE/RHI/JzRHIDescription.h"
 
 JzRE::Bool JzRE::JzMaterial::Load()
 {

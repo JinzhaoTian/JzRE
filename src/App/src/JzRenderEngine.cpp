@@ -3,10 +3,8 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzRenderEngine.h"
-#include <memory>
-#include "JzContext.h"
-#include "JzClock.h"
+#include "JzRE/App/JzRenderEngine.h"
+#include "JzRE/Core/JzClock.h"
 
 JzRE::JzRenderEngine::JzRenderEngine(JzERHIType rhiType, std::filesystem::path &openDirectory)
 {

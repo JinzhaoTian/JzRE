@@ -6,9 +6,9 @@
 #pragma once
 
 #include <memory>
-#include "JzRETypes.h"
-#include "JzRHIBuffer.h"
-#include "JzRHIResource.h"
+#include "JzRE/Core/JzRETypes.h"
+#include "JzRE/RHI/JzRHIBuffer.h"
+#include "JzRE/RHI/JzRHIResource.h"
 
 namespace JzRE {
 /**

@@ -6,10 +6,10 @@
 #pragma once
 
 #include <memory>
-#include "JzRHIFramebuffer.h"
-#include "JzRHIPipeline.h"
-#include "JzRHITexture.h"
-#include "JzScene.h"
+#include "JzRE/RHI/JzRHIFramebuffer.h"
+#include "JzRE/RHI/JzRHIPipeline.h"
+#include "JzRE/RHI/JzRHITexture.h"
+#include "JzRE/Editor/JzScene.h"
 
 namespace JzRE {
 /**

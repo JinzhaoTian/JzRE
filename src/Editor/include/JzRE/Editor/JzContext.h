@@ -7,15 +7,15 @@
 
 #include <memory>
 #include <filesystem>
-#include "JzRETypes.h"
-#include "JzWindow.h"
-#include "JzWindowSettings.h"
-#include "JzRHIETypes.h"
-#include "JzRHIDevice.h"
-#include "JzRHICommandQueue.h"
-#include "JzInputManager.h"
-#include "JzSceneManager.h"
-#include "JzUIManager.h"
+#include "JzRE/Core/JzRETypes.h"
+#include "JzRE/Editor/JzWindow.h"
+#include "JzRE/Editor/JzWindowSettings.h"
+#include "JzRE/RHI/JzRHIETypes.h"
+#include "JzRE/RHI/JzRHIDevice.h"
+#include "JzRE/RHI/JzRHICommandQueue.h"
+#include "JzRE/Editor/JzInputManager.h"
+#include "JzRE/Editor/JzSceneManager.h"
+#include "JzRE/Editor/JzUIManager.h"
 
 namespace JzRE {
 

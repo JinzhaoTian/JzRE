@@ -3,7 +3,7 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzREHub.h"
+#include "JzRE/App/JzREHub.h"
 #include <fstream>
 #include <memory>
 #ifdef _WIN32
@@ -14,21 +14,21 @@
 #include <unistd.h>
 #endif
 #include <nlohmann/json.hpp>
-#include "JzServiceContainer.h"
-#include "JzRHIDevice.h"
-#include "JzLogger.h"
-#include "JzRHIFactory.h"
-#include "JzTexture.h"
-#include "JzTextureFactory.h"
-#include "JzOpenFileDialog.h"
-#include "JzIconButton.h"
-#include "JzGroup.h"
-#include "JzText.h"
-#include "JzInputText.h"
-#include "JzSpacing.h"
-#include "JzSeparator.h"
-#include "JzColumns.h"
-#include "JzConverter.h"
+#include "JzRE/Core/JzServiceContainer.h"
+#include "JzRE/RHI/JzRHIDevice.h"
+#include "JzRE/Core/JzLogger.h"
+#include "JzRE/RHI/JzRHIFactory.h"
+#include "JzRE/Resource/JzTexture.h"
+#include "JzRE/Resource/JzTextureFactory.h"
+#include "JzRE/Platform/JzOpenFileDialog.h"
+#include "JzRE/UI/JzIconButton.h"
+#include "JzRE/UI/JzGroup.h"
+#include "JzRE/UI/JzText.h"
+#include "JzRE/UI/JzInputText.h"
+#include "JzRE/UI/JzSpacing.h"
+#include "JzRE/UI/JzSeparator.h"
+#include "JzRE/UI/JzColumns.h"
+#include "JzRE/UI/JzConverter.h"
 
 JzRE::JzREHub::JzREHub(JzERHIType rhiType)
 {
