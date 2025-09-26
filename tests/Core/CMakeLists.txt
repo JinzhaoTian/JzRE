@@ -18,6 +18,7 @@ target_link_libraries(
     PRIVATE
     JzRECore
     GTest::gtest
+    GTest::gtest_main
 )
 
 # add tests to CTest
