@@ -3,9 +3,8 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzRE/RHI/JzRHIFactory.h"
-#include "JzOpenGLDevice.h"
-// #include "JzVulkanDevice.h"
+#include "JzRE/Editor/JzRHIFactory.h"
+#include "JzRE/Graphics/JzOpenGLDevice.h"
 
 // RHIFactory实现
 std::unique_ptr<JzRE::JzRHIDevice> JzRE::JzRHIFactory::CreateDevice(JzRE::JzERHIType rhiType)
@@ -16,7 +15,6 @@ std::unique_ptr<JzRE::JzRHIDevice> JzRE::JzRHIFactory::CreateDevice(JzRE::JzERHI
 
     switch (rhiType) {
         case JzERHIType::OpenGL:
-            return std::make_unique<JzOpenGLDevice>();
         // case JzERHIType::Vulkan:
         //     return std::make_unique<JzVulkanDevice>();
         default:

@@ -4,8 +4,8 @@
  */
 
 #include "JzRE/RHI/JzRHICommand.h"
-#include "JzRHIDevice.h"
-#include "JzServiceContainer.h"
+#include "JzRE/RHI/JzRHIDevice.h"
+#include "JzRE/Core/JzServiceContainer.h"
 
 JzRE::JzRHIClearCommand::JzRHIClearCommand(const JzClearParams &params) :
     JzRHICommand(JzRHIECommandType::Clear),

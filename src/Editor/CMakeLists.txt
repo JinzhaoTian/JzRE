@@ -13,7 +13,7 @@ target_sources(JzREEditor PRIVATE
 )
 
 target_link_libraries(JzREEditor
-    PUBLIC
+    PRIVATE
     JzRECore
     JzRERHI
     JzREECS

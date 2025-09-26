@@ -10,6 +10,7 @@ target_include_directories(JzRECore PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-target_link_libraries(JzRECore PUBLIC
+target_link_libraries(JzRECore
+    PRIVATE
     spdlog::spdlog
 )
