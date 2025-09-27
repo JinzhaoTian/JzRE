@@ -115,6 +115,13 @@ public:
      */
     U32 GetThreadCount() const;
 
+    /**
+     * @brief Get the Current Project Path
+     *
+     * @return std::filesystem::path
+     */
+    std::filesystem::path GetCurrentPath() const;
+
 private:
     JzContext()                             = default;
     ~JzContext()                            = default;

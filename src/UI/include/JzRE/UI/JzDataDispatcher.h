@@ -12,7 +12,7 @@
 
 namespace JzRE {
 /**
- * @brief Plugin Data Dispatcher
+ * @brief Data dispatcher plugin
  *
  * @tparam T The type of the data
  */

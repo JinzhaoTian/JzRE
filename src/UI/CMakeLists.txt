@@ -26,4 +26,5 @@ target_link_libraries(
     imgui::imgui
     JzRECore
     JzRERHI
+    JzREPlatform
 )

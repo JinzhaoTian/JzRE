@@ -22,10 +22,10 @@ public:
     /**
      * @brief Constructor
      *
-     * @param p_texture
-     * @param p_size
+     * @param texture
+     * @param size
      */
-    JzImageButton(std::shared_ptr<JzRHITexture> p_texture, const JzVec2 &p_size);
+    JzImageButton(std::shared_ptr<JzRHITexture> texture, const JzVec2 &size);
 
 protected:
     /**

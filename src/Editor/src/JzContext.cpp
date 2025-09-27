@@ -134,3 +134,8 @@ JzRE::U32 JzRE::JzContext::GetThreadCount() const
     }
     return 1;
 }
+
+std::filesystem::path JzRE::JzContext::GetCurrentPath() const
+{
+    return m_openDirectory;
+}
