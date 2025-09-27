@@ -6,9 +6,18 @@
 #pragma once
 
 #include "JzRE/Core/JzRETypes.h"
-#include "JzRE/Platform/JzEFileDialogType.h"
 
 namespace JzRE {
+
+/**
+ * @brief Enums of File Dialog Types
+ */
+enum class JzEFileDialogType : U8 {
+    DEFAULT,
+    OpenFile,
+    OpenFolder,
+    SaveFile
+};
 
 /**
  * @brief File Dialog Interface

@@ -3,9 +3,9 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzRE/Platform/JzFileDialog.h"
-
 #ifdef __APPLE__
+
+#include "JzRE/Platform/JzFileDialog.h"
 
 #include <Cocoa/Cocoa.h>
 #include <UniformTypeIdentifiers/UniformTypeIdentifiers.h>

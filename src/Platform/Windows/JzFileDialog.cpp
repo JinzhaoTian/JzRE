@@ -3,9 +3,10 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
+#ifdef _WIN32
+
 #include "JzRE/Platform/JzFileDialog.h"
 
-#ifdef _WIN32
 #define NOMINMAX
 #include <windows.h>
 #include <shobjidl.h>

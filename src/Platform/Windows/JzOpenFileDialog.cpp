@@ -3,9 +3,9 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzRE/Platform/JzOpenFileDialog.h"
-
 #ifdef _WIN32
+
+#include "JzRE/Platform/JzOpenFileDialog.h"
 
 JzRE::JzOpenFileDialog::JzOpenFileDialog(const JzRE::String &p_dialogTitle) :
     JzFileDialog(p_dialogTitle) { }
