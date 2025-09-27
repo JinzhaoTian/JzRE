@@ -74,4 +74,4 @@ private:
 
 } // namespace JzRE
 
-#include "JzComponentPool.inl" // IWYU pragma: keep
+#include "JzRE/ECS/JzComponentPool.inl" // IWYU pragma: keep

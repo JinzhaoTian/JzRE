@@ -109,4 +109,4 @@ private:
 
 } // namespace JzRE
 
-#include "JzEntityManager.inl" // IWYU pragma: keep
+#include "JzRE/ECS/JzEntityManager.inl" // IWYU pragma: keep
