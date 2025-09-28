@@ -39,6 +39,14 @@ public:
         return *std::any_cast<T *>(__SERVICES[typeid(T).hash_code()]);
     }
 
+    /**
+     * @brief Clear all services
+     */
+    static void Clear()
+    {
+        __SERVICES.clear();
+    }
+
 private:
     static std::unordered_map<I32, std::any> __SERVICES;
 };

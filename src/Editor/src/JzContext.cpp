@@ -4,8 +4,12 @@
  */
 
 #include "JzRE/Editor/JzContext.h"
+#include <memory>
 #include "JzRE/Core/JzServiceContainer.h"
 #include "JzRE/Editor/JzRHIFactory.h"
+#include "JzRE/Resource/JzResourceManager.h"
+#include "JzRE/Resource/JzTextureFactory.h"
+#include "JzRE/Resource/JzTexture.h"
 
 JzRE::JzContext &JzRE::JzContext::GetInstance()
 {
@@ -17,6 +21,13 @@ JzRE::Bool JzRE::JzContext::Initialize(JzERHIType rhiType, std::filesystem::path
 {
     m_workDirectory = std::filesystem::current_path();
     m_openDirectory = openDirectory;
+
+    JzServiceContainer::Clear();
+
+    m_resourceManager = std::make_unique<JzResourceManager>();
+    m_resourceManager->RegisterFactory<JzTexture>(std::make_unique<JzTextureFactory>());
+    m_resourceManager->AddSearchPath("./icons");
+    JzServiceContainer::Provide<JzResourceManager>(*m_resourceManager);
 
     m_windowSettings.title = "JzRE";
     m_windowSettings.size  = {1280, 720};

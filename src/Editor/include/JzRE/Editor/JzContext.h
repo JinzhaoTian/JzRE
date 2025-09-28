@@ -16,6 +16,7 @@
 #include "JzRE/Editor/JzInputManager.h"
 #include "JzRE/Editor/JzSceneManager.h"
 #include "JzRE/Editor/JzUIManager.h"
+#include "JzRE/Resource/JzResourceManager.h"
 
 namespace JzRE {
 
@@ -130,6 +131,7 @@ private:
 
 private:
     JzWindowSettings                   m_windowSettings;
+    std::unique_ptr<JzResourceManager> m_resourceManager;
     std::unique_ptr<JzWindow>          m_window;
     std::unique_ptr<JzRHIDevice>       m_device;
     std::unique_ptr<JzInputManager>    m_inputManager;
