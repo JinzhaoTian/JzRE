@@ -11,6 +11,7 @@
 #include "JzRE/UI/JzWidgetContainer.h"
 
 namespace JzRE {
+
 /**
  * @brief Tree Node Widget
  */
@@ -19,10 +20,10 @@ public:
     /**
      * @brief Constructor
      *
-     * @param p_name The name of the tree node
+     * @param name The name of the tree node
      * @param arrowClickToOpen Whether to open the tree node when the arrow is clicked
      */
-    JzTreeNode(const String &p_name = "", Bool arrowClickToOpen = false);
+    JzTreeNode(const String &name = "", Bool arrowClickToOpen = false);
 
     /**
      * @brief Open the tree node
@@ -42,6 +43,9 @@ public:
     Bool IsOpened() const;
 
 protected:
+    /**
+     * @brief Draw Implement
+     */
     virtual void _Draw_Impl() override;
 
 public:

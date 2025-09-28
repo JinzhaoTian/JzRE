@@ -6,9 +6,9 @@
 #include "JzRE/UI/JzMenuList.h"
 #include <imgui.h>
 
-JzRE::JzMenuList::JzMenuList(const String &name, Bool is_locked) :
+JzRE::JzMenuList::JzMenuList(const String &name, Bool isLocked) :
     name(name),
-    locked(is_locked) { }
+    locked(isLocked) { }
 
 void JzRE::JzMenuList::_Draw_Impl()
 {

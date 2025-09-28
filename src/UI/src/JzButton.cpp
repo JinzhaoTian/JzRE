@@ -6,9 +6,9 @@
 #include "JzRE/UI/JzButton.h"
 #include "JzRE/UI/JzConverter.h"
 
-JzRE::JzButton::JzButton(const JzRE::String &label, JzRE::Bool disabled) :
+JzRE::JzButton::JzButton(const JzRE::String &label, JzRE::Bool isDisabled) :
     label(label),
-    disabled(disabled)
+    disabled(isDisabled)
 {
     auto &style = ImGui::GetStyle();
 

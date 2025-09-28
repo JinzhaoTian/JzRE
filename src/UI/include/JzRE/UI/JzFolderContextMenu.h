@@ -6,6 +6,7 @@
 #pragma once
 
 #include "JzRE/UI/JzAssetContextMenu.h"
+
 namespace JzRE {
 
 /**

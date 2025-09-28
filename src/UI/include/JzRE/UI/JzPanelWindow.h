@@ -11,6 +11,7 @@
 #include "JzRE/UI/JzPanel.h"
 
 namespace JzRE {
+
 /**
  * @brief Panel Window
  */

@@ -27,9 +27,9 @@ public:
     /**
      * @brief Constructor
      *
-     * @param p_direction
+     * @param direction
      */
-    JzArrowButton(JzEArrowDirection p_direction = JzEArrowDirection::NONE);
+    JzArrowButton(JzEArrowDirection direction = JzEArrowDirection::NONE);
 
 protected:
     /**

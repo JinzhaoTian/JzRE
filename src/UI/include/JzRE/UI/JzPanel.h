@@ -11,6 +11,7 @@
 #include "JzRE/UI/JzWidgetContainer.h"
 
 namespace JzRE {
+
 /**
  * @brief Base class for all panels
  */

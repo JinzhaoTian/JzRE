@@ -2,6 +2,7 @@
  * @author    Jinzhao Tian
  * @copyright Copyright (c) 2025 JzRE
  */
+
 #pragma once
 
 #include <memory>
@@ -12,6 +13,7 @@
 #include "JzRE/UI/JzWidget.h"
 
 namespace JzRE {
+
 /**
  * @brief A button widget that displays an icon.
  */
@@ -49,4 +51,5 @@ public:
 private:
     std::shared_ptr<JzRHITexture> m_texture;
 };
+
 } // namespace JzRE

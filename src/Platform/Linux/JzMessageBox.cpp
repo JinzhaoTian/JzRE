@@ -81,16 +81,16 @@ void JzMessageBox::Show()
 
     GtkMessageType gtk_type;
     switch (m_type) {
-        case JzEMessageBoxType::QUESTION:
+        case JzEMessageBoxType::Question:
             gtk_type = GTK_MESSAGE_QUESTION;
             break;
-        case JzEMessageBoxType::INFORMATION:
+        case JzEMessageBoxType::Information:
             gtk_type = GTK_MESSAGE_INFO;
             break;
-        case JzEMessageBoxType::WARNING:
+        case JzEMessageBoxType::Warning:
             gtk_type = GTK_MESSAGE_WARNING;
             break;
-        case JzEMessageBoxType::ERROR:
+        case JzEMessageBoxType::Error:
             gtk_type = GTK_MESSAGE_ERROR;
             break;
         default:

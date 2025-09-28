@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <memory>
 #include "JzRE/Core/JzVector.h"
 #include "JzRE/UI/JzPlugin.h"
 #include "JzRE/RHI/JzRHITexture.h"
@@ -18,6 +19,8 @@ class JzTexturePreview : public JzPlugin {
 public:
     /**
      * @brief Constructor
+     *
+     * @param texture
      */
     JzTexturePreview(std::shared_ptr<JzRHITexture> texture);
 

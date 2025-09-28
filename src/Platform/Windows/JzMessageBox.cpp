@@ -27,16 +27,16 @@ void JzMessageBox::Show()
 {
     UINT message_box_type = 0;
     switch (m_type) {
-        case JzEMessageBoxType::QUESTION:
+        case JzEMessageBoxType::Question:
             message_box_type |= MB_ICONQUESTION;
             break;
-        case JzEMessageBoxType::INFORMATION:
+        case JzEMessageBoxType::Information:
             message_box_type |= MB_ICONINFORMATION;
             break;
-        case JzEMessageBoxType::WARNING:
+        case JzEMessageBoxType::Warning:
             message_box_type |= MB_ICONWARNING;
             break;
-        case JzEMessageBoxType::ERROR:
+        case JzEMessageBoxType::Error:
             message_box_type |= MB_ICONERROR;
             break;
     }

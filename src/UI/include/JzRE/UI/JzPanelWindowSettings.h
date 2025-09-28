@@ -8,6 +8,7 @@
 #include "JzRE/Core/JzRETypes.h"
 
 namespace JzRE {
+
 /**
  * @brief Settings of Panel Window
  */
@@ -27,4 +28,5 @@ struct JzPanelWindowSettings {
     Bool titleBar                 = true;
     Bool autoSize                 = false;
 };
+
 } // namespace JzRE

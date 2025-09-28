@@ -20,10 +20,10 @@ public:
      *
      * @param name
      * @param shortcut
-     * @param is_checkable
-     * @param is_checked
+     * @param isCheckable
+     * @param isChecked
      */
-    JzMenuItem(const String &name, const String &shortcut = "", Bool is_checkable = false, Bool is_checked = false);
+    JzMenuItem(const String &name, const String &shortcut = "", Bool isCheckable = false, Bool isChecked = false);
 
 protected:
     /**

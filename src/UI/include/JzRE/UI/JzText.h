@@ -9,6 +9,7 @@
 #include "JzRE/UI/JzDataWidget.h"
 
 namespace JzRE {
+
 /**
  * @brief Text Widget
  */
@@ -17,9 +18,9 @@ public:
     /**
      * @brief Constructor
      *
-     * @param p_content
+     * @param content
      */
-    JzText(const String &p_content = "");
+    JzText(const String &content = "");
 
 protected:
     /**
@@ -30,4 +31,5 @@ protected:
 public:
     String content;
 };
+
 } // namespace JzRE

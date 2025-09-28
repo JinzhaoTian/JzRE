@@ -10,6 +10,7 @@
 #include "JzRE/UI/JzDataWidget.h"
 
 namespace JzRE {
+
 /**
  * @brief Input Text Widget
  */

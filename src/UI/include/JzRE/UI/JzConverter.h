@@ -9,6 +9,7 @@
 #include "JzRE/Core/JzVector.h"
 
 namespace JzRE {
+
 /**
  * @brief Converter Of Different Types
  */
@@ -77,4 +78,5 @@ public:
      */
     static ImColor HexToImColor(const String &hexColor, float alpha = 1.0f);
 };
+
 } // namespace JzRE

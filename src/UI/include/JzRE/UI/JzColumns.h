@@ -10,17 +10,17 @@
 #include "JzRE/UI/JzWidgetContainer.h"
 
 namespace JzRE {
+
 /**
  * @brief Columns Widget
+ *
+ * @tparam N
  */
 template <Size N>
 class JzColumns : public JzWidget, public JzWidgetContainer {
 public:
     /**
      * @brief Constructor
-     *
-     * @param label The label of the button
-     * @param p_disabled Whether the button is disabled
      */
     JzColumns()
     {

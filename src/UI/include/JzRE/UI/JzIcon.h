@@ -5,11 +5,13 @@
 
 #pragma once
 
+#include <memory>
 #include "JzRE/Core/JzVector.h"
 #include "JzRE/RHI/JzRHITexture.h"
 #include "JzRE/UI/JzWidget.h"
 
 namespace JzRE {
+
 /**
  * @brief Image Widget
  */
@@ -33,4 +35,5 @@ private:
     JzVec2                        m_textureSize;
     std::shared_ptr<JzRHITexture> m_texture;
 };
+
 } // namespace JzRE

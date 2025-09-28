@@ -8,6 +8,7 @@
 #include "JzRE/UI/JzWidget.h"
 
 namespace JzRE {
+
 /**
  * @brief Separator Widget
  */
@@ -18,4 +19,5 @@ protected:
      */
     void _Draw_Impl() override;
 };
+
 } // namespace JzRE

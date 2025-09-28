@@ -11,10 +11,10 @@ namespace JzRE {
  * @brief Enums of message box types
  */
 enum class JzEMessageBoxType : U8 {
-    QUESTION,
-    INFORMATION,
-    WARNING,
-    ERROR
+    Question,
+    Information,
+    Warning,
+    Error
 };
 
 /**
@@ -60,7 +60,7 @@ public:
      * @param button
      * @param autoShow
      */
-    JzMessageBox(String title, String message, JzEMessageBoxType type = JzEMessageBoxType::INFORMATION, JzEMessageBoxButton button = JzEMessageBoxButton::OK, Bool autoShow = true);
+    JzMessageBox(String title, String message, JzEMessageBoxType type = JzEMessageBoxType::Information, JzEMessageBoxButton button = JzEMessageBoxButton::OK, Bool autoShow = true);
 
     /**
      * @brief Show

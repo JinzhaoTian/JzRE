@@ -8,6 +8,7 @@
 #include "JzRE/Core/JzRETypes.h"
 
 namespace JzRE {
+
 /**
  * @brief Enums of Horizontal Alignment
  */
@@ -25,4 +26,5 @@ enum class JzEVerticalAlignment : U8 {
     MIDDLE,
     BOTTOM
 };
+
 } // namespace JzRE

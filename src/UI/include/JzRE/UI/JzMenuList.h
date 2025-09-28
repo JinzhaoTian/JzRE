@@ -10,18 +10,19 @@
 #include "JzRE/UI/JzGroup.h"
 
 namespace JzRE {
+
 /**
  * @brief Menu List Widget
  */
 class JzMenuList : public JzGroup {
 public:
     /**
-     * @brief Construct a new JzMenuList object
+     * @brief Constructor
      *
      * @param name
-     * @param is_locked
+     * @param isLocked
      */
-    JzMenuList(const String &name, Bool is_locked = false);
+    JzMenuList(const String &name, Bool isLocked = false);
 
 protected:
     /**
@@ -37,4 +38,5 @@ public:
 private:
     Bool m_opened;
 };
+
 } // namespace JzRE

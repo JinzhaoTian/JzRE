@@ -7,10 +7,10 @@
 
 #include <functional>
 #include "JzRE/Core/JzRETypes.h"
-#include "JzRE/UI/JzEPlugin.h"
 #include "JzRE/UI/JzPlugin.h"
 
 namespace JzRE {
+
 /**
  * @brief Data dispatcher plugin
  *
@@ -97,4 +97,5 @@ private:
     std::function<void(T)> m_provider;
     std::function<T(void)> m_gatherer;
 };
+
 } // namespace JzRE

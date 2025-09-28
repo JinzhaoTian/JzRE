@@ -10,6 +10,7 @@
 #include "JzRE/UI/JzWidget.h"
 
 namespace JzRE {
+
 /**
  * @brief Image Widget
  */
@@ -33,4 +34,5 @@ public:
     U32    textureId;
     JzVec2 size;
 };
+
 } // namespace JzRE

@@ -6,6 +6,7 @@
 #pragma once
 
 namespace JzRE {
+
 /**
  * @brief Interface for Drawable Objects
  */
@@ -21,4 +22,5 @@ public:
      */
     virtual ~JzIDrawable() = default;
 };
+
 } // namespace JzRE

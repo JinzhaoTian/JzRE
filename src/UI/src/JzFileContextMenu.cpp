@@ -36,7 +36,7 @@ void JzRE::JzFileContextMenu::DeleteItem()
 {
     JzMessageBox message("Delete file",
                          std::format("Are you sure that you want to delete \"{}\"?", filePath.string()),
-                         JzEMessageBoxType::WARNING,
+                         JzEMessageBoxType::Warning,
                          JzEMessageBoxButton::YES_NO);
 
     if (message.GetUserAction() == JzEMessageBoxUserAction::Yes) {

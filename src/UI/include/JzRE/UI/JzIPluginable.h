@@ -6,10 +6,10 @@
 #pragma once
 
 #include <vector>
-#include "JzRE/UI/JzEPlugin.h"
 #include "JzRE/UI/JzPlugin.h"
 
 namespace JzRE {
+
 /**
  * @brief Interface for Pluginable Objects
  */
@@ -28,15 +28,17 @@ public:
      *
      * @tparam T The type of the plugin
      * @tparam Args The types of the arguments
-     * @param p_args The arguments
+     *
+     * @param args The arguments
+     *
      * @return The plugin
      */
     template <typename T, typename... Args>
-    T &AddPlugin(Args &&...p_args)
+    T &AddPlugin(Args &&...args)
     {
         static_assert(std::is_base_of<JzPlugin, T>::value, "T should derive from IPlugin");
 
-        T *newPlugin = new T(std::forward<Args>(p_args)...);
+        T *newPlugin = new T(std::forward<Args>(args)...);
         m_plugins.push_back(newPlugin);
         return *newPlugin;
     }
@@ -45,6 +47,7 @@ public:
      * @brief Returns the plugin of the given type, or nullptr if not found
      *
      * @tparam T The type of the plugin
+     *
      * @return The plugin
      */
     template <typename T>

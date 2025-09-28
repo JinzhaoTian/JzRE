@@ -9,14 +9,16 @@
 #include "JzRE/UI/JzWidget.h"
 
 namespace JzRE {
+
 /**
  * @brief Spacing Widget
  */
 class JzSpacing : public JzWidget {
 public:
     /**
-     * Constructor
-     * @param p_spaces
+     * @brief Constructor
+     *
+     * @param spaces
      */
     JzSpacing(U16 spaces = 1);
 
@@ -29,4 +31,5 @@ protected:
 public:
     U16 spaces = 1;
 };
+
 } // namespace JzRE

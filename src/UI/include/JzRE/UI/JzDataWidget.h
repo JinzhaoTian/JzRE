@@ -9,6 +9,7 @@
 #include "JzRE/UI/JzWidget.h"
 
 namespace JzRE {
+
 /**
  * @brief Widget for displaying and editing data
  *
@@ -64,4 +65,5 @@ inline void JzDataWidget<T>::NotifyChange()
         plugin->NotifyChange();
     }
 }
+
 } // namespace JzRE

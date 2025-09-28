@@ -20,9 +20,9 @@ public:
      * @brief Constructor
      *
      * @param label The label of the button
-     * @param p_disabled Whether the button is disabled
+     * @param isDisabled Whether the button is disabled
      */
-    JzButton(const String &label = "", Bool p_disabled = false);
+    JzButton(const String &label = "", Bool isDisabled = false);
 
 protected:
     /**

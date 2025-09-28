@@ -6,8 +6,8 @@
 #include "JzRE/UI/JzArrowButton.h"
 #include <imgui.h>
 
-JzRE::JzArrowButton::JzArrowButton(JzRE::JzEArrowDirection p_direction) :
-    arrowDirection(p_direction) { }
+JzRE::JzArrowButton::JzArrowButton(JzRE::JzEArrowDirection direction) :
+    arrowDirection(direction) { }
 
 void JzRE::JzArrowButton::_Draw_Impl()
 {

@@ -42,16 +42,16 @@ void JzMessageBox::Show() {
 
     // 设置图标类型
     switch (m_type) {
-    case JzEMessageBoxType::QUESTION:
+    case JzEMessageBoxType::Question:
       [alert setAlertStyle:NSAlertStyleInformational];
       break;
-    case JzEMessageBoxType::INFORMATION:
+    case JzEMessageBoxType::Information:
       [alert setAlertStyle:NSAlertStyleInformational];
       break;
-    case JzEMessageBoxType::WARNING:
+    case JzEMessageBoxType::Warning:
       [alert setAlertStyle:NSAlertStyleWarning];
       break;
-    case JzEMessageBoxType::ERROR:
+    case JzEMessageBoxType::Error:
       [alert setAlertStyle:NSAlertStyleCritical];
       break;
     }

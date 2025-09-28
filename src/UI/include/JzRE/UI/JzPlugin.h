@@ -5,9 +5,18 @@
 
 #pragma once
 
-#include "JzRE/UI/JzEPlugin.h"
+#include "JzRE/Core/JzRETypes.h"
 
 namespace JzRE {
+
+/**
+ * @brief Enums of Plugin Execution Context
+ */
+enum class JzEPluginExecutionContext : U8 {
+    WIDGET,
+    PANEL
+};
+
 /**
  * @brief Base class for all plugins
  */

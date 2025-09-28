@@ -14,8 +14,16 @@ namespace JzRE {
  */
 class JzModelContextMenu : public JzFileContextMenu {
 public:
+    /**
+     * @brief Constructor
+     *
+     * @param filePath
+     */
     JzModelContextMenu(const String &filePath);
 
+    /**
+     * @brief Create an item list
+     */
     virtual void CreateList() override;
 };
 

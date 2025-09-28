@@ -10,6 +10,7 @@
 #include "JzRE/UI/JzText.h"
 
 namespace JzRE {
+
 /**
  * @brief Clickable Text Widget
  */
@@ -18,9 +19,9 @@ public:
     /**
      * @brief Constructor
      *
-     * @param p_content
+     * @param content
      */
-    JzTextClickable(const String &p_content = "");
+    JzTextClickable(const String &content = "");
 
 protected:
     /**
