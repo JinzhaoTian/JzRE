@@ -3,25 +3,51 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
+#include "JzRE/Core/JzServiceContainer.h"
+#include "JzRE/Editor/JzContext.h"
 #include "JzRE/Editor/JzAssetBrowser.h"
-#include "JzRE/Editor/JzEditor.h"
-#include "JzRE/Editor/JzPathParser.h"
-#include "JzRE/UI/JzImage.h"
-#include "JzRE/UI/JzText.h"
+#include "JzRE/UI/JzButton.h"
+#include "JzRE/UI/JzFileContextMenu.h"
+#include "JzRE/UI/JzFolderContextMenu.h"
+#include "JzRE/UI/JzIcon.h"
+#include "JzRE/UI/JzSeparator.h"
 #include "JzRE/UI/JzTextClickable.h"
-#include "JzRE/UI/JzWidgetContainer.h"
 #include "JzRE/Resource/JzResourceManager.h"
 #include "JzRE/Resource/JzTexture.h"
 
 JzRE::JzAssetBrowser::JzAssetBrowser(const JzRE::String &name, JzRE::Bool is_opened) :
     JzPanelWindow(name, is_opened)
 {
+    m_openDirectory = JzContext::GetInstance().GetCurrentPath();
+
+    auto &refreshButton             = CreateWidget<JzButton>("Refresh");
+    refreshButton.buttonIdleColor   = "#e3c79f";
+    refreshButton.buttonLabelColor  = "#003153";
+    refreshButton.lineBreak         = false;
+    refreshButton.ClickedEvent     += [this]() { Refresh(); };
+
+    auto &importButton             = CreateWidget<JzButton>("Import");
+    importButton.buttonIdleColor   = "#b5120f";
+    importButton.buttonLabelColor  = "#003153";
+    importButton.lineBreak         = true;
+    importButton.ClickedEvent     += []() {
+        // TODO
+    };
+
+    CreateWidget<JzSeparator>();
+
     m_assetList = &CreateWidget<JzGroup>();
+
+    Fill();
 }
 
 void JzRE::JzAssetBrowser::Fill()
 {
-    // ConsiderItem(nullptr, std::filesystem::directory_entry(m_assetPath), true);
+    for (auto &item : std::filesystem::directory_iterator(m_openDirectory)) {
+        if (item.is_directory()) {
+            _AddDirectoryItem(nullptr, item, true);
+        }
+    }
 }
 
 void JzRE::JzAssetBrowser::Clear()
@@ -35,69 +61,76 @@ void JzRE::JzAssetBrowser::Refresh()
     Fill();
 }
 
-void JzRE::JzAssetBrowser::ParseFolder(JzRE::JzTreeNode &p_root, const std::filesystem::directory_entry &p_directory, JzRE::Bool p_isEngineItem, JzRE::Bool p_scriptFolder)
+void JzRE::JzAssetBrowser::_TraverseDirectory(JzRE::JzTreeNode &root, const std::filesystem::path &path)
 {
-    // Iterates another time to display list files
-    for (auto &item : std::filesystem::directory_iterator(p_directory)) {
+    for (auto &item : std::filesystem::directory_iterator(path)) {
         if (item.is_directory()) {
-            ConsiderItem(&p_root, item, p_isEngineItem, false, p_scriptFolder);
+            _AddDirectoryItem(&root, item, false);
         }
     }
 
-    // Iterates another time to display list files
-    for (auto &item : std::filesystem::directory_iterator(p_directory)) {
+    for (auto &item : std::filesystem::directory_iterator(path)) {
         if (!item.is_directory()) {
-            ConsiderItem(&p_root, item, p_isEngineItem, false, p_scriptFolder);
+            _AddFileItem(&root, item);
         }
     }
 }
 
-void JzRE::JzAssetBrowser::ConsiderItem(JzRE::JzTreeNode *p_root, const std::filesystem::directory_entry &p_entry, JzRE::Bool p_isEngineItem, JzRE::Bool p_autoOpen, JzRE::Bool p_scriptFolder)
+void JzRE::JzAssetBrowser::_AddDirectoryItem(JzRE::JzTreeNode *root, const std::filesystem::path &path, JzRE::Bool autoOpen)
 {
-    const Bool   isDirectory = p_entry.is_directory();
-    const String itemname    = JzPathParser::GetElementName(p_entry.path().string());
-    const auto   fileType    = JzPathParser::GetFileType(itemname);
+    auto &itemGroup = root ? root->CreateWidget<JzGroup>() : m_assetList->CreateWidget<JzGroup>();
 
-    // Unknown file, so we skip it
-    if (!isDirectory && fileType == JzEFileType::UNKNOWN) {
-        return;
-    }
-
-    const String path = p_entry.path().string();
-
-    const String resourceFormatPath = ""; // TODO
-    const Bool   protectedItem      = !p_root || p_isEngineItem;
-
-    /* If there is a given treenode (p_root) we attach the new widget to it */
-    auto &itemGroup = p_root ? p_root->CreateWidget<JzGroup>() : m_assetList->CreateWidget<JzGroup>();
+    const auto itemName = path.filename().string();
 
     /* Find the icon to apply to the item */
-    const U32 iconTextureID = 0 /*isDirectory ? JzRE_CONTEXT().editorResources->GetTexture("Folder")->GetTexture().GetID() : JzRE_CONTEXT().editorResources->GetFileIcon(itemname)->GetTexture().GetID()*/;
+    auto      &resourceManager = JzServiceContainer::Get<JzResourceManager>();
+    const auto iconTexture     = resourceManager.GetResource<JzTexture>("icons/folder-16.png");
 
-    itemGroup.CreateWidget<JzImage>(iconTextureID, JzVec2{16, 16}).lineBreak = false;
+    auto &iconItem     = itemGroup.CreateWidget<JzIcon>(iconTexture->GetRhiTexture(), JzVec2{16, 16});
+    iconItem.lineBreak = false;
 
-    /* If the entry is a directory, the content must be a tree node, otherwise (= is a file), a text will suffice */
-    if (isDirectory) {
-        auto &treeNode = itemGroup.CreateWidget<JzTreeNode>(itemname);
+    auto &treeNode        = itemGroup.CreateWidget<JzTreeNode>(itemName);
+    treeNode.OpenedEvent += [this, &treeNode, path] {
+        treeNode.RemoveAllWidgets();
+        _TraverseDirectory(treeNode, path);
+    };
+    treeNode.ClosedEvent += [this, &treeNode] {
+        treeNode.RemoveAllWidgets();
+    };
 
-        if (p_autoOpen) {
-            treeNode.Open();
-        }
+    auto &contextMenu = treeNode.AddPlugin<JzFolderContextMenu>(path);
+    contextMenu.CreateList();
+    contextMenu.ItemAddedEvent += [this, &treeNode](std::filesystem::path p_path) {
+        treeNode.Open();
+        treeNode.RemoveAllWidgets();
+        _TraverseDirectory(treeNode, std::filesystem::directory_entry(p_path.parent_path()));
+    };
 
-        treeNode.OpenedEvent += [this, &treeNode, path, p_isEngineItem, p_scriptFolder] {
-            treeNode.RemoveAllWidgets();
-            String updatedPath = JzPathParser::GetContainingFolder(path) + treeNode.name;
-            ParseFolder(treeNode, std::filesystem::directory_entry(updatedPath), p_isEngineItem, p_scriptFolder);
-        };
-
-        treeNode.ClosedEvent += [this, &treeNode] {
-            treeNode.RemoveAllWidgets();
-        };
-    } else {
-        auto &clickableText = itemGroup.CreateWidget<JzTextClickable>(itemname);
-
-        if (fileType == JzEFileType::MATERIAL) {
-            clickableText.DoubleClickedEvent += [p_isEngineItem] { };
-        }
+    if (autoOpen) {
+        treeNode.Open();
     }
+}
+
+void JzRE::JzAssetBrowser::_AddFileItem(JzRE::JzTreeNode *root, const std::filesystem::path &path)
+{
+    auto &itemGroup = root ? root->CreateWidget<JzGroup>() : m_assetList->CreateWidget<JzGroup>();
+
+    const auto itemName = path.filename().string();
+
+    /* Find the icon to apply to the item */
+    auto      &resourceManager = JzServiceContainer::Get<JzResourceManager>();
+    const auto iconTexture     = resourceManager.GetResource<JzTexture>("icons/file-16.png");
+
+    auto &iconItem     = itemGroup.CreateWidget<JzIcon>(iconTexture->GetRhiTexture(), JzVec2{16, 16});
+    iconItem.lineBreak = false;
+
+    auto &clickableText = itemGroup.CreateWidget<JzTextClickable>(itemName);
+
+    auto &contextMenu = clickableText.AddPlugin<JzFileContextMenu>(path);
+    contextMenu.CreateList();
+    contextMenu.DestroyedEvent += [&itemGroup](std::filesystem::path p_deletedPath) { };
+    contextMenu.RenamedEvent   += [&clickableText](std::filesystem::path p_prev, std::filesystem::path p_newPath) { };
+    contextMenu.DuplicateEvent += [this, &clickableText](std::filesystem::path newItem) { };
+
+    clickableText.DoubleClickedEvent += []() { };
 }

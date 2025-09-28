@@ -6,10 +6,19 @@
 #pragma once
 
 #include "JzRE/Core/JzRETypes.h"
-#include "JzEGizmo.h"
 #include "JzView.h"
 
 namespace JzRE {
+
+/**
+ * @brief Enums of Gizmo Operations
+ */
+enum class JzEGizmoOperation : U8 {
+    TRANSLATE,
+    ROTATE,
+    SCALE
+};
+
 /**
  * @brief Scene View Panel Window
  */

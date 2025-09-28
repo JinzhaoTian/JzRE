@@ -15,6 +15,6 @@ void JzRE::JzIcon::_Draw_Impl()
 {
     ImGui::Image((ImTextureID)(uintptr_t)m_texture->GetTextureID(),
                  JzConverter::ToImVec2(m_textureSize),
-                 ImVec2(0.f, 1.f),
-                 ImVec2(1.f, 0.f));
+                 ImVec2(0.f, 0.f),
+                 ImVec2(1.f, 1.f));
 }

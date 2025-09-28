@@ -4,12 +4,11 @@
  */
 
 #include "JzRE/UI/JzIconButton.h"
-#include <cstdint>
 #include <imgui.h>
 #include "JzRE/UI/JzConverter.h"
 
-JzRE::JzIconButton::JzIconButton(std::shared_ptr<JzRE::JzRHITexture> texture) :
-    m_texture(texture),
+JzRE::JzIconButton::JzIconButton(std::shared_ptr<JzRE::JzRHITexture> iconTexture) :
+    m_iconTexture(iconTexture),
     buttonSize({20.0f, 20.0f}),
     buttonIdleColor("#2A2A2A"),
     buttonHoveredColor("#414243"),
@@ -44,7 +43,7 @@ void JzRE::JzIconButton::_Draw_Impl()
     const ImVec2 iconMaxPos = ImVec2(iconMinPos.x + iconSize.x(),
                                      iconMinPos.y + iconSize.y());
 
-    if (m_texture) {
+    if (m_iconTexture) {
         String finalIconColor = iconIdleColor;
 
         if (isHovered) {
@@ -52,7 +51,7 @@ void JzRE::JzIconButton::_Draw_Impl()
         }
 
         ImGui::GetWindowDrawList()->AddImage(
-            (ImTextureID)(uintptr_t)(m_texture->GetTextureID()),
+            (ImTextureID)(uintptr_t)(m_iconTexture->GetTextureID()),
             iconMinPos,
             iconMaxPos,
             ImVec2(0.f, 0.f),

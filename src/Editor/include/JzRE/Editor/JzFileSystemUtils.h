@@ -26,14 +26,14 @@ enum class JzEFileType : U8 {
 };
 
 /**
- * @brief Path parser
+ * @brief File system utils
  */
-class JzPathParser {
+class JzFileSystemUtils {
 public:
     /**
-     * Disabled constructor
+     * @brief Delete constructor
      */
-    JzPathParser() = delete;
+    JzFileSystemUtils() = delete;
 
     /**
      * Returns the windows style version of the given path ('/' replaced by '\')

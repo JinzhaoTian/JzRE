@@ -3,10 +3,10 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzRE/Editor/JzPathParser.h"
+#include "JzRE/Editor/JzFileSystemUtils.h"
 #include <algorithm>
 
-JzRE::String JzRE::JzPathParser::MakeWindowsStyle(const JzRE::String &p_path)
+JzRE::String JzRE::JzFileSystemUtils::MakeWindowsStyle(const JzRE::String &p_path)
 {
     String result;
     result.resize(p_path.size());
@@ -17,7 +17,7 @@ JzRE::String JzRE::JzPathParser::MakeWindowsStyle(const JzRE::String &p_path)
     return result;
 }
 
-JzRE::String JzRE::JzPathParser::MakeNonWindowsStyle(const JzRE::String &p_path)
+JzRE::String JzRE::JzFileSystemUtils::MakeNonWindowsStyle(const JzRE::String &p_path)
 {
     String result;
     result.resize(p_path.size());
@@ -28,7 +28,7 @@ JzRE::String JzRE::JzPathParser::MakeNonWindowsStyle(const JzRE::String &p_path)
     return result;
 }
 
-JzRE::String JzRE::JzPathParser::GetContainingFolder(const JzRE::String &p_path)
+JzRE::String JzRE::JzFileSystemUtils::GetContainingFolder(const JzRE::String &p_path)
 {
     String result;
 
@@ -50,7 +50,7 @@ JzRE::String JzRE::JzPathParser::GetContainingFolder(const JzRE::String &p_path)
     return result;
 }
 
-JzRE::String JzRE::JzPathParser::GetElementName(const JzRE::String &p_path)
+JzRE::String JzRE::JzFileSystemUtils::GetElementName(const JzRE::String &p_path)
 {
     String result;
 
@@ -66,7 +66,7 @@ JzRE::String JzRE::JzPathParser::GetElementName(const JzRE::String &p_path)
     return result;
 }
 
-JzRE::String JzRE::JzPathParser::GetExtension(const JzRE::String &p_path)
+JzRE::String JzRE::JzFileSystemUtils::GetExtension(const JzRE::String &p_path)
 {
     String result;
 
@@ -78,7 +78,7 @@ JzRE::String JzRE::JzPathParser::GetExtension(const JzRE::String &p_path)
     return result;
 }
 
-JzRE::String JzRE::JzPathParser::FileTypeToString(JzRE::JzEFileType p_fileType)
+JzRE::String JzRE::JzFileSystemUtils::FileTypeToString(JzRE::JzEFileType p_fileType)
 {
     switch (p_fileType) {
         case JzRE::JzEFileType::MODEL: return "Model";
@@ -96,7 +96,7 @@ JzRE::String JzRE::JzPathParser::FileTypeToString(JzRE::JzEFileType p_fileType)
     return "Unknown";
 }
 
-JzRE::JzEFileType JzRE::JzPathParser::GetFileType(const JzRE::String &p_path)
+JzRE::JzEFileType JzRE::JzFileSystemUtils::GetFileType(const JzRE::String &p_path)
 {
     String ext = GetExtension(p_path);
     std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);

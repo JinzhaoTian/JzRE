@@ -22,9 +22,9 @@ public:
     /**
      * @brief Construct a new Jz Icon Button object.
      *
-     * @param texture The texture to use as the icon.
+     * @param iconTexture The texture to use as the icon.
      */
-    JzIconButton(std::shared_ptr<JzRHITexture> texture);
+    JzIconButton(std::shared_ptr<JzRHITexture> iconTexture);
 
 protected:
     /**
@@ -49,7 +49,7 @@ public:
     String iconHoveredColor;
 
 private:
-    std::shared_ptr<JzRHITexture> m_texture;
+    std::shared_ptr<JzRHITexture> m_iconTexture;
 };
 
 } // namespace JzRE

@@ -28,7 +28,7 @@ void JzRE::JzFolderContextMenu::CreateList()
         Close();
     };
 
-    auto &_createFileMenu               = createMenu.CreateWidget<JzMenuList>("Scene");
+    auto &_createFileMenu               = createMenu.CreateWidget<JzMenuList>("File");
     auto &_createFileInput              = _createFileMenu.CreateWidget<JzInputText>("");
     _createFileMenu.ClickedEvent       += [&_createFileInput] { _createFileInput.content = ""; };
     _createFileInput.EnterPressedEvent += [this](String newFileName) {

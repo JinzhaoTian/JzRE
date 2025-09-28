@@ -7,23 +7,25 @@
 
 #include "JzRE/Core/JzRETypes.h"
 #include "JzRE/Core/JzEvent.h"
+#include "JzRE/RHI/JzRHITexture.h"
 #include "JzRE/UI/JzDataWidget.h"
 #include "JzRE/UI/JzWidgetContainer.h"
 
 namespace JzRE {
 
 /**
- * @brief Tree Node Widget
+ * @brief Icon tree node
  */
-class JzTreeNode : public JzDataWidget<String>, public JzWidgetContainer {
+class JzIconTreeNode : public JzDataWidget<String>, public JzWidgetContainer {
 public:
     /**
      * @brief Constructor
      *
-     * @param name The name of the tree node
-     * @param arrowClickToOpen Whether to open the tree node when the arrow is clicked
+     * @param name
+     * @param iconTexture
+     * @param arrowClickToOpen
      */
-    JzTreeNode(const String &name = "", Bool arrowClickToOpen = false);
+    JzIconTreeNode(const String &name, std::shared_ptr<JzRHITexture> iconTexture, Bool arrowClickToOpen = false);
 
     /**
      * @brief Open the tree node
@@ -58,10 +60,11 @@ public:
     JzEvent<> ClosedEvent;
 
 private:
-    Bool m_arrowClickToOpen = false;
-    Bool m_shouldOpen       = false;
-    Bool m_shouldClose      = false;
-    Bool m_opened           = false;
+    std::shared_ptr<JzRHITexture> m_iconTexture;
+    Bool                          m_arrowClickToOpen = false;
+    Bool                          m_shouldOpen       = false;
+    Bool                          m_shouldClose      = false;
+    Bool                          m_opened           = false;
 };
 
 } // namespace JzRE
