@@ -9,7 +9,6 @@
 #include "JzRE/RHI/JzRHIETypes.h"
 #include "JzRE/RHI/JzRHIFramebuffer.h"
 #include "JzRE/RHI/JzRHIPipeline.h"
-#include "JzRE/RHI/JzRHIResource.h"
 #include "JzRE/RHI/JzRHITexture.h"
 #include "JzRE/RHI/JzRHIVertexArray.h"
 
@@ -31,7 +30,8 @@ enum class JzRHIECommandType : U8 {
     BeginRenderPass,
     EndRenderPass,
     CopyTexture,
-    UpdateBuffer
+    UpdateBuffer,
+    ImGuiRender
 };
 
 /**
