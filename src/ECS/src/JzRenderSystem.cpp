@@ -18,18 +18,18 @@ void JzRE::JzRenderSystem::Update(JzRE::JzEntityManager &manager, JzRE::F32 delt
         return;
     }
 
-    // In a real scenario, you would get camera matrices from an entity with a CameraComponent
-    // auto& camera_transform = manager.GetComponent<TransformComponent>(camera_entity);
-    // auto& camera_component = manager.GetComponent<CameraComponent>(camera_entity);
+    // In a real scenario, you would get camera matrices from an entity with a JzCameraComponent
+    // auto& camera_transform = manager.GetComponent<JzTransformComponent>(camera_entity);
+    // auto& camera_component = manager.GetComponent<JzCameraComponent>(camera_entity);
     // ... calculate view-projection matrix ...
 
     // The entity manager needs a way to iterate over entities with specific components.
     // This is a conceptual representation. Your actual implementation might differ.
-    for (auto entity : manager.View<TransformComponent, MeshComponent, MaterialComponent>()) {
+    for (auto entity : manager.View<JzTransformComponent, JzMeshComponent, JzMaterialComponent>()) {
         // 1. Get components from the entity
-        auto &transform = manager.GetComponent<TransformComponent>(entity);
-        auto &meshComp  = manager.GetComponent<MeshComponent>(entity);
-        auto &matComp   = manager.GetComponent<MaterialComponent>(entity);
+        auto &transform = manager.GetComponent<JzTransformComponent>(entity);
+        auto &meshComp  = manager.GetComponent<JzMeshComponent>(entity);
+        auto &matComp   = manager.GetComponent<JzMaterialComponent>(entity);
 
         // 2. Get JzResource from components
         auto mesh     = std::static_pointer_cast<JzMesh>(meshComp.mesh);

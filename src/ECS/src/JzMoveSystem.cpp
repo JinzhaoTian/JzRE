@@ -10,11 +10,11 @@
 void JzRE::JzMoveSystem::Update(JzRE::JzEntityManager &manager, JzRE::F32 delta)
 {
     // Get all entities that have both a TransformComponent and a VelocityComponent
-    auto entities = manager.View<TransformComponent, VelocityComponent>();
+    auto entities = manager.View<JzTransformComponent, JzVelocityComponent>();
 
     for (auto entity : entities) {
-        auto &transform = manager.GetComponent<TransformComponent>(entity);
-        auto &velocity  = manager.GetComponent<VelocityComponent>(entity);
+        auto &transform = manager.GetComponent<JzTransformComponent>(entity);
+        auto &velocity  = manager.GetComponent<JzVelocityComponent>(entity);
 
         transform.position += velocity.velocity * delta;
     }
