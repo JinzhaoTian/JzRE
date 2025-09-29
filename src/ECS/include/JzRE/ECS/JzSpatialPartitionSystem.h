@@ -6,6 +6,7 @@
 #pragma once
 
 #include <unordered_map>
+#include <vector>
 #include "JzRE/Core/JzRETypes.h"
 #include "JzRE/Core/JzVector.h"
 #include "JzRE/ECS/JzEntity.h"
@@ -26,6 +27,13 @@ public:
      */
     void Update(JzEntityManager &manager, F32 delta) override;
 
+    /**
+     * @brief Query entities in a spherical range.
+     *
+     * @param center
+     * @param radius
+     * @return std::vector<JzEntity>
+     */
     std::vector<JzEntity> QueryEntitiesInRange(const JzVec3 &center, F32 radius);
 
 private:
