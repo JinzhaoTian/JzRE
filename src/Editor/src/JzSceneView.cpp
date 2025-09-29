@@ -3,8 +3,9 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
+#include "JzRE/Core/JzServiceContainer.h"
 #include "JzRE/Editor/JzSceneView.h"
-#include "JzRE/Editor/JzContext.h"
+#include "JzRE/Editor/JzInputManager.h"
 
 JzRE::JzSceneView::JzSceneView(const JzRE::String &name, JzRE::Bool is_opened) :
     JzRE::JzView(name, is_opened)
@@ -16,7 +17,7 @@ void JzRE::JzSceneView::Update(JzRE::F32 deltaTime)
 {
     JzView::Update(deltaTime);
 
-    auto &inputManager = JzContext::GetInstance().GetInputManager();
+    auto &inputManager = JzServiceContainer::Get<JzInputManager>();
     if (IsFocused() && !m_cameraController.IsRightMousePressed()) {
         if (inputManager.IsKeyPressed(JzEInputKey::KEY_W)) {
             SetGizmoOperation(JzEGizmoOperation::TRANSLATE);
@@ -45,7 +46,7 @@ JzRE::JzEGizmoOperation JzRE::JzSceneView::GetGizmoOperation() const
 
 void JzRE::JzSceneView::HandleActorPicking()
 {
-    auto &inputManager = JzContext::GetInstance().GetInputManager();
+    auto &inputManager = JzServiceContainer::Get<JzInputManager>();
     if (inputManager.IsMouseButtonReleased(JzEInputMouseButton::MOUSE_BUTTON_LEFT)) {
         // m_gizmoOperations.StopPicking();
     }

@@ -6,8 +6,8 @@
 #pragma once
 
 #include "JzRE/Editor/JzCanvas.h"
-#include "JzRE/Editor/JzContext.h"
 #include "JzRE/Editor/JzPanelsManager.h"
+#include "JzRE/Editor/JzWindow.h"
 
 namespace JzRE {
 /**
@@ -18,7 +18,7 @@ public:
     /**
      * @brief Construct a new Editor object
      */
-    JzEditor();
+    JzEditor(JzWindow &window);
 
     /**
      * @brief Destroy the Editor object
@@ -51,7 +51,7 @@ private:
 
 private:
     U64             m_elapsedFrames = 0;
-    JzContext      &m_context;
+    JzWindow       &m_window;
     JzCanvas        m_canvas;
     JzPanelsManager m_panelsManager;
 };

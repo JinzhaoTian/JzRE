@@ -5,8 +5,8 @@
 
 #pragma once
 
-#include "JzRE/Core/JzRETypes.h"
 #include "JzRE/Core/JzVector.h"
+#include "JzRE/RHI/JzRHITexture.h"
 #include "JzRE/UI/JzWidget.h"
 
 namespace JzRE {
@@ -22,7 +22,7 @@ public:
      * @param p_textureId
      * @param p_size
      */
-    JzImage(U32 p_textureId, const JzVec2 &p_size);
+    JzImage(std::shared_ptr<JzRHITexture> imageTexture, const JzVec2 &imageSize);
 
 protected:
     /**
@@ -31,8 +31,8 @@ protected:
     void _Draw_Impl() override;
 
 public:
-    U32    textureId;
-    JzVec2 size;
+    std::shared_ptr<JzRHITexture> imageTexture;
+    JzVec2                        imageSize;
 };
 
 } // namespace JzRE

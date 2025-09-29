@@ -6,16 +6,19 @@
 #include "JzRE/Editor/JzMenuBar.h"
 #include <filesystem>
 #include <imgui.h>
+#include "JzRE/Core/JzServiceContainer.h"
 #include "JzRE/UI/JzGroup.h"
 #include "JzRE/UI/JzEAlignment.h"
 #include "JzRE/UI/JzText.h"
 #include "JzRE/UI/JzArrowButton.h"
 #include "JzRE/UI/JzSeparator.h"
 #include "JzRE/UI/JzConverter.h"
-#include "JzRE/Editor/JzContext.h"
+#include "JzRE/Editor/JzSceneManager.h"
+#include "JzRE/Editor/JzInputManager.h"
 #include "JzRE/Platform/JzOpenFileDialog.h"
 
-JzRE::JzMenuBar::JzMenuBar()
+JzRE::JzMenuBar::JzMenuBar(JzRE::JzWindow &window) :
+    m_window(window)
 {
     CreateFileMenu();
     // CreateBuildMenu();
@@ -31,11 +34,11 @@ JzRE::JzMenuBar::JzMenuBar()
 
 void JzRE::JzMenuBar::HandleShortcuts(F32 deltaTime)
 {
-    auto &inputMgr = JzContext::GetInstance().GetInputManager();
+    auto &inputMgr = JzServiceContainer::Get<JzInputManager>();
 
     if (inputMgr.GetKeyState(JzEInputKey::KEY_LEFT_CONTROL) == JzEInputKeyState::KEY_DOWN) {
         if (inputMgr.IsKeyPressed(JzEInputKey::KEY_N)) {
-            auto &sceneMgr = JzContext::GetInstance().GetSceneManager();
+            auto &sceneMgr = JzServiceContainer::Get<JzSceneManager>();
             sceneMgr.LoadDefaultScene();
         }
 
@@ -124,7 +127,7 @@ void JzRE::JzMenuBar::CreateFileMenu()
     fileMenu.CreateWidget<JzSeparator>();
 
     auto &exitMenu         = fileMenu.CreateWidget<JzMenuItem>("Exit", "ALT + F4");
-    exitMenu.ClickedEvent += [] { JzContext::GetInstance().GetWindow().SetShouldClose(true); };
+    exitMenu.ClickedEvent += [this] { m_window.SetShouldClose(true); };
 }
 
 void JzRE::JzMenuBar::CreateBuildMenu()

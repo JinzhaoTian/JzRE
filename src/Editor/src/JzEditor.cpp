@@ -3,6 +3,7 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
+#include "JzRE/Core/JzServiceContainer.h"
 #include "JzRE/Editor/JzEditor.h"
 #include "JzRE/Editor/JzPanelsManager.h"
 #include "JzRE/Editor/JzSceneManager.h"
@@ -13,12 +14,13 @@
 #include "JzRE/Editor/JzMaterialEditor.h"
 #include "JzRE/Editor/JzSceneView.h"
 #include "JzRE/Editor/JzGameView.h"
+#include "JzRE/Editor/JzUIManager.h"
 
-JzRE::JzEditor::JzEditor() :
-    m_context(JzContext::GetInstance()), // injection
+JzRE::JzEditor::JzEditor(JzRE::JzWindow &window) :
+    m_window(window),
     m_panelsManager(m_canvas)
 {
-    m_panelsManager.CreatePanel<JzMenuBar>("Menu Bar");
+    m_panelsManager.CreatePanel<JzMenuBar>("Menu Bar", m_window);
     m_panelsManager.CreatePanel<JzAssetBrowser>("Asset Browser", true);
     m_panelsManager.CreatePanel<JzSceneView>("Scene View", true);
     // m_panelsManager.CreatePanel<JzAssetView>("Asset View", true);
@@ -32,24 +34,20 @@ JzRE::JzEditor::JzEditor() :
 
     m_canvas.SetDockspace(true);
 
-    auto &uiMgr = m_context.GetUIManager();
+    auto &uiMgr = JzServiceContainer::Get<JzUIManager>();
     uiMgr.SetCanvas(m_canvas);
 
-    auto &sceneMgr = m_context.GetSceneManager();
+    auto &sceneMgr = JzServiceContainer::Get<JzSceneManager>();
     sceneMgr.LoadDefaultScene();
 }
 
 JzRE::JzEditor::~JzEditor()
 {
-    auto &sceneMgr = m_context.GetSceneManager();
+    auto &sceneMgr = JzServiceContainer::Get<JzSceneManager>();
     sceneMgr.UnloadCurrentScene();
 }
 
-void JzRE::JzEditor::PreUpdate()
-{
-    auto &window = m_context.GetWindow();
-    window.PollEvents();
-}
+void JzRE::JzEditor::PreUpdate() { }
 
 void JzRE::JzEditor::Update(JzRE::F32 deltaTime)
 {
@@ -57,17 +55,10 @@ void JzRE::JzEditor::Update(JzRE::F32 deltaTime)
     UpdateCurrentEditorMode(deltaTime);
     RenderViews(deltaTime);
     UpdateEditorPanels(deltaTime);
-    RenderEditorUI(deltaTime);
 }
 
 void JzRE::JzEditor::PostUpdate()
 {
-    auto &window = m_context.GetWindow();
-    window.SwapBuffers();
-
-    auto inputMgr = m_context.GetInputManager();
-    inputMgr.ClearEvents();
-
     ++m_elapsedFrames;
 }
 
@@ -104,7 +95,4 @@ void JzRE::JzEditor::UpdateEditorPanels(JzRE::F32 deltaTime)
     menuBar.HandleShortcuts(deltaTime);
 }
 
-void JzRE::JzEditor::RenderEditorUI(JzRE::F32 deltaTime)
-{
-    m_context.GetUIManager().Render();
-}
+void JzRE::JzEditor::RenderEditorUI(JzRE::F32 deltaTime) { }

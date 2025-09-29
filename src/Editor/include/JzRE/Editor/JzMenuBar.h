@@ -13,6 +13,7 @@
 #include "JzRE/UI/JzPanelWindow.h"
 #include "JzRE/UI/JzMenuItem.h"
 #include "JzRE/UI/JzMenuList.h"
+#include "JzRE/Editor/JzWindow.h"
 
 namespace JzRE {
 /**
@@ -23,7 +24,7 @@ public:
     /**
      * @brief Constructor
      */
-    JzMenuBar();
+    JzMenuBar(JzWindow &window);
 
     /**
      * @brief Handle the shortcuts
@@ -69,6 +70,7 @@ private:
 private:
     std::unordered_map<std::string, std::pair<std::reference_wrapper<JzPanelWindow>, std::reference_wrapper<JzMenuItem>>> m_panels;
 
+    JzWindow   &m_window;
     JzMenuList *m_settingsMenu   = nullptr;
     JzMenuList *m_windowMenu     = nullptr;
     String      m_backgroudColor = "#2A2A2A";

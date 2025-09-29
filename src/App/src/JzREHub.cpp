@@ -16,11 +16,8 @@
 #include <nlohmann/json.hpp>
 #include "JzRE/Core/JzServiceContainer.h"
 #include "JzRE/Core/JzLogger.h"
-#include "JzRE/RHI/JzRHIDevice.h"
 #include "JzRE/Resource/JzTexture.h"
 #include "JzRE/Resource/JzTextureFactory.h"
-#include "JzRE/Platform/JzOpenFileDialog.h"
-#include "JzRE/Editor/JzRHIFactory.h"
 #include "JzRE/UI/JzIconButton.h"
 #include "JzRE/UI/JzGroup.h"
 #include "JzRE/UI/JzText.h"
@@ -29,9 +26,16 @@
 #include "JzRE/UI/JzSeparator.h"
 #include "JzRE/UI/JzColumns.h"
 #include "JzRE/UI/JzConverter.h"
+#include "JzRE/Platform/JzOpenFileDialog.h"
+#include "JzRE/Editor/JzDeviceFactory.h"
 
 JzRE::JzREHub::JzREHub(JzERHIType rhiType)
 {
+    m_resourceManager = std::make_unique<JzResourceManager>();
+    m_resourceManager->RegisterFactory<JzTexture>(std::make_unique<JzTextureFactory>());
+    m_resourceManager->AddSearchPath("./icons");
+    JzServiceContainer::Provide<JzResourceManager>(*m_resourceManager);
+
     JzWindowSettings windowSettings;
     windowSettings.title       = "JzRE Hub";
     windowSettings.size        = {800, 500};
@@ -42,13 +46,8 @@ JzRE::JzREHub::JzREHub(JzERHIType rhiType)
     m_window->MakeCurrentContext();
     m_window->SetAlignCentered();
 
-    m_device = JzRHIFactory::CreateDevice(rhiType);
+    m_device = JzDeviceFactory::CreateDevice(rhiType);
     JzServiceContainer::Provide<JzRHIDevice>(*m_device);
-
-    m_resourceManager = std::make_unique<JzResourceManager>();
-    m_resourceManager->RegisterFactory<JzTexture>(std::make_unique<JzTextureFactory>());
-    m_resourceManager->AddSearchPath("./icons");
-    JzServiceContainer::Provide<JzResourceManager>(*m_resourceManager);
 
     m_uiManager = std::make_unique<JzUIManager>(*m_window);
 
@@ -83,16 +82,16 @@ JzRE::JzREHub::~JzREHub()
         m_uiManager.reset();
     }
 
-    if (m_resourceManager) {
-        m_resourceManager.reset();
-    }
-
     if (m_device) {
         m_device.reset();
     }
 
     if (m_window) {
         m_window.reset();
+    }
+
+    if (m_resourceManager) {
+        m_resourceManager.reset();
     }
 }
 

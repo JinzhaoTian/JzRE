@@ -4,7 +4,6 @@
  */
 
 #include "JzRE/Editor/JzRHIRenderer.h"
-#include "JzRE/Editor/JzContext.h"
 #include "JzRE/RHI/JzRHIDevice.h"
 #include "JzRE/Core/JzServiceContainer.h"
 
@@ -53,14 +52,12 @@ JzRE::Bool JzRE::JzRHIRenderer::IsUsingCommandList() const
 
 void JzRE::JzRHIRenderer::SetThreadCount(JzRE::U32 threadCount)
 {
-    auto &queue = JzContext::GetInstance().GetCommandQueue();
-    queue.SetThreadCount(threadCount);
+    // TODO
 }
 
 JzRE::U32 JzRE::JzRHIRenderer::GetThreadCount() const
 {
-    auto &queue = JzContext::GetInstance().GetCommandQueue();
-    return queue.GetThreadCount();
+    return 1;
 }
 
 JzRE::Bool JzRE::JzRHIRenderer::CreateFramebuffer()

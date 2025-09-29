@@ -12,10 +12,11 @@
 #include "JzRE/RHI/JzRHIETypes.h"
 
 namespace JzRE {
+
 /**
- * @brief RHI Factory
+ * @brief RHI Device Factory
  */
-class JzRHIFactory {
+class JzDeviceFactory {
 public:
     /**
      * @brief Create a Device object
@@ -56,6 +57,7 @@ public:
     static String GetRHITypeName(JzERHIType rhiType);
 
 private:
-    JzRHIFactory() = default;
+    JzDeviceFactory() = default;
 };
+
 } // namespace JzRE

@@ -3,15 +3,16 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzRE/Editor/JzView.h"
 #include <imgui.h>
-#include "JzRE/Editor/JzContext.h"
+#include "JzRE/Core/JzServiceContainer.h"
+#include "JzRE/Editor/JzView.h"
+#include "JzRE/Editor/JzSceneManager.h"
 
 JzRE::JzView::JzView(const JzRE::String &name, JzRE::Bool is_opened) :
     JzRE::JzPanelWindow(name, is_opened),
     m_cameraController(m_camera)
 {
-    m_image = &CreateWidget<JzImage>(0, JzVec2(0.f, 0.f));
+    // m_image = &CreateWidget<JzImage>(0, JzVec2(0.f, 0.f));
 
     m_renderer = std::make_unique<JzRHIRenderer>();
 
@@ -45,9 +46,9 @@ void JzRE::JzView::Render()
         m_renderer->EndFrame();
 
         if (m_image) {
-            auto currentTexture = m_renderer->GetCurrentTexture();
-            m_image->size       = JzVec2(static_cast<F32>(winSize.x()), static_cast<F32>(winSize.y()));
-            m_image->textureId  = (GLuint)(uintptr_t)currentTexture->GetTextureID();
+            // auto currentTexture = m_renderer->GetCurrentTexture();
+            // m_image->size       = JzVec2(static_cast<F32>(winSize.x()), static_cast<F32>(winSize.y()));
+            // m_image->textureId  = (GLuint)(uintptr_t)currentTexture->GetTextureID();
         }
     }
 }
@@ -85,7 +86,7 @@ JzRE::JzCamera *JzRE::JzView::GetCamera()
 
 JzRE::JzScene *JzRE::JzView::GetScene()
 {
-    return JzContext::GetInstance().GetSceneManager().GetCurrentScene();
+    return JzServiceContainer::Get<JzSceneManager>().GetCurrentScene();
 }
 
 void JzRE::JzView::ResetCameraTransform()

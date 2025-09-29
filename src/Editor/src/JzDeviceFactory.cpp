@@ -3,12 +3,11 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzRE/Editor/JzRHIFactory.h"
+#include "JzRE/Editor/JzDeviceFactory.h"
 #include <iostream>
 #include "JzRE/Graphics/JzOpenGLDevice.h"
 
-// RHIFactory实现
-std::unique_ptr<JzRE::JzRHIDevice> JzRE::JzRHIFactory::CreateDevice(JzRE::JzERHIType rhiType)
+std::unique_ptr<JzRE::JzRHIDevice> JzRE::JzDeviceFactory::CreateDevice(JzRE::JzERHIType rhiType)
 {
     if (rhiType == JzERHIType::Unknown) {
         rhiType = GetDefaultRHIType();
@@ -25,7 +24,7 @@ std::unique_ptr<JzRE::JzRHIDevice> JzRE::JzRHIFactory::CreateDevice(JzRE::JzERHI
     }
 }
 
-std::vector<JzRE::JzERHIType> JzRE::JzRHIFactory::GetSupportedRHITypes()
+std::vector<JzRE::JzERHIType> JzRE::JzDeviceFactory::GetSupportedRHITypes()
 {
     std::vector<JzERHIType> supportedTypes;
 
@@ -41,7 +40,7 @@ std::vector<JzRE::JzERHIType> JzRE::JzRHIFactory::GetSupportedRHITypes()
     return supportedTypes;
 }
 
-JzRE::JzERHIType JzRE::JzRHIFactory::GetDefaultRHIType()
+JzRE::JzERHIType JzRE::JzDeviceFactory::GetDefaultRHIType()
 {
     auto supportedTypes = GetSupportedRHITypes();
 
@@ -57,7 +56,7 @@ JzRE::JzERHIType JzRE::JzRHIFactory::GetDefaultRHIType()
     return JzERHIType::Unknown;
 }
 
-JzRE::Bool JzRE::JzRHIFactory::IsRHITypeSupported(JzRE::JzERHIType rhiType)
+JzRE::Bool JzRE::JzDeviceFactory::IsRHITypeSupported(JzRE::JzERHIType rhiType)
 {
     auto supportedTypes = GetSupportedRHITypes();
     for (auto supported : supportedTypes) {
@@ -68,7 +67,7 @@ JzRE::Bool JzRE::JzRHIFactory::IsRHITypeSupported(JzRE::JzERHIType rhiType)
     return false;
 }
 
-JzRE::String JzRE::JzRHIFactory::GetRHITypeName(JzRE::JzERHIType rhiType)
+JzRE::String JzRE::JzDeviceFactory::GetRHITypeName(JzRE::JzERHIType rhiType)
 {
     switch (rhiType) {
         case JzERHIType::OpenGL: return "OpenGL";
