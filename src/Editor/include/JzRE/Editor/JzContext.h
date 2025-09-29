@@ -17,6 +17,7 @@
 #include "JzRE/Editor/JzSceneManager.h"
 #include "JzRE/Editor/JzUIManager.h"
 #include "JzRE/Resource/JzResourceManager.h"
+#include "JzRE/RHI/JzRenderFrontend.h"
 
 namespace JzRE {
 
@@ -123,6 +124,20 @@ public:
      */
     std::filesystem::path GetCurrentPath() const;
 
+    /**
+     * @brief Set the render frontend.
+     *
+     * @param frontend The render frontend
+     */
+    void SetRenderFrontend(JzRenderFrontend* frontend);
+
+    /**
+     * @brief Get the render frontend.
+     *
+     * @return JzRenderFrontend& The render frontend
+     */
+    JzRenderFrontend& GetRenderFrontend() const;
+
 private:
     JzContext()                             = default;
     ~JzContext()                            = default;
@@ -138,6 +153,7 @@ private:
     std::unique_ptr<JzUIManager>       m_uiManager;
     std::unique_ptr<JzSceneManager>    m_sceneManager;
     std::unique_ptr<JzRHICommandQueue> m_commandQueue;
+    JzRenderFrontend*                  m_renderFrontend = nullptr;
     std::filesystem::path              m_workDirectory;
     std::filesystem::path              m_openDirectory;
 };

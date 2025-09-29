@@ -30,11 +30,53 @@ JzRE::JzUIManager::~JzUIManager()
     ImGui::DestroyContext();
 }
 
+#include "JzRE/Editor/JzContext.h"
+#include "JzRE/RHI/JzRenderCommand.h"
+
 void JzRE::JzUIManager::Render()
 {
     if (m_canvas) {
         m_canvas->Draw();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+        ImDrawData* draw_data = ImGui::GetDrawData();
+        if (!draw_data || draw_data->CmdListsCount == 0) {
+            return;
+        }
+
+        RenderImGuiCommand cmd;
+        cmd.displayPos = {draw_data->DisplayPos.x, draw_data->DisplayPos.y};
+        cmd.displaySize = {draw_data->DisplaySize.x, draw_data->DisplaySize.y};
+        cmd.framebufferScale = {draw_data->FramebufferScale.x, draw_data->FramebufferScale.y};
+
+        // Reserve space to avoid reallocations
+        cmd.vertices.reserve(draw_data->TotalVtxCount);
+        cmd.indices.reserve(draw_data->TotalIdxCount);
+
+        // Deep copy all command lists' data
+        for (int i = 0; i < draw_data->CmdListsCount; i++) {
+            const ImDrawList* cmd_list = draw_data->CmdLists[i];
+            cmd.vertices.insert(cmd.vertices.end(), cmd_list->VtxBuffer.Data, cmd_list->VtxBuffer.Data + cmd_list->VtxBuffer.Size);
+            cmd.indices.insert(cmd.indices.end(), cmd_list->IdxBuffer.Data, cmd_list->IdxBuffer.Data + cmd_list->IdxBuffer.Size);
+        }
+
+        // Also copy the command lists themselves, adjusting indices as we go
+        int vtx_offset = 0;
+        int idx_offset = 0;
+        for (int i = 0; i < draw_data->CmdListsCount; i++) {
+            const ImDrawList* cmd_list = draw_data->CmdLists[i];
+            for (int j = 0; j < cmd_list->CmdBuffer.Size; j++) {
+                const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[j];
+                ImDrawCmd new_cmd = *pcmd;
+                new_cmd.VtxOffset += vtx_offset;
+                new_cmd.IdxOffset += idx_offset;
+                cmd.commands.push_back(new_cmd);
+            }
+            vtx_offset += cmd_list->VtxBuffer.Size;
+            idx_offset += cmd_list->IdxBuffer.Size;
+        }
+
+        // Submit the fully copied command
+        JzContext::GetInstance().GetRenderFrontend().Submit(cmd);
     }
 }
 

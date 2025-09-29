@@ -5,38 +5,27 @@
 
 #pragma once
 
-#include "JzRE/Core/JzRETypes.h"
+#include "JzRE/Core/JzCore.h"
 #include "JzRE/Editor/JzEditor.h"
+#include "JzRE/RHI/JzRenderBackend.h"
+#include "JzRE/RHI/JzRenderFrontend.h"
 
 namespace JzRE {
-/**
- * @brief Jz Render Engine
- */
+
 class JzREInstance {
 public:
-    /**
-     * @brief Constructor
-     */
-    JzREInstance(JzERHIType rhiType, std::filesystem::path &openDirectory);
+  JzREInstance(JzERHIType rhiType, std::filesystem::path &openDirectory);
+  ~JzREInstance();
 
-    /**
-     * @brief Destructor
-     */
-    ~JzREInstance();
-
-    /**
-     * @brief Run the render engine
-     */
-    void Run();
-
-    /**
-     * @brief Check if the render engine is running
-     *
-     * @return Bool
-     */
-    Bool IsRunning() const;
+  void Run();
 
 private:
-    std::unique_ptr<JzEditor> m_editor;
+  JzRE::Bool IsRunning() const;
+
+  JzRef<JzEditor> m_editor;
+
+  JzRenderFrontend m_renderFrontend;
+  JzRef<JzRenderBackend> m_renderBackend;
 };
+
 } // namespace JzRE

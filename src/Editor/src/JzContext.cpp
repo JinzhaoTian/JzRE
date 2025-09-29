@@ -150,3 +150,13 @@ std::filesystem::path JzRE::JzContext::GetCurrentPath() const
 {
     return m_openDirectory;
 }
+
+void JzRE::JzContext::SetRenderFrontend(JzRenderFrontend* frontend)
+{
+    m_renderFrontend = frontend;
+}
+
+JzRE::JzRenderFrontend& JzRE::JzContext::GetRenderFrontend() const
+{
+    return *m_renderFrontend;
+}

@@ -70,6 +70,64 @@ struct JzSceneNodeComponent {
 /**
  * @brief Component for scene
  */
+struct JzSceneComponent { };
+
+/**
+ * @brief Component for position, rotation, and scale.
+ */
+struct JzTransformComponent {
+    JzVec3 position{0.0f, 0.0f, 0.0f};
+    JzVec3 rotation{0.0f, 0.0f, 0.0f};
+    JzVec3 scale{1.0f, 1.0f, 1.0f};
+};
+
+/**
+ * @brief Component for bounding box
+ */
+struct JzBoundingBoxComponent {
+    JzVec3 min;
+    JzVec3 max;
+};
+
+/**
+ * @brief Component for bounding sphere
+ */
+struct JzBoundingSphereComponent {
+    JzVec3 center;
+    F32    radius;
+};
+
+/**
+ * @brief Component for hierarchy
+ */
+struct JzHierarchyComponent {
+    JzEntity              parent;
+    std::vector<JzEntity> children;
+    Bool                  transformDirty;
+};
+
+/**
+ * @brief Component for bounds
+ */
+struct JzBoundsComponent {
+    JzBoundingBoxComponent localBounds;
+    JzBoundingBoxComponent worldBounds;
+};
+
+/**
+ * @brief Component for scene node
+ */
+struct JzSceneNodeComponent {
+    JzEntity              parent;
+    std::vector<JzEntity> children;
+    JzMat4                localTransform;
+    JzMat4                worldTransform;
+    Bool                  isStatic;
+};
+
+/**
+ * @brief Component for scene
+ */
 struct JzSceneComponent {
     JzEntity               rootNode;
     String                 sceneName;

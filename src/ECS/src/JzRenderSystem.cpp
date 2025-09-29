@@ -8,23 +8,16 @@
 #include "JzRE/ECS/JzComponent.h"
 #include "JzRE/Resource/JzMesh.h"
 #include "JzRE/Resource/JzMaterial.h"
+#include "JzRE/Editor/JzContext.h"
+#include "JzRE/RHI/JzRenderCommand.h"
 
-JzRE::JzRenderSystem::JzRenderSystem(std::shared_ptr<JzRE::JzRHIDevice> device) :
-    m_device(device) { }
+JzRE::JzRenderSystem::JzRenderSystem() { }
 
 void JzRE::JzRenderSystem::Update(JzRE::JzEntityManager &manager, JzRE::F32 delta)
 {
-    if (!m_device) {
-        return;
-    }
-
-    // In a real scenario, you would get camera matrices from an entity with a JzCameraComponent
-    // auto& camera_transform = manager.GetComponent<JzTransformComponent>(camera_entity);
-    // auto& camera_component = manager.GetComponent<JzCameraComponent>(camera_entity);
-    // ... calculate view-projection matrix ...
+    auto& renderFrontend = JzContext::GetInstance().GetRenderFrontend();
 
     // The entity manager needs a way to iterate over entities with specific components.
-    // This is a conceptual representation. Your actual implementation might differ.
     for (auto entity : manager.View<JzTransformComponent, JzMeshComponent, JzMaterialComponent>()) {
         // 1. Get components from the entity
         auto &transform = manager.GetComponent<JzTransformComponent>(entity);
@@ -42,35 +35,21 @@ void JzRE::JzRenderSystem::Update(JzRE::JzEntityManager &manager, JzRE::F32 delt
 
         // 4. Get JzRHIResource from JzResource
         auto pipeline    = material->GetPipeline();
-        auto vertexArray = mesh->GetVertexArray();
-        auto textures    = material->GetTextures();
+        auto vertexBuffer = mesh->GetVertexArray()->GetVertexBuffers()[0]; // Assuming first vertex buffer
+        auto indexBuffer = mesh->GetVertexArray()->GetIndexBuffer();
 
-        if (!pipeline || !vertexArray) {
+        if (!pipeline || !vertexBuffer || !indexBuffer) {
             continue; // Skip if essential RHI resources are missing
         }
 
-        // 5. Use RHI Device to issue rendering commands
-        m_device->BindPipeline(pipeline);
+        // 5. Create a render command
+        DrawMeshCommand cmd;
+        cmd.pipelineState = pipeline;
+        cmd.vertexBuffer = vertexBuffer;
+        cmd.indexBuffer = indexBuffer;
+        cmd.transform = transform.GetTransform(); // Or whatever gets the model matrix
 
-        // Bind textures
-        for (Size i = 0; i < textures.size(); ++i) {
-            m_device->BindTexture(textures[i], i);
-        }
-
-        // Update uniforms (e.g., Model-View-Projection matrix)
-        // This is highly conceptual and depends on your shader and uniform buffer setup.
-        // struct TransformUniforms { JzMat4 model; JzMat4 view; JzMat4 proj; };
-        // TransformUniforms uniforms;
-        // uniforms.model = calculate_model_matrix(transform);
-        // uniforms.view = ...;
-        // uniforms.proj = ...;
-        // m_device->UpdateUniformBuffer(..., &uniforms, sizeof(uniforms));
-
-        m_device->BindVertexArray(vertexArray);
-
-        // 6. Issue draw call
-        JzDrawIndexedParams drawParams{};
-        drawParams.indexCount = mesh->GetIndexCount();
-        m_device->DrawIndexed(drawParams);
+        // 6. Submit the command to the frontend
+        renderFrontend.Submit(cmd);
     }
 }

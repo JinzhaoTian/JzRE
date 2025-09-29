@@ -18,10 +18,8 @@ class JzRenderSystem : public JzSystem {
 public:
     /**
      * @brief Constructor.
-     *
-     * @param device A shared pointer to the RHI device.
      */
-    JzRenderSystem(std::shared_ptr<JzRHIDevice> device);
+    JzRenderSystem();
 
     /**
      * @brief Destructor
@@ -29,15 +27,12 @@ public:
     virtual ~JzRenderSystem() = default;
 
     /**
-     * @brief Updates and renders all visible entities.
+     * @brief Generates render commands for all visible entities.
      *
      * @param manager The entity manager to query entities from.
      * @param delta The delta time since the last frame.
      */
     virtual void Update(JzEntityManager &manager, F32 delta) override;
-
-private:
-    std::shared_ptr<JzRHIDevice> m_device;
 };
 
 } // namespace JzRE
