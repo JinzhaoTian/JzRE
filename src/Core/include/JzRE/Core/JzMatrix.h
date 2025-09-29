@@ -91,7 +91,7 @@ public:
     {
         for (U16 i = 0; i < M; ++i) {
             for (U16 j = 0; j < N; ++j) {
-                m_Data[i][j] *= value;
+                At(i, j) *= value;
             }
         }
         return *this;
@@ -118,6 +118,22 @@ public:
     {
         JzMatrix<M, N, T> result  = *this;
         result                   -= other;
+        return result;
+    }
+
+    template <U16 R>
+    inline JzMatrix<M, R, T> operator*(const JzMatrix<N, R, T> &other) const
+    {
+        JzMatrix<M, R, T> result;
+        for (U16 r = 0; r < M; ++r) {
+            for (U16 c = 0; c < R; ++c) {
+                T sum = T(0);
+                for (U16 i = 0; i < N; ++i) {
+                    sum += At(r, i) * other.At(i, c);
+                }
+                result.At(r, c) = sum;
+            }
+        }
         return result;
     }
 
