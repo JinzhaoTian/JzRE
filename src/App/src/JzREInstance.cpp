@@ -46,7 +46,7 @@ JzRE::JzREInstance::JzREInstance(JzERHIType rhiType, std::filesystem::path &open
     m_uiManager->SetEditorLayoutSaveFilename("layout.ini");
     m_uiManager->EnableEditorLayoutSave(true);
 
-    const auto fontPath = openDirectory / "fonts" / "SourceHanSansCN-Regular.otf";
+    const auto fontPath = std::filesystem::current_path() / "fonts" / "SourceHanSansCN-Regular.otf";
     m_uiManager->LoadFont("sourcehansanscn-regular-18", fontPath.string(), 18);
     m_uiManager->LoadFont("sourcehansanscn-regular-16", fontPath.string(), 16);
     m_uiManager->LoadFont("sourcehansanscn-regular-14", fontPath.string(), 14);

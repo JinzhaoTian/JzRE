@@ -21,7 +21,7 @@ JzRE::Bool JzRE::JzContext::Initialize(std::filesystem::path &openDirectory)
 
 JzRE::Bool JzRE::JzContext::IsInitialized() const
 {
-    return true;
+    return false;
 }
 
 std::filesystem::path JzRE::JzContext::GetCurrentPath() const

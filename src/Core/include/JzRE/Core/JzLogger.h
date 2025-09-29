@@ -16,13 +16,13 @@ namespace JzRE {
  * @brief JzRE Log Macro
  */
 #define JzRE_LOG_INFO(...) \
-    JzLogger::GetInstance().Info(__VA_ARGS__)
+    JzLogger::GetInstance().Info(std::format(__VA_ARGS__))
 #define JzRE_LOG_WARN(...) \
-    JzLogger::GetInstance().Warn(__VA_ARGS__)
+    JzLogger::GetInstance().Warn(std::format(__VA_ARGS__))
 #define JzRE_LOG_ERROR(...) \
-    JzLogger::GetInstance().Error(__VA_ARGS__)
+    JzLogger::GetInstance().Error(std::format(__VA_ARGS__))
 #define JzRE_LOG_DEBUG(...) \
-    JzLogger::GetInstance().Debug(__VA_ARGS__)
+    JzLogger::GetInstance().Debug(std::format(__VA_ARGS__))
 
 /**
  * @brief JzRE Singleton logger

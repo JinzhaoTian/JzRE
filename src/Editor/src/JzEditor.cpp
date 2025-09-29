@@ -21,6 +21,7 @@ JzRE::JzEditor::JzEditor(JzRE::JzWindow &window) :
     m_panelsManager(m_canvas)
 {
     m_panelsManager.CreatePanel<JzMenuBar>("Menu Bar", m_window);
+
     m_panelsManager.CreatePanel<JzAssetBrowser>("Asset Browser", true);
     m_panelsManager.CreatePanel<JzSceneView>("Scene View", true);
     // m_panelsManager.CreatePanel<JzAssetView>("Asset View", true);

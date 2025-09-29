@@ -50,7 +50,7 @@ void JzRE::JzAssetBrowser::Fill()
                 _AddDirectoryItem(nullptr, item, true);
             }
         } catch (const std::exception &ex) {
-            JzRE_LOG_ERROR(std::format("Failed to process item: {} - {}", item.path().string(), ex.what()));
+            JzRE_LOG_ERROR("Failed to process item: {} - {}", item.path().string(), ex.what());
         }
     }
 }
