@@ -27,17 +27,9 @@ void JzRE::JzSaveFileDialog::Show(JzEFileDialogType type)
 
 void JzRE::JzSaveFileDialog::_addExtensionToFilePathAndName()
 {
-    if (m_filename.size() >= m_extension.size()) {
-        String fileEnd(m_filename.data() + m_filename.size() - m_extension.size(),
-                       m_filename.data() + m_filename.size());
-
-        if (fileEnd != m_extension) {
-            m_filepath += m_extension;
-            m_filename += m_extension;
-        }
-    } else {
-        m_filepath += m_extension;
-        m_filename += m_extension;
+    if (m_filepath.extension() != m_extension) {
+        m_filepath.replace_extension(m_extension);
+        m_filename = m_filepath.filename();
     }
 }
 

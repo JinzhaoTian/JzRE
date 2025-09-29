@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <filesystem>
 #include "JzRE/Core/JzRETypes.h"
 
 namespace JzRE {
@@ -27,9 +28,9 @@ public:
     /**
      * @brief Constructor
      *
-     * @param p_dialogTitle
+     * @param dialogTitle
      */
-    JzFileDialog(const String &p_dialogTitle);
+    JzFileDialog(const String &dialogTitle);
 
     /**
      * @brief Destructor
@@ -39,9 +40,9 @@ public:
     /**
      * @brief Defines the initial directory (Where the FileDialog will open)
      *
-     * @param p_initialDirectory
+     * @param initialDirectory
      */
-    void SetInitialDirectory(const String &p_initialDirectory);
+    void SetInitialDirectory(const std::filesystem::path &initialDirectory);
 
     /**
      * @brief Show the file dialog
@@ -60,14 +61,14 @@ public:
      *
      * @return selected file name
      */
-    String GetSelectedFileName();
+    std::filesystem::path GetSelectedFileName();
 
     /**
      * @brief Get the selected file path (Make sure that HasSucceeded() returned true before calling this method)
      *
      * @return selected file path
      */
-    String GetSelectedFilePath();
+    std::filesystem::path GetSelectedFilePath();
 
     /**
      * @brief Get some information about the last error (Make sure that HasSucceeded() returned false before calling this method)
@@ -87,13 +88,13 @@ private:
     void HandleError();
 
 protected:
-    String m_dialogTitle;
-    String m_initialDirectory;
-    String m_filter;
-    String m_error;
-    String m_filename;
-    String m_filepath;
-    Bool   m_succeeded;
+    std::filesystem::path m_initialDirectory;
+    String                m_dialogTitle;
+    String                m_filter;
+    std::filesystem::path m_filename;
+    std::filesystem::path m_filepath;
+    Bool                  m_succeeded;
+    String                m_error;
 };
 
 } // namespace JzRE

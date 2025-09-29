@@ -3,19 +3,19 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzRE/Platform/JzOpenFileDialog.h"
-
 #ifdef __linux__
 
-JzRE::JzOpenFileDialog::JzFileDialogLinux(const JzRE::String &p_dialogTitle) :
-    JzFileDialog(p_dialogTitle) { }
+#include "JzRE/Platform/JzOpenFileDialog.h"
 
-void JzRE::JzOpenFileDialog::AddFileType(const JzRE::String &p_label, const JzRE::String &p_filter)
+JzRE::JzOpenFileDialog::JzFileDialogLinux(const JzRE::String &dialogTitle) :
+    JzFileDialog(dialogTitle) { }
+
+void JzRE::JzOpenFileDialog::AddFileType(const JzRE::String &label, const JzRE::String &filter)
 {
     if (!m_filter.empty()) {
         m_filter += "|";
     }
-    m_filter += p_label + ":" + p_filter;
+    m_filter += label + ":" + filter;
 }
 
 void JzRE::JzOpenFileDialog::Show(JzRE::JzEFileDialogType type)

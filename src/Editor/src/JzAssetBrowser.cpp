@@ -3,6 +3,7 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
+#include "JzRE/Core/JzLogger.h"
 #include "JzRE/Core/JzServiceContainer.h"
 #include "JzRE/Editor/JzContext.h"
 #include "JzRE/Editor/JzAssetBrowser.h"
@@ -43,9 +44,13 @@ JzRE::JzAssetBrowser::JzAssetBrowser(const JzRE::String &name, JzRE::Bool is_ope
 
 void JzRE::JzAssetBrowser::Fill()
 {
-    for (auto &item : std::filesystem::directory_iterator(m_openDirectory)) {
-        if (item.is_directory()) {
-            _AddDirectoryItem(nullptr, item, true);
+    for (const auto &item : std::filesystem::directory_iterator(m_openDirectory.string())) {
+        try {
+            if (item.is_directory()) {
+                _AddDirectoryItem(nullptr, item, true);
+            }
+        } catch (const std::exception &ex) {
+            JzRE_LOG_ERROR(std::format("Failed to process item: {} - {}", item.path().string(), ex.what()));
         }
     }
 }
@@ -98,7 +103,7 @@ void JzRE::JzAssetBrowser::_AddDirectoryItem(JzRE::JzTreeNode *root, const std::
         treeNode.RemoveAllWidgets();
     };
 
-    auto &contextMenu = treeNode.AddPlugin<JzFolderContextMenu>(path);
+    auto &contextMenu = treeNode.AddPlugin<JzFolderContextMenu>(path.string());
     contextMenu.CreateList();
     contextMenu.ItemAddedEvent += [this, &treeNode](std::filesystem::path p_path) {
         treeNode.Open();
@@ -126,7 +131,7 @@ void JzRE::JzAssetBrowser::_AddFileItem(JzRE::JzTreeNode *root, const std::files
 
     auto &clickableText = itemGroup.CreateWidget<JzTextClickable>(itemName);
 
-    auto &contextMenu = clickableText.AddPlugin<JzFileContextMenu>(path);
+    auto &contextMenu = clickableText.AddPlugin<JzFileContextMenu>(path.string());
     contextMenu.CreateList();
     contextMenu.DestroyedEvent += [&itemGroup](std::filesystem::path p_deletedPath) { };
     contextMenu.RenamedEvent   += [&clickableText](std::filesystem::path p_prev, std::filesystem::path p_newPath) { };

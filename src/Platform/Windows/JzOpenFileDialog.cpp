@@ -7,15 +7,15 @@
 
 #include "JzRE/Platform/JzOpenFileDialog.h"
 
-JzRE::JzOpenFileDialog::JzOpenFileDialog(const JzRE::String &p_dialogTitle) :
-    JzFileDialog(p_dialogTitle) { }
+JzRE::JzOpenFileDialog::JzOpenFileDialog(const JzRE::String &dialogTitle) :
+    JzFileDialog(dialogTitle) { }
 
-void JzRE::JzOpenFileDialog::AddFileType(const JzRE::String &p_label, const JzRE::String &p_filter)
+void JzRE::JzOpenFileDialog::AddFileType(const JzRE::String &label, const JzRE::String &filter)
 {
     if (!m_filter.empty()) {
         m_filter += "|";
     }
-    m_filter += p_label + ":" + p_filter;
+    m_filter += label + ":" + filter;
 }
 
 void JzRE::JzOpenFileDialog::Show(JzRE::JzEFileDialogType type)

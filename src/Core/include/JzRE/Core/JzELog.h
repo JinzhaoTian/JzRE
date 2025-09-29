@@ -27,7 +27,7 @@ enum class JzELogLevel {
 struct JzLogMessage {
     String      message;
     String      sourceFile;
-    String      line;
+    I32         line;
     String      functionName;
     Size        threadId;
     JzELogLevel level;

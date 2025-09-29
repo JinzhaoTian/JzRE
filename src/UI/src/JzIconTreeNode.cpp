@@ -8,8 +8,8 @@
 
 JzRE::JzIconTreeNode::JzIconTreeNode(const String &p_name, std::shared_ptr<JzRHITexture> iconTexture, Bool arrowClickToOpen) :
     JzDataWidget(name),
-    m_iconTexture(iconTexture),
     name(p_name),
+    m_iconTexture(iconTexture),
     m_arrowClickToOpen(arrowClickToOpen)
 {
     m_autoExecutePlugins = false;

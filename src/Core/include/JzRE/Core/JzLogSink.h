@@ -48,12 +48,12 @@ protected:
 
         // create JzLogMessage object
         JzLogMessage logMsg;
-        logMsg.message      = fmt::to_string(formatted);
-        logMsg.sourceFile   = msg.source.filename;
-        logMsg.line         = msg.source.line;
-        logMsg.functionName = msg.source.funcname;
-        logMsg.threadId     = msg.thread_id;
-        logMsg.level        = [&]() {
+        logMsg.message = fmt::to_string(formatted);
+        // logMsg.sourceFile   = msg.source.filename;
+        // logMsg.line         = msg.source.line;
+        // logMsg.functionName = msg.source.funcname;
+        // logMsg.threadId     = msg.thread_id;
+        logMsg.level = [&]() {
             switch (msg.level) {
                 case spdlog::level::trace:
                     return JzELogLevel::Trace;

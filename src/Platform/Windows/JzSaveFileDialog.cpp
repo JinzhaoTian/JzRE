@@ -7,13 +7,13 @@
 
 #include "JzRE/Platform/JzSaveFileDialog.h"
 
-JzRE::JzSaveFileDialog::JzSaveFileDialog(const JzRE::String &p_dialogTitle) :
-    JzFileDialog(p_dialogTitle) { }
+JzRE::JzSaveFileDialog::JzSaveFileDialog(const JzRE::String &dialogTitle) :
+    JzFileDialog(dialogTitle) { }
 
-void JzRE::JzSaveFileDialog::DefineExtension(const JzRE::String &p_label, const JzRE::String &p_extension)
+void JzRE::JzSaveFileDialog::DefineExtension(const JzRE::String &label, const JzRE::String &extension)
 {
-    m_filter    = p_label + '\0' + '*' + p_extension + '\0';
-    m_extension = p_extension;
+    m_filter    = label + '\0' + '*' + extension + '\0';
+    m_extension = extension;
 }
 
 void JzRE::JzSaveFileDialog::Show(JzEFileDialogType type)
@@ -26,16 +26,9 @@ void JzRE::JzSaveFileDialog::Show(JzEFileDialogType type)
 
 void JzRE::JzSaveFileDialog::_addExtensionToFilePathAndName()
 {
-    if (m_filename.size() >= m_extension.size()) {
-        String fileEnd(m_filename.data() + m_filename.size() - m_extension.size(), m_filename.data() + m_filename.size());
-
-        if (fileEnd != m_extension) {
-            m_filepath += m_extension;
-            m_filename += m_extension;
-        }
-    } else {
-        m_filepath += m_extension;
-        m_filename += m_extension;
+    if (m_filepath.extension() != m_extension) {
+        m_filepath.replace_extension(m_extension);
+        m_filename = m_filepath.filename();
     }
 }
 

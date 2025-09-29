@@ -9,14 +9,12 @@
 
 #include <Cocoa/Cocoa.h>
 #include <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
-#include <filesystem>
 
 JzRE::JzFileDialog::JzFileDialog(const JzRE::String &p_dialogTitle)
-    : m_dialogTitle(p_dialogTitle), m_initialDirectory(""), m_succeeded(false) {
-}
+    : m_dialogTitle(p_dialogTitle), m_succeeded(false) {}
 
 void JzRE::JzFileDialog::SetInitialDirectory(
-    const JzRE::String &p_initialDirectory) {
+    const std::filesystem::path &p_initialDirectory) {
   m_initialDirectory = p_initialDirectory;
 }
 
@@ -118,21 +116,21 @@ void JzRE::JzFileDialog::Show(JzEFileDialogType type) {
   }
 
   if (m_succeeded) {
-    m_filename.clear();
     if (!m_filepath.empty()) {
-      for (auto it = m_filepath.rbegin();
-           it != m_filepath.rend() && *it != '\\' && *it != '/'; ++it)
-        m_filename += *it;
-      std::reverse(m_filename.begin(), m_filename.end());
+      m_filename = m_filepath.filename();
     }
   }
 }
 
 JzRE::Bool JzRE::JzFileDialog::HasSucceeded() const { return m_succeeded; }
 
-JzRE::String JzRE::JzFileDialog::GetSelectedFileName() { return m_filename; }
+std::filesystem::path JzRE::JzFileDialog::GetSelectedFileName() {
+  return m_filename;
+}
 
-JzRE::String JzRE::JzFileDialog::GetSelectedFilePath() { return m_filepath; }
+std::filesystem::path JzRE::JzFileDialog::GetSelectedFilePath() {
+  return m_filepath;
+}
 
 JzRE::String JzRE::JzFileDialog::GetErrorInfo() { return m_error; }
 

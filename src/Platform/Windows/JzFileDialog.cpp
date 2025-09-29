@@ -10,16 +10,14 @@
 #define NOMINMAX
 #include <windows.h>
 #include <shobjidl.h>
-#include <filesystem>
 
-JzRE::JzFileDialog::JzFileDialog(const JzRE::String &p_dialogTitle) :
-    m_dialogTitle(p_dialogTitle),
-    m_initialDirectory(""),
+JzRE::JzFileDialog::JzFileDialog(const JzRE::String &dialogTitle) :
+    m_dialogTitle(dialogTitle),
     m_succeeded(false) { }
 
-void JzRE::JzFileDialog::SetInitialDirectory(const JzRE::String &p_initialDirectory)
+void JzRE::JzFileDialog::SetInitialDirectory(const std::filesystem::path &initialDirectory)
 {
-    m_initialDirectory = p_initialDirectory;
+    m_initialDirectory = initialDirectory;
 }
 
 void JzRE::JzFileDialog::Show(JzEFileDialogType type)
@@ -52,8 +50,7 @@ void JzRE::JzFileDialog::Show(JzEFileDialogType type)
 
         if (!m_initialDirectory.empty()) {
             IShellItem *psiFolder;
-            hr = SHCreateItemFromParsingName(std::wstring(m_initialDirectory.begin(), m_initialDirectory.end()).c_str(),
-                                             NULL, IID_PPV_ARGS(&psiFolder));
+            hr = SHCreateItemFromParsingName(m_initialDirectory.c_str(), NULL, IID_PPV_ARGS(&psiFolder));
             if (SUCCEEDED(hr)) {
                 pfd->SetFolder(psiFolder);
                 psiFolder->Release();
@@ -68,10 +65,7 @@ void JzRE::JzFileDialog::Show(JzEFileDialogType type)
                 PWSTR pszFilePath;
                 hr = psiResult->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
                 if (SUCCEEDED(hr)) {
-                    // 转换为多字节字符串
-                    int size = WideCharToMultiByte(CP_UTF8, 0, pszFilePath, -1, NULL, 0, NULL, NULL);
-                    m_filepath.resize(size);
-                    WideCharToMultiByte(CP_UTF8, 0, pszFilePath, -1, &m_filepath[0], size, NULL, NULL);
+                    m_filepath  = pszFilePath;
                     m_succeeded = true;
                     CoTaskMemFree(pszFilePath);
                 }
@@ -82,14 +76,8 @@ void JzRE::JzFileDialog::Show(JzEFileDialogType type)
     }
 
     if (m_succeeded) {
-        m_filename.clear();
         if (!m_filepath.empty()) {
-            size_t lastSlash = m_filepath.find_last_of("\\/");
-            if (lastSlash != std::string::npos) {
-                m_filename = m_filepath.substr(lastSlash + 1);
-            } else {
-                m_filename = m_filepath;
-            }
+            m_filename = m_filepath.filename();
         }
     }
 }
@@ -99,12 +87,12 @@ JzRE::Bool JzRE::JzFileDialog::HasSucceeded() const
     return m_succeeded;
 }
 
-JzRE::String JzRE::JzFileDialog::GetSelectedFileName()
+std::filesystem::path JzRE::JzFileDialog::GetSelectedFileName()
 {
     return m_filename;
 }
 
-JzRE::String JzRE::JzFileDialog::GetSelectedFilePath()
+std::filesystem::path JzRE::JzFileDialog::GetSelectedFilePath()
 {
     return m_filepath;
 }

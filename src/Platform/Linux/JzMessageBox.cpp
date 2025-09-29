@@ -4,6 +4,7 @@
  */
 
 #ifdef __linux__
+
 #include "JzRE/Platform/JzMessageBox.h"
 
 #include <gtk/gtk.h>

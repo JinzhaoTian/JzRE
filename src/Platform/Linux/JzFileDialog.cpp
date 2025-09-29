@@ -3,21 +3,20 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
+#ifdef __linux__
+
 #include "JzRE/Platform/JzFileDialog.h"
 
-#ifdef __linux__
 #include <gtk/gtk.h>
-#include <filesystem>
 #include <iostream>
 
-JzRE::JzFileDialog::JzFileDialog(const JzRE::String &p_dialogTitle) :
-    m_dialogTitle(p_dialogTitle),
-    m_initialDirectory(""),
+JzRE::JzFileDialog::JzFileDialog(const JzRE::String &dialogTitle) :
+    m_dialogTitle(dialogTitle),
     m_succeeded(false) { }
 
-void JzRE::JzFileDialog::SetInitialDirectory(const JzRE::String &p_initialDirectory)
+void JzRE::JzFileDialog::SetInitialDirectory(const std::filesystem::path &initialDirectory)
 {
-    m_initialDirectory = p_initialDirectory;
+    m_initialDirectory = initialDirectory;
 }
 
 void JzRE::JzFileDialog::Show(JzEFileDialogType type)
@@ -28,7 +27,7 @@ void JzRE::JzFileDialog::Show(JzEFileDialogType type)
 
     // Initialize GTK if not already initialized
     if (!gtk_init_check(NULL, NULL)) {
-        ShowFallback();
+        // ShowFallback(); // Not implemented
         return;
     }
 
@@ -82,11 +81,8 @@ void JzRE::JzFileDialog::Show(JzEFileDialogType type)
     }
 
     if (m_succeeded) {
-        m_filename.clear();
         if (!m_filepath.empty()) {
-            for (auto it = m_filepath.rbegin(); it != m_filepath.rend() && *it != '\\' && *it != '/'; ++it)
-                m_filename += *it;
-            std::reverse(m_filename.begin(), m_filename.end());
+            m_filename = m_filepath.filename();
         }
     }
 }
@@ -96,12 +92,12 @@ JzRE::Bool JzRE::JzFileDialog::HasSucceeded() const
     return m_succeeded;
 }
 
-JzRE::String JzRE::JzFileDialog::GetSelectedFileName()
+std::filesystem::path JzRE::JzFileDialog::GetSelectedFileName()
 {
     return m_filename;
 }
 
-JzRE::String JzRE::JzFileDialog::GetSelectedFilePath()
+std::filesystem::path JzRE::JzFileDialog::GetSelectedFilePath()
 {
     return m_filepath;
 }

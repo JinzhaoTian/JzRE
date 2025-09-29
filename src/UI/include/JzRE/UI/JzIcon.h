@@ -20,10 +20,10 @@ public:
     /**
      * @brief Constructor
      *
-     * @param texture
-     * @param size
+     * @param iconTexture
+     * @param iconSize
      */
-    JzIcon(std::shared_ptr<JzRHITexture> texture, const JzVec2 &size = {16.f, 16.f});
+    JzIcon(std::shared_ptr<JzRHITexture> iconTexture, const JzVec2 &iconSize = {16.f, 16.f});
 
 protected:
     /**
@@ -32,8 +32,8 @@ protected:
     void _Draw_Impl() override;
 
 private:
-    JzVec2                        m_textureSize;
-    std::shared_ptr<JzRHITexture> m_texture;
+    JzVec2                        m_iconSize;
+    std::shared_ptr<JzRHITexture> m_iconTexture;
 };
 
 } // namespace JzRE

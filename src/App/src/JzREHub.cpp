@@ -211,7 +211,7 @@ JzRE::JzREHubPanel::JzREHubPanel() :
     pathField.width                = m_inputFieldWidth;
     pathField.lineBreak            = false;
     pathField.ContentChangedEvent += [this, &pathField](String p_content) {
-        pathField.content = std::filesystem::path{p_content}.make_preferred().string();
+        pathField.content = std::filesystem::path(p_content).make_preferred().string();
         _OnUpdateGoButton(pathField.content);
     };
 
@@ -240,7 +240,7 @@ JzRE::JzREHubPanel::JzREHubPanel() :
     m_goButton->disabled         = true;
     m_goButton->lineBreak        = true;
     m_goButton->ClickedEvent    += [this, &pathField] {
-        const std::filesystem::path path = pathField.content;
+        const std::filesystem::path path = std::filesystem::path(pathField.content);
 
         if (!_OnFinish({path})) {
             _OnFailedToOpenPath(path);
@@ -429,13 +429,12 @@ void JzRE::JzREHubPanel::_DeleteFromHistory(const std::filesystem::path &path)
 
 JzRE::String JzRE::JzREHubPanel::_PathToUtf8(const std::filesystem::path &path) const
 {
-    auto u8str = path.generic_u8string();
-    return JzRE::String(u8str.begin(), u8str.end());
+    return JzRE::String(reinterpret_cast<const char *>(path.generic_u8string().c_str()));
 }
 
 std::filesystem::path JzRE::JzREHubPanel::_Utf8ToPath(const JzRE::String &utf8Str) const
 {
-    return std::filesystem::path(std::string_view(utf8Str.data(), utf8Str.size()));
+    return std::filesystem::path(utf8Str);
 }
 
 void JzRE::JzREHubPanel::_OnUpdateGoButton(const JzRE::String &p_path)

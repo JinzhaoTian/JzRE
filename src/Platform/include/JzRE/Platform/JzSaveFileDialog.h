@@ -17,17 +17,17 @@ public:
     /**
      * @brief Constructor
      *
-     * @param p_dialogTitle Title of the dialog window
+     * @param pdialogTitle Title of the dialog window
      */
-    JzSaveFileDialog(const String &p_dialogTitle);
+    JzSaveFileDialog(const String &dialogTitle);
 
     /**
      * @brief Define the extension of the saved file
      *
-     * @param p_label
-     * @param p_extension
+     * @param label
+     * @param extension
      */
-    void DefineExtension(const String &p_label, const String &p_extension);
+    void DefineExtension(const String &label, const String &pextension);
 
     /**
      * @brief Show Dialog

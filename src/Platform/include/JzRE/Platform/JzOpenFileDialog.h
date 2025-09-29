@@ -17,17 +17,17 @@ public:
     /**
      * @brief Constructor
      *
-     * @param p_dialogTitle Title of the dialog window
+     * @param dialogTitle Title of the dialog window
      */
-    JzOpenFileDialog(const String &p_dialogTitle);
+    JzOpenFileDialog(const String &dialogTitle);
 
     /**
      * @brief Add a supported file type to the dialog window
      *
-     * @param p_label
-     * @param p_filter
+     * @param label
+     * @param filter
      */
-    void AddFileType(const String &p_label, const String &p_filter);
+    void AddFileType(const String &label, const String &filter);
 
     /**
      * @brief Show Dialog
