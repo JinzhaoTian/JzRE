@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <memory>
 #include "JzRE/Core/JzVector.h"
 #include "JzRE/RHI/JzRHITexture.h"
 #include "JzRE/UI/JzWidget.h"

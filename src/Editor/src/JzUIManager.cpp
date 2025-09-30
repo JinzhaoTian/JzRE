@@ -5,26 +5,30 @@
 
 #include "JzRE/Editor/JzUIManager.h"
 #include "JzRE/Editor/JzWindow.h"
-#include "JzRE/UI/JzConverter.h"
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
 JzRE::JzUIManager::JzUIManager(JzWindow &window)
 {
+    /* Setup Dear ImGui context */
     ImGui::CreateContext();
 
-    ImGui::GetIO().ConfigWindowsMoveFromTitleBarOnly = true;
+    ImGuiIO &io                          = ImGui::GetIO();
+    io.ConfigWindowsMoveFromTitleBarOnly = true;
 
     SetDocking(false);
 
+    /* Setup Platform/Renderer backends */
     ImGui_ImplGlfw_InitForOpenGL(window.GetGLFWWindow(), true);
     ImGui_ImplOpenGL3_Init("#version 150");
+
     ImGui::StyleColorsDark();
 }
 
 JzRE::JzUIManager::~JzUIManager()
 {
+    /* Shutdown Dear ImGui context */
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
@@ -33,8 +37,29 @@ JzRE::JzUIManager::~JzUIManager()
 void JzRE::JzUIManager::Render()
 {
     if (m_canvas) {
+        /* Start the Dear ImGui frame */
+
+        // Prepare OpenGL state and resources
+        ImGui_ImplOpenGL3_NewFrame();
+        // Process mouse, keyboard, and other input
+        ImGui_ImplGlfw_NewFrame();
+
+        /* Prepare to draw */
+
+        // Reset ImGui internal state
+        ImGui::NewFrame();
+
         m_canvas->Draw();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+        // Generate drawing data, calculate vertex, index and other data
+        ImGui::Render();
+
+        /* Actually Render */
+        ImDrawData *draw_data = ImGui::GetDrawData();
+        ImGui_ImplOpenGL3_RenderDrawData(draw_data);
+
+        // (Option) For multi-viewport
+        // if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) { ... }
     }
 }
 

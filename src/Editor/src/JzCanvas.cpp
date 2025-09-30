@@ -5,16 +5,10 @@
 
 #include "JzRE/Editor/JzCanvas.h"
 #include <imgui.h>
-#include <imgui_impl_glfw.h>
-#include <imgui_impl_opengl3.h>
 
 void JzRE::JzCanvas::Draw()
 {
     if (!m_panels.empty()) {
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
-
         if (m_isDockspace) {
             ImGuiViewport *viewport = ImGui::GetMainViewport();
             ImGui::SetNextWindowPos(viewport->Pos);
@@ -38,8 +32,6 @@ void JzRE::JzCanvas::Draw()
         for (auto &panel : m_panels) {
             panel.get().Draw();
         }
-
-        ImGui::Render();
     }
 }
 
