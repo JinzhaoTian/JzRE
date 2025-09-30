@@ -9,14 +9,14 @@
 #include <vector>
 #include <glad/glad.h>
 #include "JzRE/Core/JzRETypes.h"
-#include "JzRE/RHI/JzRHIBuffer.h"
-#include "JzRE/RHI/JzRHIVertexArray.h"
+#include "JzRE/RHI/JzGPUBufferObject.h"
+#include "JzRE/RHI/JzGPUVertexArrayObject.h"
 
 namespace JzRE {
 /**
  * @brief OpenGL Implementation of RHI Vertex Array
  */
-class JzOpenGLVertexArray : public JzRHIVertexArray {
+class JzOpenGLVertexArray : public JzGPUVertexArrayObject {
 public:
     /**
      * @brief Constructor
@@ -34,13 +34,13 @@ public:
      * @param buffer The vertex buffer to bind
      * @param binding The binding point
      */
-    void BindVertexBuffer(std::shared_ptr<JzRHIBuffer> buffer, U32 binding = 0) override;
+    void BindVertexBuffer(std::shared_ptr<JzGPUBufferObject> buffer, U32 binding = 0) override;
 
     /**
      * @brief Bind an index buffer
      * @param buffer The index buffer to bind
      */
-    void BindIndexBuffer(std::shared_ptr<JzRHIBuffer> buffer) override;
+    void BindIndexBuffer(std::shared_ptr<JzGPUBufferObject> buffer) override;
 
     /**
      * @brief Set a vertex attribute
@@ -58,8 +58,8 @@ public:
     GLuint GetHandle() const;
 
 private:
-    GLuint                                    m_handle = 0;
-    std::vector<std::shared_ptr<JzRHIBuffer>> m_vertexBuffers;
-    std::shared_ptr<JzRHIBuffer>              m_indexBuffer;
+    GLuint                                          m_handle = 0;
+    std::vector<std::shared_ptr<JzGPUBufferObject>> m_vertexBuffers;
+    std::shared_ptr<JzGPUBufferObject>              m_indexBuffer;
 };
 } // namespace JzRE

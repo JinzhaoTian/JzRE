@@ -8,7 +8,7 @@
 #include <memory>
 #include "JzRE/Core/JzRETypes.h"
 #include "JzRE/Core/JzEvent.h"
-#include "JzRE/RHI/JzRHITexture.h"
+#include "JzRE/RHI/JzGPUTextureObject.h"
 #include "JzRE/UI/JzDataWidget.h"
 #include "JzRE/UI/JzWidgetContainer.h"
 
@@ -26,7 +26,7 @@ public:
      * @param iconTexture
      * @param arrowClickToOpen
      */
-    JzIconTreeNode(const String &name, std::shared_ptr<JzRHITexture> iconTexture, Bool arrowClickToOpen = false);
+    JzIconTreeNode(const String &name, std::shared_ptr<JzGPUTextureObject> iconTexture, Bool arrowClickToOpen = false);
 
     /**
      * @brief Open the tree node
@@ -61,11 +61,11 @@ public:
     JzEvent<> ClosedEvent;
 
 private:
-    std::shared_ptr<JzRHITexture> m_iconTexture;
-    Bool                          m_arrowClickToOpen = false;
-    Bool                          m_shouldOpen       = false;
-    Bool                          m_shouldClose      = false;
-    Bool                          m_opened           = false;
+    std::shared_ptr<JzGPUTextureObject> m_iconTexture;
+    Bool                                m_arrowClickToOpen = false;
+    Bool                                m_shouldOpen       = false;
+    Bool                                m_shouldClose      = false;
+    Bool                                m_opened           = false;
 };
 
 } // namespace JzRE

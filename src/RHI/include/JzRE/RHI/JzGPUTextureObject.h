@@ -6,14 +6,14 @@
 #pragma once
 
 #include "JzRE/Core/JzRETypes.h"
-#include "JzRE/RHI/JzRHIResource.h"
+#include "JzRE/RHI/JzGPUResource.h"
 
 namespace JzRE {
 
 /**
- * @brief Texture type
+ * @brief Enums of texture resource types
  */
-enum class JzETextureType : U8 {
+enum class JzETextureResourceType : U8 {
     Texture1D,
     Texture2D,
     Texture3D,
@@ -22,9 +22,9 @@ enum class JzETextureType : U8 {
 };
 
 /**
- * @brief Texture format
+ * @brief Enums of texture resource formats
  */
-enum class JzETextureFormat : U8 {
+enum class JzETextureResourceFormat : U8 {
     Unknown,
     R8,
     RG8,
@@ -45,9 +45,9 @@ enum class JzETextureFormat : U8 {
 };
 
 /**
- * @brief Texture filter
+ * @brief Enums of texture resource filters
  */
-enum class JzETextureFilter : U8 {
+enum class JzETextureResourceFilter : U8 {
     Nearest,
     Linear,
     NearestMipmapNearest,
@@ -57,9 +57,9 @@ enum class JzETextureFilter : U8 {
 };
 
 /**
- * @brief Texture wrap
+ * @brief Enums of texture resource wrap
  */
-enum class JzETextureWrap : U8 {
+enum class JzETextureResourceWrap : U8 {
     Repeat,
     MirroredRepeat,
     ClampToEdge,
@@ -67,42 +67,42 @@ enum class JzETextureWrap : U8 {
 };
 
 /**
- * @brief Texture description
+ * @brief GPU texture object description
  */
-struct JzTextureDesc {
-    JzETextureType   type      = JzETextureType::Texture2D;
-    JzETextureFormat format    = JzETextureFormat::RGBA8;
-    U32              width     = 1;
-    U32              height    = 1;
-    U32              depth     = 1;
-    U32              mipLevels = 1;
-    U32              arraySize = 1;
-    JzETextureFilter minFilter = JzETextureFilter::Linear;
-    JzETextureFilter magFilter = JzETextureFilter::Linear;
-    JzETextureWrap   wrapS     = JzETextureWrap::Repeat;
-    JzETextureWrap   wrapT     = JzETextureWrap::Repeat;
-    JzETextureWrap   wrapR     = JzETextureWrap::Repeat;
-    const void      *data      = nullptr;
-    String           debugName;
+struct JzGPUTextureObjectDesc {
+    JzETextureResourceType   type      = JzETextureResourceType::Texture2D;
+    JzETextureResourceFormat format    = JzETextureResourceFormat::RGBA8;
+    U32                      width     = 1;
+    U32                      height    = 1;
+    U32                      depth     = 1;
+    U32                      mipLevels = 1;
+    U32                      arraySize = 1;
+    JzETextureResourceFilter minFilter = JzETextureResourceFilter::Linear;
+    JzETextureResourceFilter magFilter = JzETextureResourceFilter::Linear;
+    JzETextureResourceWrap   wrapS     = JzETextureResourceWrap::Repeat;
+    JzETextureResourceWrap   wrapT     = JzETextureResourceWrap::Repeat;
+    JzETextureResourceWrap   wrapR     = JzETextureResourceWrap::Repeat;
+    const void              *data      = nullptr;
+    String                   debugName;
 };
 
 /**
- * @brief Interface of RHI Texture
+ * @brief Interface of GPU texture object, to store and sample image data
  */
-class JzRHITexture : public JzRHIResource {
+class JzGPUTextureObject : public JzGPUResource {
 public:
     /**
      * @brief Constructor
      *
      * @param desc The description of the texture
      */
-    JzRHITexture(const JzTextureDesc &desc) :
-        JzRHIResource(desc.debugName), desc(desc) { }
+    JzGPUTextureObject(const JzGPUTextureObjectDesc &desc) :
+        JzGPUResource(desc.debugName), desc(desc) { }
 
     /**
      * @brief Destructor
      */
-    virtual ~JzRHITexture() = default;
+    virtual ~JzGPUTextureObject() = default;
 
     /**
      * @brief Update the data
@@ -130,7 +130,7 @@ public:
      *
      * @return The type of the texture
      */
-    JzETextureType GetType() const
+    JzETextureResourceType GetType() const
     {
         return desc.type;
     }
@@ -140,7 +140,7 @@ public:
      *
      * @return The format of the texture
      */
-    JzETextureFormat GetFormat() const
+    JzETextureResourceFormat GetFormat() const
     {
         return desc.format;
     }
@@ -186,7 +186,7 @@ public:
     }
 
 protected:
-    JzTextureDesc desc;
+    JzGPUTextureObjectDesc desc;
 };
 
 } // namespace JzRE

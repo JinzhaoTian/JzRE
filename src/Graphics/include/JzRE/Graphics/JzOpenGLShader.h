@@ -7,19 +7,19 @@
 
 #include <glad/glad.h>
 #include "JzRE/Core/JzRETypes.h"
-#include "JzRE/RHI/JzRHIShader.h"
+#include "JzRE/RHI/JzGPUShaderProgramObject.h"
 
 namespace JzRE {
 /**
  * @brief OpenGL Implementation of RHI Shader
  */
-class JzOpenGLShader : public JzRHIShader {
+class JzOpenGLShader : public JzGPUShaderProgramObject {
 public:
     /**
      * @brief Constructor
      * @param desc The description of the shader
      */
-    JzOpenGLShader(const JzShaderDesc &desc);
+    JzOpenGLShader(const JzShaderProgramDesc &desc);
 
     /**
      * @brief Destructor
@@ -50,7 +50,7 @@ private:
      * @param type The shader type
      * @return The OpenGL shader type
      */
-    static GLenum ConvertShaderType(JzEShaderType type);
+    static GLenum ConvertShaderType(JzEShaderProgramType type);
 
     /**
      * @brief Compile the shader

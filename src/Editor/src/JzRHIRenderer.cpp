@@ -71,9 +71,9 @@ JzRE::Bool JzRE::JzRHIRenderer::CreateFramebuffer()
     }
 
     // create default color texture
-    JzTextureDesc colorDesc;
-    colorDesc.type      = JzETextureType::Texture2D;
-    colorDesc.format    = JzETextureFormat::RGBA8;
+    JzGPUTextureObjectDesc colorDesc;
+    colorDesc.type      = JzETextureResourceType::Texture2D;
+    colorDesc.format    = JzETextureResourceFormat::RGBA8;
     colorDesc.width     = static_cast<U32>(m_frameSize.x());
     colorDesc.height    = static_cast<U32>(m_frameSize.y());
     colorDesc.debugName = "RendererColor";
@@ -85,9 +85,9 @@ JzRE::Bool JzRE::JzRHIRenderer::CreateFramebuffer()
     }
 
     // create default depth texture
-    JzTextureDesc depthDesc;
-    depthDesc.type      = JzETextureType::Texture2D;
-    depthDesc.format    = JzETextureFormat::Depth24;
+    JzGPUTextureObjectDesc depthDesc;
+    depthDesc.type      = JzETextureResourceType::Texture2D;
+    depthDesc.format    = JzETextureResourceFormat::Depth24;
     depthDesc.width     = static_cast<U32>(m_frameSize.x());
     depthDesc.height    = static_cast<U32>(m_frameSize.y());
     depthDesc.debugName = "RendererDepth";
@@ -145,14 +145,14 @@ JzRE::Bool JzRE::JzRHIRenderer::CreateDefaultPipeline()
         }
     )";
 
-    JzShaderDesc vsDesc{};
-    vsDesc.type       = JzEShaderType::Vertex;
+    JzShaderProgramDesc vsDesc{};
+    vsDesc.type       = JzEShaderProgramType::Vertex;
     vsDesc.source     = vsSrc;
     vsDesc.entryPoint = "main";
     vsDesc.debugName  = "RendererVS";
 
-    JzShaderDesc fsDesc{};
-    fsDesc.type       = JzEShaderType::Fragment;
+    JzShaderProgramDesc fsDesc{};
+    fsDesc.type       = JzEShaderProgramType::Fragment;
     fsDesc.source     = fsSrc;
     fsDesc.entryPoint = "main";
     fsDesc.debugName  = "RendererFS";
@@ -312,7 +312,7 @@ void JzRE::JzRHIRenderer::ClearBuffers()
     device.Clear(clearParams);
 }
 
-std::shared_ptr<JzRE::JzRHIFramebuffer> JzRE::JzRHIRenderer::GetFramebuffer() const
+std::shared_ptr<JzRE::JzGPUFramebufferObject> JzRE::JzRHIRenderer::GetFramebuffer() const
 {
     return m_framebuffer;
 }
@@ -353,7 +353,7 @@ void JzRE::JzRHIRenderer::EndFrame()
     device.EndFrame();
 }
 
-void JzRE::JzRHIRenderer::BindFramebuffer(std::shared_ptr<JzRE::JzRHIFramebuffer> framebuffer)
+void JzRE::JzRHIRenderer::BindFramebuffer(std::shared_ptr<JzRE::JzGPUFramebufferObject> framebuffer)
 {
     auto &device = JzServiceContainer::Get<JzDevice>();
 
@@ -381,7 +381,7 @@ JzRE::JzIVec2 JzRE::JzRHIRenderer::GetCurrentFrameSize() const
     return m_frameSize;
 }
 
-std::shared_ptr<JzRE::JzRHITexture> JzRE::JzRHIRenderer::GetCurrentTexture()
+std::shared_ptr<JzRE::JzGPUTextureObject> JzRE::JzRHIRenderer::GetCurrentTexture()
 {
     return m_colorTexture;
 }

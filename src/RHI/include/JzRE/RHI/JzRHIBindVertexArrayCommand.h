@@ -6,7 +6,7 @@
 #pragma once
 
 #include "JzRE/RHI/JzRHICommand.h"
-#include "JzRE/RHI/JzRHIVertexArray.h"
+#include "JzRE/RHI/JzGPUVertexArrayObject.h"
 
 namespace JzRE {
 
@@ -19,7 +19,7 @@ public:
      * @brief Constructor
      * @param vertexArray The vertex array to bind
      */
-    JzRHIBindVertexArrayCommand(std::shared_ptr<JzRHIVertexArray> vertexArray);
+    JzRHIBindVertexArrayCommand(std::shared_ptr<JzGPUVertexArrayObject> vertexArray);
 
     /**
      * @brief Execute the command
@@ -27,7 +27,7 @@ public:
     void Execute() override;
 
 private:
-    std::shared_ptr<JzRHIVertexArray> m_vertexArray;
+    std::shared_ptr<JzGPUVertexArrayObject> m_vertexArray;
 };
 
 } // namespace JzRE

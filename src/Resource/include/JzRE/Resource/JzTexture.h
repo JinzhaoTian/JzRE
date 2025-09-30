@@ -7,7 +7,7 @@
 
 #include <memory>
 #include "JzRE/Resource/JzResource.h"
-#include "JzRE/RHI/JzRHITexture.h"
+#include "JzRE/RHI/JzGPUTextureObject.h"
 
 namespace JzRE {
 
@@ -21,7 +21,7 @@ public:
      *
      * @param rhiTexture An existing RHI texture resource.
      */
-    JzTexture(std::shared_ptr<JzRHITexture> rhiTexture);
+    JzTexture(std::shared_ptr<JzGPUTextureObject> rhiTexture);
 
     /**
      * @brief Constructor.
@@ -50,16 +50,16 @@ public:
     /**
      * @brief Get the RHI Texture object.
      *
-     * @return std::shared_ptr<JzRHITexture>
+     * @return std::shared_ptr<JzGPUTextureObject>
      */
-    std::shared_ptr<JzRHITexture> GetRhiTexture() const
+    std::shared_ptr<JzGPUTextureObject> GetRhiTexture() const
     {
         return m_rhiTexture;
     }
 
 private:
-    String                        m_path;
-    std::shared_ptr<JzRHITexture> m_rhiTexture;
+    String                              m_path;
+    std::shared_ptr<JzGPUTextureObject> m_rhiTexture;
 };
 
 } // namespace JzRE

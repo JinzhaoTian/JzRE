@@ -7,7 +7,7 @@
 #include <imgui.h>
 #include "JzRE/UI/JzConverter.h"
 
-JzRE::JzIconButton::JzIconButton(std::shared_ptr<JzRE::JzRHITexture> iconTexture) :
+JzRE::JzIconButton::JzIconButton(std::shared_ptr<JzRE::JzGPUTextureObject> iconTexture) :
     m_iconTexture(iconTexture),
     buttonSize({20.0f, 20.0f}),
     buttonIdleColor("#2A2A2A"),

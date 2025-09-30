@@ -54,25 +54,25 @@ public:
      * @brief Create a Buffer
      *
      * @param desc Buffer Description
-     * @return std::shared_ptr<JzRHIBuffer>
+     * @return std::shared_ptr<JzGPUBufferObject>
      */
-    std::shared_ptr<JzRHIBuffer> CreateBuffer(const JzBufferDesc &desc) override;
+    std::shared_ptr<JzGPUBufferObject> CreateBuffer(const JzGPUBufferObjectDesc &desc) override;
 
     /**
      * @brief Create a Texture
      *
      * @param desc Texture Description
-     * @return std::shared_ptr<JzRHITexture>
+     * @return std::shared_ptr<JzGPUTextureObject>
      */
-    std::shared_ptr<JzRHITexture> CreateTexture(const JzTextureDesc &desc) override;
+    std::shared_ptr<JzGPUTextureObject> CreateTexture(const JzGPUTextureObjectDesc &desc) override;
 
     /**
      * @brief Create a Shader
      *
      * @param desc Shader Description
-     * @return std::shared_ptr<JzRHIShader>
+     * @return std::shared_ptr<JzGPUShaderProgramObject>
      */
-    std::shared_ptr<JzRHIShader> CreateShader(const JzShaderDesc &desc) override;
+    std::shared_ptr<JzGPUShaderProgramObject> CreateShader(const JzShaderProgramDesc &desc) override;
 
     /**
      * @brief Create a Pipeline
@@ -86,17 +86,17 @@ public:
      * @brief Create a Framebuffer
      *
      * @param debugName Debug Name
-     * @return std::shared_ptr<JzRHIFramebuffer>
+     * @return std::shared_ptr<JzGPUFramebufferObject>
      */
-    std::shared_ptr<JzRHIFramebuffer> CreateFramebuffer(const String &debugName = "") override;
+    std::shared_ptr<JzGPUFramebufferObject> CreateFramebuffer(const String &debugName = "") override;
 
     /**
      * @brief Create a Vertex Array
      *
      * @param debugName Debug Name
-     * @return std::shared_ptr<JzRHIVertexArray>
+     * @return std::shared_ptr<JzGPUVertexArrayObject>
      */
-    std::shared_ptr<JzRHIVertexArray> CreateVertexArray(const String &debugName = "") override;
+    std::shared_ptr<JzGPUVertexArrayObject> CreateVertexArray(const String &debugName = "") override;
 
     /**
      * @brief Create a Command List
@@ -182,7 +182,7 @@ public:
      *
      * @param vertexArray Vertex Array
      */
-    void BindVertexArray(std::shared_ptr<JzRHIVertexArray> vertexArray) override;
+    void BindVertexArray(std::shared_ptr<JzGPUVertexArrayObject> vertexArray) override;
 
     /**
      * @brief Bind Texture
@@ -190,14 +190,14 @@ public:
      * @param texture Texture
      * @param slot Slot
      */
-    void BindTexture(std::shared_ptr<JzRHITexture> texture, U32 slot) override;
+    void BindTexture(std::shared_ptr<JzGPUTextureObject> texture, U32 slot) override;
 
     /**
      * @brief Bind Framebuffer
      *
      * @param framebuffer Framebuffer
      */
-    void BindFramebuffer(std::shared_ptr<JzRHIFramebuffer> framebuffer) override;
+    void BindFramebuffer(std::shared_ptr<JzGPUFramebufferObject> framebuffer) override;
 
     /**
      * @brief Flush

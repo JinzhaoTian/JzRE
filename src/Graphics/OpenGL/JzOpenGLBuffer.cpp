@@ -5,21 +5,21 @@
 
 #include "JzRE/Graphics/JzOpenGLBuffer.h"
 
-JzRE::JzOpenGLBuffer::JzOpenGLBuffer(const JzRE::JzBufferDesc &desc) :
-    JzRE::JzRHIBuffer(desc)
+JzRE::JzOpenGLBuffer::JzOpenGLBuffer(const JzRE::JzGPUBufferObjectDesc &desc) :
+    JzRE::JzGPUBufferObject(desc)
 {
     // Set OpenGL target based on buffer type
     switch (desc.type) {
-        case JzEBufferType::Vertex:
+        case JzEGPUBufferObjectType::Vertex:
             m_target = GL_ARRAY_BUFFER;
             break;
-        case JzEBufferType::Index:
+        case JzEGPUBufferObjectType::Index:
             m_target = GL_ELEMENT_ARRAY_BUFFER;
             break;
-        case JzEBufferType::Uniform:
+        case JzEGPUBufferObjectType::Uniform:
             m_target = GL_UNIFORM_BUFFER;
             break;
-        case JzEBufferType::Storage:
+        case JzEGPUBufferObjectType::Storage:
             m_target = GL_SHADER_STORAGE_BUFFER;
             break;
         default:
@@ -29,13 +29,13 @@ JzRE::JzOpenGLBuffer::JzOpenGLBuffer(const JzRE::JzBufferDesc &desc) :
 
     // Set OpenGL usage based on buffer usage
     switch (desc.usage) {
-        case JzEBufferUsage::StaticDraw:
+        case JzEGPUBufferObjectUsage::StaticDraw:
             m_usage = GL_STATIC_DRAW;
             break;
-        case JzEBufferUsage::DynamicDraw:
+        case JzEGPUBufferObjectUsage::DynamicDraw:
             m_usage = GL_DYNAMIC_DRAW;
             break;
-        case JzEBufferUsage::StreamDraw:
+        case JzEGPUBufferObjectUsage::StreamDraw:
             m_usage = GL_STREAM_DRAW;
             break;
         default:

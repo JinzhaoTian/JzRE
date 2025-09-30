@@ -8,7 +8,7 @@
 #include <memory>
 #include "JzRE/Core/JzRETypes.h"
 #include "JzRE/RHI/JzRHICommand.h"
-#include "JzRE/RHI/JzRHITexture.h"
+#include "JzRE/RHI/JzGPUTextureObject.h"
 
 namespace JzRE {
 
@@ -22,7 +22,7 @@ public:
      * @param texture The texture to bind
      * @param slot The slot to bind the texture to
      */
-    JzRHIBindTextureCommand(std::shared_ptr<JzRHITexture> texture, U32 slot);
+    JzRHIBindTextureCommand(std::shared_ptr<JzGPUTextureObject> texture, U32 slot);
 
     /**
      * @brief Execute the command
@@ -30,8 +30,8 @@ public:
     void Execute() override;
 
 private:
-    std::shared_ptr<JzRHITexture> m_texture;
-    U32                           m_slot;
+    std::shared_ptr<JzGPUTextureObject> m_texture;
+    U32                                 m_slot;
 };
 
 } // namespace JzRE

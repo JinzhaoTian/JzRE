@@ -9,14 +9,14 @@
 #include <memory>
 #include <glad/glad.h>
 #include "JzRE/Core/JzRETypes.h"
-#include "JzRE/RHI/JzRHIFramebuffer.h"
-#include "JzRE/RHI/JzRHITexture.h"
+#include "JzRE/RHI/JzGPUFramebufferObject.h"
+#include "JzRE/RHI/JzGPUTextureObject.h"
 
 namespace JzRE {
 /**
  * @brief OpenGL Implementation of RHI Framebuffer
  */
-class JzOpenGLFramebuffer : public JzRHIFramebuffer {
+class JzOpenGLFramebuffer : public JzGPUFramebufferObject {
 public:
     /**
      * @brief Constructor
@@ -34,19 +34,19 @@ public:
      * @param texture The texture to attach
      * @param attachmentIndex The attachment index
      */
-    void AttachColorTexture(std::shared_ptr<JzRHITexture> texture, U32 attachmentIndex = 0) override;
+    void AttachColorTexture(std::shared_ptr<JzGPUTextureObject> texture, U32 attachmentIndex = 0) override;
 
     /**
      * @brief Attach a depth texture to the framebuffer
      * @param texture The texture to attach
      */
-    void AttachDepthTexture(std::shared_ptr<JzRHITexture> texture) override;
+    void AttachDepthTexture(std::shared_ptr<JzGPUTextureObject> texture) override;
 
     /**
      * @brief Attach a depth stencil texture to the framebuffer
      * @param texture The texture to attach
      */
-    void AttachDepthStencilTexture(std::shared_ptr<JzRHITexture> texture) override;
+    void AttachDepthStencilTexture(std::shared_ptr<JzGPUTextureObject> texture) override;
 
     /**
      * @brief Check if the framebuffer is complete
@@ -61,9 +61,9 @@ public:
     GLuint GetHandle() const;
 
 private:
-    GLuint                                     m_handle = 0;
-    std::vector<std::shared_ptr<JzRHITexture>> m_colorAttachments;
-    std::shared_ptr<JzRHITexture>              m_depthAttachment;
-    std::shared_ptr<JzRHITexture>              m_depthStencilAttachment;
+    GLuint                                           m_handle = 0;
+    std::vector<std::shared_ptr<JzGPUTextureObject>> m_colorAttachments;
+    std::shared_ptr<JzGPUTextureObject>              m_depthAttachment;
+    std::shared_ptr<JzGPUTextureObject>              m_depthStencilAttachment;
 };
 } // namespace JzRE

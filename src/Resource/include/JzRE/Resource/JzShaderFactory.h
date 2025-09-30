@@ -25,7 +25,7 @@ public:
     virtual JzResource *Create(const String &name) override
     {
         // TODO A real implementation might need to know the shader type from the extension or another parameter.
-        return new JzShader(name, JzEShaderType::Vertex); // Defaulting to Vertex for simplicity
+        return new JzShader(name, JzEShaderProgramType::Vertex); // Defaulting to Vertex for simplicity
     }
 };
 

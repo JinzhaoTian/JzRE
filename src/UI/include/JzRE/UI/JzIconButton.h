@@ -9,7 +9,7 @@
 #include "JzRE/Core/JzRETypes.h"
 #include "JzRE/Core/JzEvent.h"
 #include "JzRE/Core/JzVector.h"
-#include "JzRE/RHI/JzRHITexture.h"
+#include "JzRE/RHI/JzGPUTextureObject.h"
 #include "JzRE/UI/JzWidget.h"
 
 namespace JzRE {
@@ -24,7 +24,7 @@ public:
      *
      * @param iconTexture The texture to use as the icon.
      */
-    JzIconButton(std::shared_ptr<JzRHITexture> iconTexture);
+    JzIconButton(std::shared_ptr<JzGPUTextureObject> iconTexture);
 
 protected:
     /**
@@ -49,7 +49,7 @@ public:
     String iconHoveredColor;
 
 private:
-    std::shared_ptr<JzRHITexture> m_iconTexture;
+    std::shared_ptr<JzGPUTextureObject> m_iconTexture;
 };
 
 } // namespace JzRE

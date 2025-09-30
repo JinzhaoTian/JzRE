@@ -40,21 +40,21 @@ JzRE::String JzRE::JzOpenGLDevice::GetDriverVersion() const
     return version ? String(version) : "Unknown Version";
 }
 
-std::shared_ptr<JzRE::JzRHIBuffer> JzRE::JzOpenGLDevice::CreateBuffer(const JzRE::JzBufferDesc &desc)
+std::shared_ptr<JzRE::JzGPUBufferObject> JzRE::JzOpenGLDevice::CreateBuffer(const JzRE::JzGPUBufferObjectDesc &desc)
 {
     auto buffer = std::make_shared<JzOpenGLBuffer>(desc);
     m_stats.buffers++;
     return buffer;
 }
 
-std::shared_ptr<JzRE::JzRHITexture> JzRE::JzOpenGLDevice::CreateTexture(const JzRE::JzTextureDesc &desc)
+std::shared_ptr<JzRE::JzGPUTextureObject> JzRE::JzOpenGLDevice::CreateTexture(const JzRE::JzGPUTextureObjectDesc &desc)
 {
     auto texture = std::make_shared<JzOpenGLTexture>(desc);
     m_stats.textures++;
     return texture;
 }
 
-std::shared_ptr<JzRE::JzRHIShader> JzRE::JzOpenGLDevice::CreateShader(const JzRE::JzShaderDesc &desc)
+std::shared_ptr<JzRE::JzGPUShaderProgramObject> JzRE::JzOpenGLDevice::CreateShader(const JzRE::JzShaderProgramDesc &desc)
 {
     auto shader = std::make_shared<JzOpenGLShader>(desc);
     m_stats.shaders++;
@@ -68,12 +68,12 @@ std::shared_ptr<JzRE::JzRHIPipeline> JzRE::JzOpenGLDevice::CreatePipeline(const 
     return pipeline;
 }
 
-std::shared_ptr<JzRE::JzRHIFramebuffer> JzRE::JzOpenGLDevice::CreateFramebuffer(const JzRE::String &debugName)
+std::shared_ptr<JzRE::JzGPUFramebufferObject> JzRE::JzOpenGLDevice::CreateFramebuffer(const JzRE::String &debugName)
 {
     return std::make_shared<JzOpenGLFramebuffer>(debugName);
 }
 
-std::shared_ptr<JzRE::JzRHIVertexArray> JzRE::JzOpenGLDevice::CreateVertexArray(const JzRE::String &debugName)
+std::shared_ptr<JzRE::JzGPUVertexArrayObject> JzRE::JzOpenGLDevice::CreateVertexArray(const JzRE::String &debugName)
 {
     return std::make_shared<JzOpenGLVertexArray>(debugName);
 }
@@ -214,7 +214,7 @@ void JzRE::JzOpenGLDevice::BindPipeline(std::shared_ptr<JzRE::JzRHIPipeline> pip
     }
 }
 
-void JzRE::JzOpenGLDevice::BindVertexArray(std::shared_ptr<JzRE::JzRHIVertexArray> vertexArray)
+void JzRE::JzOpenGLDevice::BindVertexArray(std::shared_ptr<JzRE::JzGPUVertexArrayObject> vertexArray)
 {
     auto glVertexArray = std::static_pointer_cast<JzOpenGLVertexArray>(vertexArray);
     if (glVertexArray) {
@@ -223,7 +223,7 @@ void JzRE::JzOpenGLDevice::BindVertexArray(std::shared_ptr<JzRE::JzRHIVertexArra
     }
 }
 
-void JzRE::JzOpenGLDevice::BindTexture(std::shared_ptr<JzRE::JzRHITexture> texture, U32 slot)
+void JzRE::JzOpenGLDevice::BindTexture(std::shared_ptr<JzRE::JzGPUTextureObject> texture, U32 slot)
 {
     auto glTexture = std::static_pointer_cast<JzOpenGLTexture>(texture);
     if (glTexture) {
@@ -232,7 +232,7 @@ void JzRE::JzOpenGLDevice::BindTexture(std::shared_ptr<JzRE::JzRHITexture> textu
     }
 }
 
-void JzRE::JzOpenGLDevice::BindFramebuffer(std::shared_ptr<JzRE::JzRHIFramebuffer> framebuffer)
+void JzRE::JzOpenGLDevice::BindFramebuffer(std::shared_ptr<JzRE::JzGPUFramebufferObject> framebuffer)
 {
     auto glFramebuffer = std::static_pointer_cast<JzOpenGLFramebuffer>(framebuffer);
     if (glFramebuffer) {

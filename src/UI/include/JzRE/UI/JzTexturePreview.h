@@ -8,7 +8,7 @@
 #include <memory>
 #include "JzRE/Core/JzVector.h"
 #include "JzRE/UI/JzPlugin.h"
-#include "JzRE/RHI/JzRHITexture.h"
+#include "JzRE/RHI/JzGPUTextureObject.h"
 
 namespace JzRE {
 
@@ -22,7 +22,7 @@ public:
      *
      * @param texture
      */
-    JzTexturePreview(std::shared_ptr<JzRHITexture> texture);
+    JzTexturePreview(std::shared_ptr<JzGPUTextureObject> texture);
 
     /**
      * @brief Execute the plugin
@@ -32,8 +32,8 @@ public:
     void Execute(JzEPluginExecutionContext context) override;
 
 private:
-    JzVec2                        m_textureSize;
-    std::shared_ptr<JzRHITexture> m_texture;
+    JzVec2                              m_textureSize;
+    std::shared_ptr<JzGPUTextureObject> m_texture;
 };
 
 } // namespace JzRE

@@ -5,7 +5,7 @@
 
 #include "JzRE/RHI/JzRHIRenderPassCommand.h"
 
-JzRE::JzRHIBeginRenderPassCommand::JzRHIBeginRenderPassCommand(std::shared_ptr<JzRE::JzRHIFramebuffer> framebuffer) :
+JzRE::JzRHIBeginRenderPassCommand::JzRHIBeginRenderPassCommand(std::shared_ptr<JzRE::JzGPUFramebufferObject> framebuffer) :
     JzRHICommand(JzRHIECommandType::BeginRenderPass),
     m_framebuffer(framebuffer) { }
 

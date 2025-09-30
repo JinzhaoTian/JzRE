@@ -5,15 +5,15 @@
 
 #pragma once
 
-#include "JzRHIShader.h"
+#include "JzGPUShaderProgramObject.h"
 
 namespace JzRE {
 /**
  * @brief Vulkan Shader Implementation (Stub)
  */
-class JzVulkanShader : public JzRHIShader {
+class JzVulkanShader : public JzGPUShaderProgramObject {
 public:
-    JzVulkanShader(const JzShaderDesc &desc);
+    JzVulkanShader(const JzShaderProgramDesc &desc);
     ~JzVulkanShader() override;
 
 private:

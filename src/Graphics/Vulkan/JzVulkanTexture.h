@@ -5,15 +5,15 @@
 
 #pragma once
 
-#include "JzRHITexture.h"
+#include "JzGPUTextureObject.h"
 
 namespace JzRE {
 /**
  * @brief Vulkan Texture Implementation (Stub)
  */
-class JzVulkanTexture : public JzRHITexture {
+class JzVulkanTexture : public JzGPUTextureObject {
 public:
-    JzVulkanTexture(const JzTextureDesc &desc);
+    JzVulkanTexture(const JzGPUTextureObjectDesc &desc);
     ~JzVulkanTexture() override;
 
     void  UpdateData(const void *data, U32 mipLevel = 0, U32 arrayIndex = 0) override;

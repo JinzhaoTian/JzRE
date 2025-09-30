@@ -15,8 +15,8 @@
 #include "JzRE/RHI/JzRHISetViewportCommand.h"
 #include "JzRE/RHI/JzRHISetScissorCommand.h"
 #include "JzRE/RHI/JzRHIPipeline.h"
-#include "JzRE/RHI/JzRHIFramebuffer.h"
-#include "JzRE/RHI/JzRHIVertexArray.h"
+#include "JzRE/RHI/JzGPUFramebufferObject.h"
+#include "JzRE/RHI/JzGPUVertexArrayObject.h"
 
 namespace JzRE {
 /**
@@ -109,7 +109,7 @@ public:
      *
      * @param vertexArray The vertex array to bind
      */
-    void BindVertexArray(std::shared_ptr<JzRHIVertexArray> vertexArray);
+    void BindVertexArray(std::shared_ptr<JzGPUVertexArrayObject> vertexArray);
 
     /**
      * @brief Buffer Bind Texture Command
@@ -117,7 +117,7 @@ public:
      * @param texture The texture to bind
      * @param slot The slot to bind the texture to
      */
-    void BindTexture(std::shared_ptr<JzRHITexture> texture, U32 slot);
+    void BindTexture(std::shared_ptr<JzGPUTextureObject> texture, U32 slot);
 
     /**
      * @brief Buffer Set Viewport Command
@@ -137,7 +137,7 @@ public:
      * @brief Buffer Begin Render Pass Command
      * @param framebuffer The framebuffer to begin the render pass
      */
-    void BeginRenderPass(std::shared_ptr<JzRHIFramebuffer> framebuffer);
+    void BeginRenderPass(std::shared_ptr<JzGPUFramebufferObject> framebuffer);
 
     /**
      * @brief Buffer End Render Pass Command

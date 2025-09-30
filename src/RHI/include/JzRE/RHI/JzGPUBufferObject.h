@@ -6,14 +6,14 @@
 #pragma once
 
 #include "JzRE/Core/JzRETypes.h"
-#include "JzRE/RHI/JzRHIResource.h"
+#include "JzRE/RHI/JzGPUResource.h"
 
 namespace JzRE {
 
 /**
- * @brief Buffer type
+ * @brief Enums of GPU buffer object types
  */
-enum class JzEBufferType : U8 {
+enum class JzEGPUBufferObjectType : U8 {
     Vertex,
     Index,
     Uniform,
@@ -21,44 +21,46 @@ enum class JzEBufferType : U8 {
 };
 
 /**
- * @brief Buffer usage
+ * @brief Enums of GPU buffer usages
  */
-enum class JzEBufferUsage : U8 {
+enum class JzEGPUBufferObjectUsage : U8 {
     StaticDraw,
     DynamicDraw,
     StreamDraw
 };
 
 /**
- * @brief Buffer description
+ * @brief GPU buffer object description
  */
-struct JzBufferDesc {
-    JzEBufferType  type;
-    JzEBufferUsage usage;
-    Size           size;
-    const void    *data = nullptr;
-    String         debugName;
+struct JzGPUBufferObjectDesc {
+    JzEGPUBufferObjectType  type;
+    JzEGPUBufferObjectUsage usage;
+    Size                    size;
+    const void             *data = nullptr;
+    String                  debugName;
 };
 
 /**
- * @brief Interface of RHI Buffer
+ * @brief Interface of GPU buffer object, represents a block of binary data of any type stored on the GPU.
  */
-class JzRHIBuffer : public JzRHIResource {
+class JzGPUBufferObject : public JzGPUResource {
 public:
     /**
      * @brief Constructor
-     * @param desc The description of the buffer
+     *
+     * @param desc The description of the GPU buffer object
      */
-    JzRHIBuffer(const JzBufferDesc &desc) :
-        JzRHIResource(desc.debugName), desc(desc) { }
+    JzGPUBufferObject(const JzGPUBufferObjectDesc &desc) :
+        JzGPUResource(desc.debugName), desc(desc) { }
 
     /**
      * @brief Destructor
      */
-    virtual ~JzRHIBuffer() = default;
+    virtual ~JzGPUBufferObject() = default;
 
     /**
      * @brief Update the data
+     *
      * @param data The data to update
      * @param size The size of the data
      * @param offset The offset of the data
@@ -67,6 +69,7 @@ public:
 
     /**
      * @brief Map the buffer
+     *
      * @return The mapped data
      */
     virtual void *MapBuffer() = 0;
@@ -78,24 +81,27 @@ public:
 
     /**
      * @brief Get the type of the buffer
+     *
      * @return The type of the buffer
      */
-    JzEBufferType GetType() const
+    JzEGPUBufferObjectType GetType() const
     {
         return desc.type;
     }
 
     /**
      * @brief Get the usage of the buffer
+     *
      * @return The usage of the buffer
      */
-    JzEBufferUsage GetUsage() const
+    JzEGPUBufferObjectUsage GetUsage() const
     {
         return desc.usage;
     }
 
     /**
      * @brief Get the size of the buffer
+     *
      * @return The size of the buffer
      */
     Size GetSize() const
@@ -104,6 +110,6 @@ public:
     }
 
 protected:
-    JzBufferDesc desc;
+    JzGPUBufferObjectDesc desc;
 };
 } // namespace JzRE

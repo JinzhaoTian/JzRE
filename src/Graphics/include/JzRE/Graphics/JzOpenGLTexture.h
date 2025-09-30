@@ -7,20 +7,20 @@
 
 #include <glad/glad.h>
 #include "JzRE/Core/JzRETypes.h"
-#include "JzRE/RHI/JzRHITexture.h"
+#include "JzRE/RHI/JzGPUTextureObject.h"
 
 namespace JzRE {
 /**
  * @brief OpenGL Implementation of RHI Texture
  */
-class JzOpenGLTexture : public JzRHITexture {
+class JzOpenGLTexture : public JzGPUTextureObject {
 public:
     /**
      * @brief Constructor
      *
      * @param desc The description of the texture
      */
-    JzOpenGLTexture(const JzTextureDesc &desc);
+    JzOpenGLTexture(const JzGPUTextureObjectDesc &desc);
 
     /**
      * @brief Destructor
@@ -62,7 +62,7 @@ private:
      * @param type The texture type
      * @return The OpenGL texture type
      */
-    static GLenum ConvertTextureType(JzETextureType type);
+    static GLenum ConvertTextureType(JzETextureResourceType type);
 
     /**
      * @brief Convert internal format to OpenGL internal format
@@ -70,7 +70,7 @@ private:
      * @param format The texture format
      * @return The OpenGL internal format
      */
-    static GLenum ConvertInternalFormat(JzETextureFormat format);
+    static GLenum ConvertInternalFormat(JzETextureResourceFormat format);
 
     /**
      * @brief Convert format to OpenGL format
@@ -78,7 +78,7 @@ private:
      * @param format The texture format
      * @return The OpenGL format
      */
-    static GLenum ConvertFormat(JzETextureFormat format);
+    static GLenum ConvertFormat(JzETextureResourceFormat format);
 
     /**
      * @brief Convert type to OpenGL type
@@ -86,7 +86,7 @@ private:
      * @param format The texture format
      * @return The OpenGL type
      */
-    static GLenum ConvertType(JzETextureFormat format);
+    static GLenum ConvertType(JzETextureResourceFormat format);
 
     /**
      * @brief Convert filter to OpenGL filter
@@ -94,7 +94,7 @@ private:
      * @param filter The texture filter
      * @return The OpenGL filter
      */
-    static GLenum ConvertFilter(JzETextureFilter filter);
+    static GLenum ConvertFilter(JzETextureResourceFilter filter);
 
     /**
      * @brief Convert wrap to OpenGL wrap
@@ -102,7 +102,7 @@ private:
      * @param wrap The texture wrap
      * @return The OpenGL wrap
      */
-    static GLenum ConvertWrap(JzETextureWrap wrap);
+    static GLenum ConvertWrap(JzETextureResourceWrap wrap);
 
 private:
     GLuint m_handle = 0;

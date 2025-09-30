@@ -9,7 +9,7 @@
 #include <vector>
 #include "JzRE/Resource/JzResource.h"
 #include "JzRE/RHI/JzRHIPipeline.h"
-#include "JzRE/RHI/JzRHITexture.h"
+#include "JzRE/RHI/JzGPUTextureObject.h"
 
 namespace JzRE {
 
@@ -56,17 +56,17 @@ public:
     /**
      * @brief Get the Textures
      *
-     * @return const std::vector<std::shared_ptr<JzRHITexture>>&
+     * @return const std::vector<std::shared_ptr<JzGPUTextureObject>>&
      */
-    const std::vector<std::shared_ptr<JzRHITexture>> &GetTextures() const
+    const std::vector<std::shared_ptr<JzGPUTextureObject>> &GetTextures() const
     {
         return m_textures;
     }
 
 protected:
     // GPU-side RHI resources
-    std::shared_ptr<JzRHIPipeline>             m_pipeline;
-    std::vector<std::shared_ptr<JzRHITexture>> m_textures;
+    std::shared_ptr<JzRHIPipeline>                   m_pipeline;
+    std::vector<std::shared_ptr<JzGPUTextureObject>> m_textures;
 };
 
 } // namespace JzRE

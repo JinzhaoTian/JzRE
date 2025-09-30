@@ -5,20 +5,20 @@
 
 #pragma once
 
-#include "JzRHIBuffer.h"
+#include "JzGPUBufferObject.h"
 
 namespace JzRE {
 /**
  * @brief Vulkan Buffer Implementation (Stub)
  */
-class JzVulkanBuffer : public JzRHIBuffer {
+class JzVulkanBuffer : public JzGPUBufferObject {
 public:
     /**
      * @brief Constructor
      *
      * @param desc
      */
-    JzVulkanBuffer(const JzBufferDesc &desc);
+    JzVulkanBuffer(const JzGPUBufferObjectDesc &desc);
 
     /**
      * @brief Destructor

@@ -7,42 +7,46 @@
 
 #include <memory>
 #include "JzRE/Core/JzRETypes.h"
-#include "JzRE/RHI/JzRHIBuffer.h"
-#include "JzRE/RHI/JzRHIResource.h"
+#include "JzRE/RHI/JzGPUBufferObject.h"
 
 namespace JzRE {
+
 /**
- * @brief Interface of RHI Vertex Array Object
+ * @brief Interface of GPU vertex array object, represents a recorder or container for the state of a buffer object.
  */
-class JzRHIVertexArray : public JzRHIResource {
+class JzGPUVertexArrayObject : public JzGPUResource {
 public:
     /**
      * @brief Constructor
-     * @param debugName The debug name of the vertex array
+     *
+     * @param debugName The debug name of the GPU vertex array object
      */
-    JzRHIVertexArray(const String &debugName = "") :
-        JzRHIResource(debugName) { }
+    JzGPUVertexArrayObject(const String &debugName = "") :
+        JzGPUResource(debugName) { }
 
     /**
      * @brief Destructor
      */
-    virtual ~JzRHIVertexArray() = default;
+    virtual ~JzGPUVertexArrayObject() = default;
 
     /**
-     * @brief Bind a vertex buffer
+     * @brief Bind a vertex buffer object
+     *
      * @param buffer The vertex buffer to bind
      * @param binding The binding point
      */
-    virtual void BindVertexBuffer(std::shared_ptr<JzRHIBuffer> buffer, U32 binding = 0) = 0;
+    virtual void BindVertexBuffer(std::shared_ptr<JzGPUBufferObject> buffer, U32 binding = 0) = 0;
 
     /**
-     * @brief Bind an index buffer
+     * @brief Bind an index buffer object
+     *
      * @param buffer The index buffer to bind
      */
-    virtual void BindIndexBuffer(std::shared_ptr<JzRHIBuffer> buffer) = 0;
+    virtual void BindIndexBuffer(std::shared_ptr<JzGPUBufferObject> buffer) = 0;
 
     /**
      * @brief Set a vertex attribute
+     *
      * @param index The index of the attribute
      * @param size The size of the attribute
      * @param stride The stride of the attribute

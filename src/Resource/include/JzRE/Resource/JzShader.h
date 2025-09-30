@@ -6,7 +6,7 @@
 #pragma once
 
 #include <memory>
-#include "JzRE/RHI/JzRHIShader.h"
+#include "JzRE/RHI/JzGPUShaderProgramObject.h"
 #include "JzRE/Resource/JzResource.h"
 
 namespace JzRE {
@@ -22,7 +22,7 @@ public:
      * @param path The file path to the shader source.
      * @param type The type of the shader stage.
      */
-    JzShader(const String &path, JzEShaderType type);
+    JzShader(const String &path, JzEShaderProgramType type);
 
     /**
      * @brief Destructor.
@@ -44,17 +44,17 @@ public:
     /**
      * @brief Get the RHI Shader object.
      *
-     * @return std::shared_ptr<JzRHIShader>
+     * @return std::shared_ptr<JzGPUShaderProgramObject>
      */
-    std::shared_ptr<JzRHIShader> GetRhiShader() const
+    std::shared_ptr<JzGPUShaderProgramObject> GetRhiShader() const
     {
         return m_rhiShader;
     }
 
 private:
-    String                       m_path;
-    JzEShaderType                m_type;
-    std::shared_ptr<JzRHIShader> m_rhiShader;
+    String                                    m_path;
+    JzEShaderProgramType                      m_type;
+    std::shared_ptr<JzGPUShaderProgramObject> m_rhiShader;
 };
 
 } // namespace JzRE

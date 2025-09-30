@@ -5,21 +5,21 @@
 
 #pragma once
 
-#include "JzRHIFramebuffer.h"
-#include "JzRHITexture.h"
+#include "JzGPUFramebufferObject.h"
+#include "JzGPUTextureObject.h"
 
 namespace JzRE {
 /**
  * @brief Vulkan Framebuffer Implementation (Stub)
  */
-class JzVulkanFramebuffer : public JzRHIFramebuffer {
+class JzVulkanFramebuffer : public JzGPUFramebufferObject {
 public:
     JzVulkanFramebuffer(const String &debugName = "");
     ~JzVulkanFramebuffer() override;
 
-    void AttachColorTexture(std::shared_ptr<JzRHITexture> texture, U32 attachmentIndex = 0) override;
-    void AttachDepthTexture(std::shared_ptr<JzRHITexture> texture) override;
-    void AttachDepthStencilTexture(std::shared_ptr<JzRHITexture> texture) override;
+    void AttachColorTexture(std::shared_ptr<JzGPUTextureObject> texture, U32 attachmentIndex = 0) override;
+    void AttachDepthTexture(std::shared_ptr<JzGPUTextureObject> texture) override;
+    void AttachDepthStencilTexture(std::shared_ptr<JzGPUTextureObject> texture) override;
     Bool IsComplete() const override;
 
 private:

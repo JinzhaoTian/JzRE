@@ -9,7 +9,7 @@
 #include "JzRE/Core/JzServiceContainer.h"
 #include "JzRE/RHI/JzDevice.h"
 
-JzRE::JzTexture::JzTexture(std::shared_ptr<JzRE::JzRHITexture> rhiTexture) :
+JzRE::JzTexture::JzTexture(std::shared_ptr<JzRE::JzGPUTextureObject> rhiTexture) :
     m_rhiTexture(rhiTexture)
 {
     m_state = JzEResourceState::Loaded;
@@ -45,10 +45,10 @@ JzRE::Bool JzRE::JzTexture::Load()
 
     auto &device = JzServiceContainer::Get<JzDevice>();
 
-    JzTextureDesc textureDesc;
+    JzGPUTextureObjectDesc textureDesc;
     textureDesc.width     = width;
     textureDesc.height    = height;
-    textureDesc.format    = JzETextureFormat::RGBA8;
+    textureDesc.format    = JzETextureResourceFormat::RGBA8;
     textureDesc.debugName = m_path;
     textureDesc.data      = pixels;
 

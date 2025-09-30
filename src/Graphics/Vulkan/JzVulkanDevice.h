@@ -8,8 +8,8 @@
 #include "JzDevice.h"
 #include "JzRHICapabilities.h"
 #include "JzRHICommandList.h"
-#include "JzRHIFramebuffer.h"
-#include "JzRHIShader.h"
+#include "JzGPUFramebufferObject.h"
+#include "JzGPUShaderProgramObject.h"
 #include "JzRHIStats.h"
 
 namespace JzRE {
@@ -27,12 +27,12 @@ public:
     String GetDriverVersion() const override;
 
     // 资源创建接口
-    std::shared_ptr<JzRHIBuffer>      CreateBuffer(const JzBufferDesc &desc) override;
-    std::shared_ptr<JzRHITexture>     CreateTexture(const JzTextureDesc &desc) override;
-    std::shared_ptr<JzRHIShader>      CreateShader(const JzShaderDesc &desc) override;
-    std::shared_ptr<JzRHIPipeline>    CreatePipeline(const JzPipelineDesc &desc) override;
-    std::shared_ptr<JzRHIFramebuffer> CreateFramebuffer(const String &debugName = "") override;
-    std::shared_ptr<JzRHIVertexArray> CreateVertexArray(const String &debugName = "") override;
+    std::shared_ptr<JzGPUBufferObject>        CreateBuffer(const JzGPUBufferObjectDesc &desc) override;
+    std::shared_ptr<JzGPUTextureObject>       CreateTexture(const JzGPUTextureObjectDesc &desc) override;
+    std::shared_ptr<JzGPUShaderProgramObject> CreateShader(const JzShaderProgramDesc &desc) override;
+    std::shared_ptr<JzRHIPipeline>            CreatePipeline(const JzPipelineDesc &desc) override;
+    std::shared_ptr<JzGPUFramebufferObject>   CreateFramebuffer(const String &debugName = "") override;
+    std::shared_ptr<JzGPUVertexArrayObject>   CreateVertexArray(const String &debugName = "") override;
 
     // 命令系统
     std::shared_ptr<JzRHICommandList> CreateCommandList(const String &debugName = "") override;
@@ -55,9 +55,9 @@ public:
 
     // 资源绑定
     void BindPipeline(std::shared_ptr<JzRHIPipeline> pipeline) override;
-    void BindVertexArray(std::shared_ptr<JzRHIVertexArray> vertexArray) override;
-    void BindTexture(std::shared_ptr<JzRHITexture> texture, U32 slot) override;
-    void BindFramebuffer(std::shared_ptr<JzRHIFramebuffer> framebuffer) override;
+    void BindVertexArray(std::shared_ptr<JzGPUVertexArrayObject> vertexArray) override;
+    void BindTexture(std::shared_ptr<JzGPUTextureObject> texture, U32 slot) override;
+    void BindFramebuffer(std::shared_ptr<JzGPUFramebufferObject> framebuffer) override;
 
     // 同步和等待
     void Flush() override;

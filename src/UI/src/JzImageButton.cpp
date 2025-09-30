@@ -4,7 +4,7 @@
 #include "JzRE/Core/JzRETypes.h"
 #include "JzRE/UI/JzConverter.h"
 
-JzRE::JzImageButton::JzImageButton(std::shared_ptr<JzRHITexture> texture, const JzVec2 &size) :
+JzRE::JzImageButton::JzImageButton(std::shared_ptr<JzGPUTextureObject> texture, const JzVec2 &size) :
     m_texture(texture),
     buttonSize(size),
     buttonIdleColor("#000000"),

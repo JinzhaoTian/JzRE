@@ -5,8 +5,8 @@
 
 #include "JzRE/Graphics/JzOpenGLShader.h"
 
-JzRE::JzOpenGLShader::JzOpenGLShader(const JzRE::JzShaderDesc &desc) :
-    JzRE::JzRHIShader(desc)
+JzRE::JzOpenGLShader::JzOpenGLShader(const JzRE::JzShaderProgramDesc &desc) :
+    JzRE::JzGPUShaderProgramObject(desc)
 {
     CompileShader();
 }
@@ -34,20 +34,20 @@ const JzRE::String &JzRE::JzOpenGLShader::GetCompileLog() const
     return m_compileLog;
 }
 
-GLenum JzRE::JzOpenGLShader::ConvertShaderType(JzRE::JzEShaderType type)
+GLenum JzRE::JzOpenGLShader::ConvertShaderType(JzRE::JzEShaderProgramType type)
 {
     switch (type) {
-        case JzEShaderType::Vertex:
+        case JzEShaderProgramType::Vertex:
             return GL_VERTEX_SHADER;
-        case JzEShaderType::Fragment:
+        case JzEShaderProgramType::Fragment:
             return GL_FRAGMENT_SHADER;
-        case JzEShaderType::Geometry:
+        case JzEShaderProgramType::Geometry:
             return GL_GEOMETRY_SHADER;
-        case JzEShaderType::TessellationControl:
+        case JzEShaderProgramType::TessellationControl:
             return GL_TESS_CONTROL_SHADER;
-        case JzEShaderType::TessellationEvaluation:
+        case JzEShaderProgramType::TessellationEvaluation:
             return GL_TESS_EVALUATION_SHADER;
-        case JzEShaderType::Compute:
+        case JzEShaderProgramType::Compute:
             return GL_COMPUTE_SHADER;
         default:
             return 0;

@@ -6,7 +6,7 @@
 #include "JzRE/UI/JzIconTreeNode.h"
 #include <imgui.h>
 
-JzRE::JzIconTreeNode::JzIconTreeNode(const String &p_name, std::shared_ptr<JzRHITexture> iconTexture, Bool arrowClickToOpen) :
+JzRE::JzIconTreeNode::JzIconTreeNode(const String &p_name, std::shared_ptr<JzGPUTextureObject> iconTexture, Bool arrowClickToOpen) :
     JzDataWidget(name),
     name(p_name),
     m_iconTexture(iconTexture),

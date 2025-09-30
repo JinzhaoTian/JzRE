@@ -6,9 +6,9 @@
 #pragma once
 
 #include <memory>
-#include "JzRE/RHI/JzRHIFramebuffer.h"
+#include "JzRE/RHI/JzGPUFramebufferObject.h"
 #include "JzRE/RHI/JzRHIPipeline.h"
-#include "JzRE/RHI/JzRHITexture.h"
+#include "JzRE/RHI/JzGPUTextureObject.h"
 #include "JzRE/Editor/JzScene.h"
 
 namespace JzRE {
@@ -65,9 +65,9 @@ public:
     /**
      * @brief Get the current framebuffer
      *
-     * @return std::shared_ptr<JzRHIFramebuffer>
+     * @return std::shared_ptr<JzGPUFramebufferObject>
      */
-    std::shared_ptr<JzRHIFramebuffer> GetFramebuffer() const;
+    std::shared_ptr<JzGPUFramebufferObject> GetFramebuffer() const;
 
     /**
      * @brief Get the default pipeline
@@ -115,7 +115,7 @@ public:
      *
      * @param framebuffer Framebuffer to bind (nullptr for default)
      */
-    void BindFramebuffer(std::shared_ptr<JzRHIFramebuffer> framebuffer = nullptr);
+    void BindFramebuffer(std::shared_ptr<JzGPUFramebufferObject> framebuffer = nullptr);
 
     /**
      * @brief Set render state
@@ -137,7 +137,7 @@ public:
     /**
      * @brief Get framebuffer output texture
      */
-    std::shared_ptr<JzRHITexture> GetCurrentTexture();
+    std::shared_ptr<JzGPUTextureObject> GetCurrentTexture();
 
 private:
     Bool CreateFramebuffer();
@@ -147,14 +147,14 @@ private:
     void RenderWithCommandList(std::shared_ptr<JzScene> scene);
 
 private:
-    std::shared_ptr<JzRHIFramebuffer> m_framebuffer;
-    std::shared_ptr<JzRHITexture>     m_colorTexture;
-    std::shared_ptr<JzRHITexture>     m_depthTexture;
-    std::shared_ptr<JzRHIPipeline>    m_defaultPipeline;
-    Bool                              m_useCommandList = false;
-    Bool                              m_isInitialized  = false;
-    JzIVec2                           m_frameSize;
-    Bool                              m_frameSizeChanged = false;
+    std::shared_ptr<JzGPUFramebufferObject> m_framebuffer;
+    std::shared_ptr<JzGPUTextureObject>     m_colorTexture;
+    std::shared_ptr<JzGPUTextureObject>     m_depthTexture;
+    std::shared_ptr<JzRHIPipeline>          m_defaultPipeline;
+    Bool                                    m_useCommandList = false;
+    Bool                                    m_isInitialized  = false;
+    JzIVec2                                 m_frameSize;
+    Bool                                    m_frameSizeChanged = false;
 };
 
 } // namespace JzRE

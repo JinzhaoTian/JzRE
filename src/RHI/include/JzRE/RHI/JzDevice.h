@@ -8,8 +8,8 @@
 #include <memory>
 #include "JzRE/Core/JzRETypes.h"
 #include "JzRE/RHI/JzRHICommandList.h"
-#include "JzRE/RHI/JzRHIFramebuffer.h"
-#include "JzRE/RHI/JzRHIShader.h"
+#include "JzRE/RHI/JzGPUFramebufferObject.h"
+#include "JzRE/RHI/JzGPUShaderProgramObject.h"
 
 namespace JzRE {
 
@@ -86,25 +86,25 @@ public:
      * @brief Create a Buffer
      *
      * @param desc Buffer Description
-     * @return std::shared_ptr<JzRHIBuffer>
+     * @return std::shared_ptr<JzGPUBufferObject>
      */
-    virtual std::shared_ptr<JzRHIBuffer> CreateBuffer(const JzBufferDesc &desc) = 0;
+    virtual std::shared_ptr<JzGPUBufferObject> CreateBuffer(const JzGPUBufferObjectDesc &desc) = 0;
 
     /**
      * @brief Create a Texture
      *
      * @param desc Texture Description
-     * @return std::shared_ptr<JzRHITexture>
+     * @return std::shared_ptr<JzGPUTextureObject>
      */
-    virtual std::shared_ptr<JzRHITexture> CreateTexture(const JzTextureDesc &desc) = 0;
+    virtual std::shared_ptr<JzGPUTextureObject> CreateTexture(const JzGPUTextureObjectDesc &desc) = 0;
 
     /**
      * @brief Create a Shader
      *
      * @param desc Shader Description
-     * @return std::shared_ptr<JzRHIShader>
+     * @return std::shared_ptr<JzGPUShaderProgramObject>
      */
-    virtual std::shared_ptr<JzRHIShader> CreateShader(const JzShaderDesc &desc) = 0;
+    virtual std::shared_ptr<JzGPUShaderProgramObject> CreateShader(const JzShaderProgramDesc &desc) = 0;
 
     /**
      * @brief Create a Pipeline
@@ -118,17 +118,17 @@ public:
      * @brief Create a Framebuffer
      *
      * @param debugName Debug Name
-     * @return std::shared_ptr<JzRHIFramebuffer>
+     * @return std::shared_ptr<JzGPUFramebufferObject>
      */
-    virtual std::shared_ptr<JzRHIFramebuffer> CreateFramebuffer(const String &debugName = "") = 0;
+    virtual std::shared_ptr<JzGPUFramebufferObject> CreateFramebuffer(const String &debugName = "") = 0;
 
     /**
      * @brief Create a Vertex Array
      *
      * @param debugName Debug Name
-     * @return std::shared_ptr<JzRHIVertexArray>
+     * @return std::shared_ptr<JzGPUVertexArrayObject>
      */
-    virtual std::shared_ptr<JzRHIVertexArray> CreateVertexArray(const String &debugName = "") = 0;
+    virtual std::shared_ptr<JzGPUVertexArrayObject> CreateVertexArray(const String &debugName = "") = 0;
 
     /**
      * @brief Create a Command List
@@ -214,7 +214,7 @@ public:
      *
      * @param vertexArray Vertex Array
      */
-    virtual void BindVertexArray(std::shared_ptr<JzRHIVertexArray> vertexArray) = 0;
+    virtual void BindVertexArray(std::shared_ptr<JzGPUVertexArrayObject> vertexArray) = 0;
 
     /**
      * @brief Bind Texture
@@ -222,14 +222,14 @@ public:
      * @param texture Texture
      * @param slot Slot
      */
-    virtual void BindTexture(std::shared_ptr<JzRHITexture> texture, U32 slot) = 0;
+    virtual void BindTexture(std::shared_ptr<JzGPUTextureObject> texture, U32 slot) = 0;
 
     /**
      * @brief Bind Framebuffer
      *
      * @param framebuffer Framebuffer
      */
-    virtual void BindFramebuffer(std::shared_ptr<JzRHIFramebuffer> framebuffer) = 0;
+    virtual void BindFramebuffer(std::shared_ptr<JzGPUFramebufferObject> framebuffer) = 0;
 
     /**
      * @brief Flush

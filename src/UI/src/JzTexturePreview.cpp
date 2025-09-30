@@ -7,7 +7,7 @@
 #include <imgui.h>
 #include "JzRE/UI/JzConverter.h"
 
-JzRE::JzTexturePreview::JzTexturePreview(std::shared_ptr<JzRHITexture> texture) :
+JzRE::JzTexturePreview::JzTexturePreview(std::shared_ptr<JzGPUTextureObject> texture) :
     m_texture(texture),
     m_textureSize({80.0f, 80.0f}) { }
 

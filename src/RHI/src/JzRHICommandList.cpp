@@ -100,12 +100,12 @@ void JzRE::JzRHICommandList::BindPipeline(std::shared_ptr<JzRE::JzRHIPipeline> p
     AddCommand<JzRHIBindPipelineCommand>(pipeline);
 }
 
-void JzRE::JzRHICommandList::BindVertexArray(std::shared_ptr<JzRE::JzRHIVertexArray> vertexArray)
+void JzRE::JzRHICommandList::BindVertexArray(std::shared_ptr<JzRE::JzGPUVertexArrayObject> vertexArray)
 {
     AddCommand<JzRHIBindVertexArrayCommand>(vertexArray);
 }
 
-void JzRE::JzRHICommandList::BindTexture(std::shared_ptr<JzRE::JzRHITexture> texture, U32 slot)
+void JzRE::JzRHICommandList::BindTexture(std::shared_ptr<JzRE::JzGPUTextureObject> texture, U32 slot)
 {
     AddCommand<JzRHIBindTextureCommand>(texture, slot);
 }
@@ -120,7 +120,7 @@ void JzRE::JzRHICommandList::SetScissor(const JzRE::JzScissorRect &scissor)
     AddCommand<JzRHISetScissorCommand>(scissor);
 }
 
-void JzRE::JzRHICommandList::BeginRenderPass(std::shared_ptr<JzRE::JzRHIFramebuffer> framebuffer)
+void JzRE::JzRHICommandList::BeginRenderPass(std::shared_ptr<JzRE::JzGPUFramebufferObject> framebuffer)
 {
     AddCommand<JzRHIBeginRenderPassCommand>(framebuffer);
 }

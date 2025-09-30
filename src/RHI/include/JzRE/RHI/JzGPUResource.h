@@ -9,20 +9,20 @@
 
 namespace JzRE {
 /**
- * @brief Interface for RHI Resource
+ * @brief Interface of GPU resource, represents GPU resource abstraction
  */
-class JzRHIResource {
+class JzGPUResource {
 public:
     /**
      * @brief Constructor
      */
-    JzRHIResource(const String &debugName = "") :
+    JzGPUResource(const String &debugName = "") :
         debugName(debugName) { }
 
     /**
      * @brief Destructor
      */
-    virtual ~JzRHIResource() = default;
+    virtual ~JzGPUResource() = default;
 
     /**
      * @brief Get the debug name

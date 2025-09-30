@@ -40,7 +40,7 @@ void JzRE::JzRenderSystem::Update(JzRE::JzEntityManager &manager, JzRE::F32 delt
             continue; // Skip if resources aren't ready
         }
 
-        // 4. Get JzRHIResource from JzResource
+        // 4. Get JzGPUResource from JzResource
         auto pipeline    = material->GetPipeline();
         auto vertexArray = mesh->GetVertexArray();
         auto textures    = material->GetTextures();

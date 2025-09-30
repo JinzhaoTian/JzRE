@@ -7,7 +7,7 @@
 #include "JzRE/Graphics/JzOpenGLBuffer.h"
 
 JzRE::JzOpenGLVertexArray::JzOpenGLVertexArray(const JzRE::String &debugName) :
-    JzRHIVertexArray(debugName)
+    JzGPUVertexArrayObject(debugName)
 {
     // Generate OpenGL vertex array object
     glGenVertexArrays(1, &m_handle);
@@ -27,14 +27,14 @@ JzRE::JzOpenGLVertexArray::~JzOpenGLVertexArray()
     }
 }
 
-void JzRE::JzOpenGLVertexArray::BindVertexBuffer(std::shared_ptr<JzRE::JzRHIBuffer> buffer, U32 binding)
+void JzRE::JzOpenGLVertexArray::BindVertexBuffer(std::shared_ptr<JzRE::JzGPUBufferObject> buffer, U32 binding)
 {
     if (!buffer) {
         return;
     }
 
     // Ensure buffer is a vertex buffer type
-    if (buffer->GetType() != JzEBufferType::Vertex) {
+    if (buffer->GetType() != JzEGPUBufferObjectType::Vertex) {
         return;
     }
 
@@ -55,14 +55,14 @@ void JzRE::JzOpenGLVertexArray::BindVertexBuffer(std::shared_ptr<JzRE::JzRHIBuff
     m_vertexBuffers[binding] = buffer;
 }
 
-void JzRE::JzOpenGLVertexArray::BindIndexBuffer(std::shared_ptr<JzRE::JzRHIBuffer> buffer)
+void JzRE::JzOpenGLVertexArray::BindIndexBuffer(std::shared_ptr<JzRE::JzGPUBufferObject> buffer)
 {
     if (!buffer) {
         return;
     }
 
     // Ensure buffer is an index buffer type
-    if (buffer->GetType() != JzEBufferType::Index) {
+    if (buffer->GetType() != JzEGPUBufferObjectType::Index) {
         return;
     }
 

@@ -9,7 +9,7 @@
 #include "JzRE/Core/JzRETypes.h"
 #include "JzRE/Core/JzEvent.h"
 #include "JzRE/Core/JzVector.h"
-#include "JzRE/RHI/JzRHITexture.h"
+#include "JzRE/RHI/JzGPUTextureObject.h"
 #include "JzRE/UI/JzWidget.h"
 
 namespace JzRE {
@@ -25,7 +25,7 @@ public:
      * @param texture
      * @param size
      */
-    JzImageButton(std::shared_ptr<JzRHITexture> texture, const JzVec2 &size);
+    JzImageButton(std::shared_ptr<JzGPUTextureObject> texture, const JzVec2 &size);
 
 protected:
     /**
@@ -46,7 +46,7 @@ public:
     String buttonTextureColor;
 
 private:
-    std::shared_ptr<JzRHITexture> m_texture;
+    std::shared_ptr<JzGPUTextureObject> m_texture;
 };
 
 } // namespace JzRE

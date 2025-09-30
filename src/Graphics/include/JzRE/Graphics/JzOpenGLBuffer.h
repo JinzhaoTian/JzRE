@@ -6,20 +6,20 @@
 #pragma once
 
 #include <glad/glad.h>
-#include "JzRE/RHI/JzRHIBuffer.h"
+#include "JzRE/RHI/JzGPUBufferObject.h"
 #include "JzRE/Core/JzRETypes.h"
 
 namespace JzRE {
 /**
  * @brief OpenGL Implementation of RHI Buffer
  */
-class JzOpenGLBuffer : public JzRHIBuffer {
+class JzOpenGLBuffer : public JzGPUBufferObject {
 public:
     /**
      * @brief Constructor
      * @param desc The description of the buffer
      */
-    JzOpenGLBuffer(const JzBufferDesc &desc);
+    JzOpenGLBuffer(const JzGPUBufferObjectDesc &desc);
 
     /**
      * @brief Destructor

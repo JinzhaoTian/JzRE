@@ -8,8 +8,8 @@
 #include <vector>
 #include "JzRE/Resource/JzResource.h"
 #include "JzRE/Core/JzVertex.h"
-#include "JzRE/RHI/JzRHIBuffer.h"
-#include "JzRE/RHI/JzRHIVertexArray.h"
+#include "JzRE/RHI/JzGPUBufferObject.h"
+#include "JzRE/RHI/JzGPUVertexArrayObject.h"
 
 namespace JzRE {
 
@@ -56,9 +56,9 @@ public:
     /**
      * @brief Get the Vertex Array RHI Resource.
      *
-     * @return std::shared_ptr<JzRHIVertexArray>
+     * @return std::shared_ptr<JzGPUVertexArrayObject>
      */
-    std::shared_ptr<JzRHIVertexArray> GetVertexArray() const
+    std::shared_ptr<JzGPUVertexArrayObject> GetVertexArray() const
     {
         return m_vertexArray;
     }
@@ -85,9 +85,9 @@ private:
     std::vector<U32>      m_indices;
 
     // GPU-side RHI resources
-    std::shared_ptr<JzRHIBuffer>      m_vertexBuffer;
-    std::shared_ptr<JzRHIBuffer>      m_indexBuffer;
-    std::shared_ptr<JzRHIVertexArray> m_vertexArray;
+    std::shared_ptr<JzGPUBufferObject>      m_vertexBuffer;
+    std::shared_ptr<JzGPUBufferObject>      m_indexBuffer;
+    std::shared_ptr<JzGPUVertexArrayObject> m_vertexArray;
 };
 
 } // namespace JzRE

@@ -7,7 +7,7 @@
 #include "JzRE/Graphics/JzOpenGLTexture.h"
 
 JzRE::JzOpenGLFramebuffer::JzOpenGLFramebuffer(const JzRE::String &debugName) :
-    JzRHIFramebuffer(debugName)
+    JzGPUFramebufferObject(debugName)
 {
     glGenFramebuffers(1, &m_handle);
 
@@ -24,7 +24,7 @@ JzRE::JzOpenGLFramebuffer::~JzOpenGLFramebuffer()
     }
 }
 
-void JzRE::JzOpenGLFramebuffer::AttachColorTexture(std::shared_ptr<JzRE::JzRHITexture> texture, JzRE::U32 attachmentIndex)
+void JzRE::JzOpenGLFramebuffer::AttachColorTexture(std::shared_ptr<JzRE::JzGPUTextureObject> texture, JzRE::U32 attachmentIndex)
 {
     if (!texture) {
         return;
@@ -55,7 +55,7 @@ void JzRE::JzOpenGLFramebuffer::AttachColorTexture(std::shared_ptr<JzRE::JzRHITe
     glBindFramebuffer(GL_FRAMEBUFFER, previousFramebuffer);
 }
 
-void JzRE::JzOpenGLFramebuffer::AttachDepthTexture(std::shared_ptr<JzRE::JzRHITexture> texture)
+void JzRE::JzOpenGLFramebuffer::AttachDepthTexture(std::shared_ptr<JzRE::JzGPUTextureObject> texture)
 {
     if (!texture) {
         return;
@@ -82,7 +82,7 @@ void JzRE::JzOpenGLFramebuffer::AttachDepthTexture(std::shared_ptr<JzRE::JzRHITe
     glBindFramebuffer(GL_FRAMEBUFFER, previousFramebuffer);
 }
 
-void JzRE::JzOpenGLFramebuffer::AttachDepthStencilTexture(std::shared_ptr<JzRE::JzRHITexture> texture)
+void JzRE::JzOpenGLFramebuffer::AttachDepthStencilTexture(std::shared_ptr<JzRE::JzGPUTextureObject> texture)
 {
     if (!texture) {
         return;

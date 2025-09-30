@@ -9,8 +9,7 @@
 #include "JzRE/Core/JzRETypes.h"
 #include "JzRE/Core/JzVector.h"
 #include "JzRE/Core/JzMatrix.h"
-#include "JzRE/RHI/JzRHIResource.h"
-#include "JzRE/RHI/JzRHIShader.h"
+#include "JzRE/RHI/JzGPUShaderProgramObject.h"
 
 namespace JzRE {
 
@@ -76,22 +75,22 @@ struct JzRenderState {
  * @brief Pipeline description
  */
 struct JzPipelineDesc {
-    std::vector<JzShaderDesc> shaders;
-    JzRenderState             renderState;
-    String                    debugName;
+    std::vector<JzShaderProgramDesc> shaders;
+    JzRenderState                    renderState;
+    String                           debugName;
 };
 
 /**
  * @brief Interface of RHI Pipeline
  */
-class JzRHIPipeline : public JzRHIResource {
+class JzRHIPipeline : public JzGPUResource {
 public:
     /**
      * @brief Constructor
      * @param desc The description of the pipeline
      */
     JzRHIPipeline(const JzPipelineDesc &desc) :
-        JzRHIResource(desc.debugName), desc(desc) { }
+        JzGPUResource(desc.debugName), desc(desc) { }
 
     /**
      * @brief Destructor

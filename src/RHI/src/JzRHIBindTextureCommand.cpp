@@ -7,7 +7,7 @@
 #include "JzRE/RHI/JzDevice.h"
 #include "JzRE/Core/JzServiceContainer.h"
 
-JzRE::JzRHIBindTextureCommand::JzRHIBindTextureCommand(std::shared_ptr<JzRE::JzRHITexture> texture, U32 slot) :
+JzRE::JzRHIBindTextureCommand::JzRHIBindTextureCommand(std::shared_ptr<JzRE::JzGPUTextureObject> texture, U32 slot) :
     JzRHICommand(JzRHIECommandType::BindTexture),
     m_texture(texture),
     m_slot(slot) { }

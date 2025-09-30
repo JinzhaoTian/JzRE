@@ -2,7 +2,7 @@
 
 #include <chrono>
 #include "JzRE/Core/JzRETypes.h"
-#include "JzRE/RHI/JzRHIBuffer.h"
+#include "JzRE/RHI/JzGPUBufferObject.h"
 #include "JzRE/RHI/JzRHICommandList.h"
 #include "JzRE/RHI/JzRHIStats.h"
 #include "JzRE/Editor/JzRenderThreadContext.h"
@@ -32,8 +32,8 @@ public:
     void SubmitRenderPass(std::function<void()> renderFunc);
 
     // 资源操作
-    void UpdateBuffer(std::shared_ptr<JzRHIBuffer> buffer, const void *data, Size size);
-    void UpdateTexture(std::shared_ptr<JzRHITexture> texture, const void *data);
+    void UpdateBuffer(std::shared_ptr<JzGPUBufferObject> buffer, const void *data, Size size);
+    void UpdateTexture(std::shared_ptr<JzGPUTextureObject> texture, const void *data);
 
     // 配置
     void SetThreadCount(U32 threadCount);

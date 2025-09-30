@@ -6,14 +6,14 @@
 #pragma once
 
 #include "JzRE/Core/JzRETypes.h"
-#include "JzRE/RHI/JzRHIResource.h"
+#include "JzRE/RHI/JzGPUResource.h"
 
 namespace JzRE {
 
 /**
- * @brief Shader type
+ * @brief Enums of shader program types
  */
-enum class JzEShaderType : U8 {
+enum class JzEShaderProgramType : U8 {
     Vertex,
     Fragment,
     Geometry,
@@ -23,43 +23,46 @@ enum class JzEShaderType : U8 {
 };
 
 /**
- * @brief Shader description
+ * @brief Shader program description
  */
-struct JzShaderDesc {
-    JzEShaderType type;
-    String        source;
-    String        entryPoint = "main";
-    String        debugName;
+struct JzShaderProgramDesc {
+    JzEShaderProgramType type;
+    String               source;
+    String               entryPoint = "main";
+    String               debugName;
 };
 
 /**
- * @brief Interface of RHI Shader
+ * @brief Interface of GPU shader program object
  */
-class JzRHIShader : public JzRHIResource {
+class JzGPUShaderProgramObject : public JzGPUResource {
 public:
     /**
      * @brief Constructor
+     *
      * @param desc The description of the shader
      */
-    JzRHIShader(const JzShaderDesc &desc) :
-        JzRHIResource(desc.debugName), desc(desc) { }
+    JzGPUShaderProgramObject(const JzShaderProgramDesc &desc) :
+        JzGPUResource(desc.debugName), desc(desc) { }
 
     /**
      * @brief Destructor
      */
-    virtual ~JzRHIShader() = default;
+    virtual ~JzGPUShaderProgramObject() = default;
 
     /**
      * @brief Get the type of the shader
+     *
      * @return The type of the shader
      */
-    JzEShaderType GetType() const
+    JzEShaderProgramType GetType() const
     {
         return desc.type;
     }
 
     /**
      * @brief Get the source of the shader
+     *
      * @return The source of the shader
      */
     const String &GetSource() const
@@ -69,6 +72,7 @@ public:
 
     /**
      * @brief Get the entry point of the shader
+     *
      * @return The entry point of the shader
      */
     const String &GetEntryPoint() const
@@ -77,7 +81,7 @@ public:
     }
 
 protected:
-    JzShaderDesc desc;
+    JzShaderProgramDesc desc;
 };
 
 } // namespace JzRE

@@ -6,7 +6,7 @@
 #include "JzRE/UI/JzImage.h"
 #include "JzRE/UI/JzConverter.h"
 
-JzRE::JzImage::JzImage(std::shared_ptr<JzRE::JzRHITexture> imageTexture, const JzRE::JzVec2 &imageSize) :
+JzRE::JzImage::JzImage(std::shared_ptr<JzRE::JzGPUTextureObject> imageTexture, const JzRE::JzVec2 &imageSize) :
     imageTexture{imageTexture},
     imageSize(imageSize) { }
 

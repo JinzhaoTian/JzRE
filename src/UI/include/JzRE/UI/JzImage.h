@@ -7,7 +7,7 @@
 
 #include <memory>
 #include "JzRE/Core/JzVector.h"
-#include "JzRE/RHI/JzRHITexture.h"
+#include "JzRE/RHI/JzGPUTextureObject.h"
 #include "JzRE/UI/JzWidget.h"
 
 namespace JzRE {
@@ -23,7 +23,7 @@ public:
      * @param p_textureId
      * @param p_size
      */
-    JzImage(std::shared_ptr<JzRHITexture> imageTexture, const JzVec2 &imageSize);
+    JzImage(std::shared_ptr<JzGPUTextureObject> imageTexture, const JzVec2 &imageSize);
 
 protected:
     /**
@@ -32,8 +32,8 @@ protected:
     void _Draw_Impl() override;
 
 public:
-    std::shared_ptr<JzRHITexture> imageTexture;
-    JzVec2                        imageSize;
+    std::shared_ptr<JzGPUTextureObject> imageTexture;
+    JzVec2                              imageSize;
 };
 
 } // namespace JzRE

@@ -6,7 +6,7 @@
 #pragma once
 
 #include "JzRE/RHI/JzRHICommand.h"
-#include "JzRE/RHI/JzRHIFramebuffer.h"
+#include "JzRE/RHI/JzGPUFramebufferObject.h"
 
 namespace JzRE {
 
@@ -19,7 +19,7 @@ public:
      * @brief Constructor
      * @param renderPass The render pass to begin
      */
-    JzRHIBeginRenderPassCommand(std::shared_ptr<JzRHIFramebuffer> framebuffer);
+    JzRHIBeginRenderPassCommand(std::shared_ptr<JzGPUFramebufferObject> framebuffer);
 
     /**
      * @brief Execute the command
@@ -27,7 +27,7 @@ public:
     void Execute() override;
 
 private:
-    std::shared_ptr<JzRHIFramebuffer> m_framebuffer;
+    std::shared_ptr<JzGPUFramebufferObject> m_framebuffer;
 };
 
 /**
@@ -46,7 +46,7 @@ public:
     void Execute() override;
 
 private:
-    std::shared_ptr<JzRHIFramebuffer> m_framebuffer;
+    std::shared_ptr<JzGPUFramebufferObject> m_framebuffer;
 };
 
 } // namespace JzRE

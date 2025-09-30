@@ -7,7 +7,7 @@
 #include <imgui.h>
 #include "JzRE/UI/JzConverter.h"
 
-JzRE::JzIcon::JzIcon(std::shared_ptr<JzRHITexture> iconTexture, const JzVec2 &iconSize) :
+JzRE::JzIcon::JzIcon(std::shared_ptr<JzGPUTextureObject> iconTexture, const JzVec2 &iconSize) :
     m_iconTexture(iconTexture),
     m_iconSize(iconSize) { }
 

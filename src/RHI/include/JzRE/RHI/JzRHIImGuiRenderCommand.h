@@ -10,7 +10,7 @@
 #include <vector>
 #include "JzRE/Core/JzVector.h"
 #include "JzRE/RHI/JzRHICommand.h"
-#include "JzRE/RHI/JzRHITexture.h"
+#include "JzRE/RHI/JzGPUTextureObject.h"
 
 namespace JzRE {
 
@@ -18,13 +18,13 @@ namespace JzRE {
  * @brief ImGui Render Parameters
  */
 struct JzImGuiRenderParams {
-    std::vector<ImDrawVert>       vertices;
-    std::vector<ImDrawIdx>        indices;
-    std::vector<ImDrawCmd>        commands;
-    JzVec2                        displayPos;
-    JzVec2                        displaySize;
-    JzVec2                        framebufferScale;
-    std::shared_ptr<JzRHITexture> fontTexture;
+    std::vector<ImDrawVert>             vertices;
+    std::vector<ImDrawIdx>              indices;
+    std::vector<ImDrawCmd>              commands;
+    JzVec2                              displayPos;
+    JzVec2                              displaySize;
+    JzVec2                              framebufferScale;
+    std::shared_ptr<JzGPUTextureObject> fontTexture;
 };
 
 /**

@@ -50,10 +50,10 @@ JzRE::Bool JzRE::JzFont::Load()
             continue;
         }
 
-        JzTextureDesc textureDesc;
+        JzGPUTextureObjectDesc textureDesc;
         textureDesc.width  = face->glyph->bitmap.width;
         textureDesc.height = face->glyph->bitmap.rows;
-        textureDesc.format = JzETextureFormat::R8; // Glyphs are single-channel
+        textureDesc.format = JzETextureResourceFormat::R8; // Glyphs are single-channel
         textureDesc.data   = face->glyph->bitmap.buffer;
 
         auto rhiTexture = device.CreateTexture(textureDesc);
