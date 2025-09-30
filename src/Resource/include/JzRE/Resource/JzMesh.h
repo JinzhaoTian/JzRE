@@ -13,7 +13,7 @@
 
 namespace JzRE {
 
-class JzRHIDevice; // Forward declaration
+class JzDevice; // Forward declaration
 
 /**
  * @brief Represents a mesh asset, containing vertex and index data.

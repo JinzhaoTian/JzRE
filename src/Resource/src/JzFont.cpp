@@ -7,7 +7,7 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include "JzRE/Core/JzServiceContainer.h"
-#include "JzRE/RHI/JzRHIDevice.h"
+#include "JzRE/RHI/JzDevice.h"
 
 JzRE::JzFont::JzFont(const JzRE::String &path, JzRE::U32 size) :
     m_path(path),
@@ -42,7 +42,7 @@ JzRE::Bool JzRE::JzFont::Load()
     FT_Set_Pixel_Sizes(face, 0, m_size);
 
     // A more optimal approach is to create a single large texture atlas.
-    auto &device = JzServiceContainer::Get<JzRHIDevice>();
+    auto &device = JzServiceContainer::Get<JzDevice>();
 
     for (unsigned char c = 0; c < 128; c++) { // Only load ASCII characters for now
         if (FT_Load_Char(face, c, FT_LOAD_RENDER)) {

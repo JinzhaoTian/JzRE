@@ -9,7 +9,7 @@
 #include <optional>
 #include "JzRE/Core/JzRETypes.h"
 #include "JzRE/Editor/JzWindow.h"
-#include "JzRE/RHI/JzRHIDevice.h"
+#include "JzRE/RHI/JzDevice.h"
 #include "JzRE/Editor/JzUIManager.h"
 #include "JzRE/Editor/JzCanvas.h"
 #include "JzRE/Resource/JzResourceManager.h"
@@ -46,7 +46,7 @@ public:
 private:
     std::unique_ptr<JzWindow>          m_window;
     std::unique_ptr<JzResourceManager> m_resourceManager;
-    std::unique_ptr<JzRHIDevice>       m_device;
+    std::unique_ptr<JzDevice>          m_device;
     std::unique_ptr<JzUIManager>       m_uiManager;
     std::unique_ptr<JzCanvas>          m_canvas;
     std::unique_ptr<JzREHubMenuBar>    m_menuBar;

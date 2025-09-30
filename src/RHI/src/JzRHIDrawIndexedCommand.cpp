@@ -4,7 +4,7 @@
  */
 
 #include "JzRE/RHI/JzRHIDrawIndexedCommand.h"
-#include "JzRE/RHI/JzRHIDevice.h"
+#include "JzRE/RHI/JzDevice.h"
 #include "JzRE/Core/JzServiceContainer.h"
 
 JzRE::JzRHIDrawIndexedCommand::JzRHIDrawIndexedCommand(const JzRE::JzDrawIndexedParams &params) :
@@ -13,6 +13,6 @@ JzRE::JzRHIDrawIndexedCommand::JzRHIDrawIndexedCommand(const JzRE::JzDrawIndexed
 
 void JzRE::JzRHIDrawIndexedCommand::Execute()
 {
-    auto &device = JzServiceContainer::Get<JzRHIDevice>();
+    auto &device = JzServiceContainer::Get<JzDevice>();
     device.DrawIndexed(m_params);
 }

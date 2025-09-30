@@ -34,7 +34,7 @@ JzRE::JzREInstance::JzREInstance(JzERHIType rhiType, std::filesystem::path &open
     m_window->SetAlignCentered();
 
     m_device = JzDeviceFactory::CreateDevice(rhiType);
-    JzServiceContainer::Provide<JzRHIDevice>(*m_device);
+    JzServiceContainer::Provide<JzDevice>(*m_device);
 
     m_inputManager = std::make_unique<JzInputManager>(*m_window);
     JzServiceContainer::Provide<JzInputManager>(*m_inputManager);

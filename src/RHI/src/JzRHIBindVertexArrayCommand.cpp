@@ -4,7 +4,7 @@
  */
 
 #include "JzRE/RHI/JzRHIBindVertexArrayCommand.h"
-#include "JzRE/RHI/JzRHIDevice.h"
+#include "JzRE/RHI/JzDevice.h"
 #include "JzRE/Core/JzServiceContainer.h"
 
 JzRE::JzRHIBindVertexArrayCommand::JzRHIBindVertexArrayCommand(std::shared_ptr<JzRE::JzRHIVertexArray> vertexArray) :
@@ -13,6 +13,6 @@ JzRE::JzRHIBindVertexArrayCommand::JzRHIBindVertexArrayCommand(std::shared_ptr<J
 
 void JzRE::JzRHIBindVertexArrayCommand::Execute()
 {
-    auto &device = JzServiceContainer::Get<JzRHIDevice>();
+    auto &device = JzServiceContainer::Get<JzDevice>();
     device.BindVertexArray(m_vertexArray);
 }

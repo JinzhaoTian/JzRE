@@ -9,7 +9,7 @@
 #include "JzRE/Resource/JzMesh.h"
 #include "JzRE/Resource/JzMaterial.h"
 
-JzRE::JzRenderSystem::JzRenderSystem(std::shared_ptr<JzRE::JzRHIDevice> device) :
+JzRE::JzRenderSystem::JzRenderSystem(std::shared_ptr<JzRE::JzDevice> device) :
     m_device(device) { }
 
 void JzRE::JzRenderSystem::Update(JzRE::JzEntityManager &manager, JzRE::F32 delta)

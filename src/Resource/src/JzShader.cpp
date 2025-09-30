@@ -7,7 +7,7 @@
 #include <fstream>
 #include <sstream>
 #include "JzRE/Core/JzServiceContainer.h"
-#include "JzRE/RHI/JzRHIDevice.h"
+#include "JzRE/RHI/JzDevice.h"
 
 JzRE::JzShader::JzShader(const JzRE::String &path, JzRE::JzEShaderType type) :
     m_path(path),
@@ -42,7 +42,7 @@ JzRE::Bool JzRE::JzShader::Load()
         return false;
     }
 
-    auto        &device = JzServiceContainer::Get<JzRHIDevice>();
+    auto        &device = JzServiceContainer::Get<JzDevice>();
     JzShaderDesc shaderDesc;
     shaderDesc.type      = m_type;
     shaderDesc.source    = source;

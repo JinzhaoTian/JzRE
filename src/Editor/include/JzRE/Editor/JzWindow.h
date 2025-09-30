@@ -14,7 +14,7 @@
 #include "JzRE/Core/JzRETypes.h"
 #include "JzRE/Core/JzEvent.h"
 #include "JzRE/Core/JzVector.h"
-#include "JzRE/RHI/JzRHIDevice.h"
+#include "JzRE/RHI/JzDevice.h"
 #include "JzRE/Editor/JzWindowSettings.h"
 
 namespace JzRE {

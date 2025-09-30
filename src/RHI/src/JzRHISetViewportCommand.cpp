@@ -4,7 +4,7 @@
  */
 
 #include "JzRE/RHI/JzRHISetViewportCommand.h"
-#include "JzRE/RHI/JzRHIDevice.h"
+#include "JzRE/RHI/JzDevice.h"
 #include "JzRE/Core/JzServiceContainer.h"
 
 JzRE::JzRHISetViewportCommand::JzRHISetViewportCommand(const JzRE::JzViewport &viewport) :
@@ -13,6 +13,6 @@ JzRE::JzRHISetViewportCommand::JzRHISetViewportCommand(const JzRE::JzViewport &v
 
 void JzRE::JzRHISetViewportCommand::Execute()
 {
-    auto &device = JzServiceContainer::Get<JzRHIDevice>();
+    auto &device = JzServiceContainer::Get<JzDevice>();
     device.SetViewport(m_viewport);
 }

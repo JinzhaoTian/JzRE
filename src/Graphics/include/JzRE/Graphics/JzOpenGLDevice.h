@@ -7,7 +7,7 @@
 
 #include "JzRE/Core/JzRETypes.h"
 #include "JzRE/RHI/JzRHICapabilities.h"
-#include "JzRE/RHI/JzRHIDevice.h"
+#include "JzRE/RHI/JzDevice.h"
 #include "JzRE/RHI/JzRHIStats.h"
 #include "JzRE/Graphics/JzOpenGLFramebuffer.h"
 #include "JzRE/Graphics/JzOpenGLPipeline.h"
@@ -17,7 +17,7 @@ namespace JzRE {
 /**
  * @brief OpenGL Implementation of RHI Device
  */
-class JzOpenGLDevice : public JzRHIDevice {
+class JzOpenGLDevice : public JzDevice {
 public:
     /**
      * @brief Constructor

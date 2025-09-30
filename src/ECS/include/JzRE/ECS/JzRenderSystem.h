@@ -6,7 +6,7 @@
 #pragma once
 
 #include <memory>
-#include "JzRE/RHI/JzRHIDevice.h"
+#include "JzRE/RHI/JzDevice.h"
 #include "JzRE/ECS/JzSystem.h"
 
 namespace JzRE {
@@ -21,7 +21,7 @@ public:
      *
      * @param device A shared pointer to the RHI device.
      */
-    JzRenderSystem(std::shared_ptr<JzRHIDevice> device);
+    JzRenderSystem(std::shared_ptr<JzDevice> device);
 
     /**
      * @brief Destructor
@@ -37,7 +37,7 @@ public:
     virtual void Update(JzEntityManager &manager, F32 delta) override;
 
 private:
-    std::shared_ptr<JzRHIDevice> m_device;
+    std::shared_ptr<JzDevice> m_device;
 };
 
 } // namespace JzRE

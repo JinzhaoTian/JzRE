@@ -5,7 +5,7 @@
 
 #include "JzRE/Resource/JzMaterial.h"
 #include "JzRE/Core/JzServiceContainer.h"
-#include "JzRE/RHI/JzRHIDevice.h"
+#include "JzRE/RHI/JzDevice.h"
 
 JzRE::Bool JzRE::JzMaterial::Load()
 {
@@ -18,7 +18,7 @@ JzRE::Bool JzRE::JzMaterial::Load()
     // then load the specified shader, and create a pipeline based on it.
     // Here, we'll just create a placeholder pipeline.
 
-    auto &device = JzServiceContainer::Get<JzRHIDevice>();
+    auto &device = JzServiceContainer::Get<JzDevice>();
 
     JzPipelineDesc pipelineDesc;
     // pipelineDesc.shader = ... load shader from resource manager ...

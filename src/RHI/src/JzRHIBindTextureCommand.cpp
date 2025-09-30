@@ -4,7 +4,7 @@
  */
 
 #include "JzRE/RHI/JzRHIBindTextureCommand.h"
-#include "JzRE/RHI/JzRHIDevice.h"
+#include "JzRE/RHI/JzDevice.h"
 #include "JzRE/Core/JzServiceContainer.h"
 
 JzRE::JzRHIBindTextureCommand::JzRHIBindTextureCommand(std::shared_ptr<JzRE::JzRHITexture> texture, U32 slot) :
@@ -14,6 +14,6 @@ JzRE::JzRHIBindTextureCommand::JzRHIBindTextureCommand(std::shared_ptr<JzRE::JzR
 
 void JzRE::JzRHIBindTextureCommand::Execute()
 {
-    auto &device = JzServiceContainer::Get<JzRHIDevice>();
+    auto &device = JzServiceContainer::Get<JzDevice>();
     device.BindTexture(m_texture, m_slot);
 }

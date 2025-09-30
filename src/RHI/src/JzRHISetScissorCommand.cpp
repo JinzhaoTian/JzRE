@@ -4,7 +4,7 @@
  */
 
 #include "JzRE/RHI/JzRHISetScissorCommand.h"
-#include "JzRE/RHI/JzRHIDevice.h"
+#include "JzRE/RHI/JzDevice.h"
 #include "JzRE/Core/JzServiceContainer.h"
 
 JzRE::JzRHISetScissorCommand::JzRHISetScissorCommand(const JzRE::JzScissorRect &scissor) :
@@ -13,6 +13,6 @@ JzRE::JzRHISetScissorCommand::JzRHISetScissorCommand(const JzRE::JzScissorRect &
 
 void JzRE::JzRHISetScissorCommand::Execute()
 {
-    auto &device = JzServiceContainer::Get<JzRHIDevice>();
+    auto &device = JzServiceContainer::Get<JzDevice>();
     device.SetScissor(m_scissorRect);
 }

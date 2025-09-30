@@ -7,7 +7,7 @@
 #include <iostream>
 #include "JzRE/Graphics/JzOpenGLDevice.h"
 
-std::unique_ptr<JzRE::JzRHIDevice> JzRE::JzDeviceFactory::CreateDevice(JzRE::JzERHIType rhiType)
+std::unique_ptr<JzRE::JzDevice> JzRE::JzDeviceFactory::CreateDevice(JzRE::JzERHIType rhiType)
 {
     if (rhiType == JzERHIType::Unknown) {
         rhiType = GetDefaultRHIType();

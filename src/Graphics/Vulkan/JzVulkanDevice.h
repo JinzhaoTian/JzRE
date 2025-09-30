@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "JzRHIDevice.h"
+#include "JzDevice.h"
 #include "JzRHICapabilities.h"
 #include "JzRHICommandList.h"
 #include "JzRHIFramebuffer.h"
@@ -16,7 +16,7 @@ namespace JzRE {
 /**
  * @brief Vulkan Device Implementation (Stub)
  */
-class JzVulkanDevice : public JzRHIDevice {
+class JzVulkanDevice : public JzDevice {
 public:
     JzVulkanDevice();
     ~JzVulkanDevice() override;

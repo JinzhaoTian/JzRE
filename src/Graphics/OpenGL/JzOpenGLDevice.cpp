@@ -10,7 +10,7 @@
 #include "JzRE/Graphics/JzOpenGLTexture.h"
 
 JzRE::JzOpenGLDevice::JzOpenGLDevice() :
-    JzRE::JzRHIDevice(JzERHIType::OpenGL)
+    JzRE::JzDevice(JzERHIType::OpenGL)
 {
     if (!gladLoadGL()) {
         std::cerr << "Failed to initialize OpenGL context" << std::endl;

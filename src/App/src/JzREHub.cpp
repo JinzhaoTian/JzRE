@@ -47,7 +47,7 @@ JzRE::JzREHub::JzREHub(JzERHIType rhiType)
     m_window->SetAlignCentered();
 
     m_device = JzDeviceFactory::CreateDevice(rhiType);
-    JzServiceContainer::Provide<JzRHIDevice>(*m_device);
+    JzServiceContainer::Provide<JzDevice>(*m_device);
 
     m_uiManager = std::make_unique<JzUIManager>(*m_window);
 

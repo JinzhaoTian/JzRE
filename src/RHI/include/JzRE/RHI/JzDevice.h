@@ -36,20 +36,20 @@ enum class JzERenderMode : U8 {
 /**
  * @brief Interface of RHI Device
  */
-class JzRHIDevice {
+class JzDevice {
 public:
     /**
      * @brief Constructor
      *
      * @param rhiType
      */
-    JzRHIDevice(JzERHIType rhiType) :
+    JzDevice(JzERHIType rhiType) :
         rhiType(rhiType) { }
 
     /**
      * @brief Destructor
      */
-    virtual ~JzRHIDevice() = default;
+    virtual ~JzDevice() = default;
 
     /**
      * @brief Get the RHI Type

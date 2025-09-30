@@ -8,7 +8,7 @@
 #include <memory>
 #include <vector>
 #include "JzRE/Core/JzRETypes.h"
-#include "JzRE/RHI/JzRHIDevice.h"
+#include "JzRE/RHI/JzDevice.h"
 
 namespace JzRE {
 
@@ -21,9 +21,9 @@ public:
      * @brief Create a Device object
      *
      * @param rhiType Graphics API Types
-     * @return std::unique_ptr<JzRHIDevice>
+     * @return std::unique_ptr<JzDevice>
      */
-    static std::unique_ptr<JzRHIDevice> CreateDevice(JzERHIType rhiType);
+    static std::unique_ptr<JzDevice> CreateDevice(JzERHIType rhiType);
 
     /**
      * @brief Get the Supported RHI Types object
