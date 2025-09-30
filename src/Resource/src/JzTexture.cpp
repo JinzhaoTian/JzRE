@@ -8,7 +8,6 @@
 #include <stb_image.h>
 #include "JzRE/Core/JzServiceContainer.h"
 #include "JzRE/RHI/JzRHIDevice.h"
-#include "JzRE/RHI/JzRHIDescription.h"
 
 JzRE::JzTexture::JzTexture(std::shared_ptr<JzRE::JzRHITexture> rhiTexture) :
     m_rhiTexture(rhiTexture)

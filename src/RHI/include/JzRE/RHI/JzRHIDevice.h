@@ -8,12 +8,31 @@
 #include <memory>
 #include "JzRE/Core/JzRETypes.h"
 #include "JzRE/RHI/JzRHICommandList.h"
-#include "JzRE/RHI/JzRHIDescription.h"
-#include "JzRE/RHI/JzRHIETypes.h"
 #include "JzRE/RHI/JzRHIFramebuffer.h"
 #include "JzRE/RHI/JzRHIShader.h"
 
 namespace JzRE {
+
+/**
+ * @brief Supported graphics API types
+ */
+enum class JzERHIType : U8 {
+    Unknown = 0,
+    OpenGL,
+    Vulkan,
+    D3D11,
+    D3D12,
+    Metal
+};
+
+/**
+ * @brief Render mode
+ */
+enum class JzERenderMode : U8 {
+    Immediate,
+    CommandBuffer
+};
+
 /**
  * @brief Interface of RHI Device
  */

@@ -6,11 +6,86 @@
 #pragma once
 
 #include "JzRE/Core/JzRETypes.h"
-#include "JzRE/RHI/JzRHIETypes.h"
-#include "JzRE/RHI/JzRHIDescription.h"
 #include "JzRE/RHI/JzRHIResource.h"
 
 namespace JzRE {
+
+/**
+ * @brief Texture type
+ */
+enum class JzETextureType : U8 {
+    Texture1D,
+    Texture2D,
+    Texture3D,
+    TextureCube,
+    Texture2DArray
+};
+
+/**
+ * @brief Texture format
+ */
+enum class JzETextureFormat : U8 {
+    Unknown,
+    R8,
+    RG8,
+    RGB8,
+    RGBA8,
+    R16F,
+    RG16F,
+    RGB16F,
+    RGBA16F,
+    R32F,
+    RG32F,
+    RGB32F,
+    RGBA32F,
+    Depth16,
+    Depth24,
+    Depth32F,
+    Depth24Stencil8
+};
+
+/**
+ * @brief Texture filter
+ */
+enum class JzETextureFilter : U8 {
+    Nearest,
+    Linear,
+    NearestMipmapNearest,
+    LinearMipmapNearest,
+    NearestMipmapLinear,
+    LinearMipmapLinear
+};
+
+/**
+ * @brief Texture wrap
+ */
+enum class JzETextureWrap : U8 {
+    Repeat,
+    MirroredRepeat,
+    ClampToEdge,
+    ClampToBorder
+};
+
+/**
+ * @brief Texture description
+ */
+struct JzTextureDesc {
+    JzETextureType   type      = JzETextureType::Texture2D;
+    JzETextureFormat format    = JzETextureFormat::RGBA8;
+    U32              width     = 1;
+    U32              height    = 1;
+    U32              depth     = 1;
+    U32              mipLevels = 1;
+    U32              arraySize = 1;
+    JzETextureFilter minFilter = JzETextureFilter::Linear;
+    JzETextureFilter magFilter = JzETextureFilter::Linear;
+    JzETextureWrap   wrapS     = JzETextureWrap::Repeat;
+    JzETextureWrap   wrapT     = JzETextureWrap::Repeat;
+    JzETextureWrap   wrapR     = JzETextureWrap::Repeat;
+    const void      *data      = nullptr;
+    String           debugName;
+};
+
 /**
  * @brief Interface of RHI Texture
  */

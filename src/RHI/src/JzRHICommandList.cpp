@@ -4,7 +4,11 @@
  */
 
 #include "JzRE/RHI/JzRHICommandList.h"
-#include <iostream>
+#include "JzRE/Core/JzLogger.h"
+#include "JzRE/RHI/JzRHIBindPipelineCommand.h"
+#include "JzRE/RHI/JzRHIBindVertexArrayCommand.h"
+#include "JzRE/RHI/JzRHIBindTextureCommand.h"
+#include "JzRE/RHI/JzRHIRenderPassCommand.h"
 
 // RHICommandBuffer实现
 JzRE::JzRHICommandList::JzRHICommandList(const JzRE::String &debugName) :
@@ -20,7 +24,7 @@ void JzRE::JzRHICommandList::Begin()
 {
     std::lock_guard<std::mutex> lock(m_commandMutex);
     if (m_isRecording) {
-        std::cerr << "Command buffer is recording" << std::endl;
+        JzRE_LOG_ERROR("Command buffer is recording");
         return;
     }
     m_isRecording = true;
@@ -31,7 +35,7 @@ void JzRE::JzRHICommandList::End()
 {
     std::lock_guard<std::mutex> lock(m_commandMutex);
     if (!m_isRecording) {
-        std::cerr << "Command buffer is not recording" << std::endl;
+        JzRE_LOG_ERROR("Command buffer is not recording");
         return;
     }
     m_isRecording = false;
@@ -47,7 +51,7 @@ void JzRE::JzRHICommandList::Execute()
 {
     std::lock_guard<std::mutex> lock(m_commandMutex);
     if (m_isRecording) {
-        std::cerr << "Cannot execute command buffer that is recording" << std::endl;
+        JzRE_LOG_ERROR("Cannot execute command buffer that is recording");
         return;
     }
 
@@ -130,7 +134,7 @@ template <typename T, typename... Args>
 void JzRE::JzRHICommandList::AddCommand(Args &&...args)
 {
     if (!m_isRecording) {
-        std::cerr << "Command buffer is not recording" << std::endl;
+        JzRE_LOG_ERROR("Command buffer is not recording");
         return;
     }
 

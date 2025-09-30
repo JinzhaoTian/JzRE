@@ -6,11 +6,32 @@
 #pragma once
 
 #include "JzRE/Core/JzRETypes.h"
-#include "JzRE/RHI/JzRHIDescription.h"
-#include "JzRE/RHI/JzRHIETypes.h"
 #include "JzRE/RHI/JzRHIResource.h"
 
 namespace JzRE {
+
+/**
+ * @brief Shader type
+ */
+enum class JzEShaderType : U8 {
+    Vertex,
+    Fragment,
+    Geometry,
+    TessellationControl,
+    TessellationEvaluation,
+    Compute
+};
+
+/**
+ * @brief Shader description
+ */
+struct JzShaderDesc {
+    JzEShaderType type;
+    String        source;
+    String        entryPoint = "main";
+    String        debugName;
+};
+
 /**
  * @brief Interface of RHI Shader
  */

@@ -6,7 +6,6 @@
 #include "JzRE/Resource/JzMaterial.h"
 #include "JzRE/Core/JzServiceContainer.h"
 #include "JzRE/RHI/JzRHIDevice.h"
-#include "JzRE/RHI/JzRHIDescription.h"
 
 JzRE::Bool JzRE::JzMaterial::Load()
 {

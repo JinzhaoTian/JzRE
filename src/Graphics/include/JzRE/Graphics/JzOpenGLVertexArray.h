@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <memory>
+#include <vector>
 #include <glad/glad.h>
 #include "JzRE/Core/JzRETypes.h"
 #include "JzRE/RHI/JzRHIBuffer.h"

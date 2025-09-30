@@ -5,7 +5,6 @@
 
 #include "JzRE/Core/JzRETypes.h"
 #include "JzRE/RHI/JzRHICommandList.h"
-#include "JzRE/RHI/JzRHIETypes.h"
 #include "JzRE/Editor/JzRenderTask.h"
 
 namespace JzRE {

@@ -9,8 +9,14 @@
 #include <mutex>
 #include "JzRE/Core/JzRETypes.h"
 #include "JzRE/RHI/JzRHICommand.h"
-#include "JzRE/RHI/JzRHIETypes.h"
+#include "JzRE/RHI/JzRHIClearCommand.h"
+#include "JzRE/RHI/JzRHIDrawCommand.h"
+#include "JzRE/RHI/JzRHIDrawIndexedCommand.h"
+#include "JzRE/RHI/JzRHISetViewportCommand.h"
+#include "JzRE/RHI/JzRHISetScissorCommand.h"
+#include "JzRE/RHI/JzRHIPipeline.h"
 #include "JzRE/RHI/JzRHIFramebuffer.h"
+#include "JzRE/RHI/JzRHIVertexArray.h"
 
 namespace JzRE {
 /**

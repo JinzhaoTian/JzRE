@@ -6,7 +6,6 @@
 #pragma once
 
 #include <memory>
-#include "JzRE/RHI/JzRHIETypes.h"
 #include "JzRE/RHI/JzRHIShader.h"
 #include "JzRE/Resource/JzResource.h"
 

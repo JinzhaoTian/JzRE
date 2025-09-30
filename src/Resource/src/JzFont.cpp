@@ -8,7 +8,6 @@
 #include FT_FREETYPE_H
 #include "JzRE/Core/JzServiceContainer.h"
 #include "JzRE/RHI/JzRHIDevice.h"
-#include "JzRE/RHI/JzRHIDescription.h"
 
 JzRE::JzFont::JzFont(const JzRE::String &path, JzRE::U32 size) :
     m_path(path),

@@ -8,7 +8,6 @@
 #include <sstream>
 #include "JzRE/Core/JzServiceContainer.h"
 #include "JzRE/RHI/JzRHIDevice.h"
-#include "JzRE/RHI/JzRHIDescription.h"
 
 JzRE::JzShader::JzShader(const JzRE::String &path, JzRE::JzEShaderType type) :
     m_path(path),

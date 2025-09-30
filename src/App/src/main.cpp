@@ -6,7 +6,6 @@
 #include <memory>
 #include <optional>
 #include <filesystem>
-#include "JzRE/RHI/JzRHIETypes.h"
 #include "JzRE/App/JzREHub.h"
 #include "JzRE/App/JzREInstance.h"
 

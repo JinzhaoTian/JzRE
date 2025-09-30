@@ -5,11 +5,21 @@
 
 #pragma once
 
-#include <memory>
 #include "JzRE/Core/JzRETypes.h"
-#include "JzRE/RHI/JzRHIETypes.h"
 
 namespace JzRE {
+
+/**
+ * @brief Render pass type
+ */
+enum class JzERenderPassType : U8 {
+    BasePass,
+    ShadowPass,
+    PostProcess,
+    UI,
+    Debug
+};
+
 /**
  * @brief Interface of RHI Render Pass
  */

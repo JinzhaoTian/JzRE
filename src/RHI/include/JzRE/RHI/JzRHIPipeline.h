@@ -5,14 +5,82 @@
 
 #pragma once
 
+#include <vector>
 #include "JzRE/Core/JzRETypes.h"
 #include "JzRE/Core/JzVector.h"
 #include "JzRE/Core/JzMatrix.h"
-#include "JzRE/RHI/JzRHIDescription.h"
-#include "JzRE/RHI/JzRHIETypes.h"
 #include "JzRE/RHI/JzRHIResource.h"
+#include "JzRE/RHI/JzRHIShader.h"
 
 namespace JzRE {
+
+/**
+ * @brief Blend mode
+ */
+enum class JzEBlendMode : U8 {
+    None,
+    Alpha,
+    Additive,
+    Multiply
+};
+
+/**
+ * @brief Depth test function
+ */
+enum class JzEDepthFunc : U8 {
+    Never,
+    Less,
+    Equal,
+    LessEqual,
+    Greater,
+    NotEqual,
+    GreaterEqual,
+    Always
+};
+
+/**
+ * @brief Face culling mode
+ */
+enum class JzECullMode : U8 {
+    None,
+    Front,
+    Back,
+    FrontAndBack
+};
+
+/**
+ * @brief MSAA level
+ */
+enum class JzEMSAALevel : U8 {
+    None = 0,
+    X2   = 2,
+    X4   = 4,
+    X8   = 8,
+    X16  = 16
+};
+
+/**
+ * @brief Render state description
+ */
+struct JzRenderState {
+    JzEBlendMode blendMode  = JzEBlendMode::None;
+    JzEDepthFunc depthFunc  = JzEDepthFunc::Less;
+    JzECullMode  cullMode   = JzECullMode::Back;
+    Bool         depthTest  = true;
+    Bool         depthWrite = true;
+    Bool         wireframe  = false;
+    JzEMSAALevel msaaLevel  = JzEMSAALevel::None;
+};
+
+/**
+ * @brief Pipeline description
+ */
+struct JzPipelineDesc {
+    std::vector<JzShaderDesc> shaders;
+    JzRenderState             renderState;
+    String                    debugName;
+};
+
 /**
  * @brief Interface of RHI Pipeline
  */

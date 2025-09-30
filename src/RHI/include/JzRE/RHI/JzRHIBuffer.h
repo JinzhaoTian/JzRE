@@ -6,11 +6,40 @@
 #pragma once
 
 #include "JzRE/Core/JzRETypes.h"
-#include "JzRE/RHI/JzRHIETypes.h"
-#include "JzRE/RHI/JzRHIDescription.h"
 #include "JzRE/RHI/JzRHIResource.h"
 
 namespace JzRE {
+
+/**
+ * @brief Buffer type
+ */
+enum class JzEBufferType : U8 {
+    Vertex,
+    Index,
+    Uniform,
+    Storage
+};
+
+/**
+ * @brief Buffer usage
+ */
+enum class JzEBufferUsage : U8 {
+    StaticDraw,
+    DynamicDraw,
+    StreamDraw
+};
+
+/**
+ * @brief Buffer description
+ */
+struct JzBufferDesc {
+    JzEBufferType  type;
+    JzEBufferUsage usage;
+    Size           size;
+    const void    *data = nullptr;
+    String         debugName;
+};
+
 /**
  * @brief Interface of RHI Buffer
  */

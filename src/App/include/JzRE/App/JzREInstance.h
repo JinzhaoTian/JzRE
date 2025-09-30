@@ -8,7 +8,6 @@
 #include <filesystem>
 #include "JzRE/Core/JzRETypes.h"
 #include "JzRE/RHI/JzRHIDevice.h"
-#include "JzRE/RHI/JzRHIETypes.h"
 #include "JzRE/Resource/JzResourceManager.h"
 #include "JzRE/Editor/JzInputManager.h"
 #include "JzRE/Editor/JzSceneManager.h"

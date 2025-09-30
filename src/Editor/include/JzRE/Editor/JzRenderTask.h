@@ -6,9 +6,19 @@
 #pragma once
 
 #include "JzRE/Core/JzRETypes.h"
-#include "JzRE/RHI/JzRHIETypes.h"
 
 namespace JzRE {
+
+/**
+ * @brief Render Task Type
+ */
+enum class JzERenderTaskType : U8 {
+    CommandBuffer,
+    ResourceUpdate,
+    GeometryProcessing,
+    ShaderCompilation
+};
+
 /**
  * @brief Render Task Base Class
  */

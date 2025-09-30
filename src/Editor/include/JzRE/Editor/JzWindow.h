@@ -11,11 +11,11 @@
 #include <windows.h>
 #endif
 #include <GLFW/glfw3.h>
-#include "JzRE/Editor/JzWindowSettings.h"
 #include "JzRE/Core/JzRETypes.h"
 #include "JzRE/Core/JzEvent.h"
 #include "JzRE/Core/JzVector.h"
-#include "JzRE/RHI/JzRHIETypes.h"
+#include "JzRE/RHI/JzRHIDevice.h"
+#include "JzRE/Editor/JzWindowSettings.h"
 
 namespace JzRE {
 

@@ -9,7 +9,6 @@
 #include <vector>
 #include "JzRE/Core/JzRETypes.h"
 #include "JzRE/RHI/JzRHIDevice.h"
-#include "JzRE/RHI/JzRHIETypes.h"
 
 namespace JzRE {
 

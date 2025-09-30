@@ -7,7 +7,10 @@
 
 #include <imgui.h>
 #include <memory>
+#include <vector>
+#include "JzRE/Core/JzVector.h"
 #include "JzRE/RHI/JzRHICommand.h"
+#include "JzRE/RHI/JzRHITexture.h"
 
 namespace JzRE {
 
