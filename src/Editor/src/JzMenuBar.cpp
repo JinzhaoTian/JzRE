@@ -36,14 +36,14 @@ void JzRE::JzMenuBar::HandleShortcuts(F32 deltaTime)
 {
     auto &inputMgr = JzServiceContainer::Get<JzInputManager>();
 
-    if (inputMgr.GetKeyState(JzEInputKey::KEY_LEFT_CONTROL) == JzEInputKeyState::KEY_DOWN) {
-        if (inputMgr.IsKeyPressed(JzEInputKey::KEY_N)) {
+    if (inputMgr.GetKeyState(JzEInputKeyboardButton::KEY_LEFT_CONTROL) == JzEInputKeyboardButtonState::KEY_DOWN) {
+        if (inputMgr.IsKeyPressed(JzEInputKeyboardButton::KEY_N)) {
             auto &sceneMgr = JzServiceContainer::Get<JzSceneManager>();
             sceneMgr.LoadDefaultScene();
         }
 
-        if (inputMgr.IsKeyPressed(JzEInputKey::KEY_S)) {
-            if (inputMgr.GetKeyState(JzEInputKey::KEY_LEFT_SHIFT) == JzEInputKeyState::KEY_UP) {
+        if (inputMgr.IsKeyPressed(JzEInputKeyboardButton::KEY_S)) {
+            if (inputMgr.GetKeyState(JzEInputKeyboardButton::KEY_LEFT_SHIFT) == JzEInputKeyboardButtonState::KEY_UP) {
                 // EDITOR_EXEC(SaveSceneChanges());
             } else {
                 // EDITOR_EXEC(SaveAs());

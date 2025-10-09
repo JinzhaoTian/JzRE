@@ -266,8 +266,8 @@ private:
 
 public:
     /* Inputs events */
-    JzEvent<I32>     KeyPressedEvent;
-    JzEvent<I32>     KeyReleasedEvent;
+    JzEvent<I32>     KeyboardButtonPressedEvent;
+    JzEvent<I32>     KeyboardButtonReleasedEvent;
     JzEvent<I32>     MouseButtonPressedEvent;
     JzEvent<I32>     MouseButtonReleasedEvent;
     JzEvent<JzIVec2> MouseMovedEvent;

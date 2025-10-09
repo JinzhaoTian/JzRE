@@ -367,10 +367,10 @@ void JzRE::JzWindow::BindKeyCallback() const
 
         if (windowInstance) {
             if (p_action == GLFW_PRESS)
-                windowInstance->KeyPressedEvent.Invoke(p_key);
+                windowInstance->KeyboardButtonPressedEvent.Invoke(p_key);
 
             if (p_action == GLFW_RELEASE)
-                windowInstance->KeyReleasedEvent.Invoke(p_key);
+                windowInstance->KeyboardButtonReleasedEvent.Invoke(p_key);
         }
     };
 

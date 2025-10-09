@@ -19,15 +19,15 @@ void JzRE::JzSceneView::Update(JzRE::F32 deltaTime)
 
     auto &inputManager = JzServiceContainer::Get<JzInputManager>();
     if (IsFocused() && !m_cameraController.IsRightMousePressed()) {
-        if (inputManager.IsKeyPressed(JzEInputKey::KEY_W)) {
+        if (inputManager.IsKeyPressed(JzEInputKeyboardButton::KEY_W)) {
             SetGizmoOperation(JzEGizmoOperation::TRANSLATE);
         }
 
-        if (inputManager.IsKeyPressed(JzEInputKey::KEY_E)) {
+        if (inputManager.IsKeyPressed(JzEInputKeyboardButton::KEY_E)) {
             SetGizmoOperation(JzEGizmoOperation::ROTATE);
         }
 
-        if (inputManager.IsKeyPressed(JzEInputKey::KEY_R)) {
+        if (inputManager.IsKeyPressed(JzEInputKeyboardButton::KEY_R)) {
             SetGizmoOperation(JzEGizmoOperation::SCALE);
         }
     }
