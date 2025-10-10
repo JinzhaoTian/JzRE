@@ -8,29 +8,26 @@
 #include "JzRE/Editor/JzInputManager.h"
 
 JzRE::JzSceneView::JzSceneView(const JzRE::String &name, JzRE::Bool is_opened) :
-    JzRE::JzView(name, is_opened)
-{
-    m_camera.SetFar(5000.0f);
-}
+    JzRE::JzView(name, is_opened) { }
 
 void JzRE::JzSceneView::Update(JzRE::F32 deltaTime)
 {
     JzView::Update(deltaTime);
 
-    auto &inputManager = JzServiceContainer::Get<JzInputManager>();
-    if (IsFocused() && !m_cameraController.IsRightMousePressed()) {
-        if (inputManager.IsKeyPressed(JzEInputKeyboardButton::KEY_W)) {
-            SetGizmoOperation(JzEGizmoOperation::TRANSLATE);
-        }
+    // auto &inputManager = JzServiceContainer::Get<JzInputManager>();
+    // if (IsFocused()) {
+    //     if (inputManager.IsKeyPressed(JzEInputKeyboardButton::KEY_W)) {
+    //         SetGizmoOperation(JzEGizmoOperation::TRANSLATE);
+    //     }
 
-        if (inputManager.IsKeyPressed(JzEInputKeyboardButton::KEY_E)) {
-            SetGizmoOperation(JzEGizmoOperation::ROTATE);
-        }
+    //     if (inputManager.IsKeyPressed(JzEInputKeyboardButton::KEY_E)) {
+    //         SetGizmoOperation(JzEGizmoOperation::ROTATE);
+    //     }
 
-        if (inputManager.IsKeyPressed(JzEInputKeyboardButton::KEY_R)) {
-            SetGizmoOperation(JzEGizmoOperation::SCALE);
-        }
-    }
+    //     if (inputManager.IsKeyPressed(JzEInputKeyboardButton::KEY_R)) {
+    //         SetGizmoOperation(JzEGizmoOperation::SCALE);
+    //     }
+    // }
 }
 
 void JzRE::JzSceneView::SetGizmoOperation(JzRE::JzEGizmoOperation operation)

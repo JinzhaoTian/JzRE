@@ -5,16 +5,12 @@
 
 #pragma once
 
-#include <memory>
 #include "JzRE/Core/JzRETypes.h"
-#include "JzRE/ECS/JzCamera.h"
-#include "JzRE/ECS/JzCameraController.h"
-#include "JzRE/UI/JzImage.h"
+#include "JzRE/UI/JzFrame.h"
 #include "JzRE/UI/JzPanelWindow.h"
-#include "JzRE/Editor/JzRHIRenderer.h"
-#include "JzRE/Editor/JzScene.h"
 
 namespace JzRE {
+
 /**
  * @brief Base class for all view panels
  */
@@ -39,47 +35,11 @@ public:
     virtual void Update(F32 deltaTime);
 
     /**
-     * @brief Initialize the frame
-     */
-    virtual void InitFrame();
-
-    /**
-     * @brief Draw the frame
-     */
-    virtual void DrawFrame();
-
-    /**
      * @brief Get the safe size
      *
      * @return The safe size
      */
     JzIVec2 GetSafeSize() const;
-
-    /**
-     * @brief Get the camera
-     *
-     * @return The camera
-     */
-    virtual JzCamera *GetCamera();
-
-    /**
-     * @brief Get the scene
-     *
-     * @return The scene
-     */
-    virtual JzScene *GetScene();
-
-    /**
-     * @brief Reset the camera transform
-     */
-    virtual void ResetCameraTransform();
-
-    /**
-     * @brief Get the camera controller
-     *
-     * @return The camera controller
-     */
-    JzCameraController &GetCameraController();
 
 protected:
     /**
@@ -88,10 +48,7 @@ protected:
     void _Draw_Impl() override;
 
 protected:
-    JzImage                       *m_image;
-    std::unique_ptr<JzRHIRenderer> m_renderer;
-    JzCamera                       m_camera;
-    JzCameraController             m_cameraController;
+    JzFrame *m_frame;
 };
 
 } // namespace JzRE

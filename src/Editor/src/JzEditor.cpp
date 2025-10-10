@@ -6,7 +6,6 @@
 #include "JzRE/Core/JzServiceContainer.h"
 #include "JzRE/Editor/JzEditor.h"
 #include "JzRE/Editor/JzPanelsManager.h"
-#include "JzRE/Editor/JzSceneManager.h"
 #include "JzRE/Editor/JzAssetBrowser.h"
 #include "JzRE/Editor/JzAssetView.h"
 #include "JzRE/Editor/JzConsole.h"
@@ -24,8 +23,8 @@ JzRE::JzEditor::JzEditor(JzRE::JzWindow &window) :
 
     m_panelsManager.CreatePanel<JzAssetBrowser>("Asset Browser", true);
     m_panelsManager.CreatePanel<JzSceneView>("Scene View", true);
-    // m_panelsManager.CreatePanel<JzAssetView>("Asset View", true);
-    // m_panelsManager.CreatePanel<JzGameView>("Game View", true);
+    m_panelsManager.CreatePanel<JzAssetView>("Asset View", true);
+    m_panelsManager.CreatePanel<JzGameView>("Game View", true);
     m_panelsManager.CreatePanel<JzHierarchy>("Hierarchy", true);
     m_panelsManager.CreatePanel<JzConsole>("Console", true);
     m_panelsManager.CreatePanel<JzMaterialEditor>("Material Editor", true);
@@ -37,16 +36,9 @@ JzRE::JzEditor::JzEditor(JzRE::JzWindow &window) :
 
     auto &uiMgr = JzServiceContainer::Get<JzUIManager>();
     uiMgr.SetCanvas(m_canvas);
-
-    auto &sceneMgr = JzServiceContainer::Get<JzSceneManager>();
-    sceneMgr.LoadDefaultScene();
 }
 
-JzRE::JzEditor::~JzEditor()
-{
-    auto &sceneMgr = JzServiceContainer::Get<JzSceneManager>();
-    sceneMgr.UnloadCurrentScene();
-}
+JzRE::JzEditor::~JzEditor() { }
 
 void JzRE::JzEditor::PreUpdate() { }
 

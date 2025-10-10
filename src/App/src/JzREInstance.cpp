@@ -55,9 +55,6 @@ JzRE::JzREInstance::JzREInstance(JzERHIType rhiType, std::filesystem::path &open
 
     JzServiceContainer::Provide<JzUIManager>(*m_uiManager);
 
-    m_sceneManager = std::make_unique<JzSceneManager>();
-    JzServiceContainer::Provide<JzSceneManager>(*m_sceneManager);
-
     m_editor = std::make_unique<JzEditor>(*m_window);
 
     m_renderThreadRunning = true;
@@ -74,10 +71,6 @@ JzRE::JzREInstance::~JzREInstance()
 
     if (m_editor) {
         m_editor.reset();
-    }
-
-    if (m_sceneManager) {
-        m_sceneManager.reset();
     }
 
     if (m_uiManager) {
