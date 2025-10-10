@@ -59,10 +59,19 @@ JzRE::JzREInstance::JzREInstance(JzERHIType rhiType, std::filesystem::path &open
     JzServiceContainer::Provide<JzSceneManager>(*m_sceneManager);
 
     m_editor = std::make_unique<JzEditor>(*m_window);
+
+    m_renderThreadRunning = true;
+    m_renderThread        = std::thread(&JzREInstance::_RenderThread, this);
 }
 
 JzRE::JzREInstance::~JzREInstance()
 {
+    m_renderThreadRunning = false;
+    m_renderCondition.notify_all();
+    if (m_renderThread.joinable()) {
+        m_renderThread.join();
+    }
+
     if (m_editor) {
         m_editor.reset();
     }
@@ -104,6 +113,39 @@ void JzRE::JzREInstance::Run()
         m_inputManager->ClearEvents();
 
         clock.Update();
+    }
+}
+
+void JzRE::JzREInstance::_RenderThread()
+{
+    JzRE::JzClock renderClock;
+
+    while (m_renderThreadRunning) {
+        {
+            std::unique_lock<std::mutex> lock(m_renderMutex);
+            m_renderCondition.wait(lock, [this] {
+                return m_frameReady || !m_renderThreadRunning;
+            });
+
+            if (!m_renderThreadRunning) {
+                break;
+            }
+
+            if (!m_shouldRender) {
+                continue;
+            }
+
+            m_frameReady = false;
+        }
+
+        // TODO execute render
+
+        {
+            std::lock_guard<std::mutex> lock(m_renderMutex);
+            m_shouldRender = false;
+        }
+
+        renderClock.Update();
     }
 }
 

@@ -15,6 +15,7 @@ JzRE::Bool JzRE::JzContext::Initialize(std::filesystem::path &openDirectory)
 {
     m_workDirectory = std::filesystem::current_path();
     m_openDirectory = openDirectory;
+    m_running       = true;
 
     return true;
 }

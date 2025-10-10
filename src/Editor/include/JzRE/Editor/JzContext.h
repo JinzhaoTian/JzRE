@@ -6,6 +6,7 @@
 #pragma once
 
 #include <filesystem>
+#include <atomic>
 #include "JzRE/Core/JzRETypes.h"
 
 namespace JzRE {
@@ -54,6 +55,7 @@ private:
 private:
     std::filesystem::path m_workDirectory;
     std::filesystem::path m_openDirectory;
+    std::atomic<Bool>     m_running;
 };
 
 } // namespace JzRE

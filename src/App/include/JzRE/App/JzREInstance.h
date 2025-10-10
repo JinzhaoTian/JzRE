@@ -6,6 +6,10 @@
 #pragma once
 
 #include <filesystem>
+#include <thread>
+#include <mutex>
+#include <atomic>
+#include <condition_variable>
 #include "JzRE/Core/JzRETypes.h"
 #include "JzRE/RHI/JzDevice.h"
 #include "JzRE/Resource/JzResourceManager.h"
@@ -16,8 +20,9 @@
 #include "JzRE/Editor/JzEditor.h"
 
 namespace JzRE {
+
 /**
- * @brief Jz Render Engine
+ * @brief JzRE Instance
  */
 class JzREInstance {
 public:
@@ -44,6 +49,9 @@ public:
     Bool IsRunning() const;
 
 private:
+    void _RenderThread();
+
+private:
     std::unique_ptr<JzResourceManager> m_resourceManager;
     std::unique_ptr<JzWindow>          m_window;
     std::unique_ptr<JzDevice>          m_device;
@@ -51,5 +59,12 @@ private:
     std::unique_ptr<JzUIManager>       m_uiManager;
     std::unique_ptr<JzSceneManager>    m_sceneManager;
     std::unique_ptr<JzEditor>          m_editor;
+
+    std::thread             m_renderThread;
+    std::atomic<Bool>       m_renderThreadRunning{false};
+    std::mutex              m_renderMutex;
+    std::condition_variable m_renderCondition;
+    std::atomic<Bool>       m_frameReady{false};
+    std::atomic<Bool>       m_shouldRender{false};
 };
 } // namespace JzRE
