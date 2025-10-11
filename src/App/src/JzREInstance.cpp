@@ -13,7 +13,7 @@
 
 JzRE::JzREInstance::JzREInstance(JzERHIType rhiType, std::filesystem::path &openDirectory)
 {
-    JzServiceContainer::Clear();
+    JzServiceContainer::Init();
 
     m_resourceManager = std::make_unique<JzResourceManager>();
     m_resourceManager->RegisterFactory<JzTexture>(std::make_unique<JzTextureFactory>());
@@ -29,31 +29,16 @@ JzRE::JzREInstance::JzREInstance(JzERHIType rhiType, std::filesystem::path &open
     windowSettings.title = "JzRE";
     windowSettings.size  = {1280, 720};
 
-    m_window = std::make_unique<JzRE::JzWindow>(rhiType, windowSettings);
+    m_window = std::make_unique<JzWindow>(rhiType, windowSettings);
     m_window->MakeCurrentContext();
     m_window->SetAlignCentered();
+    JzServiceContainer::Provide<JzWindow>(*m_window);
 
     m_device = JzDeviceFactory::CreateDevice(rhiType);
     JzServiceContainer::Provide<JzDevice>(*m_device);
 
     m_inputManager = std::make_unique<JzInputManager>(*m_window);
     JzServiceContainer::Provide<JzInputManager>(*m_inputManager);
-
-    m_uiManager = std::make_unique<JzUIManager>(*m_window);
-
-    const auto layoutConfigPath = std::filesystem::current_path() / "config" / "layout.ini";
-    m_uiManager->ResetLayout(layoutConfigPath.string());
-    m_uiManager->SetEditorLayoutSaveFilename("layout.ini");
-    m_uiManager->EnableEditorLayoutSave(true);
-
-    const auto fontPath = std::filesystem::current_path() / "fonts" / "SourceHanSansCN-Regular.otf";
-    m_uiManager->LoadFont("sourcehansanscn-regular-18", fontPath.string(), 18);
-    m_uiManager->LoadFont("sourcehansanscn-regular-16", fontPath.string(), 16);
-    m_uiManager->LoadFont("sourcehansanscn-regular-14", fontPath.string(), 14);
-    m_uiManager->UseFont("sourcehansanscn-regular-16");
-    m_uiManager->SetDocking(true);
-
-    JzServiceContainer::Provide<JzUIManager>(*m_uiManager);
 
     m_editor = std::make_unique<JzEditor>(*m_window);
 
@@ -71,10 +56,6 @@ JzRE::JzREInstance::~JzREInstance()
 
     if (m_editor) {
         m_editor.reset();
-    }
-
-    if (m_uiManager) {
-        m_uiManager.reset();
     }
 
     if (m_inputManager) {
@@ -101,7 +82,6 @@ void JzRE::JzREInstance::Run()
     while (IsRunning()) {
         m_window->PollEvents();
         m_editor->Update(clock.GetDeltaTime());
-        m_uiManager->Render();
         m_window->SwapBuffers();
         m_inputManager->ClearEvents();
 

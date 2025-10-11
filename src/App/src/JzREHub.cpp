@@ -31,6 +31,8 @@
 
 JzRE::JzREHub::JzREHub(JzERHIType rhiType)
 {
+    JzServiceContainer::Init();
+
     m_resourceManager = std::make_unique<JzResourceManager>();
     m_resourceManager->RegisterFactory<JzTexture>(std::make_unique<JzTextureFactory>());
     m_resourceManager->AddSearchPath("./icons");

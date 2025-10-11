@@ -5,9 +5,10 @@
 
 #pragma once
 
+#include "JzRE/Editor/JzWindow.h"
 #include "JzRE/Editor/JzCanvas.h"
 #include "JzRE/Editor/JzPanelsManager.h"
-#include "JzRE/Editor/JzWindow.h"
+#include "JzRE/Editor/JzUIManager.h"
 
 namespace JzRE {
 /**
@@ -50,9 +51,10 @@ private:
     void RenderEditorUI(F32 deltaTime);
 
 private:
-    U64             m_elapsedFrames = 0;
-    JzWindow       &m_window;
-    JzCanvas        m_canvas;
-    JzPanelsManager m_panelsManager;
+    JzWindow                        &m_window;
+    std::unique_ptr<JzCanvas>        m_canvas;
+    std::unique_ptr<JzPanelsManager> m_panelsManager;
+    std::unique_ptr<JzUIManager>     m_uiManager;
+    U64                              m_elapsedFrames = 0;
 };
 } // namespace JzRE

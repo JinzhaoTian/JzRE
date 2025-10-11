@@ -14,7 +14,6 @@
 #include "JzRE/RHI/JzDevice.h"
 #include "JzRE/Resource/JzResourceManager.h"
 #include "JzRE/Editor/JzInputManager.h"
-#include "JzRE/Editor/JzUIManager.h"
 #include "JzRE/Editor/JzWindow.h"
 #include "JzRE/Editor/JzEditor.h"
 
@@ -55,7 +54,6 @@ private:
     std::unique_ptr<JzWindow>          m_window;
     std::unique_ptr<JzDevice>          m_device;
     std::unique_ptr<JzInputManager>    m_inputManager;
-    std::unique_ptr<JzUIManager>       m_uiManager;
     std::unique_ptr<JzEditor>          m_editor;
 
     std::thread             m_renderThread;

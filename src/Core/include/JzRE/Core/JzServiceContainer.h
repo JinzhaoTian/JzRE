@@ -16,15 +16,23 @@ namespace JzRE {
 class JzServiceContainer {
 public:
     /**
+     * @brief Init, clear all services
+     */
+    static void Init()
+    {
+        __SERVICES.clear();
+    }
+
+    /**
      * @brief Provide a service
      *
      * @tparam T The type of the service
-     * @param p_service The service to provide
+     * @param service The service to provide
      */
     template <typename T>
-    static void Provide(T &p_service)
+    static void Provide(T &service)
     {
-        __SERVICES[typeid(T).hash_code()] = std::any(&p_service);
+        __SERVICES[typeid(T).hash_code()] = std::any(&service);
     }
 
     /**
@@ -37,14 +45,6 @@ public:
     static T &Get()
     {
         return *std::any_cast<T *>(__SERVICES[typeid(T).hash_code()]);
-    }
-
-    /**
-     * @brief Clear all services
-     */
-    static void Clear()
-    {
-        __SERVICES.clear();
     }
 
 private:
