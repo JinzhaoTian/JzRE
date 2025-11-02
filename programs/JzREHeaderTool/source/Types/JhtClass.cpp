@@ -5,19 +5,25 @@
 
 #include "JhtClass.h"
 #include "meta/meta_data_config.h"
-#include "meta/meta_utils.h"
 
-JhtBaseClass::JhtBaseClass(const Cursor &cursor) :
-    name(Utils::getTypeNameWithoutNamespace(cursor.getType())) { }
+JhtBaseClass::JhtBaseClass(const Cursor &cursor)
+{
+    name = cursor.getType().GetDisplayName();
+}
 
 JhtClass::JhtClass(const Cursor &cursor, const std::vector<std::string> &current_namespace) :
     JhtType(cursor, current_namespace),
     m_name(cursor.getDisplayName()),
-    m_qualifiedName(Utils::getTypeNameWithoutNamespace(cursor.getType())),
-    m_displayName(Utils::getNameWithoutFirstM(m_qualifiedName))
+    m_qualifiedName(cursor.getType().GetDisplayName())
 {
-    Utils::replaceAll(m_name, " ", "");
-    Utils::replaceAll(m_name, "Piccolo::", "");
+    m_displayName = m_qualifiedName.starts_with("m_") && m_qualifiedName.size() > 2 ? m_qualifiedName.substr(2) : m_qualifiedName;
+
+    m_name.erase(std::remove(m_name.begin(), m_name.end(), ' '), m_name.end());
+
+    constexpr std::string_view prefix = "JzRE::";
+    for (size_t pos = 0; (pos = m_name.find(prefix, pos)) != std::string::npos; pos += 0) {
+        m_name.erase(pos, prefix.length());
+    }
 
     for (auto &child : cursor.getChildren()) {
         switch (child.getKind()) {

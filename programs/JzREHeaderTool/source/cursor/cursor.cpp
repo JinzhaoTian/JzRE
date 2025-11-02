@@ -1,5 +1,3 @@
-#include "meta/meta_utils.h"
-
 #include "cursor.h"
 
 Cursor::Cursor(const CXCursor &handle) :
@@ -12,20 +10,12 @@ CXCursorKind Cursor::getKind(void) const
 
 std::string Cursor::getSpelling(void) const
 {
-    std::string spelling;
-
-    Utils::toString(clang_getCursorSpelling(m_handle), spelling);
-
-    return spelling;
+    return clang_getCString(clang_getCursorSpelling(m_handle));
 }
 
 std::string Cursor::getDisplayName(void) const
 {
-    std::string display_name;
-
-    Utils::toString(clang_getCursorDisplayName(m_handle), display_name);
-
-    return display_name;
+    return clang_getCString(clang_getCursorDisplayName(m_handle));
 }
 
 std::string Cursor::getSourceFile(void) const
@@ -39,11 +29,7 @@ std::string Cursor::getSourceFile(void) const
 
     clang_getFileLocation(start, &file, &line, &column, &offset);
 
-    std::string filename;
-
-    Utils::toString(clang_getFileName(file), filename);
-
-    return filename;
+    return clang_getCString(clang_getFileName(file));
 }
 
 bool Cursor::isDefinition(void) const
@@ -56,12 +42,12 @@ CursorType Cursor::getType(void) const
     return clang_getCursorType(m_handle);
 }
 
-Cursor::List Cursor::getChildren(void) const
+std::vector<Cursor> Cursor::getChildren(void) const
 {
-    List children;
+    std::vector<Cursor> children;
 
     auto visitor = [](CXCursor cursor, CXCursor parent, CXClientData data) {
-        auto container = static_cast<List *>(data);
+        auto container = static_cast<std::vector<Cursor> *>(data);
 
         container->emplace_back(cursor);
 
@@ -76,7 +62,7 @@ Cursor::List Cursor::getChildren(void) const
     return children;
 }
 
-void Cursor::visitChildren(Visitor visitor, void *data)
+void Cursor::visitChildren(CXCursorVisitor visitor, void *data)
 {
     clang_visitChildren(m_handle, visitor, data);
 }

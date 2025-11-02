@@ -1,17 +1,12 @@
 #include "cursor.h"
 #include "cursor_type.h"
-#include "meta/meta_utils.h"
 
 CursorType::CursorType(const CXType &handle) :
     m_handle(handle) { }
 
 std::string CursorType::GetDisplayName(void) const
 {
-    std::string display_name;
-
-    Utils::toString(clang_getTypeSpelling(m_handle), display_name);
-
-    return display_name;
+    return clang_getCString(clang_getTypeSpelling(m_handle));
 }
 
 int CursorType::GetArgumentCount(void) const

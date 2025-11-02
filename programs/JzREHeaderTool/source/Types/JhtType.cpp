@@ -26,8 +26,3 @@ std::vector<std::string> JhtType::getCurrentNamespace() const
 {
     return m_namespace;
 }
-
-Cursor &JhtType::getCursor()
-{
-    return m_rootCursor;
-}

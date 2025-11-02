@@ -3,24 +3,40 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
+#include <algorithm>
+#include <string>
+
 #include "JhtField.h"
 #include "JhtClass.h"
 #include "meta/meta_data_config.h"
-#include "meta/meta_utils.h"
 
-JhtField::JhtField(const Cursor &cursor, const std::vector<std::string> &current_namespace, JhtClass *parent) :
+JhtField::JhtField(const Cursor                   &cursor,
+                   const std::vector<std::string> &current_namespace,
+                   JhtClass                       *parent) :
     JhtType(cursor, current_namespace),
-    m_isConst(cursor.getType().IsConst()),
     m_parent(parent),
     m_name(cursor.getSpelling()),
-    m_displayName(Utils::getNameWithoutFirstM(m_name)),
-    m_type(Utils::getTypeNameWithoutNamespace(cursor.getType()))
+    m_isConst(cursor.getType().IsConst())
 {
-    Utils::replaceAll(m_type, " ", "");
-    Utils::replaceAll(m_type, "Piccolo::", "");
+    m_displayName = m_name.starts_with("m_") && m_name.size() > 2 ? m_name.substr(2) : m_name;
 
-    auto ret_string = Utils::getStringWithoutQuot(m_metaData.getProperty("default"));
-    m_default       = ret_string;
+    m_type = cursor.getType().GetDisplayName();
+
+    m_type.erase(std::remove(m_type.begin(), m_type.end(), ' '), m_type.end());
+
+    constexpr std::string_view prefix = "JzRE::";
+    for (size_t pos = 0; (pos = m_type.find(prefix, pos)) != std::string::npos; pos += 0) {
+        m_type.erase(pos, prefix.length());
+    }
+
+    const auto   default_str = m_metaData.getProperty("default");
+    const size_t leftPos     = default_str.find('\"') + 1;
+    const size_t rightPos    = default_str.rfind('\"');
+    if (leftPos > 0 && rightPos != std::string::npos && leftPos < rightPos) {
+        m_default = default_str.substr(leftPos, rightPos - leftPos);
+    } else {
+        m_default = default_str;
+    }
 }
 
 bool JhtField::shouldCompile(void) const

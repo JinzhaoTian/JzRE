@@ -113,14 +113,14 @@ int JhtMetaParser::parse()
     std::string sys_include_temp;
     if (!(m_sys_include == "*")) {
         sys_include_temp = pre_include + m_sys_include;
-        arguments.emplace_back(sys_include_temp.c_str());
+        m_arguments.emplace_back(sys_include_temp.c_str());
     }
 
     auto paths = m_work_paths;
     for (int index = 0; index < paths.size(); ++index) {
         paths[index] = pre_include + paths[index];
 
-        arguments.emplace_back(paths[index].c_str());
+        m_arguments.emplace_back(paths[index].c_str());
     }
 
     std::filesystem::path input_path(m_source_include_file_name);
@@ -129,9 +129,8 @@ int JhtMetaParser::parse()
         return -2;
     }
 
-    m_translation_unit = clang_createTranslationUnitFromSourceFile(
-        m_index, m_source_include_file_name.c_str(), static_cast<int>(arguments.size()), arguments.data(), 0, nullptr);
-    auto cursor = clang_getTranslationUnitCursor(m_translation_unit);
+    m_translation_unit = clang_createTranslationUnitFromSourceFile(m_index, m_source_include_file_name.c_str(), static_cast<int>(m_arguments.size()), m_arguments.data(), 0, nullptr);
+    auto cursor        = clang_getTranslationUnitCursor(m_translation_unit);
 
     std::vector<std::string> temp_namespace;
 

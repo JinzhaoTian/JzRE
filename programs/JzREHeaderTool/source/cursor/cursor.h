@@ -6,10 +6,6 @@
 
 class Cursor {
 public:
-    typedef std::vector<Cursor> List;
-
-    typedef CXCursorVisitor Visitor;
-
     Cursor(const CXCursor &handle);
 
     CXCursorKind getKind(void) const;
@@ -23,8 +19,8 @@ public:
 
     CursorType getType(void) const;
 
-    List getChildren(void) const;
-    void visitChildren(Visitor visitor, void *data = nullptr);
+    std::vector<Cursor> getChildren(void) const;
+    void                visitChildren(CXCursorVisitor visitor, void *data = nullptr);
 
 private:
     CXCursor m_handle;

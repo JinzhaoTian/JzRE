@@ -5,7 +5,6 @@
 
 #pragma once
 
-#include "cursor/cursor.h"
 #include "meta/meta_info.h"
 
 /**
@@ -46,13 +45,6 @@ public:
      * @return std::vector<std::string>
      */
     std::vector<std::string> getCurrentNamespace() const;
-
-    /**
-     * @brief Get the Curosr object
-     *
-     * @return Cursor&
-     */
-    Cursor &getCursor();
 
 protected:
     MetaInfo                 m_metaData;

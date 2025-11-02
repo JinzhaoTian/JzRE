@@ -58,17 +58,18 @@ private:
     std::unordered_map<std::string, std::string>  m_type_table;
     std::unordered_map<std::string, SchemaModule> m_schema_modules;
 
-    std::vector<const char *>    arguments = {{"-x",
-                                               "c++",
-                                               "-std=c++20",
-                                               "-D__JzRE_HEADER_TOOL__",
-                                               "-DNDEBUG",
-                                               "-D__clang__",
-                                               "-w",
-                                               "-MG",
-                                               "-M",
-                                               "-ferror-limit=0",
-                                               "-o clangLog.txt"}};
+    std::vector<const char *> m_arguments = {
+        {"-x", "c++",              // 指定语言为C++
+         "-std=c++20",             // C++20标准
+         "-D__JzRE_HEADER_TOOL__", // 定义宏
+         "-DNDEBUG",               // 禁用调试
+         "-D__clang__",            // 标识为Clang
+         "-w",                     // 禁用所有警告
+         "-MG", "-M",              // 依赖关系生成
+         "-ferror-limit=0",        // 无错误限制
+         "-o clangLog.txt"}        // 输出日志文件
+    };
+
     std::vector<JhtIGenerator *> m_generators;
 
     bool m_is_show_errors;
