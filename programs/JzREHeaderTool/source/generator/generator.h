@@ -19,7 +19,7 @@ public:
         m_get_include_func(get_include_func)
     { }
 
-    virtual int generate(std::string path, SchemaMoudle schema) = 0;
+    virtual int generate(std::string path, SchemaModule schema) = 0;
 
     virtual void finish() { };
 

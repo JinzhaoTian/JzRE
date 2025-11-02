@@ -26,7 +26,7 @@ std::string SerializerGenerator::processFileName(std::string path)
     return m_out_path + "/" + relativeDir;
 }
 
-int SerializerGenerator::generate(std::string path, SchemaMoudle schema)
+int SerializerGenerator::generate(std::string path, SchemaModule schema)
 {
     std::string file_path = processFileName(path);
 

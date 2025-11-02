@@ -27,7 +27,7 @@ std::string ReflectionGenerator::processFileName(std::string path)
     return m_out_path + "/" + relativeDir;
 }
 
-int ReflectionGenerator::generate(std::string path, SchemaMoudle schema)
+int ReflectionGenerator::generate(std::string path, SchemaModule schema)
 {
     static const std::string vector_prefix = "std::vector<";
 
