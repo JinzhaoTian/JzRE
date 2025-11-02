@@ -1,13 +1,10 @@
 #pragma once
-#include "precompiled.h"
 
-class Class;
-class Global;
-class Function;
-class Enum;
+#include <string>
+#include <vector>
+#include "language_types/class.h"
 
-struct SchemaMoudle
-{
+struct SchemaMoudle {
     std::string name;
 
     std::vector<std::shared_ptr<Class>> classes;

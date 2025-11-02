@@ -1,19 +1,12 @@
 #pragma once
 
-#include "common/precompiled.h"
-
-#include "common/namespace.h"
 #include "common/schema_module.h"
 
 #include "cursor/cursor.h"
 
 #include "generator/generator.h"
-#include "template_manager/template_manager.h"
 
-class Class;
-
-class MetaParser
-{
+class MetaParser {
 public:
     static void prepare(void);
 
@@ -42,23 +35,23 @@ private:
     std::unordered_map<std::string, std::string>  m_type_table;
     std::unordered_map<std::string, SchemaMoudle> m_schema_modules;
 
-    std::vector<const char*>                    arguments = {{"-x",
-                                           "c++",
-                                           "-std=c++11",
-                                           "-D__REFLECTION_PARSER__",
-                                           "-DNDEBUG",
-                                           "-D__clang__",
-                                           "-w",
-                                           "-MG",
-                                           "-M",
-                                           "-ferror-limit=0",
-                                           "-o clangLog.txt"}};
-    std::vector<Generator::GeneratorInterface*> m_generators;
+    std::vector<const char *>                    arguments = {{"-x",
+                                                               "c++",
+                                                               "-std=c++11",
+                                                               "-D__REFLECTION_PARSER__",
+                                                               "-DNDEBUG",
+                                                               "-D__clang__",
+                                                               "-w",
+                                                               "-MG",
+                                                               "-M",
+                                                               "-ferror-limit=0",
+                                                               "-o clangLog.txt"}};
+    std::vector<Generator::GeneratorInterface *> m_generators;
 
     bool m_is_show_errors;
 
 private:
     bool        parseProject(void);
-    void        buildClassAST(const Cursor& cursor, Namespace& current_namespace);
+    void        buildClassAST(const Cursor &cursor, std::vector<std::string> &current_namespace);
     std::string getIncludeFile(std::string name);
 };

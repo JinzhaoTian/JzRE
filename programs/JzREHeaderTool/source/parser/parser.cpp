@@ -1,37 +1,34 @@
-#include "common/precompiled.h"
+#include <filesystem>
+#include <fstream>
 
 #include "language_types/class.h"
-
 #include "generator/reflection_generator.h"
 #include "generator/serializer_generator.h"
-
+#include "meta/meta_utils.h"
 #include "parser.h"
 
 #define RECURSE_NAMESPACES(kind, cursor, method, namespaces) \
-    { \
-        if (kind == CXCursor_Namespace) \
-        { \
-            auto display_name = cursor.getDisplayName(); \
-            if (!display_name.empty()) \
-            { \
-                namespaces.emplace_back(display_name); \
-                method(cursor, namespaces); \
-                namespaces.pop_back(); \
-            } \
-        } \
+    {                                                        \
+        if (kind == CXCursor_Namespace) {                    \
+            auto display_name = cursor.getDisplayName();     \
+            if (!display_name.empty()) {                     \
+                namespaces.emplace_back(display_name);       \
+                method(cursor, namespaces);                  \
+                namespaces.pop_back();                       \
+            }                                                \
+        }                                                    \
     }
 
-#define TRY_ADD_LANGUAGE_TYPE(handle, container) \
-    { \
-        if (handle->shouldCompile()) \
-        { \
-            auto file = handle->getSourceFile(); \
+#define TRY_ADD_LANGUAGE_TYPE(handle, container)                   \
+    {                                                              \
+        if (handle->shouldCompile()) {                             \
+            auto file = handle->getSourceFile();                   \
             m_schema_modules[file].container.emplace_back(handle); \
-            m_type_table[handle->m_display_name] = file; \
-        } \
+            m_type_table[handle->m_display_name] = file;           \
+        }                                                          \
     }
 
-void MetaParser::prepare(void) {}
+void MetaParser::prepare(void) { }
 
 std::string MetaParser::getIncludeFile(std::string name)
 {
@@ -59,8 +56,7 @@ MetaParser::MetaParser(const std::string project_input_file,
 
 MetaParser::~MetaParser(void)
 {
-    for (auto item : m_generators)
-    {
+    for (auto item : m_generators) {
         delete item;
     }
     m_generators.clear();
@@ -74,8 +70,7 @@ MetaParser::~MetaParser(void)
 
 void MetaParser::finish(void)
 {
-    for (auto generator_iter : m_generators)
-    {
+    for (auto generator_iter : m_generators) {
         generator_iter->finish();
     }
 }
@@ -87,8 +82,7 @@ bool MetaParser::parseProject()
 
     std::fstream include_txt_file(m_project_input_file, std::ios::in);
 
-    if (include_txt_file.fail())
-    {
+    if (include_txt_file.fail()) {
         std::cout << "Could not load file: " << m_project_input_file << std::endl;
         return false;
     }
@@ -102,8 +96,7 @@ bool MetaParser::parseProject()
     std::fstream include_file;
 
     include_file.open(m_source_include_file_name, std::ios::out);
-    if (!include_file.is_open())
-    {
+    if (!include_file.is_open()) {
         std::cout << "Could not open the Source Include file: " << m_source_include_file_name << std::endl;
         return false;
     }
@@ -112,12 +105,9 @@ bool MetaParser::parseProject()
 
     std::string output_filename = Utils::getFileName(m_source_include_file_name);
 
-    if (output_filename.empty())
-    {
+    if (output_filename.empty()) {
         output_filename = "META_INPUT_HEADER_H";
-    }
-    else
-    {
+    } else {
         Utils::replace(output_filename, ".", "_");
         Utils::replace(output_filename, " ", "_");
         Utils::toUpper(output_filename);
@@ -125,8 +115,7 @@ bool MetaParser::parseProject()
     include_file << "#ifndef __" << output_filename << "__" << std::endl;
     include_file << "#define __" << output_filename << "__" << std::endl;
 
-    for (auto include_item : inlcude_files)
-    {
+    for (auto include_item : inlcude_files) {
         std::string temp_string(include_item);
         Utils::replace(temp_string, '\\', '/');
         include_file << "#include  \"" << temp_string << "\"" << std::endl;
@@ -140,8 +129,7 @@ bool MetaParser::parseProject()
 int MetaParser::parse(void)
 {
     bool parse_include_ = parseProject();
-    if (!parse_include_)
-    {
+    if (!parse_include_) {
         std::cerr << "Parsing project file error! " << std::endl;
         return -1;
     }
@@ -151,23 +139,20 @@ int MetaParser::parse(void)
     m_index                 = clang_createIndex(true, is_show_errors);
     std::string pre_include = "-I";
     std::string sys_include_temp;
-    if (!(m_sys_include == "*"))
-    {
+    if (!(m_sys_include == "*")) {
         sys_include_temp = pre_include + m_sys_include;
         arguments.emplace_back(sys_include_temp.c_str());
     }
 
     auto paths = m_work_paths;
-    for (int index = 0; index < paths.size(); ++index)
-    {
+    for (int index = 0; index < paths.size(); ++index) {
         paths[index] = pre_include + paths[index];
 
         arguments.emplace_back(paths[index].c_str());
     }
 
-    fs::path input_path(m_source_include_file_name);
-    if (!fs::exists(input_path))
-    {
+    std::filesystem::path input_path(m_source_include_file_name);
+    if (!std::filesystem::exists(input_path)) {
         std::cerr << input_path << " is not exist" << std::endl;
         return -2;
     }
@@ -176,7 +161,7 @@ int MetaParser::parse(void)
         m_index, m_source_include_file_name.c_str(), static_cast<int>(arguments.size()), arguments.data(), 0, nullptr);
     auto cursor = clang_getTranslationUnitCursor(m_translation_unit);
 
-    Namespace temp_namespace;
+    std::vector<std::string> temp_namespace;
 
     buildClassAST(cursor, temp_namespace);
 
@@ -188,10 +173,8 @@ int MetaParser::parse(void)
 void MetaParser::generateFiles(void)
 {
     std::cerr << "Start generate runtime schemas(" << m_schema_modules.size() << ")..." << std::endl;
-    for (auto& schema : m_schema_modules)
-    {
-        for (auto& generator_iter : m_generators)
-        {
+    for (auto &schema : m_schema_modules) {
+        for (auto &generator_iter : m_generators) {
             generator_iter->generate(schema.first, schema.second);
         }
     }
@@ -199,21 +182,17 @@ void MetaParser::generateFiles(void)
     finish();
 }
 
-void MetaParser::buildClassAST(const Cursor& cursor, Namespace& current_namespace)
+void MetaParser::buildClassAST(const Cursor &cursor, std::vector<std::string> &current_namespace)
 {
-    for (auto& child : cursor.getChildren())
-    {
+    for (auto &child : cursor.getChildren()) {
         auto kind = child.getKind();
 
         // actual definition and a class or struct
-        if (child.isDefinition() && (kind == CXCursor_ClassDecl || kind == CXCursor_StructDecl))
-        {
+        if (child.isDefinition() && (kind == CXCursor_ClassDecl || kind == CXCursor_StructDecl)) {
             auto class_ptr = std::make_shared<Class>(child, current_namespace);
 
             TRY_ADD_LANGUAGE_TYPE(class_ptr, classes);
-        }
-        else
-        {
+        } else {
             RECURSE_NAMESPACES(kind, child, buildClassAST, current_namespace);
         }
     }

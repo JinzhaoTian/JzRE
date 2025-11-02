@@ -1,23 +1,19 @@
-﻿#include "common/precompiled.h"
-
-#include "parser/parser.h"
-
+﻿
 #include "meta_info.h"
+#include "meta/meta_utils.h"
 
-MetaInfo::MetaInfo(const Cursor& cursor)
+MetaInfo::MetaInfo(const Cursor &cursor)
 {
-    for (auto& child : cursor.getChildren())
-    {
-
+    for (auto &child : cursor.getChildren()) {
         if (child.getKind() != CXCursor_AnnotateAttr)
             continue;
 
-        for (auto& prop : extractProperties(child))
+        for (auto &prop : extractProperties(child))
             m_properties[prop.first] = prop.second;
     }
 }
 
-std::string MetaInfo::getProperty(const std::string& key) const
+std::string MetaInfo::getProperty(const std::string &key) const
 {
     auto search = m_properties.find(key);
 
@@ -25,24 +21,25 @@ std::string MetaInfo::getProperty(const std::string& key) const
     return search == m_properties.end() ? "" : search->second;
 }
 
-bool MetaInfo::getFlag(const std::string& key) const { return m_properties.find(key) != m_properties.end(); }
+bool MetaInfo::getFlag(const std::string &key) const
+{
+    return m_properties.find(key) != m_properties.end();
+}
 
-std::vector<MetaInfo::Property> MetaInfo::extractProperties(const Cursor& cursor) const
+std::vector<MetaInfo::Property> MetaInfo::extractProperties(const Cursor &cursor) const
 {
     std::vector<Property> ret_list;
 
     auto propertyList = cursor.getDisplayName();
 
-    auto&& properties = Utils::split(propertyList, ",");
+    auto &&properties = Utils::split(propertyList, ",");
 
     static const std::string white_space_string = " \t\r\n";
 
-    for (auto& property_item : properties)
-    {
-        auto&& item_details = Utils::split(property_item, ":");
-        auto&& temp_string  = Utils::trim(item_details[0], white_space_string);
-        if (temp_string.empty())
-        {
+    for (auto &property_item : properties) {
+        auto &&item_details = Utils::split(property_item, ":");
+        auto &&temp_string  = Utils::trim(item_details[0], white_space_string);
+        if (temp_string.empty()) {
             continue;
         }
         ret_list.emplace_back(temp_string,

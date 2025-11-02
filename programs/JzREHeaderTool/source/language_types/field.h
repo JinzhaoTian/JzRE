@@ -4,20 +4,18 @@
 
 class Class;
 
-class Field : public TypeInfo
-{
-
+class Field : public TypeInfo {
 public:
-    Field(const Cursor& cursor, const Namespace& current_namespace, Class* parent = nullptr);
+    Field(const Cursor &cursor, const std::vector<std::string> &current_namespace, Class *parent = nullptr);
 
-    virtual ~Field(void) {}
+    virtual ~Field(void) { }
 
     bool shouldCompile(void) const;
 
 public:
     bool m_is_const;
 
-    Class* m_parent;
+    Class *m_parent;
 
     std::string m_name;
     std::string m_display_name;

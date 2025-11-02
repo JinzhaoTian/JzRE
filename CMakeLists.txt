@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15.0)
+cmake_minimum_required(VERSION 3.25.0)
 
 # set project name
 project(JzRE VERSION 0.0.1 LANGUAGES CXX C)
@@ -20,6 +20,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/JzRE)
 
 file(COPY ${CMAKE_SOURCE_DIR}/resources/ 
      DESTINATION ${CMAKE_BINARY_DIR}/JzRE/)
+
+set(JzRE_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
 # find packages using vcpkg
 find_package(glfw3 CONFIG REQUIRED)
@@ -45,7 +47,7 @@ elseif(APPLE)
     find_library(UNIFORMTYPEIDENTIFIERS_LIB UniformTypeIdentifiers)
     set(PLATFORM_LIBS ${COCOA_LIB} ${IOKIT_LIB} ${COREVIDEO_LIB} ${UNIFORMTYPEIDENTIFIERS_LIB})
     set(OPENGL_LIBS ${OPENGL_LIB} ${GLUT_LIB})
-elseif(UNIX AND NOT APPLE)
+elseif(LINUX)
     find_package(OpenGL REQUIRED)
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(X11 REQUIRED x11)

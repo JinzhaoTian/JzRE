@@ -4,19 +4,16 @@
 
 class Class;
 
-class Method : public TypeInfo
-{
-
+class Method : public TypeInfo {
 public:
-    Method(const Cursor& cursor, const Namespace& current_namespace, Class* parent = nullptr);
+    Method(const Cursor &cursor, const std::vector<std::string> &current_namespace, Class *parent = nullptr);
 
-    virtual ~Method(void) {}
+    virtual ~Method(void) { }
 
     bool shouldCompile(void) const;
 
 public:
-
-    Class* m_parent;
+    Class *m_parent;
 
     std::string m_name;
 

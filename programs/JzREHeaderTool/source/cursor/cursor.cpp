@@ -1,11 +1,14 @@
-#include "common/precompiled.h"
 #include "meta/meta_utils.h"
 
 #include "cursor.h"
 
-Cursor::Cursor(const CXCursor& handle) : m_handle(handle) {}
+Cursor::Cursor(const CXCursor &handle) :
+    m_handle(handle) { }
 
-CXCursorKind Cursor::getKind(void) const { return m_handle.kind; }
+CXCursorKind Cursor::getKind(void) const
+{
+    return m_handle.kind;
+}
 
 std::string Cursor::getSpelling(void) const
 {
@@ -43,16 +46,22 @@ std::string Cursor::getSourceFile(void) const
     return filename;
 }
 
-bool Cursor::isDefinition(void) const { return clang_isCursorDefinition(m_handle); }
+bool Cursor::isDefinition(void) const
+{
+    return clang_isCursorDefinition(m_handle);
+}
 
-CursorType Cursor::getType(void) const { return clang_getCursorType(m_handle); }
+CursorType Cursor::getType(void) const
+{
+    return clang_getCursorType(m_handle);
+}
 
 Cursor::List Cursor::getChildren(void) const
 {
     List children;
 
     auto visitor = [](CXCursor cursor, CXCursor parent, CXClientData data) {
-        auto container = static_cast<List*>(data);
+        auto container = static_cast<List *>(data);
 
         container->emplace_back(cursor);
 
@@ -67,4 +76,7 @@ Cursor::List Cursor::getChildren(void) const
     return children;
 }
 
-void Cursor::visitChildren(Visitor visitor, void* data) { clang_visitChildren(m_handle, visitor, data); }
+void Cursor::visitChildren(Visitor visitor, void *data)
+{
+    clang_visitChildren(m_handle, visitor, data);
+}
