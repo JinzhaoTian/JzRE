@@ -53,6 +53,8 @@ elseif(UNIX AND NOT APPLE)
     set(OPENGL_LIBS ${OpenGL})
 endif()
 
+add_subdirectory(programs)
+
 # add src module
 add_subdirectory(src)
 
