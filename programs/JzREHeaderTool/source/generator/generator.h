@@ -1,7 +1,7 @@
 #pragma once
 
 #include "common/schema_module.h"
-#include "language_types/class.h"
+#include "Types/JhtClass.h"
 
 #include <functional>
 #include <string>
@@ -27,9 +27,9 @@ public:
 
 protected:
     virtual void prepareStatus(std::string path);
-    virtual void genClassRenderData(std::shared_ptr<Class> class_temp, kainjow::mustache::data &class_def);
-    virtual void genClassFieldRenderData(std::shared_ptr<Class> class_temp, kainjow::mustache::data &feild_defs);
-    virtual void genClassMethodRenderData(std::shared_ptr<Class> class_temp, kainjow::mustache::data &method_defs);
+    virtual void genClassRenderData(std::shared_ptr<JhtClass> class_temp, kainjow::mustache::data &class_def);
+    virtual void genClassFieldRenderData(std::shared_ptr<JhtClass> class_temp, kainjow::mustache::data &feild_defs);
+    virtual void genClassMethodRenderData(std::shared_ptr<JhtClass> class_temp, kainjow::mustache::data &method_defs);
 
     virtual std::string processFileName(std::string path) = 0;
 

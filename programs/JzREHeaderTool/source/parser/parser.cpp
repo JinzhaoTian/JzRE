@@ -1,7 +1,7 @@
 #include <filesystem>
 #include <fstream>
 
-#include "language_types/class.h"
+#include "Types/JhtClass.h"
 #include "generator/reflection_generator.h"
 #include "generator/serializer_generator.h"
 #include "meta/meta_utils.h"
@@ -24,7 +24,7 @@
         if (handle->shouldCompile()) {                             \
             auto file = handle->getSourceFile();                   \
             m_schema_modules[file].container.emplace_back(handle); \
-            m_type_table[handle->m_display_name] = file;           \
+            m_type_table[handle->m_displayName] = file;            \
         }                                                          \
     }
 
@@ -189,7 +189,7 @@ void MetaParser::buildClassAST(const Cursor &cursor, std::vector<std::string> &c
 
         // actual definition and a class or struct
         if (child.isDefinition() && (kind == CXCursor_ClassDecl || kind == CXCursor_StructDecl)) {
-            auto class_ptr = std::make_shared<Class>(child, current_namespace);
+            auto class_ptr = std::make_shared<JhtClass>(child, current_namespace);
 
             TRY_ADD_LANGUAGE_TYPE(class_ptr, classes);
         } else {

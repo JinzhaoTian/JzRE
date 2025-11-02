@@ -1,5 +1,7 @@
 #pragma once
+
 #include "generator/generator.h"
+
 namespace Generator {
 class SerializerGenerator : public GeneratorInterface {
 public:
@@ -21,4 +23,5 @@ private:
     kainjow::mustache::data m_class_defines{kainjow::mustache::data::type::list};
     kainjow::mustache::data m_include_headfiles{kainjow::mustache::data::type::list};
 };
+
 } // namespace Generator

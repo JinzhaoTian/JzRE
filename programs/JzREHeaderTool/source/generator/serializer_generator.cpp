@@ -1,5 +1,4 @@
 #include "generator/serializer_generator.h"
-#include "language_types/class.h"
 #include "meta/meta_utils.h"
 #include "template_manager/template_manager.h"
 
@@ -44,8 +43,8 @@ int SerializerGenerator::generate(std::string path, SchemaModule schema)
         genClassRenderData(class_temp, class_def);
 
         // deal base class
-        for (int index = 0; index < class_temp->m_base_classes.size(); ++index) {
-            auto include_file = m_get_include_func(class_temp->m_base_classes[index]->name);
+        for (int index = 0; index < class_temp->m_baseClasses.size(); ++index) {
+            auto include_file = m_get_include_func(class_temp->m_baseClasses[index]->name);
             if (!include_file.empty()) {
                 auto include_file_base = processFileName(include_file);
                 if (file_path != include_file_base) {

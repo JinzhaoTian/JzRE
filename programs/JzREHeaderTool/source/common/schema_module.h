@@ -8,9 +8,9 @@
 #include <string>
 #include <vector>
 
-#include "language_types/class.h"
+#include "Types/JhtClass.h"
 
 struct SchemaModule {
-    std::string                         name;
-    std::vector<std::shared_ptr<Class>> classes;
+    std::string                            name;
+    std::vector<std::shared_ptr<JhtClass>> classes;
 };
