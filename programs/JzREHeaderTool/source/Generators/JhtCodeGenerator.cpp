@@ -1,33 +1,39 @@
-#include "generator/reflection_generator.h"
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
+#include <map>
+#include <filesystem>
+
+#include "Generators/JhtCodeGenerator.h"
 #include "meta/meta_utils.h"
 #include "template_manager/template_manager.h"
 
-#include <filesystem>
-#include <map>
-
-namespace Generator {
-ReflectionGenerator::ReflectionGenerator(std::string                             source_directory,
-                                         std::function<std::string(std::string)> get_include_function) :
-    GeneratorInterface(source_directory + "/_generated/reflection", source_directory, get_include_function)
+JhtCodeGenerator::JhtCodeGenerator(std::string                             sourceDirectory,
+                                   std::function<std::string(std::string)> getIncludeFunc) :
+    JhtIGenerator(sourceDirectory + "/_generated/reflection", sourceDirectory, getIncludeFunc)
 {
-    prepareStatus(m_out_path);
+    prepareStatus(m_outPath);
 }
 
-void ReflectionGenerator::prepareStatus(std::string path)
+JhtCodeGenerator::~JhtCodeGenerator() { }
+
+void JhtCodeGenerator::prepareStatus(std::string path)
 {
-    GeneratorInterface::prepareStatus(path);
-    TemplateManager::getInstance()->loadTemplates(m_root_path, "commonReflectionFile");
-    TemplateManager::getInstance()->loadTemplates(m_root_path, "allReflectionFile");
+    JhtIGenerator::prepareStatus(path);
+    TemplateManager::getInstance()->loadTemplates(m_rootPath, "commonReflectionFile");
+    TemplateManager::getInstance()->loadTemplates(m_rootPath, "allReflectionFile");
     return;
 }
 
-std::string ReflectionGenerator::processFileName(std::string path)
+std::string JhtCodeGenerator::processFileName(std::string path)
 {
     auto relativeDir = std::filesystem::path(path).filename().replace_extension("reflection.gen.h").string();
-    return m_out_path + "/" + relativeDir;
+    return m_outPath + "/" + relativeDir;
 }
 
-int ReflectionGenerator::generate(std::string path, SchemaModule schema)
+int JhtCodeGenerator::generate(std::string path, SchemaModule schema)
 {
     static const std::string vector_prefix = "std::vector<";
 
@@ -38,7 +44,7 @@ int ReflectionGenerator::generate(std::string path, SchemaModule schema)
     kainjow::mustache::data class_defines(kainjow::mustache::data::type::list);
 
     include_headfiles.push_back(
-        kainjow::mustache::data("headfile_name", Utils::makeRelativePath(m_root_path, path).string()));
+        kainjow::mustache::data("headfile_name", Utils::makeRelativePath(m_rootPath, path).string()));
 
     std::map<std::string, bool> class_names;
     // class defs
@@ -102,31 +108,27 @@ int ReflectionGenerator::generate(std::string path, SchemaModule schema)
         TemplateManager::getInstance()->renderByTemplate("commonReflectionFile", mustache_data);
     Utils::saveFile(render_string, file_path);
 
-    m_sourcefile_list.emplace_back(tmp);
+    m_sourceFiles.emplace_back(tmp);
 
-    m_head_file_list.emplace_back(Utils::makeRelativePath(m_root_path, file_path).string());
+    m_headerFiles.emplace_back(Utils::makeRelativePath(m_rootPath, file_path).string());
     return 0;
 }
 
-void ReflectionGenerator::finish()
+void JhtCodeGenerator::finish()
 {
     kainjow::mustache::data mustache_data;
     kainjow::mustache::data include_headfiles = kainjow::mustache::data::type::list;
     kainjow::mustache::data sourefile_names   = kainjow::mustache::data::type::list;
 
-    for (auto &head_file : m_head_file_list) {
+    for (auto &head_file : m_headerFiles) {
         include_headfiles.push_back(kainjow::mustache::data("headfile_name", head_file));
     }
-    for (auto &sourefile_name_upper_camel_case : m_sourcefile_list) {
+    for (auto &sourefile_name_upper_camel_case : m_sourceFiles) {
         sourefile_names.push_back(kainjow::mustache::data("sourefile_name_upper_camel_case", sourefile_name_upper_camel_case));
     }
     mustache_data.set("include_headfiles", include_headfiles);
     mustache_data.set("sourefile_names", sourefile_names);
     std::string render_string =
         TemplateManager::getInstance()->renderByTemplate("allReflectionFile", mustache_data);
-    Utils::saveFile(render_string, m_out_path + "/all_reflection.h");
+    Utils::saveFile(render_string, m_outPath + "/all_reflection.h");
 }
-
-ReflectionGenerator::~ReflectionGenerator() { }
-
-} // namespace Generator

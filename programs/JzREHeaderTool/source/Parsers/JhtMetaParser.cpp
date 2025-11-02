@@ -1,60 +1,39 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #include <filesystem>
 #include <fstream>
 
-#include "Types/JhtClass.h"
-#include "generator/reflection_generator.h"
-#include "generator/serializer_generator.h"
+#include "Parsers/JhtMetaParser.h"
+#include "Generators/JhtCodeGenerator.h"
+#include "Generators/JhtSerializerGenerator.h"
 #include "meta/meta_utils.h"
-#include "parser.h"
+#include "Types/JhtClass.h"
 
-#define RECURSE_NAMESPACES(kind, cursor, method, namespaces) \
-    {                                                        \
-        if (kind == CXCursor_Namespace) {                    \
-            auto display_name = cursor.getDisplayName();     \
-            if (!display_name.empty()) {                     \
-                namespaces.emplace_back(display_name);       \
-                method(cursor, namespaces);                  \
-                namespaces.pop_back();                       \
-            }                                                \
-        }                                                    \
-    }
-
-#define TRY_ADD_LANGUAGE_TYPE(handle, container)                   \
-    {                                                              \
-        if (handle->shouldCompile()) {                             \
-            auto file = handle->getSourceFile();                   \
-            m_schema_modules[file].container.emplace_back(handle); \
-            m_type_table[handle->m_displayName] = file;            \
-        }                                                          \
-    }
-
-void MetaParser::prepare(void) { }
-
-std::string MetaParser::getIncludeFile(std::string name)
-{
-    auto iter = m_type_table.find(name);
-    return iter == m_type_table.end() ? std::string() : iter->second;
-}
-
-MetaParser::MetaParser(const std::string project_input_file,
-                       const std::string include_file_path,
-                       const std::string include_path,
-                       const std::string sys_include,
-                       const std::string module_name,
-                       bool              is_show_errors) :
+JhtMetaParser::JhtMetaParser(const std::string project_input_file,
+                             const std::string include_file_path,
+                             const std::string include_path,
+                             const std::string sys_include,
+                             const std::string module_name) :
     m_project_input_file(project_input_file),
-    m_source_include_file_name(include_file_path), m_index(nullptr), m_translation_unit(nullptr),
-    m_sys_include(sys_include), m_module_name(module_name), m_is_show_errors(is_show_errors)
+    m_source_include_file_name(include_file_path),
+    m_index(nullptr),
+    m_translation_unit(nullptr),
+    m_sys_include(sys_include),
+    m_module_name(module_name),
+    m_is_show_errors(false)
 {
     m_work_paths = Utils::split(include_path, ";");
 
-    m_generators.emplace_back(new Generator::SerializerGenerator(
-        m_work_paths[0], std::bind(&MetaParser::getIncludeFile, this, std::placeholders::_1)));
-    m_generators.emplace_back(new Generator::ReflectionGenerator(
-        m_work_paths[0], std::bind(&MetaParser::getIncludeFile, this, std::placeholders::_1)));
+    m_generators.emplace_back(new JhtSerializerGenerator(
+        m_work_paths[0], std::bind(&JhtMetaParser::getIncludeFile, this, std::placeholders::_1)));
+    m_generators.emplace_back(new JhtCodeGenerator(
+        m_work_paths[0], std::bind(&JhtMetaParser::getIncludeFile, this, std::placeholders::_1)));
 }
 
-MetaParser::~MetaParser(void)
+JhtMetaParser::~JhtMetaParser()
 {
     for (auto item : m_generators) {
         delete item;
@@ -68,14 +47,7 @@ MetaParser::~MetaParser(void)
         clang_disposeIndex(m_index);
 }
 
-void MetaParser::finish(void)
-{
-    for (auto generator_iter : m_generators) {
-        generator_iter->finish();
-    }
-}
-
-bool MetaParser::parseProject()
+bool JhtMetaParser::parseProject()
 {
     bool result = true;
     std::cout << "Parsing project file: " << m_project_input_file << std::endl;
@@ -126,7 +98,7 @@ bool MetaParser::parseProject()
     return result;
 }
 
-int MetaParser::parse(void)
+int JhtMetaParser::parse()
 {
     bool parse_include_ = parseProject();
     if (!parse_include_) {
@@ -170,7 +142,7 @@ int MetaParser::parse(void)
     return 0;
 }
 
-void MetaParser::generateFiles(void)
+void JhtMetaParser::generateFiles()
 {
     std::cerr << "Start generate runtime schemas(" << m_schema_modules.size() << ")..." << std::endl;
     for (auto &schema : m_schema_modules) {
@@ -178,22 +150,44 @@ void MetaParser::generateFiles(void)
             generator_iter->generate(schema.first, schema.second);
         }
     }
-
-    finish();
 }
 
-void MetaParser::buildClassAST(const Cursor &cursor, std::vector<std::string> &current_namespace)
+void JhtMetaParser::finish()
+{
+    for (auto generator_iter : m_generators) {
+        generator_iter->finish();
+    }
+}
+
+void JhtMetaParser::buildClassAST(const Cursor &cursor, std::vector<std::string> &currentNamespace)
 {
     for (auto &child : cursor.getChildren()) {
         auto kind = child.getKind();
 
         // actual definition and a class or struct
         if (child.isDefinition() && (kind == CXCursor_ClassDecl || kind == CXCursor_StructDecl)) {
-            auto class_ptr = std::make_shared<JhtClass>(child, current_namespace);
+            auto class_ptr = std::make_shared<JhtClass>(child, currentNamespace);
 
-            TRY_ADD_LANGUAGE_TYPE(class_ptr, classes);
+            if (class_ptr->shouldCompile()) {
+                auto file = class_ptr->getSourceFile();
+                m_schema_modules[file].classes.emplace_back(class_ptr);
+                m_type_table[class_ptr->m_displayName] = file;
+            }
         } else {
-            RECURSE_NAMESPACES(kind, child, buildClassAST, current_namespace);
+            if (kind == CXCursor_Namespace) {
+                auto display_name = cursor.getDisplayName();
+                if (!display_name.empty()) {
+                    currentNamespace.emplace_back(display_name);
+                    buildClassAST(cursor, currentNamespace);
+                    currentNamespace.pop_back();
+                }
+            }
         }
     }
+}
+
+std::string JhtMetaParser::getIncludeFile(std::string name)
+{
+    auto iter = m_type_table.find(name);
+    return iter == m_type_table.end() ? std::string() : iter->second;
 }

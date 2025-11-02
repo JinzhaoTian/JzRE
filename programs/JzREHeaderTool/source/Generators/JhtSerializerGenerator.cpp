@@ -1,31 +1,32 @@
-#include "generator/serializer_generator.h"
+#include "Generators/JhtSerializerGenerator.h"
 #include "meta/meta_utils.h"
 #include "template_manager/template_manager.h"
 
-namespace Generator {
-SerializerGenerator::SerializerGenerator(std::string                             source_directory,
-                                         std::function<std::string(std::string)> get_include_function) :
-    GeneratorInterface(source_directory + "/_generated/serializer", source_directory, get_include_function)
+JhtSerializerGenerator::JhtSerializerGenerator(std::string                             sourceDirectory,
+                                               std::function<std::string(std::string)> getIncludeFunc) :
+    JhtIGenerator(sourceDirectory + "/_generated/serializer", sourceDirectory, getIncludeFunc)
 {
-    prepareStatus(m_out_path);
+    prepareStatus(m_outPath);
 }
 
-void SerializerGenerator::prepareStatus(std::string path)
+JhtSerializerGenerator::~JhtSerializerGenerator() { }
+
+void JhtSerializerGenerator::prepareStatus(std::string path)
 {
-    GeneratorInterface::prepareStatus(path);
-    TemplateManager::getInstance()->loadTemplates(m_root_path, "allSerializer.h");
-    TemplateManager::getInstance()->loadTemplates(m_root_path, "allSerializer.ipp");
-    TemplateManager::getInstance()->loadTemplates(m_root_path, "commonSerializerGenFile");
+    JhtIGenerator::prepareStatus(path);
+    TemplateManager::getInstance()->loadTemplates(m_rootPath, "allSerializer.h");
+    TemplateManager::getInstance()->loadTemplates(m_rootPath, "allSerializer.ipp");
+    TemplateManager::getInstance()->loadTemplates(m_rootPath, "commonSerializerGenFile");
     return;
 }
 
-std::string SerializerGenerator::processFileName(std::string path)
+std::string JhtSerializerGenerator::processFileName(std::string path)
 {
     auto relativeDir = std::filesystem::path(path).filename().replace_extension("serializer.gen.h").string();
-    return m_out_path + "/" + relativeDir;
+    return m_outPath + "/" + relativeDir;
 }
 
-int SerializerGenerator::generate(std::string path, SchemaModule schema)
+int JhtSerializerGenerator::generate(std::string path, SchemaModule schema)
 {
     std::string file_path = processFileName(path);
 
@@ -34,7 +35,7 @@ int SerializerGenerator::generate(std::string path, SchemaModule schema)
     kainjow::mustache::data class_defines(kainjow::mustache::data::type::list);
 
     include_headfiles.push_back(
-        kainjow::mustache::data("headfile_name", Utils::makeRelativePath(m_root_path, path).string()));
+        kainjow::mustache::data("headfile_name", Utils::makeRelativePath(m_rootPath, path).string()));
     for (auto class_temp : schema.classes) {
         if (!class_temp->shouldCompileFields())
             continue;
@@ -44,12 +45,12 @@ int SerializerGenerator::generate(std::string path, SchemaModule schema)
 
         // deal base class
         for (int index = 0; index < class_temp->m_baseClasses.size(); ++index) {
-            auto include_file = m_get_include_func(class_temp->m_baseClasses[index]->name);
+            auto include_file = m_getIncludeFunc(class_temp->m_baseClasses[index]->name);
             if (!include_file.empty()) {
                 auto include_file_base = processFileName(include_file);
                 if (file_path != include_file_base) {
                     include_headfiles.push_back(kainjow::mustache::data(
-                        "headfile_name", Utils::makeRelativePath(m_root_path, include_file_base).string()));
+                        "headfile_name", Utils::makeRelativePath(m_rootPath, include_file_base).string()));
                 }
             }
         }
@@ -58,19 +59,19 @@ int SerializerGenerator::generate(std::string path, SchemaModule schema)
                 continue;
             // deal vector
             if (field->m_type.find("std::vector") == 0) {
-                auto include_file = m_get_include_func(field->m_name);
+                auto include_file = m_getIncludeFunc(field->m_name);
                 if (!include_file.empty()) {
                     auto include_file_base = processFileName(include_file);
                     if (file_path != include_file_base) {
                         include_headfiles.push_back(kainjow::mustache::data(
-                            "headfile_name", Utils::makeRelativePath(m_root_path, include_file_base).string()));
+                            "headfile_name", Utils::makeRelativePath(m_rootPath, include_file_base).string()));
                     }
                 }
             }
             // deal normal
         }
         class_defines.push_back(class_def);
-        m_class_defines.push_back(class_def);
+        m_classDefines.push_back(class_def);
     }
 
     muatache_data.set("class_defines", class_defines);
@@ -79,22 +80,19 @@ int SerializerGenerator::generate(std::string path, SchemaModule schema)
         TemplateManager::getInstance()->renderByTemplate("commonSerializerGenFile", muatache_data);
     Utils::saveFile(render_string, file_path);
 
-    m_include_headfiles.push_back(
-        kainjow::mustache::data("headfile_name", Utils::makeRelativePath(m_root_path, file_path).string()));
+    m_headerFiles.push_back(
+        kainjow::mustache::data("headfile_name", Utils::makeRelativePath(m_rootPath, file_path).string()));
     return 0;
 }
 
-void SerializerGenerator::finish()
+void JhtSerializerGenerator::finish()
 {
     kainjow::mustache::data mustache_data;
-    mustache_data.set("class_defines", m_class_defines);
-    mustache_data.set("include_headfiles", m_include_headfiles);
+    mustache_data.set("class_defines", m_classDefines);
+    mustache_data.set("include_headfiles", m_headerFiles);
 
     std::string render_string = TemplateManager::getInstance()->renderByTemplate("allSerializer.h", mustache_data);
-    Utils::saveFile(render_string, m_out_path + "/all_serializer.h");
+    Utils::saveFile(render_string, m_outPath + "/all_serializer.h");
     render_string = TemplateManager::getInstance()->renderByTemplate("allSerializer.ipp", mustache_data);
-    Utils::saveFile(render_string, m_out_path + "/all_serializer.ipp");
+    Utils::saveFile(render_string, m_outPath + "/all_serializer.ipp");
 }
-
-SerializerGenerator::~SerializerGenerator() { }
-} // namespace Generator

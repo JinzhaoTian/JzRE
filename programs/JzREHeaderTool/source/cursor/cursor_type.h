@@ -1,7 +1,7 @@
 #pragma once
 
-#include "clang-c/Index.h"
 #include <string>
+#include "clang-c/Index.h"
 
 class Cursor;
 

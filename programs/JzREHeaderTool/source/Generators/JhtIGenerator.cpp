@@ -2,20 +2,18 @@
  * @author    Jinzhao Tian
  * @copyright Copyright (c) 2025 JzRE
  */
-
-#include "generator/generator.h"
 #include <filesystem>
 
+#include "Generators/JhtIGenerator.h"
 #include "Types/JhtClass.h"
 
-namespace Generator {
-void GeneratorInterface::prepareStatus(std::string path)
+void JhtIGenerator::prepareStatus(std::string path)
 {
     if (!std::filesystem::exists(path)) {
         std::filesystem::create_directories(path);
     }
 }
-void GeneratorInterface::genClassRenderData(std::shared_ptr<JhtClass> class_temp, kainjow::mustache::data &class_def)
+void JhtIGenerator::genClassRenderData(std::shared_ptr<JhtClass> class_temp, kainjow::mustache::data &class_def)
 {
     class_def.set("class_name", class_temp->getClassName());
     class_def.set("class_base_class_size", std::to_string(class_temp->m_baseClasses.size()));
@@ -41,7 +39,8 @@ void GeneratorInterface::genClassRenderData(std::shared_ptr<JhtClass> class_temp
     genClassMethodRenderData(class_temp, class_method_defines);
     class_def.set("class_method_defines", class_method_defines);
 }
-void GeneratorInterface::genClassFieldRenderData(std::shared_ptr<JhtClass> class_temp, kainjow::mustache::data &feild_defs)
+
+void JhtIGenerator::genClassFieldRenderData(std::shared_ptr<JhtClass> class_temp, kainjow::mustache::data &feild_defs)
 {
     static const std::string vector_prefix = "std::vector<";
 
@@ -59,7 +58,7 @@ void GeneratorInterface::genClassFieldRenderData(std::shared_ptr<JhtClass> class
     }
 }
 
-void GeneratorInterface::genClassMethodRenderData(std::shared_ptr<JhtClass> class_temp, kainjow::mustache::data &method_defs)
+void JhtIGenerator::genClassMethodRenderData(std::shared_ptr<JhtClass> class_temp, kainjow::mustache::data &method_defs)
 {
     for (auto &method : class_temp->m_methods) {
         if (!method->shouldCompile())
@@ -70,4 +69,3 @@ void GeneratorInterface::genClassMethodRenderData(std::shared_ptr<JhtClass> clas
         method_defs.push_back(method_define);
     }
 }
-} // namespace Generator
