@@ -1,6 +1,6 @@
 #include "Generators/JhtSerializerGenerator.h"
 #include "meta/meta_utils.h"
-#include "template_manager/template_manager.h"
+#include "Templates/JhtTemplateManager.h"
 
 JhtSerializerGenerator::JhtSerializerGenerator(std::string                             sourceDirectory,
                                                std::function<std::string(std::string)> getIncludeFunc) :
@@ -14,9 +14,9 @@ JhtSerializerGenerator::~JhtSerializerGenerator() { }
 void JhtSerializerGenerator::prepareStatus(std::string path)
 {
     JhtIGenerator::prepareStatus(path);
-    TemplateManager::getInstance()->loadTemplates(m_rootPath, "allSerializer.h");
-    TemplateManager::getInstance()->loadTemplates(m_rootPath, "allSerializer.ipp");
-    TemplateManager::getInstance()->loadTemplates(m_rootPath, "commonSerializerGenFile");
+    JhtTemplateManager::getInstance()->loadTemplate(m_rootPath, "allSerializer.h");
+    JhtTemplateManager::getInstance()->loadTemplate(m_rootPath, "allSerializer.ipp");
+    JhtTemplateManager::getInstance()->loadTemplate(m_rootPath, "commonSerializerGenFile");
     return;
 }
 
@@ -76,8 +76,7 @@ int JhtSerializerGenerator::generate(std::string path, SchemaModule schema)
 
     muatache_data.set("class_defines", class_defines);
     muatache_data.set("include_headfiles", include_headfiles);
-    std::string render_string =
-        TemplateManager::getInstance()->renderByTemplate("commonSerializerGenFile", muatache_data);
+    std::string render_string = JhtTemplateManager::getInstance()->renderByTemplate("commonSerializerGenFile", muatache_data);
     Utils::saveFile(render_string, file_path);
 
     m_headerFiles.push_back(
@@ -91,8 +90,8 @@ void JhtSerializerGenerator::finish()
     mustache_data.set("class_defines", m_classDefines);
     mustache_data.set("include_headfiles", m_headerFiles);
 
-    std::string render_string = TemplateManager::getInstance()->renderByTemplate("allSerializer.h", mustache_data);
+    std::string render_string = JhtTemplateManager::getInstance()->renderByTemplate("allSerializer.h", mustache_data);
     Utils::saveFile(render_string, m_outPath + "/all_serializer.h");
-    render_string = TemplateManager::getInstance()->renderByTemplate("allSerializer.ipp", mustache_data);
+    render_string = JhtTemplateManager::getInstance()->renderByTemplate("allSerializer.ipp", mustache_data);
     Utils::saveFile(render_string, m_outPath + "/all_serializer.ipp");
 }

@@ -8,7 +8,7 @@
 
 #include "Generators/JhtCodeGenerator.h"
 #include "meta/meta_utils.h"
-#include "template_manager/template_manager.h"
+#include "Templates/JhtTemplateManager.h"
 
 JhtCodeGenerator::JhtCodeGenerator(std::string                             sourceDirectory,
                                    std::function<std::string(std::string)> getIncludeFunc) :
@@ -22,8 +22,8 @@ JhtCodeGenerator::~JhtCodeGenerator() { }
 void JhtCodeGenerator::prepareStatus(std::string path)
 {
     JhtIGenerator::prepareStatus(path);
-    TemplateManager::getInstance()->loadTemplates(m_rootPath, "commonReflectionFile");
-    TemplateManager::getInstance()->loadTemplates(m_rootPath, "allReflectionFile");
+    JhtTemplateManager::getInstance()->loadTemplate(m_rootPath, "commonReflectionFile");
+    JhtTemplateManager::getInstance()->loadTemplate(m_rootPath, "allReflectionFile");
     return;
 }
 
@@ -105,7 +105,7 @@ int JhtCodeGenerator::generate(std::string path, SchemaModule schema)
     mustache_data.set("sourefile_name_upper_camel_case", tmp);
 
     std::string render_string =
-        TemplateManager::getInstance()->renderByTemplate("commonReflectionFile", mustache_data);
+        JhtTemplateManager::getInstance()->renderByTemplate("commonReflectionFile", mustache_data);
     Utils::saveFile(render_string, file_path);
 
     m_sourceFiles.emplace_back(tmp);
@@ -129,6 +129,6 @@ void JhtCodeGenerator::finish()
     mustache_data.set("include_headfiles", include_headfiles);
     mustache_data.set("sourefile_names", sourefile_names);
     std::string render_string =
-        TemplateManager::getInstance()->renderByTemplate("allReflectionFile", mustache_data);
+        JhtTemplateManager::getInstance()->renderByTemplate("allReflectionFile", mustache_data);
     Utils::saveFile(render_string, m_outPath + "/all_reflection.h");
 }

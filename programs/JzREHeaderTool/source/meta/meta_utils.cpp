@@ -1,6 +1,5 @@
 #include "meta_utils.h"
 #include <iostream>
-#include <sstream>
 #include <fstream>
 
 static int parse_flag = 0;
@@ -214,23 +213,6 @@ std::string trim(std::string &source_string, const std::string trim_chars)
         source_string    = source_string.substr(left_pos, right_pos - left_pos + 1);
     }
     return source_string;
-}
-
-std::string loadFile(std::string path)
-{
-    std::ifstream      iFile(path);
-    std::string        line_string;
-    std::ostringstream template_stream;
-    if (false == iFile.is_open()) {
-        iFile.close();
-        return "";
-    }
-    while (std::getline(iFile, line_string)) {
-        template_stream << line_string << std::endl;
-    }
-    iFile.close();
-
-    return template_stream.str();
 }
 
 void saveFile(const std::string &outpu_string, const std::string &output_file)

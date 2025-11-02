@@ -45,8 +45,6 @@ std::string join(std::vector<std::string> context_list, std::string separator);
 
 std::string trim(std::string &source_string, const std::string trim_chars);
 
-std::string loadFile(std::string path);
-
 void saveFile(const std::string &outpu_string, const std::string &output_file);
 
 void replaceAll(std::string &resource_str, std::string sub_str, std::string new_str);
