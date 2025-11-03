@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <memory>
+
 #include "JhtType.h"
 #include "JhtField.h"
 #include "JhtMethod.h"

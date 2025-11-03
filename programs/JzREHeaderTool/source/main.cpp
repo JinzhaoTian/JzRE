@@ -1,3 +1,10 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
+#include <chrono>
+
 #include "Parsers/JhtMetaParser.h"
 
 int main(int argc, char *argv[])
@@ -8,11 +15,14 @@ int main(int argc, char *argv[])
     if (argv[1] != nullptr && argv[2] != nullptr && argv[3] != nullptr && argv[4] != nullptr && argv[5] != nullptr && argv[6] != nullptr) {
         std::cout << std::endl;
         std::cout << "Parsing meta data for target \"" << argv[5] << "\"" << std::endl;
-
-        JhtMetaParser parser(
-            argv[1], argv[2], argv[3], argv[4], argv[5]);
-
         std::cout << "Parsing in " << argv[3] << std::endl;
+
+        JhtMetaParser parser(argv[1],
+                             argv[2],
+                             argv[3],
+                             argv[4],
+                             argv[5]);
+
         int result = parser.parse();
         if (0 != result) {
             return result;
