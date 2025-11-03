@@ -1,6 +1,6 @@
 ﻿
 #include "meta_info.h"
-#include "meta/meta_utils.h"
+#include "Utils/JhtUtils.h"
 
 MetaInfo::MetaInfo(const Cursor &cursor)
 {
@@ -26,24 +26,24 @@ bool MetaInfo::getFlag(const std::string &key) const
     return m_properties.find(key) != m_properties.end();
 }
 
-std::vector<MetaInfo::Property> MetaInfo::extractProperties(const Cursor &cursor) const
+std::vector<std::pair<std::string, std::string>> MetaInfo::extractProperties(const Cursor &cursor) const
 {
-    std::vector<Property> ret_list;
+    std::vector<std::pair<std::string, std::string>> ret_list;
 
     auto propertyList = cursor.getDisplayName();
 
-    auto &&properties = Utils::split(propertyList, ",");
+    auto &&properties = JhtUtils::Split(propertyList, ",");
 
     static const std::string white_space_string = " \t\r\n";
 
     for (auto &property_item : properties) {
-        auto &&item_details = Utils::split(property_item, ":");
-        auto &&temp_string  = Utils::trim(item_details[0], white_space_string);
+        auto &&item_details = JhtUtils::Split(property_item, ":");
+        auto &&temp_string  = JhtUtils::Trim(item_details[0], white_space_string);
         if (temp_string.empty()) {
             continue;
         }
         ret_list.emplace_back(temp_string,
-                              item_details.size() > 1 ? Utils::trim(item_details[1], white_space_string) : "");
+                              item_details.size() > 1 ? JhtUtils::Trim(item_details[1], white_space_string) : "");
     }
     return ret_list;
 }

@@ -7,8 +7,8 @@
 #include <filesystem>
 
 #include "Generators/JhtCodeGenerator.h"
-#include "meta/meta_utils.h"
 #include "Templates/JhtTemplateManager.h"
+#include "Utils/JhtUtils.h"
 
 JhtCodeGenerator::JhtCodeGenerator(std::string                             sourceDirectory,
                                    std::function<std::string(std::string)> getIncludeFunc) :
@@ -44,7 +44,7 @@ int JhtCodeGenerator::generate(std::string path, SchemaModule schema)
     kainjow::mustache::data class_defines(kainjow::mustache::data::type::list);
 
     include_headfiles.push_back(
-        kainjow::mustache::data("headfile_name", Utils::makeRelativePath(m_rootPath, path).string()));
+        kainjow::mustache::data("headfile_name", JhtUtils::MakeRelativePath(m_rootPath, path).string()));
 
     std::map<std::string, bool> class_names;
     // class defs
@@ -70,11 +70,11 @@ int JhtCodeGenerator::generate(std::string path, SchemaModule schema)
             if (is_array) {
                 std::string array_useful_name = field->m_type;
 
-                Utils::formatQualifiedName(array_useful_name);
+                JhtUtils::FormatQualifiedName(array_useful_name);
 
                 std::string item_type = field->m_type;
 
-                item_type = Utils::getNameWithoutContainer(item_type);
+                item_type = JhtUtils::GetNameWithoutContainer(item_type);
 
                 vector_map[field->m_type] = std::make_pair(array_useful_name, item_type);
             }
@@ -101,16 +101,16 @@ int JhtCodeGenerator::generate(std::string path, SchemaModule schema)
     mustache_data.set("class_defines", class_defines);
     mustache_data.set("include_headfiles", include_headfiles);
 
-    std::string tmp = Utils::convertNameToUpperCamelCase(std::filesystem::path(path).stem().string(), "_");
+    std::string tmp = JhtUtils::ConvertNameToUpperCamelCase(std::filesystem::path(path).stem().string(), "_");
     mustache_data.set("sourefile_name_upper_camel_case", tmp);
 
     std::string render_string =
         JhtTemplateManager::getInstance()->renderByTemplate("commonReflectionFile", mustache_data);
-    Utils::saveFile(render_string, file_path);
+    JhtUtils::SaveFile(render_string, file_path);
 
     m_sourceFiles.emplace_back(tmp);
 
-    m_headerFiles.emplace_back(Utils::makeRelativePath(m_rootPath, file_path).string());
+    m_headerFiles.emplace_back(JhtUtils::MakeRelativePath(m_rootPath, file_path).string());
     return 0;
 }
 
@@ -130,5 +130,5 @@ void JhtCodeGenerator::finish()
     mustache_data.set("sourefile_names", sourefile_names);
     std::string render_string =
         JhtTemplateManager::getInstance()->renderByTemplate("allReflectionFile", mustache_data);
-    Utils::saveFile(render_string, m_outPath + "/all_reflection.h");
+    JhtUtils::SaveFile(render_string, m_outPath + "/all_reflection.h");
 }

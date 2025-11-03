@@ -1,6 +1,11 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
 #include "Generators/JhtSerializerGenerator.h"
-#include "meta/meta_utils.h"
 #include "Templates/JhtTemplateManager.h"
+#include "Utils/JhtUtils.h"
 
 JhtSerializerGenerator::JhtSerializerGenerator(std::string                             sourceDirectory,
                                                std::function<std::string(std::string)> getIncludeFunc) :
@@ -35,7 +40,7 @@ int JhtSerializerGenerator::generate(std::string path, SchemaModule schema)
     kainjow::mustache::data class_defines(kainjow::mustache::data::type::list);
 
     include_headfiles.push_back(
-        kainjow::mustache::data("headfile_name", Utils::makeRelativePath(m_rootPath, path).string()));
+        kainjow::mustache::data("headfile_name", JhtUtils::MakeRelativePath(m_rootPath, path).string()));
     for (auto class_temp : schema.classes) {
         if (!class_temp->shouldCompileFields())
             continue;
@@ -50,7 +55,7 @@ int JhtSerializerGenerator::generate(std::string path, SchemaModule schema)
                 auto include_file_base = processFileName(include_file);
                 if (file_path != include_file_base) {
                     include_headfiles.push_back(kainjow::mustache::data(
-                        "headfile_name", Utils::makeRelativePath(m_rootPath, include_file_base).string()));
+                        "headfile_name", JhtUtils::MakeRelativePath(m_rootPath, include_file_base).string()));
                 }
             }
         }
@@ -64,7 +69,7 @@ int JhtSerializerGenerator::generate(std::string path, SchemaModule schema)
                     auto include_file_base = processFileName(include_file);
                     if (file_path != include_file_base) {
                         include_headfiles.push_back(kainjow::mustache::data(
-                            "headfile_name", Utils::makeRelativePath(m_rootPath, include_file_base).string()));
+                            "headfile_name", JhtUtils::MakeRelativePath(m_rootPath, include_file_base).string()));
                     }
                 }
             }
@@ -77,10 +82,10 @@ int JhtSerializerGenerator::generate(std::string path, SchemaModule schema)
     muatache_data.set("class_defines", class_defines);
     muatache_data.set("include_headfiles", include_headfiles);
     std::string render_string = JhtTemplateManager::getInstance()->renderByTemplate("commonSerializerGenFile", muatache_data);
-    Utils::saveFile(render_string, file_path);
+    JhtUtils::SaveFile(render_string, file_path);
 
     m_headerFiles.push_back(
-        kainjow::mustache::data("headfile_name", Utils::makeRelativePath(m_rootPath, file_path).string()));
+        kainjow::mustache::data("headfile_name", JhtUtils::MakeRelativePath(m_rootPath, file_path).string()));
     return 0;
 }
 
@@ -91,7 +96,7 @@ void JhtSerializerGenerator::finish()
     mustache_data.set("include_headfiles", m_headerFiles);
 
     std::string render_string = JhtTemplateManager::getInstance()->renderByTemplate("allSerializer.h", mustache_data);
-    Utils::saveFile(render_string, m_outPath + "/all_serializer.h");
+    JhtUtils::SaveFile(render_string, m_outPath + "/all_serializer.h");
     render_string = JhtTemplateManager::getInstance()->renderByTemplate("allSerializer.ipp", mustache_data);
-    Utils::saveFile(render_string, m_outPath + "/all_serializer.ipp");
+    JhtUtils::SaveFile(render_string, m_outPath + "/all_serializer.ipp");
 }

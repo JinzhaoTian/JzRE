@@ -9,8 +9,8 @@
 #include "Parsers/JhtMetaParser.h"
 #include "Generators/JhtCodeGenerator.h"
 #include "Generators/JhtSerializerGenerator.h"
-#include "meta/meta_utils.h"
 #include "Types/JhtClass.h"
+#include "Utils/JhtUtils.h"
 
 JhtMetaParser::JhtMetaParser(const std::string project_input_file,
                              const std::string include_file_path,
@@ -25,7 +25,7 @@ JhtMetaParser::JhtMetaParser(const std::string project_input_file,
     m_module_name(module_name),
     m_is_show_errors(false)
 {
-    m_work_paths = Utils::split(include_path, ";");
+    m_work_paths = JhtUtils::Split(include_path, ";");
 
     m_generators.emplace_back(new JhtSerializerGenerator(
         m_work_paths[0], std::bind(&JhtMetaParser::getIncludeFile, this, std::placeholders::_1)));
@@ -64,7 +64,7 @@ bool JhtMetaParser::parseProject()
 
     std::string context = buffer.str();
 
-    auto         inlcude_files = Utils::split(context, ";");
+    auto         inlcude_files = JhtUtils::Split(context, ";");
     std::fstream include_file;
 
     include_file.open(m_source_include_file_name, std::ios::out);
@@ -75,21 +75,21 @@ bool JhtMetaParser::parseProject()
 
     std::cout << "Generating the Source Include file: " << m_source_include_file_name << std::endl;
 
-    std::string output_filename = Utils::getFileName(m_source_include_file_name);
+    std::string output_filename = JhtUtils::GetFileName(m_source_include_file_name);
 
     if (output_filename.empty()) {
         output_filename = "META_INPUT_HEADER_H";
     } else {
-        Utils::replace(output_filename, ".", "_");
-        Utils::replace(output_filename, " ", "_");
-        Utils::toUpper(output_filename);
+        JhtUtils::Replace(output_filename, ".", "_");
+        JhtUtils::Replace(output_filename, " ", "_");
+        JhtUtils::ToUpper(output_filename);
     }
     include_file << "#ifndef __" << output_filename << "__" << std::endl;
     include_file << "#define __" << output_filename << "__" << std::endl;
 
     for (auto include_item : inlcude_files) {
         std::string temp_string(include_item);
-        Utils::replace(temp_string, '\\', '/');
+        JhtUtils::Replace(temp_string, '\\', '/');
         include_file << "#include  \"" << temp_string << "\"" << std::endl;
     }
 

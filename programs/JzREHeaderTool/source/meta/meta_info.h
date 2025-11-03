@@ -13,10 +13,8 @@ public:
     bool getFlag(const std::string &key) const;
 
 private:
-    typedef std::pair<std::string, std::string> Property;
-
-    std::unordered_map<std::string, std::string> m_properties;
+    std::vector<std::pair<std::string, std::string>> extractProperties(const Cursor &cursor) const;
 
 private:
-    std::vector<Property> extractProperties(const Cursor &cursor) const;
+    std::unordered_map<std::string, std::string> m_properties;
 };
