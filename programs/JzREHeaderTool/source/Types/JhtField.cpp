@@ -8,7 +8,7 @@
 
 #include "JhtField.h"
 #include "JhtClass.h"
-#include "meta/meta_data_config.h"
+#include "Parsers/meta_data_config.h"
 
 JhtField::JhtField(const Cursor                   &cursor,
                    const std::vector<std::string> &current_namespace,

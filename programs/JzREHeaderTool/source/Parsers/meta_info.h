@@ -2,7 +2,7 @@
 
 #include <unordered_map>
 
-#include "cursor/cursor.h"
+#include "cursor.h"
 
 class MetaInfo {
 public:

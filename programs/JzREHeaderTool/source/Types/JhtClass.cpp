@@ -4,7 +4,7 @@
  */
 
 #include "JhtClass.h"
-#include "meta/meta_data_config.h"
+#include "Parsers/meta_data_config.h"
 
 JhtBaseClass::JhtBaseClass(const Cursor &cursor)
 {

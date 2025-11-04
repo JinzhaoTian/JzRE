@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "meta/meta_info.h"
+#include "Parsers/meta_info.h"
 
 /**
  * @brief Base class for Language Types

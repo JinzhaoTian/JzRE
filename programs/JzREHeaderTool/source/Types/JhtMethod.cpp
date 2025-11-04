@@ -5,7 +5,7 @@
 
 #include "JhtMethod.h"
 #include "JhtClass.h"
-#include "meta/meta_data_config.h"
+#include "Parsers/meta_data_config.h"
 
 JhtMethod::JhtMethod(const Cursor &cursor, const std::vector<std::string> &current_namespace, JhtClass *parent) :
     JhtType(cursor, current_namespace),

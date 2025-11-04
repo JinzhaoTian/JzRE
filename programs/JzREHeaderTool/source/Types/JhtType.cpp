@@ -4,7 +4,7 @@
  */
 
 #include "JhtType.h"
-#include "meta/meta_data_config.h"
+#include "Parsers/meta_data_config.h"
 
 JhtType::JhtType(const Cursor &cursor, const std::vector<std::string> &currentNamespace) :
     m_metaData(cursor),
