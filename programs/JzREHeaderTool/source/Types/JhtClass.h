@@ -15,7 +15,7 @@
  * @brief Language Class's Base Class Type
  */
 struct JhtBaseClass {
-    JhtBaseClass(const Cursor &cursor);
+    JhtBaseClass(const CXCursor &cursor);
 
     std::string name;
 };
@@ -35,7 +35,7 @@ public:
      * @param cursor
      * @param currentNamespace
      */
-    JhtClass(const Cursor &cursor, const std::vector<std::string> &currentNamespace);
+    JhtClass(const CXCursor &cursor, const std::vector<std::string> &currentNamespace);
 
     /**
      * @brief

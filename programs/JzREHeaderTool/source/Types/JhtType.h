@@ -5,11 +5,30 @@
 
 #pragma once
 
-#include "Parsers/meta_info.h"
+#include <vector>
+#include <string>
+#include <unordered_map>
+
+#include "clang-c/Index.h"
+
+namespace NativeProperty {
+const auto All = "All";
+
+const auto Fields  = "Fields";
+const auto Methods = "Methods";
+
+const auto Enable  = "Enable";
+const auto Disable = "Disable";
+
+const auto WhiteListFields  = "WhiteListFields";
+const auto WhiteListMethods = "WhiteListMethods";
+
+} // namespace NativeProperty
 
 /**
  * @brief Base class for Language Types
  */
+
 class JhtType {
 public:
     /**
@@ -18,7 +37,7 @@ public:
      * @param cursor
      * @param currentNamespace
      */
-    JhtType(const Cursor &cursor, const std::vector<std::string> &currentNamespace);
+    JhtType(const CXCursor &cursor, const std::vector<std::string> &currentNamespace);
 
     /**
      * @brief Destructor
@@ -30,7 +49,11 @@ public:
      *
      * @return const MetaInfo&
      */
-    const MetaInfo &getMetaData() const;
+    const std::unordered_map<std::string, std::string> &getProperties() const;
+
+    bool getFlag(const std::string &key) const;
+
+    std::string getProperty(const std::string &key) const;
 
     /**
      * @brief Get the Source File object
@@ -46,11 +69,21 @@ public:
      */
     std::vector<std::string> getCurrentNamespace() const;
 
+    std::string getCursorSpelling(const CXCursor &cursor) const;
+
+    std::vector<CXCursor> getCursorChildren(const CXCursor &cursor) const;
+
+    std::string getCursorDisplayName(const CXCursor &cursor) const;
+
+    CXType getCursorType(const CXCursor &cursor) const;
+
+    std::vector<std::pair<std::string, std::string>> extractProperties(const CXCursor &cursor) const;
+
 protected:
-    MetaInfo                 m_metaData;
-    std::vector<std::string> m_namespace;
-    bool                     m_enabled;
+    std::unordered_map<std::string, std::string> m_properties;
+    std::vector<std::string>                     m_namespace;
+    bool                                         m_enabled;
 
 private:
-    Cursor m_rootCursor;
+    CXCursor m_rootCursor;
 };

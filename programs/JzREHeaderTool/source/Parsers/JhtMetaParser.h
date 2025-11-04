@@ -41,9 +41,16 @@ public:
     void finish();
 
 private:
-    bool        parseProject();
-    void        buildClassAST(const Cursor &cursor, std::vector<std::string> &currentNamespace);
-    std::string getIncludeFile(std::string name);
+    bool                                             parseProject();
+    void                                             buildClassAST(const CXCursor &cursor, std::vector<std::string> &currentNamespace);
+    std::string                                      getIncludeFile(std::string name);
+    std::vector<std::pair<std::string, std::string>> extractProperties(const CXCursor &cursor) const;
+    std::string                                      getCursorDisplayName(const CXCursor &cursor) const;
+    std::string                                      getCursorSpelling(const CXCursor &cursor) const;
+    std::string                                      getCursorSourceFile(const CXCursor &cursor) const;
+    bool                                             isCursorDefinition(const CXCursor &cursor) const;
+    CXType                                           getCursorType(const CXCursor &cursor) const;
+    std::vector<CXCursor>                            getCursorChildren(const CXCursor &cursor) const;
 
 private:
     std::string              m_project_input_file;

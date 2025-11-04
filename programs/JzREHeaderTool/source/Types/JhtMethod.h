@@ -21,7 +21,7 @@ public:
      * @param currentNamespace
      * @param parent
      */
-    JhtMethod(const Cursor &cursor, const std::vector<std::string> &currentNamespace, JhtClass *parent = nullptr);
+    JhtMethod(const CXCursor &cursor, const std::vector<std::string> &currentNamespace, JhtClass *parent = nullptr);
 
     /**
      * @brief Destructor
@@ -40,7 +40,7 @@ public:
      *
      * @return bool
      */
-    bool isAccessible(void) const;
+    bool isAccessible() const;
 
 public:
     JhtClass   *m_parent;

@@ -4,18 +4,19 @@
  */
 
 #include "JhtClass.h"
-#include "Parsers/meta_data_config.h"
 
-JhtBaseClass::JhtBaseClass(const Cursor &cursor)
+JhtBaseClass::JhtBaseClass(const CXCursor &cursor)
 {
-    name = cursor.getType().GetDisplayName();
+    name = clang_getCString(clang_getTypeSpelling(clang_getCursorType(cursor)));
 }
 
-JhtClass::JhtClass(const Cursor &cursor, const std::vector<std::string> &current_namespace) :
-    JhtType(cursor, current_namespace),
-    m_name(cursor.getDisplayName()),
-    m_qualifiedName(cursor.getType().GetDisplayName())
+JhtClass::JhtClass(const CXCursor &cursor, const std::vector<std::string> &current_namespace) :
+    JhtType(cursor, current_namespace)
 {
+    m_name = clang_getCString(clang_getCursorDisplayName(cursor));
+
+    m_qualifiedName = clang_getCString(clang_getTypeSpelling(clang_getCursorType(cursor)));
+
     m_displayName = m_qualifiedName.starts_with("m_") && m_qualifiedName.size() > 2 ? m_qualifiedName.substr(2) : m_qualifiedName;
 
     m_name.erase(std::remove(m_name.begin(), m_name.end(), ' '), m_name.end());
@@ -25,8 +26,8 @@ JhtClass::JhtClass(const Cursor &cursor, const std::vector<std::string> &current
         m_name.erase(pos, prefix.length());
     }
 
-    for (auto &child : cursor.getChildren()) {
-        switch (child.getKind()) {
+    for (auto &child : getCursorChildren(cursor)) {
+        switch (child.kind) {
             case CXCursor_CXXBaseSpecifier:
             {
                 auto base_class = new JhtBaseClass(child);
@@ -53,12 +54,12 @@ bool JhtClass::shouldCompile() const
 
 bool JhtClass::shouldCompileFields() const
 {
-    return m_metaData.getFlag(NativeProperty::All) || m_metaData.getFlag(NativeProperty::Fields) || m_metaData.getFlag(NativeProperty::WhiteListFields);
+    return getFlag(NativeProperty::All) || getFlag(NativeProperty::Fields) || getFlag(NativeProperty::WhiteListFields);
 }
 
 bool JhtClass::shouldCompileMethods() const
 {
-    return m_metaData.getFlag(NativeProperty::All) || m_metaData.getFlag(NativeProperty::Methods) || m_metaData.getFlag(NativeProperty::WhiteListMethods);
+    return getFlag(NativeProperty::All) || getFlag(NativeProperty::Methods) || getFlag(NativeProperty::WhiteListMethods);
 }
 
 std::string JhtClass::getClassName()

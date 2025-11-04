@@ -107,8 +107,9 @@ int JhtMetaParser::parse()
     }
 
     std::cerr << "Parsing the whole project..." << std::endl;
-    int is_show_errors      = m_is_show_errors ? 1 : 0;
-    m_index                 = clang_createIndex(true, is_show_errors);
+    int is_show_errors = m_is_show_errors ? 1 : 0;
+    m_index            = clang_createIndex(true, is_show_errors);
+
     std::string pre_include = "-I";
     std::string sys_include_temp;
     if (!(m_sys_include == "*")) {
@@ -119,7 +120,6 @@ int JhtMetaParser::parse()
     auto paths = m_work_paths;
     for (int index = 0; index < paths.size(); ++index) {
         paths[index] = pre_include + paths[index];
-
         m_arguments.emplace_back(paths[index].c_str());
     }
 
@@ -129,13 +129,13 @@ int JhtMetaParser::parse()
         return -2;
     }
 
-    m_translation_unit = clang_createTranslationUnitFromSourceFile(m_index, m_source_include_file_name.c_str(), static_cast<int>(m_arguments.size()), m_arguments.data(), 0, nullptr);
-    auto cursor        = clang_getTranslationUnitCursor(m_translation_unit);
+    m_translation_unit = clang_createTranslationUnitFromSourceFile(
+        m_index, m_source_include_file_name.c_str(),
+        static_cast<int>(m_arguments.size()), m_arguments.data(), 0, nullptr);
 
+    auto                     cursor = clang_getTranslationUnitCursor(m_translation_unit);
     std::vector<std::string> temp_namespace;
-
     buildClassAST(cursor, temp_namespace);
-
     temp_namespace.clear();
 
     return 0;
@@ -158,13 +158,14 @@ void JhtMetaParser::finish()
     }
 }
 
-void JhtMetaParser::buildClassAST(const Cursor &cursor, std::vector<std::string> &currentNamespace)
+void JhtMetaParser::buildClassAST(const CXCursor &cursor, std::vector<std::string> &currentNamespace)
 {
-    for (auto &child : cursor.getChildren()) {
-        auto kind = child.getKind();
+    auto children = getCursorChildren(cursor);
 
-        // actual definition and a class or struct
-        if (child.isDefinition() && (kind == CXCursor_ClassDecl || kind == CXCursor_StructDecl)) {
+    for (auto &child : children) {
+        auto kind = clang_getCursorKind(child);
+
+        if (isCursorDefinition(child) && (kind == CXCursor_ClassDecl || kind == CXCursor_StructDecl)) {
             auto class_ptr = std::make_shared<JhtClass>(child, currentNamespace);
 
             if (class_ptr->shouldCompile()) {
@@ -172,17 +173,84 @@ void JhtMetaParser::buildClassAST(const Cursor &cursor, std::vector<std::string>
                 m_schema_modules[file].classes.emplace_back(class_ptr);
                 m_type_table[class_ptr->m_displayName] = file;
             }
-        } else {
-            if (kind == CXCursor_Namespace) {
-                auto display_name = cursor.getDisplayName();
-                if (!display_name.empty()) {
-                    currentNamespace.emplace_back(display_name);
-                    buildClassAST(cursor, currentNamespace);
-                    currentNamespace.pop_back();
-                }
+        } else if (kind == CXCursor_Namespace) {
+            auto display_name = getCursorDisplayName(child);
+            if (!display_name.empty()) {
+                currentNamespace.emplace_back(display_name);
+                buildClassAST(child, currentNamespace);
+                currentNamespace.pop_back();
             }
         }
     }
+}
+
+// Cursor工具函数实现
+std::string JhtMetaParser::getCursorDisplayName(const CXCursor &cursor) const
+{
+    return clang_getCString(clang_getCursorDisplayName(cursor));
+}
+
+std::string JhtMetaParser::getCursorSpelling(const CXCursor &cursor) const
+{
+    return clang_getCString(clang_getCursorSpelling(cursor));
+}
+
+std::string JhtMetaParser::getCursorSourceFile(const CXCursor &cursor) const
+{
+    auto     range = clang_Cursor_getSpellingNameRange(cursor, 0, 0);
+    auto     start = clang_getRangeStart(range);
+    CXFile   file;
+    unsigned line, column, offset;
+    clang_getFileLocation(start, &file, &line, &column, &offset);
+    return clang_getCString(clang_getFileName(file));
+}
+
+bool JhtMetaParser::isCursorDefinition(const CXCursor &cursor) const
+{
+    return clang_isCursorDefinition(cursor);
+}
+
+CXType JhtMetaParser::getCursorType(const CXCursor &cursor) const
+{
+    return clang_getCursorType(cursor);
+}
+
+std::vector<CXCursor> JhtMetaParser::getCursorChildren(const CXCursor &cursor) const
+{
+    std::vector<CXCursor> children;
+
+    auto visitor = [](CXCursor cursor, CXCursor parent, CXClientData data) {
+        auto container = static_cast<std::vector<CXCursor> *>(data);
+        container->emplace_back(cursor);
+
+        if (clang_getCursorKind(cursor) == CXCursor_LastPreprocessing)
+            return CXChildVisit_Break;
+
+        return CXChildVisit_Continue;
+    };
+
+    clang_visitChildren(cursor, visitor, &children);
+    return children;
+}
+
+std::vector<std::pair<std::string, std::string>> JhtMetaParser::extractProperties(const CXCursor &cursor) const
+{
+    std::vector<std::pair<std::string, std::string>> ret_list;
+    auto                                             propertyList = getCursorDisplayName(cursor);
+    auto                                             properties   = JhtUtils::Split(propertyList, ",");
+
+    static const std::string white_space_string = " \t\r\n";
+
+    for (auto &property_item : properties) {
+        auto item_details = JhtUtils::Split(property_item, ":");
+        auto temp_string  = JhtUtils::Trim(item_details[0], white_space_string);
+        if (temp_string.empty()) {
+            continue;
+        }
+        ret_list.emplace_back(temp_string,
+                              item_details.size() > 1 ? JhtUtils::Trim(item_details[1], white_space_string) : "");
+    }
+    return ret_list;
 }
 
 std::string JhtMetaParser::getIncludeFile(std::string name)

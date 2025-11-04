@@ -21,7 +21,7 @@ public:
      * @param currentNamespace
      * @param parent
      */
-    JhtField(const Cursor &cursor, const std::vector<std::string> &currentNamespace, JhtClass *parent = nullptr);
+    JhtField(const CXCursor &cursor, const std::vector<std::string> &currentNamespace, JhtClass *parent = nullptr);
 
     /**
      * @brief Destructor
