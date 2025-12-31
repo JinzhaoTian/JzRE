@@ -1,163 +1,240 @@
-# JzRE Resource Layer Design
+# JzRE 资源层设计
 
-## 1. Overview
+## 概述
 
-The resource layer is a critical component of JzRE, responsible for managing the lifecycle of all game assets (e.g., textures, models, materials, shaders). This design is based on three core concepts: `JzResource`, `JzResourceFactory`, and `JzResourceManager`.
+资源层是 JzRE 引擎的核心组件，负责管理所有游戏资产（纹理、模型、材质、着色器等）的生命周期。设计基于三个核心概念：`JzResource`、`JzResourceFactory` 和 `JzResourceManager`。
 
-The primary goals of this architecture are:
+---
 
--   **Automation**: Automate resource loading, unloading, and caching.
--   **Extensibility**: Easily support new resource types without modifying core manager code.
--   **Efficiency**: Use reference counting to manage memory and support asynchronous loading to avoid blocking the main thread.
--   **Decoupling**: Isolate resource management logic from the rest of the engine.
+## 设计目标
 
-## 2. Core Components
+- **自动化**: 自动资源加载、卸载和缓存
+- **可扩展**: 轻松支持新资源类型，无需修改核心代码
+- **高效**: 引用计数内存管理
+- **解耦**: 资源管理逻辑与引擎其他部分隔离
 
-### 2.1. `JzResource`
+---
 
-This is the abstract base class for all resource types.
+## 核心组件
 
--   **`State`**: Tracks the current status of the resource (`Unloaded`, `Loading`, `Loaded`, `Error`).
--   **`m_name`**: A unique string identifier for the resource, typically its relative path (e.g., "textures/player.png").
--   **`Load()` / `Unload()`**: Pure virtual functions that concrete resource classes must implement to handle their specific loading (e.g., from disk to GPU) and unloading logic.
+### JzResource (资源基类)
 
-### 2.2. `JzResourceFactory`
-
-This is an abstract factory interface used to create instances of specific resource types.
-
--   For each concrete resource class, like `JzTexture`, a corresponding factory, `JzTextureFactory`, will be implemented.
--   The manager uses these factories to instantiate resources without needing to know their concrete types.
-
-### 2.3. `JzResourceManager`
-
-This is the central singleton or service that orchestrates all resource management. It is the only class that client code should interact with to obtain resources.
-
--   **Cache (`m_resourceCache`)**: An `std::unordered_map<std::string, std::weak_ptr<JzResource>>`. Using `std::weak_ptr` is key to automatic memory management. It allows the manager to track resources without preventing them from being deallocated when they are no longer in use (i.e., all `std::shared_ptr` instances are gone).
--   **Factories (`m_factories`)**: A map (`std::unordered_map<std::type_index, std::unique_ptr<JzResourceFactory>>`) to store and look up the appropriate factory for a given resource type.
--   **Search Paths (`m_searchPaths`)**: A list of directories where the manager should look for resource files.
-
-## 3. Workflow
-
-### 3.1. Resource Registration (Initialization Phase)
-
-Before the resource manager can be used, all resource types must be registered.
+所有资源类型的抽象基类。
 
 ```cpp
-// In the engine's initialization phase
+enum class JzEResourceState {
+    Unloaded,  // 未加载
+    Loading,   // 加载中 (预留)
+    Loaded,    // 已加载
+    Error      // 错误
+};
+
+class JzResource {
+public:
+    virtual ~JzResource() = default;
+
+    JzEResourceState GetState() const { return m_state; }
+    const String& GetName() const { return m_name; }
+
+    virtual Bool Load() = 0;    // 加载资源
+    virtual void Unload() = 0;  // 卸载资源
+
+protected:
+    JzEResourceState m_state = JzEResourceState::Unloaded;
+    String m_name;
+};
+```
+
+### JzResourceFactory (资源工厂)
+
+用于创建具体资源类型实例的抽象工厂接口。
+
+```cpp
+class JzResourceFactory {
+public:
+    virtual ~JzResourceFactory() = default;
+    virtual JzResource* Create(const String& name) = 0;
+};
+```
+
+### JzResourceManager (资源管理器)
+
+资源管理的中央协调器，是获取资源的唯一入口。
+
+```cpp
+class JzResourceManager {
+public:
+    // 注册资源工厂
+    template <typename T>
+    void RegisterFactory(std::unique_ptr<JzResourceFactory> factory);
+
+    // 获取资源 (自动加载)
+    template <typename T>
+    std::shared_ptr<T> GetResource(const String& name);
+
+    // 清理未使用资源
+    void UnloadUnusedResources();
+
+    // 搜索路径管理
+    void AddSearchPath(const String& path);
+    String FindFullPath(const String& relativePath);
+
+private:
+    std::unordered_map<std::type_index, std::unique_ptr<JzResourceFactory>> m_factories;
+    std::unordered_map<String, std::weak_ptr<JzResource>> m_resourceCache;
+    std::vector<String> m_searchPaths;
+    std::mutex m_cacheMutex;
+};
+```
+
+---
+
+## 资源类型
+
+### 已实现的资源类型
+
+| 资源类型 | 类名 | 工厂类 | 用途 |
+|----------|------|--------|------|
+| 纹理 | `JzTexture` | `JzTextureFactory` | 图像资源 |
+| 网格 | `JzMesh` | `JzMeshFactory` | 几何数据 |
+| 材质 | `JzMaterial` | `JzMaterialFactory` | 渲染材质 |
+| 着色器 | `JzShader` | `JzShaderFactory` | GPU 程序 |
+| 模型 | `JzModel` | `JzModelFactory` | 完整3D模型 |
+| 字体 | `JzFont` | `JzFontFactory` | 文字渲染 |
+
+### 资源类关系
+
+```mermaid
+classDiagram
+    class JzResource {
+        <<abstract>>
+        +GetState() JzEResourceState
+        +GetName() String
+        +Load()* Bool
+        +Unload()* void
+        #m_state
+        #m_name
+    }
+    
+    class JzTexture {
+        +GetRHITexture() JzGPUTextureObject*
+        -m_rhiTexture
+    }
+    
+    class JzMesh {
+        +GetVertexArray() JzGPUVertexArrayObject*
+        +GetVertexBuffer() JzGPUBufferObject*
+        +GetIndexBuffer() JzGPUBufferObject*
+        -m_vertices
+        -m_indices
+    }
+    
+    class JzMaterial {
+        +GetPipeline() JzRHIPipeline*
+        +GetTextures() vector
+        -m_pipeline
+        -m_textures
+    }
+    
+    class JzShader {
+        +GetProgram() JzGPUShaderProgramObject*
+        -m_program
+    }
+    
+    class JzModel {
+        +GetMeshes() vector
+        +GetMaterials() vector
+        -m_meshes
+        -m_materials
+    }
+    
+    JzResource <|-- JzTexture
+    JzResource <|-- JzMesh
+    JzResource <|-- JzMaterial
+    JzResource <|-- JzShader
+    JzResource <|-- JzModel
+    
+    JzModel *-- JzMesh
+    JzModel *-- JzMaterial
+    JzMaterial *-- JzTexture
+    JzMaterial *-- JzShader
+```
+
+---
+
+## 工作流程
+
+### 1. 资源注册 (初始化阶段)
+
+```cpp
+// 在引擎初始化时注册所有工厂
 auto& resourceManager = JzServiceContainer::Get<JzResourceManager>();
 
-// Register a factory for JzTexture
 resourceManager.RegisterFactory<JzTexture>(std::make_unique<JzTextureFactory>());
-
-// Register a factory for JzModel
+resourceManager.RegisterFactory<JzMesh>(std::make_unique<JzMeshFactory>());
+resourceManager.RegisterFactory<JzMaterial>(std::make_unique<JzMaterialFactory>());
+resourceManager.RegisterFactory<JzShader>(std::make_unique<JzShaderFactory>());
 resourceManager.RegisterFactory<JzModel>(std::make_unique<JzModelFactory>());
 
-// Add paths to search for resource files
+// 添加资源搜索路径
 resourceManager.AddSearchPath("./resources");
 resourceManager.AddSearchPath("./assets");
 ```
 
-### 3.2. Resource Loading
-
-The `GetResource<T>(name)` method is the primary way to request a resource.
+### 2. 资源加载
 
 ```cpp
-// Request a texture. The manager handles everything else.
-std::shared_ptr<JzTexture> myTexture = resourceManager.GetResource<JzTexture>("textures/player.png");
+// 请求纹理资源 (管理器自动处理缓存和加载)
+auto texture = resourceManager.GetResource<JzTexture>("textures/player.png");
+
+// 检查资源状态
+if (texture && texture->GetState() == JzEResourceState::Loaded) {
+    // 使用纹理
+    auto rhiTexture = texture->GetRHITexture();
+}
 ```
 
-The internal process is as follows:
+### 3. 内部加载流程
 
-1.  **Cache Lookup**: The manager first searches `m_resourceCache` using the resource `name`.
-2.  **Cache Hit**:
-    -   If a `weak_ptr` is found and it's not expired (`!weak_ptr.expired()`), it means the resource is still active.
-    -   The `weak_ptr` is promoted to a `shared_ptr` and returned immediately.
-3.  **Cache Miss**:
-    -   If no entry is found or the `weak_ptr` has expired, a new resource must be created.
-    -   The manager uses `typeid(T)` to find the corresponding `JzResourceFactory` in its `m_factories` map.
-    -   The factory's `Create(name)` method is called to instantiate a new resource object, which is wrapped in a `std::shared_ptr`.
-    -   The new `shared_ptr` is used to create a `weak_ptr` which is then stored in `m_resourceCache`.
-    -   The resource's `Load()` method is called. This can be synchronous or asynchronous.
-    -   The `shared_ptr` to the new resource is returned.
+```mermaid
+flowchart TD
+    A[GetResource 调用] --> B{缓存查找}
+    B -->|命中且有效| C[返回 shared_ptr]
+    B -->|未命中或过期| D{查找工厂}
+    D -->|未找到| E[返回 nullptr]
+    D -->|找到| F[工厂创建资源]
+    F --> G[调用 Load]
+    G --> H[加入缓存]
+    H --> C
+```
 
-### 3.3. Asynchronous Loading
+### 4. 资源卸载
 
-To prevent stalling the render loop, loading can be done in the background.
-
-1.  `GetResource<T>(name, true)` is called with the async flag.
-2.  The manager creates the resource instance as usual, but instead of calling `Load()` directly, it pushes a load task onto a thread-safe queue (`m_asyncLoadQueue`). The resource's state is set to `State::Loading`.
-3.  A pool of worker threads consumes tasks from this queue, executing the `Load()` method.
-4.  The manager's `Update()` method, called every frame, checks for completed tasks. When a task is done, it updates the resource's state to `State::Loaded` or `State::Error`.
-5.  Client code can check `resource->GetState()` to see if the resource is ready for use.
-
-### 3.4. Resource Unloading
-
-Unloading is handled automatically by reference counting.
-
-1.  When the last `shared_ptr` pointing to a resource goes out of scope, the resource's destructor is called.
-2.  The destructor should call the `Unload()` method to release any acquired resources (e.g., GPU memory).
-3.  The `JzResourceManager::UnloadUnusedResources()` method can be called periodically (e.g., when changing scenes) to clean up the `m_resourceCache` by removing entries whose `weak_ptr`s have expired.
-
-## 4. Proposed Implementation Details
-
-### 4.1. `JzResourceManager.h` (Enhanced)
+资源卸载通过引用计数自动处理:
 
 ```cpp
-#pragma once
+// 当最后一个 shared_ptr 销毁时，资源自动卸载
+{
+    auto texture = resourceManager.GetResource<JzTexture>("textures/enemy.png");
+    // 使用纹理...
+} // texture 离开作用域，如果没有其他引用，资源将被销毁
 
-#include "JzRE/Core/JzRETypes.h"
-#include "JzRE/Resource/JzResource.h"
-#include "JzResourceFactory.h"
-#include <vector>
-#include <unordered_map>
-#include <memory>
-#include <string>
-#include <typeindex>
-#include <mutex>
+// 定期清理已过期的缓存条目
+resourceManager.UnloadUnusedResources();
+```
 
-namespace JzRE {
+---
 
-class JzResourceManager {
-public:
-    // Registers a factory for a given resource type T
-    template <typename T>
-    void RegisterFactory(std::unique_ptr<JzResourceFactory> factory);
+## 实现细节
 
-    // Gets a resource. Creates and loads it if not available.
-    template <typename T>
-    std::shared_ptr<T> GetResource(const String& name);
+### GetResource 模板实现
 
-    // Called every frame to process async queue, etc.
-    void Update();
-
-    // Cleans up expired weak_ptrs from the cache.
-    void UnloadUnusedResources();
-
-    void AddSearchPath(const std::string& path);
-    String FindFullPath(const String& relativePath);
-
-private:
-    std::unordered_map<String, std::weak_ptr<JzResource>> m_resourceCache;
-    std::vector<String> m_searchPaths;
-    std::unordered_map<std::type_index, std::unique_ptr<JzResourceFactory>> m_factories;
-
-    std::mutex m_cacheMutex;
-
-    // TODO: Add async loading members (queue, threads, etc.)
-};
-
-// --- Template Implementations ---
-
-template <typename T>
-void JzResourceManager::RegisterFactory(std::unique_ptr<JzResourceFactory> factory) {
-    m_factories[std::type_index(typeid(T))] = std::move(factory);
-}
-
+```cpp
 template <typename T>
 std::shared_ptr<T> JzResourceManager::GetResource(const String& name) {
     std::lock_guard<std::mutex> lock(m_cacheMutex);
 
-    // 1. Cache lookup
+    // 1. 缓存查找
     auto it = m_resourceCache.find(name);
     if (it != m_resourceCache.end()) {
         if (auto sharedRes = it->second.lock()) {
@@ -165,56 +242,166 @@ std::shared_ptr<T> JzResourceManager::GetResource(const String& name) {
         }
     }
 
-    // 2. Cache miss or expired: Create new resource
+    // 2. 缓存未命中: 创建新资源
     auto factory_it = m_factories.find(std::type_index(typeid(T)));
     if (factory_it == m_factories.end()) {
-        // Log error: No factory registered for this type
+        // 错误: 未注册此类型的工厂
         return nullptr;
     }
 
     JzResource* newRawRes = factory_it->second->Create(name);
     std::shared_ptr<T> newRes = std::shared_ptr<T>(static_cast<T*>(newRawRes));
 
-    // 3. Load and cache
-    newRes->Load(); // For now, synchronous load
+    // 3. 加载并缓存
+    newRes->Load();
     m_resourceCache[name] = newRes;
 
     return newRes;
 }
-
-} // namespace JzRE
 ```
 
-### 4.2. `JzTexture` Example
+### 工厂实现示例
 
 ```cpp
-// JzTexture.h
-#include "JzRE/Resource/JzResource.h"
-#include "JzRHITexture.h" // Assuming RHI texture exists
-
-class JzTexture : public JzResource {
-public:
-    JzTexture(const String& name);
-    virtual bool Load() override;
-    virtual void Unload() override;
-    JzRHITexture* GetRHITexture() const { return m_rhiTexture.get(); }
-private:
-    std::unique_ptr<JzRHITexture> m_rhiTexture;
-};
-
 // JzTextureFactory.h
-#include "JzResourceFactory.h"
-
 class JzTextureFactory : public JzResourceFactory {
 public:
-    virtual JzResource* Create(const String& name) override {
+    JzResource* Create(const String& name) override {
         return new JzTexture(name);
+    }
+};
+
+// JzShaderFactory.h (带参数)
+class JzShaderFactory : public JzResourceFactory {
+public:
+    JzResource* Create(const String& name) override {
+        // 解析着色器路径
+        String vertPath = name + ".vert";
+        String fragPath = name + ".frag";
+        return new JzShader(vertPath, fragPath);
     }
 };
 ```
 
-## 5. Future Work
+---
 
--   **Resource Dependencies**: Implement a system where resources can depend on others (e.g., a `JzMaterial` depending on `JzShader` and `JzTexture`). Loading a material would automatically trigger the loading of its dependencies.
--   **Hot Reloading**: Monitor resource files on disk and automatically reload them in the editor when they change, allowing for rapid iteration.
--   **Streaming**: For very large resources like textures or models, implement streaming to load parts of the resource on demand.
+## 缓存策略
+
+### weak_ptr 自动清理
+
+使用 `std::weak_ptr` 作为缓存值的关键优势:
+
+1. **自动内存回收**: 当所有 `shared_ptr` 销毁后，资源自动释放
+2. **无悬挂引用**: 缓存不会阻止资源被回收
+3. **按需重新加载**: 过期资源可透明地重新加载
+
+```cpp
+void JzResourceManager::UnloadUnusedResources() {
+    std::lock_guard<std::mutex> lock(m_cacheMutex);
+    
+    for (auto it = m_resourceCache.begin(); it != m_resourceCache.end(); ) {
+        if (it->second.expired()) {
+            it = m_resourceCache.erase(it);
+        } else {
+            ++it;
+        }
+    }
+}
+```
+
+---
+
+## ECS 集成
+
+资源通过组件与 ECS 系统集成:
+
+```cpp
+// 组件持有资源引用
+struct JzMeshComponent {
+    std::shared_ptr<JzResource> mesh;
+};
+
+struct JzMaterialComponent {
+    std::shared_ptr<JzResource> material;
+};
+
+// 渲染系统使用资源
+void JzRenderSystem::Update(JzEntityManager& manager, F32 delta) {
+    for (auto entity : manager.View<JzMeshComponent, JzMaterialComponent, JzTransformComponent>()) {
+        auto& meshComp = manager.GetComponent<JzMeshComponent>(entity);
+        auto& matComp = manager.GetComponent<JzMaterialComponent>(entity);
+        
+        auto mesh = std::static_pointer_cast<JzMesh>(meshComp.mesh);
+        auto material = std::static_pointer_cast<JzMaterial>(matComp.material);
+        
+        if (mesh && material && mesh->GetState() == JzEResourceState::Loaded) {
+            m_device->BindPipeline(material->GetPipeline());
+            m_device->BindVertexArray(mesh->GetVertexArray());
+            // ... 绘制
+        }
+    }
+}
+```
+
+---
+
+## 使用示例
+
+### 加载模型
+
+```cpp
+auto& resMgr = JzServiceContainer::Get<JzResourceManager>();
+
+// 加载完整模型 (含网格和材质)
+auto model = resMgr.GetResource<JzModel>("models/character.fbx");
+
+if (model && model->GetState() == JzEResourceState::Loaded) {
+    for (auto& mesh : model->GetMeshes()) {
+        // 处理每个网格
+    }
+}
+```
+
+### UI 中使用纹理
+
+```cpp
+// 加载图标纹理
+auto iconTexture = resourceManager.GetResource<JzTexture>("icons/button.png");
+
+if (iconTexture) {
+    auto myButton = std::make_unique<JzImageButton>(
+        iconTexture->GetRHITexture(), 
+        JzVec2{24.0f, 24.0f}
+    );
+    myButton->ClickedEvent.AddListener([]() {
+        // 处理点击
+    });
+}
+```
+
+---
+
+## 未来规划
+
+> [!NOTE]
+> 以下功能为未来规划，当前版本暂不实现。
+
+### 异步加载 (低优先级)
+
+```cpp
+// 未来 API 设计参考
+template<typename T>
+std::future<std::shared_ptr<T>> GetResourceAsync(const String& name);
+```
+
+### 资源依赖
+
+自动加载依赖资源 (如材质自动加载其引用的纹理)。
+
+### 热重载
+
+编辑器模式下文件变更时自动重载资源。
+
+### 流式加载
+
+大型资源 (如大纹理、地形) 的分块加载。

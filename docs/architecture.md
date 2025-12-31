@@ -1,257 +1,360 @@
-# JzRE RHI (Render Hardware Interface) 架构设计
+# JzRE 架构设计文档
 
 ## 概述
 
-本文档详细描述了JzRE渲染引擎的RHI（Render Hardware Interface）架构设计。该架构参考了UE5的RHI设计，旨在为JzRE提供跨平台的多图形API支持，并为多线程渲染预留扩展空间。
+JzRE 是一个使用 C++ 开发的跨平台、多图形 API 游戏引擎。本文档描述了引擎的整体分层架构设计。
 
-## 设计目标
+---
 
-1. **跨平台支持**: 统一的接口支持OpenGL、Vulkan、D3D11、D3D12、Metal等多种图形API
-2. **多线程渲染**: 支持命令缓冲和多线程渲染，提高渲染性能
-3. **现代化设计**: 采用现代C++特性，提供类型安全和高性能的接口
-4. **易于扩展**: 模块化设计，便于添加新的图形API后端
-5. **向后兼容**: 与现有的OpenGL代码兼容，支持渐进式迁移
+## 架构分层图
 
-## 架构概览
-
+```mermaid
+graph TB
+    subgraph "应用层 Application Layer"
+        App[JzREHub / JzREInstance]
+        Editor[JzEditor]
+    end
+    
+    subgraph "UI层 UI Layer"
+        UIManager[JzUIManager]
+        Panels["JzPanel* / JzWidget*"]
+        ImGui[ImGui Backend]
+    end
+    
+    subgraph "场景层 Scene Layer"
+        ECS[JzEntityManager]
+        Systems["Jz*System"]
+        Components["Jz*Component"]
+    end
+    
+    subgraph "资源层 Resource Layer"
+        ResourceMgr[JzResourceManager]
+        Factories["Jz*Factory"]
+        Resources[JzResource subclasses]
+    end
+    
+    subgraph "RHI层 RHI Layer"
+        Device[JzDevice]
+        CommandList[JzRHICommandList]
+        GPUObjects["JzGPU*Object"]
+    end
+    
+    subgraph "图形后端 Graphics Backends"
+        OpenGL[JzOpenGLDevice]
+        Vulkan["JzVulkanDevice (计划中)"]
+    end
+    
+    subgraph "平台层 Platform Layer"
+        FileDialog[JzFileDialog]
+        Window[JzWindow / GLFW]
+    end
+    
+    subgraph "核心层 Core Layer"
+        Types[JzRETypes]
+        Math[JzVector / JzMatrix]
+        Threading[JzThreadPool / JzTaskQueue]
+        Services[JzServiceContainer]
+        Events[JzEvent]
+    end
+    
+    App --> Editor
+    Editor --> UIManager
+    UIManager --> Panels
+    Panels --> ImGui
+    
+    Editor --> ECS
+    ECS --> Systems
+    Systems --> Components
+    
+    Systems --> ResourceMgr
+    ResourceMgr --> Factories
+    Factories --> Resources
+    
+    Systems --> Device
+    Device --> CommandList
+    CommandList --> GPUObjects
+    
+    Device -.-> OpenGL
+    Device -.-> Vulkan
+    
+    App --> Window
+    Editor --> FileDialog
+    
+    ResourceMgr --> Threading
+    Editor --> Services
+    Window --> Events
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    应用程序层                                │
-├─────────────────────────────────────────────────────────────┤
-│                 RHI渲染器 (RHIRenderer)                      │
-├─────────────────────────────────────────────────────────────┤
-│                RHI统一接口 (RHI.h)                          │
-├─────────────┬─────────────┬─────────────┬─────────────────┤
-│  OpenGL RHI │  Vulkan RHI │   D3D RHI   │    Metal RHI    │
-│    后端     │     后端    │     后端    │      后端       │
-├─────────────┼─────────────┼─────────────┼─────────────────┤
-│   OpenGL    │   Vulkan    │   Direct3D  │     Metal       │
-│    API      │     API     │     API     │      API        │
-└─────────────┴─────────────┴─────────────┴─────────────────┘
+
+---
+
+## 模块依赖关系
+
+```mermaid
+graph LR
+    subgraph "依赖方向"
+        App --> Editor
+        Editor --> UI
+        Editor --> ECS
+        Editor --> Resource
+        ECS --> RHI
+        Resource --> RHI
+        UI --> RHI
+        RHI --> Graphics
+        Graphics --> Platform
+        Platform --> Core
+        RHI --> Core
+        Resource --> Core
+        ECS --> Core
+        UI --> Core
+    end
 ```
 
-## 核心组件
+### 依赖规则
 
-### 1. RHI类型定义 (JzRHIETypes.h)
+1. **上层依赖下层**：高层模块可以依赖低层模块，反之不行
+2. **同层隔离**：同一层的模块之间应尽量避免直接依赖
+3. **核心层独立**：Core 层不依赖任何其他模块
+4. **后端可替换**：Graphics 后端通过 RHI 抽象层解耦
 
-定义了RHI系统中使用的所有核心类型和枚举：
+---
 
-- **JzRHIETypes**: 支持的图形API类型（OpenGL, Vulkan, D3D11, D3D12, Metal）
-- **缓冲区类型**: 顶点缓冲、索引缓冲、统一缓冲、存储缓冲
-- **纹理格式**: 各种颜色和深度格式
-- **渲染状态**: 混合模式、深度测试、面剔除等
-- **描述符结构**: BufferDesc, TextureDesc, ShaderDesc, PipelineDesc
+## 模块详细说明
 
-### 2. RHI资源抽象 (JzRHIResource.h)
+### Core 层 (核心层)
 
-定义了图形资源的抽象基类：
+提供引擎的基础设施，不依赖任何其他模块。
 
-- **JzRHIResource**: 所有RHI资源的基类
-- **JzRHIBuffer**: 缓冲区抽象
-- **JzRHITexture**: 纹理抽象
-- **JzRHIShader**: 着色器抽象
-- **JzRHIPipeline**: 渲染管线抽象
-- **JzHIFramebuffer**: 帧缓冲抽象
-- **JzRHIVertexArray**: 顶点数组对象抽象
+| 组件 | 文件 | 职责 |
+|------|------|------|
+| 类型定义 | `JzRETypes.h` | 基础类型别名 (U8, I32, F32, String 等) |
+| 数学库 | `JzVector.h`, `JzMatrix.h` | 向量和矩阵运算 |
+| 线程池 | `JzThreadPool.h` | 通用任务并行执行 |
+| 任务队列 | `JzTaskQueue.h` | 优先级任务调度 |
+| 服务容器 | `JzServiceContainer.h` | 依赖注入 / 服务定位器 |
+| 事件系统 | `JzEvent.h` | 类型安全的事件发布/订阅 |
+| 日志系统 | `JzLogger.h` | 分级日志输出 |
 
-### 3. RHI命令系统 (RHICommand.h)
+### Platform 层 (平台层)
 
-支持立即模式和延迟模式渲染：
+封装操作系统特定 API，提供跨平台一致接口。
 
-- **JzRHICommand**: 渲染命令基类
-- **JzRHICommandBuffer**: 命令缓冲，支持命令记录和回放
-- **JzRHICommandQueue**: 命令队列，管理多个命令缓冲的执行
-- **具体命令实现**: Clear, Draw, BindPipeline, BindTexture等
+| 组件 | 平台支持 | 职责 |
+|------|----------|------|
+| `JzFileDialog` | Windows, macOS, Linux | 文件打开/保存对话框 |
+| `JzMessageBox` | Windows, macOS, Linux | 消息提示框 |
+| `JzWindow` | 跨平台 (GLFW) | 窗口管理、输入事件 |
 
-### 4. RHI设备接口 (JzRHIDevice.h)
+### RHI 层 (渲染硬件接口)
 
-核心的RHI设备接口：
+抽象图形 API，支持多后端扩展。
 
-- **JzRHIDevice**: 图形设备抽象，提供资源创建和渲染接口
-- **JzRHIFactory**: 工厂类，负责创建不同图形API的设备
-- **JzRHIContext**: 单例管理器，管理RHI设备的生命周期
-- **JzRHICapabilities**: 硬件能力查询
-- **JzRHIStats**: 性能统计信息
+| 组件 | 文件 | 职责 |
+|------|------|------|
+| 设备抽象 | `JzDevice.h` | 图形设备创建、资源管理 |
+| 命令列表 | `JzRHICommandList.h` | 延迟渲染命令记录 |
+| 命令 | `JzRHICommand.h` | 渲染命令基类 |
+| GPU 对象 | `JzGPU*Object.h` | 缓冲、纹理、着色器抽象 |
+| 管线 | `JzRHIPipeline.h` | 渲染管线状态 |
 
-### 5. OpenGL后端实现 (JzOpenGLRHI.h)
+**当前实现**: OpenGL 3.3+
+**计划实现**: Vulkan
 
-OpenGL图形API的具体实现：
+### Graphics 层 (图形后端)
 
-- **JzOpenGLDevice**: OpenGL设备实现
-- **JzOpenGLBuffer, JzOpenGLTexture**: OpenGL资源实现
-- **JzOpenGLShader, JzOpenGLPipeline**: OpenGL着色器和管线实现
-- **格式转换函数**: RHI枚举到OpenGL常量的转换
+RHI 的具体实现。
 
-### 6. 多线程渲染支持 (JzRHIMultithreading.h)
+| 后端 | 目录 | 状态 |
+|------|------|------|
+| OpenGL | `Graphics/OpenGL/` | ✅ 已实现 |
+| Vulkan | `Graphics/Vulkan/` | 🚧 架构准备中 |
 
-为高性能多线程渲染提供基础设施：
+### Resource 层 (资源层)
 
-- **JzRenderTask**: 渲染任务抽象
-- **JzRenderThreadPool**: 渲染线程池
-- **JzMultithreadedRenderManager**: 多线程渲染管理器
-- **JzRenderThreadContext**: 线程上下文管理
+管理游戏资产的加载、缓存和生命周期。
 
-## 使用方式
+| 组件 | 文件 | 职责 |
+|------|------|------|
+| 资源管理器 | `JzResourceManager.h` | 统一资源访问入口 |
+| 资源基类 | `JzResource.h` | 资源状态和加载接口 |
+| 工厂 | `Jz*Factory.h` | 具体资源类型创建 |
 
-### 1. 基本初始化
+**资源类型**:
+- `JzTexture` - 纹理资源
+- `JzMesh` - 网格资源
+- `JzMaterial` - 材质资源
+- `JzShader` - 着色器资源
+- `JzModel` - 模型资源
+- `JzFont` - 字体资源
+
+### ECS 层 (实体组件系统)
+
+数据导向的场景架构。
+
+| 组件 | 文件 | 职责 |
+|------|------|------|
+| 实体管理 | `JzEntityManager.h` | 实体创建、销毁 |
+| 组件池 | `JzComponentPool.h` | 连续内存组件存储 |
+| 系统基类 | `JzSystem.h` | 系统更新接口 |
+
+**核心组件**:
+- `JzTransformComponent` - 变换 (位置/旋转/缩放)
+- `JzMeshComponent` - 网格引用
+- `JzMaterialComponent` - 材质引用
+- `JzCameraComponent` - 相机属性
+- `JzHierarchyComponent` - 父子层级
+
+**核心系统**:
+- `JzRenderSystem` - 渲染系统
+- `JzMoveSystem` - 移动系统
+- `JzSceneGraphSystem` - 场景图更新
+- `JzVisibilitySystem` - 可见性剔除
+
+### UI 层 (用户界面)
+
+基于 ImGui 的有状态 UI 组件封装。
+
+| 组件 | 文件 | 职责 |
+|------|------|------|
+| UI 管理器 | `JzUIManager.h` | ImGui 初始化和渲染 |
+| 面板基类 | `JzPanel.h` | 面板抽象 |
+| 面板窗口 | `JzPanelWindow.h` | 可停靠窗口面板 |
+| 控件 | `JzWidget.h`, `JzButton.h` 等 | UI 控件封装 |
+
+**设计理念**: 
+- 将 ImGui 的立即模式 API 封装为有状态的对象模型
+- 每个 UI 元素管理自己的状态和行为
+- 支持事件驱动的交互模式
+
+### Editor 层 (编辑器)
+
+编辑器业务逻辑。
+
+| 组件 | 文件 | 职责 |
+|------|------|------|
+| 编辑器 | `JzEditor.h` | 编辑器主循环 |
+| 窗口 | `JzWindow.h` | 窗口管理 |
+| 面板管理 | `JzPanelsManager.h` | 面板布局 |
+| 画布 | `JzCanvas.h` | 编辑器画布 |
+
+### App 层 (应用层)
+
+应用程序入口。
+
+| 组件 | 文件 | 职责 |
+|------|------|------|
+| Hub | `JzREHub.h` | 项目启动器 |
+| Instance | `JzREInstance.h` | 项目实例 |
+
+---
+
+## 设计原则
+
+### Data-Oriented Design (DOD)
+
+引擎采用数据导向设计理念，特别体现在:
+
+1. **组件池** (`JzComponentPool<T>`): 同类型组件在连续内存中存储
+2. **系统分离**: System 只包含逻辑，数据存储在 Component 中
+3. **缓存友好**: 批量处理同类型数据，提高 CPU 缓存命中率
+
+### 依赖注入
+
+使用 `JzServiceContainer` 实现服务定位器模式:
 
 ```cpp
-// 初始化RHI系统
-auto& rhiContext = JzRHIContext::GetInstance();
-if (!rhiContext.Initialize(JzRHIEType::OpenGL)) {
-    // 处理初始化失败
-}
+// 注册服务
+JzServiceContainer::Provide<JzResourceManager>(resourceManager);
 
-auto device = rhiContext.GetDevice();
+// 获取服务
+auto& resMgr = JzServiceContainer::Get<JzResourceManager>();
 ```
 
-### 2. 资源创建
+### 工厂模式
+
+资源和 RHI 对象通过工厂创建:
 
 ```cpp
-// 创建缓冲区
-JzBufferDesc bufferDesc;
-bufferDesc.type = JzEBufferType::Vertex;
-bufferDesc.usage = JzEBufferUsage::StaticDraw;
-bufferDesc.size = sizeof(vertices);
-bufferDesc.data = vertices;
-auto vertexBuffer = device->CreateBuffer(bufferDesc);
+// 资源工厂
+resourceManager.RegisterFactory<JzTexture>(std::make_unique<JzTextureFactory>());
+auto texture = resourceManager.GetResource<JzTexture>("path/to/texture.png");
 
-// 创建纹理
-JzTextureDesc textureDesc;
-textureDesc.format = JzETextureFormat::RGBA8;
-textureDesc.width = 512;
-textureDesc.height = 512;
-auto texture = device->CreateTexture(textureDesc);
+// RHI 设备工厂 (隐式)
+auto device = std::make_unique<JzOpenGLDevice>();
 ```
 
-### 3. 立即渲染模式
+### 命令模式
+
+渲染命令通过 `JzRHICommand` 层级实现延迟执行:
 
 ```cpp
-device->BeginFrame();
-
-// 设置渲染状态
-device->SetViewport(viewport);
-device->BindPipeline(pipeline);
-device->BindVertexArray(vertexArray);
-
-// 绘制
-DrawIndexedParams drawParams;
-drawParams.indexCount = indexCount;
-device->DrawIndexed(drawParams);
-
-device->EndFrame();
-device->Present();
+auto cmdList = device->CreateCommandList();
+cmdList->Begin();
+cmdList->Clear(clearParams);
+cmdList->BindPipeline(pipeline);
+cmdList->DrawIndexed(drawParams);
+cmdList->End();
+device->ExecuteCommandList(cmdList);
 ```
 
-### 4. 命令缓冲模式
+---
+
+## 跨平台一致性
+
+### 平台差异处理策略
+
+| 差异类型 | 处理方式 |
+|----------|----------|
+| 文件路径 | 使用 `std::filesystem::path` |
+| 对话框 | Platform 层封装 (`JzFileDialog`) |
+| 窗口系统 | GLFW 抽象 |
+| 图形 API | RHI 抽象层 |
+| 字节序 | Core 层统一处理 |
+
+### 条件编译
+
+平台特定代码使用预处理器隔离:
 
 ```cpp
-// 创建并记录命令缓冲
-auto commandBuffer = device->CreateCommandBuffer();
-commandBuffer->Begin();
-commandBuffer->SetViewport(viewport);
-commandBuffer->BindPipeline(pipeline);
-commandBuffer->DrawIndexed(drawParams);
-commandBuffer->End();
-
-// 执行命令缓冲
-device->ExecuteCommandBuffer(commandBuffer);
+#ifdef _WIN32
+    // Windows 实现
+#elif __APPLE__
+    // macOS 实现
+#elif __linux__
+    // Linux 实现
+#endif
 ```
 
-### 5. 多线程渲染
+---
 
-```cpp
-// 设置多线程
-rhiContext.SetThreadCount(4);
+## 代码风格
 
-// 提交命令缓冲到队列
-auto commandQueue = rhiContext.GetCommandQueue();
-commandQueue->SubmitCommandBuffer(commandBuffer1);
-commandQueue->SubmitCommandBuffer(commandBuffer2);
+### 命名规范
 
-// 并行执行
-commandQueue->ExecuteAll();
-commandQueue->Wait();
-```
+| 类型 | 规范 | 示例 |
+|------|------|------|
+| 类名 | `Jz` 前缀 + PascalCase | `JzResourceManager` |
+| 枚举类型 | `JzE` 前缀 | `JzERHIType` |
+| 成员变量 | `m_` 前缀 + camelCase | `m_resourceCache` |
+| 静态变量 | `__` 前缀 + UPPER_CASE | `__SERVICES` |
+| 方法名 | PascalCase | `GetResource()` |
 
-## 多线程渲染架构
-
-### 设计原则
-
-1. **命令缓冲分离**: 渲染命令记录和执行分离，支持多线程并行记录
-2. **线程安全**: 所有RHI接口都是线程安全的
-3. **资源同步**: 提供必要的同步机制确保资源访问安全
-4. **负载均衡**: 智能任务调度，充分利用多核CPU
-
-### 多线程执行流程
+### 代码组织
 
 ```
-主线程              工作线程1            工作线程2            工作线程3
-  │                     │                   │                   │
-  ├─ 开始帧             │                   │                   │
-  ├─ 创建命令缓冲1  ───→ │                   │                   │
-  ├─ 创建命令缓冲2  ─────────────────────→ │                   │
-  ├─ 创建命令缓冲3  ─────────────────────────────────────────→ │
-  ├─ 提交到队列         │                   │                   │
-  ├─ 等待完成       ←─ 执行命令1       ←─ 执行命令2        ←─ 执行命令3
-  ├─ 结束帧             │                   │                   │
-  └─ Present            │                   │                   │
+Module/
+├── CMakeLists.txt
+├── include/
+│   └── JzRE/
+│       └── Module/
+│           └── JzClassName.h
+└── src/
+    └── JzClassName.cpp
 ```
 
-## 扩展性设计
+---
 
-### 1. 新增图形API后端
+## 演进规划
 
-要添加新的图形API支持（如D3D12），只需：
+详见 [threading_roadmap.md](threading_roadmap.md) 了解多线程架构演进计划。
 
-1. 在`JzRHIEType`中添加新的枚举值
-2. 创建新的头文件（如`JzD3D12RHI.h`）
-3. 实现所有RHI接口类
-4. 在`JzRHIFactory::CreateDevice`中添加对应的创建逻辑
-
-### 2. 新增渲染功能
-
-RHI架构支持轻松添加新的渲染功能：
-
-- 新的资源类型（如计算着色器缓冲）
-- 新的渲染命令（如间接绘制）
-- 新的渲染状态（如变量着色率）
-
-### 3. 性能优化扩展
-
-- GPU时间查询
-- 内存使用统计
-- 批处理优化
-- 实例化渲染
-
-## 性能考虑
-
-### 1. 内存管理
-
-- 使用智能指针管理资源生命周期
-- 资源池化减少内存分配开销
-- 延迟删除避免渲染过程中的内存操作
-
-### 2. 命令提交优化
-
-- 命令批处理减少API调用
-- 状态缓存避免冗余设置
-- 并行命令录制提高CPU利用率
-
-### 3. GPU同步
-
-- 最小化CPU-GPU同步点
-- 异步资源更新
-- 多帧缓冲避免GPU等待
-
-## 未来发展方向
-
-1. **渲染图系统**: 实现高级的渲染流程管理
-2. **GPU驱动渲染**: 支持更多GPU驱动的渲染技术
-3. **实时光线追踪**: 集成现代GPU的光线追踪功能
-4. **可变着色率**: 支持下一代图形硬件特性
-5. **云渲染支持**: 为云游戏优化的渲染路径
-
-## 总结
-
-JzRE RHI架构为渲染引擎提供了现代化、可扩展的图形接口抽象。通过参考UE5的设计经验，该架构在保持高性能的同时，为未来的功能扩展和优化奠定了坚实的基础。多线程渲染支持使得引擎能够充分利用现代多核处理器的计算能力，而统一的接口设计则简化了跨平台开发的复杂性。 
+详见 [rhi.md](rhi.md) 了解 RHI 层设计和 Vulkan 扩展规划。
