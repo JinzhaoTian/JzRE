@@ -54,13 +54,26 @@ JzRE/
 │   │   │   └── Jz*Factory.h
 │   │   └── src/
 │   │
-│   ├── ECS/                 # 实体组件系统
+│   ├── ECS/                 # 实体组件系统 (原有实现)
 │   │   ├── CMakeLists.txt
 │   │   ├── include/JzRE/ECS/
 │   │   │   ├── JzEntityManager.h
 │   │   │   ├── JzComponent.h
 │   │   │   ├── JzSystem.h
 │   │   │   └── Jz*System.h
+│   │   └── src/
+│   │
+│   ├── EnttECS/             # 实体组件系统 (EnTT 实现)
+│   │   ├── CMakeLists.txt
+│   │   ├── include/JzRE/EnttECS/
+│   │   │   ├── JzEnttWorld.h
+│   │   │   ├── JzEnttEntity.h
+│   │   │   ├── JzEnttSystem.h
+│   │   │   ├── JzEnttComponents.h
+│   │   │   └── Systems/
+│   │   │       ├── JzEnttMoveSystem.h
+│   │   │       ├── JzEnttSceneSystem.h
+│   │   │       └── JzEnttRenderSystem.h
 │   │   └── src/
 │   │
 │   ├── Platform/            # 平台抽象层

@@ -1,5 +1,6 @@
 add_subdirectory(Core)
 add_subdirectory(ECS)
+add_subdirectory(EnttECS)
 add_subdirectory(RHI)
 add_subdirectory(Graphics)
 add_subdirectory(Resource)
