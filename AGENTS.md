@@ -271,6 +271,52 @@ Platform → Core
 - ❌ Don't use Chinese in code comments (English only)
 - ❌ Don't modify `Core` module to depend on higher layers
 - ❌ Don't bypass `JzResourceManager` for asset loading
+- ❌ Don't make architectural changes without updating `docs/`
+
+---
+
+## Documentation Maintenance (MANDATORY)
+
+AI agents **MUST** update documentation when making code changes. This is not optional.
+
+### Auto-Update Rules
+
+| Code Change | Documentation to Update |
+|-------------|------------------------|
+| New class/module added | `docs/architecture.md`, `docs/module.md` |
+| RHI or rendering changes | `docs/rhi.md`, `docs/design.md` |
+| Resource system changes | `docs/resource_layer_design.md` |
+| Threading/Worker Thread changes | `docs/threading_roadmap.md` |
+| Module structure changes | `docs/module.md` |
+| Cross-module integration | `docs/integration.md` |
+| Window/Context changes | `docs/rhi_window_integration.md` |
+| New design patterns | `docs/design.md` |
+
+### Documentation Standards
+
+1. **Language**: All documentation must be in English
+2. **Format**: Markdown with proper headings, code blocks, and tables
+3. **Diagrams**: Include ASCII or Mermaid diagrams for complex concepts
+4. **Consistency**: Documentation must match the actual code implementation
+
+### Required Documentation Updates Checklist
+
+Before completing any task, verify:
+
+- [ ] Did I add/modify any classes? → Update `docs/architecture.md`
+- [ ] Did I change the RHI layer? → Update `docs/rhi.md`
+- [ ] Did I modify threading behavior? → Update `docs/threading_roadmap.md`
+- [ ] Did I add new dependencies? → Update `docs/module.md`
+- [ ] Did I add new patterns? → Update `docs/design.md`
+
+### Example: Adding a New Renderer Feature
+
+After adding code in `src/Editor/src/JzRHIRenderer.cpp`:
+
+1. Update `docs/rhi.md` with new rendering capabilities
+2. Update `docs/design.md` if new class relationships were added
+3. Update `docs/threading_roadmap.md` if threading model changed
+4. Add inline Doxygen comments in the code
 
 ---
 
@@ -284,6 +330,8 @@ Platform → Core
 | [threading_roadmap.md](docs/threading_roadmap.md) | Multithreading evolution |
 | [module.md](docs/module.md) | CMake and directory structure |
 | [design.md](docs/design.md) | Class and sequence diagrams |
+| [integration.md](docs/integration.md) | Cross-module integration |
+| [rhi_window_integration.md](docs/rhi_window_integration.md) | Window/context management |
 | [GEMINI.md](GEMINI.md) | Project configuration for AI agents |
 
 ---

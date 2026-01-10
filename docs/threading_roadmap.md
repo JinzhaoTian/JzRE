@@ -2,11 +2,41 @@
 
 ## 概述
 
-本文档描述 JzRE 引擎从单线程架构向多线程架构演进的规划。当前引擎以单线程渲染为主，本文档规划了逐步引入多线程的路径。
+本文档描述 JzRE 引擎从单线程架构向多线程架构演进的规划。当前引擎已实现主线程渲染 + 工作线程后台处理的架构。
 
 ---
 
 ## 当前状态
+
+### 已实现的架构 (JzREInstance)
+
+**Last Updated**: 2026-01-10
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    Main Thread (主线程)                          │
+│                    持有 OpenGL 上下文                             │
+│                                                                  │
+│  ┌──────────┐  ┌────────────┐  ┌────────────┐  ┌─────────────┐  │
+│  │PollEvents│─►│BeginFrame  │─►│RenderScene │─►│Editor.Update│  │
+│  └──────────┘  └────────────┘  └────────────┘  └─────────────┘  │
+│       │                                              │           │
+│       │        ┌───────────────┐    ┌─────────────┐  │           │
+│       └───────►│ SwapBuffers  │◄───│ ImGui Render│◄─┘           │
+│                └───────────────┘    └─────────────┘              │
+└─────────────────────────────────────────────────────────────────┘
+                            │
+                   同步 (mutex + condition_variable)
+                            │
+┌───────────────────────────▼─────────────────────────────────────┐
+│               Worker Thread (工作线程)                           │
+│               处理非 GPU 任务                                    │
+│                                                                  │
+│  ┌──────────────────────────────────────────────────────────┐   │
+│  │ 场景裁剪 / 动画更新 / 物理模拟 / 资源预加载 (TODO)          │   │
+│  └──────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────┘
+```
 
 ### 已有的线程基础设施
 
@@ -15,6 +45,27 @@
 | 线程池 | `JzThreadPool.h` | ✅ 已实现 | 通用任务并行执行 |
 | 任务队列 | `JzTaskQueue.h` | ✅ 已实现 | 优先级任务调度 |
 | 命令列表 | `JzRHICommandList.h` | ✅ 已实现 | 线程安全的命令记录 |
+| 帧同步 | `JzREInstance.cpp` | ✅ 已实现 | 主线程/工作线程同步 |
+
+### JzREInstance 线程同步实现
+
+```cpp
+// 帧数据结构
+struct JzFrameData {
+    F32     deltaTime = 0.0f;
+    JzIVec2 frameSize = {0, 0};
+};
+
+// 同步变量
+std::thread             m_renderThread;
+std::atomic<Bool>       m_renderThreadRunning{false};
+std::mutex              m_renderMutex;
+std::condition_variable m_renderCondition;
+std::condition_variable m_renderCompleteCondition;
+std::atomic<Bool>       m_frameReady{false};
+std::atomic<Bool>       m_renderComplete{true};
+JzFrameData             m_frameData;
+```
 
 ### 当前限制
 
@@ -29,6 +80,8 @@ OpenGL 的限制:
 - 上下文绑定单一线程
 - 资源必须在正确的上下文中创建/使用
 - 无法并行生成渲染命令
+- ImGui 必须在拥有上下文的线程中初始化和渲染
+
 
 ---
 

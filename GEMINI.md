@@ -110,3 +110,46 @@ cmake --build build
 
 -   **Code Structure**: Provide complete, compilable code snippets or files. If it's just a function, provide its complete definition.
 -   **Markup Language**: In your response, enclose the generated code using **`cpp ... `** code fence format.
+
+## 9. Documentation Maintenance
+
+When modifying code, AI agents **must** keep documentation synchronized:
+
+### a. When to Update Documentation
+
+| Change Type | Required Action |
+|-------------|-----------------|
+| New class/module | Create or update relevant doc in `docs/` |
+| Architectural change | Update `docs/architecture.md` |
+| RHI/rendering changes | Update `docs/rhi.md` |
+| Resource system changes | Update `docs/resource_layer_design.md` |
+| Threading/concurrency | Update `docs/threading_roadmap.md` |
+| Module structure changes | Update `docs/module.md` |
+| New design patterns | Update `docs/design.md` |
+
+### b. Documentation Files
+
+| File | Purpose |
+|------|---------|
+| `docs/architecture.md` | Overall system architecture, layer dependencies |
+| `docs/rhi.md` | RHI abstraction, command pattern, device interface |
+| `docs/resource_layer_design.md` | Resource loading, caching, factory pattern |
+| `docs/threading_roadmap.md` | Multi-threading architecture, worker threads |
+| `docs/module.md` | CMake structure, source organization |
+| `docs/design.md` | Class diagrams, sequence diagrams |
+| `docs/integration.md` | Cross-module integration patterns |
+| `docs/rhi_window_integration.md` | Window/context management |
+
+### c. Documentation Format
+
+-   All documentation must be written in **English**.
+-   Use **Markdown** format with proper headings and code blocks.
+-   Include diagrams (ASCII or Mermaid) for complex architectural concepts.
+-   Update the "Last Updated" timestamp if present in the document.
+
+### d. Example Workflow
+
+1. Make code changes (e.g., add new rendering feature)
+2. Identify affected documentation (e.g., `docs/rhi.md`)
+3. Update the documentation to reflect the changes
+4. Ensure code comments and documentation are consistent
