@@ -95,7 +95,8 @@ void JzRE::JzOpenGLPipeline::SetUniform(const JzRE::String &name, const JzRE::Jz
 {
     GLint location = GetUniformLocation(name);
     if (location != -1) {
-        glUniformMatrix3fv(location, 1, GL_FALSE, value.m_Data);
+        // GL_TRUE to transpose: JzMat uses row-major storage, OpenGL expects column-major
+        glUniformMatrix3fv(location, 1, GL_TRUE, value.m_Data);
     }
 }
 
@@ -103,7 +104,8 @@ void JzRE::JzOpenGLPipeline::SetUniform(const JzRE::String &name, const JzRE::Jz
 {
     GLint location = GetUniformLocation(name);
     if (location != -1) {
-        glUniformMatrix4fv(location, 1, GL_FALSE, value.m_Data);
+        // GL_TRUE to transpose: JzMat4x4 uses row-major storage, OpenGL expects column-major
+        glUniformMatrix4fv(location, 1, GL_TRUE, value.m_Data);
     }
 }
 

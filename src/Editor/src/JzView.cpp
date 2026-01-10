@@ -5,6 +5,8 @@
 
 #include <imgui.h>
 #include "JzRE/Editor/JzView.h"
+#include "JzRE/Editor/JzRHIRenderer.h"
+#include "JzRE/Core/JzServiceContainer.h"
 
 JzRE::JzView::JzView(const JzRE::String &name, JzRE::Bool is_opened) :
     JzRE::JzPanelWindow(name, is_opened)
@@ -23,11 +25,21 @@ void JzRE::JzView::Render()
 {
     auto winSize = GetSafeSize();
     if (winSize.x() > 0 && winSize.y() > 0) {
-        // TODO frame size update
+        auto &renderer = JzServiceContainer::Get<JzRHIRenderer>();
+
+        // Update frame size if necessary
+        if (winSize.x() != renderer.GetCurrentFrameSize().x() || winSize.y() != renderer.GetCurrentFrameSize().y()) {
+            renderer.SetFrameSize(winSize);
+        }
 
         if (m_frame) {
             m_frame->frameSize = JzVec2(static_cast<F32>(winSize.x()), static_cast<F32>(winSize.y()));
-            // m_frame->frameTextureId = currentTextureId;
+
+            // Get the render texture from the renderer
+            auto texture = renderer.GetCurrentTexture();
+            if (texture) {
+                m_frame->frameTextureId = texture->GetTextureID();
+            }
         }
     }
 }

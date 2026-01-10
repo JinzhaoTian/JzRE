@@ -45,6 +45,8 @@ JzRE::JzREInstance::JzREInstance(JzERHIType rhiType, std::filesystem::path &open
     // Create renderer and scene
     m_renderer = std::make_unique<JzRHIRenderer>();
     m_scene    = std::make_shared<JzScene>();
+    JzServiceContainer::Provide<JzRHIRenderer>(*m_renderer);
+    JzServiceContainer::Provide<JzScene>(*m_scene);
 
     // Initialize renderer
     m_frameData.frameSize = m_window->GetSize();

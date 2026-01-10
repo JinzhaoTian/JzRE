@@ -105,6 +105,7 @@ JzRE::Bool JzRE::JzRHIRenderer::CreateDefaultPipeline()
 {
     auto &device = JzServiceContainer::Get<JzDevice>();
 
+    // Simple vertex shader with MVP transform
     const char *vsSrc = R"(
         #version 330 core
 
@@ -112,9 +113,8 @@ JzRE::Bool JzRE::JzRHIRenderer::CreateDefaultPipeline()
         layout (location = 1) in vec3 aNormal;
         layout (location = 2) in vec2 aTexCoords;
 
-        out vec3 FragPos;
-        out vec3 Normal;
-        out vec2 TexCoords;
+        out vec3 vNormal;
+        out vec3 vWorldPos;
 
         uniform mat4 model;
         uniform mat4 view;
@@ -122,26 +122,39 @@ JzRE::Bool JzRE::JzRHIRenderer::CreateDefaultPipeline()
 
         void main()
         {
-            FragPos = vec3(model * vec4(aPos, 1.0));
-            Normal = mat3(transpose(inverse(model))) * aNormal;  
-            TexCoords = aTexCoords;
-            
-            gl_Position = projection * view * vec4(FragPos, 1.0);
+            vec4 worldPos = model * vec4(aPos, 1.0);
+            vWorldPos = worldPos.xyz;
+            vNormal = mat3(model) * aNormal;
+            gl_Position = projection * view * worldPos;
         }
     )";
 
-    const char *fsSrc = R"( 
+    // Simple fragment shader with basic diffuse lighting
+    const char *fsSrc = R"(
         #version 330 core
 
-        in vec3 FragPos;
-        in vec3 Normal;
-        in vec2 TexCoords;
+        in vec3 vNormal;
+        in vec3 vWorldPos;
 
         out vec4 FragColor;
 
         void main()
         {
-            FragColor = vec4(0.1, 1.0, 0.1, 1.0);
+            // Light direction (from above-front)
+            vec3 lightDir = normalize(vec3(0.3, 1.0, 0.5));
+            
+            // Normalize the normal
+            vec3 normal = normalize(vNormal);
+            
+            // Basic diffuse lighting
+            float diff = max(dot(normal, lightDir), 0.0);
+            
+            // Ambient + diffuse
+            vec3 ambient = vec3(0.2);
+            vec3 diffuse = vec3(0.8) * diff;
+            
+            vec3 color = ambient + diffuse;
+            FragColor = vec4(color, 1.0);
         }
     )";
 
@@ -199,7 +212,7 @@ void JzRE::JzRHIRenderer::RenderImmediate(std::shared_ptr<JzRE::JzScene> scene)
     viewport.maxDepth = 1.0f;
     device.SetViewport(viewport);
 
-    // 清屏（RHI）
+    // Clear the screen (RHI)
     JzClearParams clearParams;
     clearParams.clearColor   = true;
     clearParams.clearDepth   = true;
@@ -212,17 +225,52 @@ void JzRE::JzRHIRenderer::RenderImmediate(std::shared_ptr<JzRE::JzScene> scene)
     clearParams.stencil      = 0;
     device.Clear(clearParams);
 
+    // Set up matrices
     JzMat4 modelMatrix = JzMat4x4::Identity();
-    m_defaultPipeline->SetUniform("model", modelMatrix);
-    m_defaultPipeline->SetUniform("view", modelMatrix);
-    m_defaultPipeline->SetUniform("projection", modelMatrix);
 
-    // render scene
-    // for (const auto &model : scene->GetModels()) {
-    //     if (model) {
-    //         model->Draw(m_defaultPipeline);
-    //     }
-    // }
+    // Camera setup for Cornell Box:
+    // The model is roughly at center (0, 2.5, -3), extends from about -3 to 2.5 in X, -0.2 to 5.3 in Y, -0.2 to -5.8 in Z
+    // Camera positioned to view the scene from the front
+    F32 aspect = m_frameSize.x() > 0 && m_frameSize.y() > 0 ? static_cast<F32>(m_frameSize.x()) / static_cast<F32>(m_frameSize.y()) : 1.0f;
+
+    // Camera at (0, 2.5, 8) looking at (0, 2.5, -3) - positioned in front of the Cornell Box
+    JzVec3 cameraPos    = JzVec3(0.0f, 2.5f, 8.0f);
+    JzVec3 cameraTarget = JzVec3(0.0f, 2.5f, -3.0f);
+    JzVec3 cameraUp     = JzVec3(0.0f, 1.0f, 0.0f);
+
+    JzMat4 viewMatrix = JzMat4x4::LookAt(cameraPos, cameraTarget, cameraUp);
+    JzMat4 projMatrix = JzMat4x4::Perspective(45.0f * 3.14159f / 180.0f, aspect, 0.1f, 100.0f);
+
+    m_defaultPipeline->SetUniform("model", modelMatrix);
+    m_defaultPipeline->SetUniform("view", viewMatrix);
+    m_defaultPipeline->SetUniform("projection", projMatrix);
+
+    // Render scene models
+    for (const auto &model : scene->GetModels()) {
+        if (!model) continue;
+
+        // Iterate through all meshes in the model
+        for (const auto &mesh : model->GetMeshes()) {
+            if (!mesh) continue;
+
+            auto vao = mesh->GetVertexArray();
+            if (!vao) continue;
+
+            // Bind vertex array
+            device.BindVertexArray(vao);
+
+            // Draw indexed
+            JzDrawIndexedParams drawParams;
+            drawParams.primitiveType = JzEPrimitiveType::Triangles;
+            drawParams.indexCount    = mesh->GetIndexCount();
+            drawParams.instanceCount = 1;
+            drawParams.firstIndex    = 0;
+            drawParams.vertexOffset  = 0;
+            drawParams.firstInstance = 0;
+
+            device.DrawIndexed(drawParams);
+        }
+    }
 
     device.BindFramebuffer(nullptr);
 }

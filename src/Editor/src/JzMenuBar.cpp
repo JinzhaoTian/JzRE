@@ -4,6 +4,7 @@
  */
 
 #include "JzRE/Editor/JzMenuBar.h"
+#include <algorithm>
 #include <filesystem>
 #include <imgui.h>
 #include "JzRE/Core/JzServiceContainer.h"
@@ -15,6 +16,8 @@
 #include "JzRE/UI/JzConverter.h"
 #include "JzRE/Editor/JzSceneManager.h"
 #include "JzRE/Editor/JzInputManager.h"
+#include "JzRE/Editor/JzScene.h"
+#include "JzRE/Resource/JzModel.h"
 #include "JzRE/Platform/JzOpenFileDialog.h"
 
 JzRE::JzMenuBar::JzMenuBar(JzRE::JzWindow &window) :
@@ -96,13 +99,26 @@ void JzRE::JzMenuBar::CreateFileMenu()
     auto &openFileMenu         = fileMenu.CreateWidget<JzMenuItem>("Open File", "CTRL + O");
     openFileMenu.ClickedEvent += [] {
         JzOpenFileDialog dialog("Open File");
-        dialog.AddFileType("*", "*.*");
+        dialog.AddFileType("OBJ Files", "*.obj");
+        dialog.AddFileType("All Files", "*.*");
         dialog.Show(JzEFileDialogType::OpenFile);
 
-        const std::filesystem::path projectFile = dialog.GetSelectedFilePath();
+        const std::filesystem::path filePath = dialog.GetSelectedFilePath();
 
-        if (dialog.HasSucceeded()) {
-            // TODO
+        if (dialog.HasSucceeded() && !filePath.empty()) {
+            // Get the file extension and check if it's an OBJ file
+            String extension = filePath.extension().string();
+            std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
+
+            if (extension == ".obj") {
+                // Load the OBJ model
+                auto model = std::make_shared<JzModel>(filePath.string());
+                if (model->Load()) {
+                    // Add the model to the current scene
+                    auto &scene = JzServiceContainer::Get<JzScene>();
+                    scene.AddModel(model);
+                }
+            }
         }
     };
 
