@@ -33,8 +33,9 @@ public:
      *
      * @param vertices Vector of vertices.
      * @param indices Vector of indices.
+     * @param materialIndex Index of the material in the model's material array.
      */
-    JzMesh(std::vector<JzVertex> vertices, std::vector<U32> indices);
+    JzMesh(std::vector<JzVertex> vertices, std::vector<U32> indices, I32 materialIndex = -1);
 
     /**
      * @brief Destructor
@@ -73,6 +74,26 @@ public:
         return static_cast<U32>(m_indices.size());
     }
 
+    /**
+     * @brief Get the material index for this mesh.
+     *
+     * @return I32 Material index (-1 if no material assigned)
+     */
+    I32 GetMaterialIndex() const
+    {
+        return m_materialIndex;
+    }
+
+    /**
+     * @brief Set the material index for this mesh.
+     *
+     * @param index Material index
+     */
+    void SetMaterialIndex(I32 index)
+    {
+        m_materialIndex = index;
+    }
+
 private:
     /**
      * @brief Creates RHI resources (buffers and vertex array) for the mesh.
@@ -83,6 +104,7 @@ private:
     // CPU-side data
     std::vector<JzVertex> m_vertices;
     std::vector<U32>      m_indices;
+    I32                   m_materialIndex = -1;
 
     // GPU-side RHI resources
     std::shared_ptr<JzGPUBufferObject>      m_vertexBuffer;

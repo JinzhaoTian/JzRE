@@ -105,7 +105,7 @@ JzRE::Bool JzRE::JzRHIRenderer::CreateDefaultPipeline()
 {
     auto &device = JzServiceContainer::Get<JzDevice>();
 
-    // Simple vertex shader with MVP transform
+    // Vertex shader with MVP transform
     const char *vsSrc = R"(
         #version 330 core
 
@@ -129,7 +129,7 @@ JzRE::Bool JzRE::JzRHIRenderer::CreateDefaultPipeline()
         }
     )";
 
-    // Simple fragment shader with basic diffuse lighting
+    // Fragment shader with material support and basic lighting
     const char *fsSrc = R"(
         #version 330 core
 
@@ -138,22 +138,38 @@ JzRE::Bool JzRE::JzRHIRenderer::CreateDefaultPipeline()
 
         out vec4 FragColor;
 
+        // Material properties
+        uniform vec3 uAmbientColor;
+        uniform vec3 uDiffuseColor;
+        uniform vec3 uSpecularColor;
+        uniform float uShininess;
+
+        // Camera position for specular
+        uniform vec3 uCameraPos;
+
         void main()
         {
             // Light direction (from above-front)
             vec3 lightDir = normalize(vec3(0.3, 1.0, 0.5));
+            vec3 lightColor = vec3(1.0);
             
             // Normalize the normal
             vec3 normal = normalize(vNormal);
             
-            // Basic diffuse lighting
+            // Ambient
+            vec3 ambient = uAmbientColor * 0.3;
+            
+            // Diffuse
             float diff = max(dot(normal, lightDir), 0.0);
+            vec3 diffuse = uDiffuseColor * diff * lightColor;
             
-            // Ambient + diffuse
-            vec3 ambient = vec3(0.2);
-            vec3 diffuse = vec3(0.8) * diff;
+            // Specular (Blinn-Phong)
+            vec3 viewDir = normalize(uCameraPos - vWorldPos);
+            vec3 halfwayDir = normalize(lightDir + viewDir);
+            float spec = pow(max(dot(normal, halfwayDir), 0.0), uShininess);
+            vec3 specular = uSpecularColor * spec * lightColor * 0.5;
             
-            vec3 color = ambient + diffuse;
+            vec3 color = ambient + diffuse + specular;
             FragColor = vec4(color, 1.0);
         }
     )";
@@ -228,12 +244,10 @@ void JzRE::JzRHIRenderer::RenderImmediate(std::shared_ptr<JzRE::JzScene> scene)
     // Set up matrices
     JzMat4 modelMatrix = JzMat4x4::Identity();
 
-    // Camera setup for Cornell Box:
-    // The model is roughly at center (0, 2.5, -3), extends from about -3 to 2.5 in X, -0.2 to 5.3 in Y, -0.2 to -5.8 in Z
-    // Camera positioned to view the scene from the front
+    // Camera setup for Cornell Box
     F32 aspect = m_frameSize.x() > 0 && m_frameSize.y() > 0 ? static_cast<F32>(m_frameSize.x()) / static_cast<F32>(m_frameSize.y()) : 1.0f;
 
-    // Camera at (0, 2.5, 8) looking at (0, 2.5, -3) - positioned in front of the Cornell Box
+    // Camera at (0, 2.5, 8) looking at (0, 2.5, -3)
     JzVec3 cameraPos    = JzVec3(0.0f, 2.5f, 8.0f);
     JzVec3 cameraTarget = JzVec3(0.0f, 2.5f, -3.0f);
     JzVec3 cameraUp     = JzVec3(0.0f, 1.0f, 0.0f);
@@ -244,10 +258,19 @@ void JzRE::JzRHIRenderer::RenderImmediate(std::shared_ptr<JzRE::JzScene> scene)
     m_defaultPipeline->SetUniform("model", modelMatrix);
     m_defaultPipeline->SetUniform("view", viewMatrix);
     m_defaultPipeline->SetUniform("projection", projMatrix);
+    m_defaultPipeline->SetUniform("uCameraPos", cameraPos);
+
+    // Default material colors
+    JzVec3 defaultAmbient   = JzVec3(0.2f, 0.2f, 0.2f);
+    JzVec3 defaultDiffuse   = JzVec3(0.8f, 0.8f, 0.8f);
+    JzVec3 defaultSpecular  = JzVec3(0.5f, 0.5f, 0.5f);
+    F32    defaultShininess = 32.0f;
 
     // Render scene models
     for (const auto &model : scene->GetModels()) {
         if (!model) continue;
+
+        const auto &materials = model->GetMaterials();
 
         // Iterate through all meshes in the model
         for (const auto &mesh : model->GetMeshes()) {
@@ -255,6 +278,31 @@ void JzRE::JzRHIRenderer::RenderImmediate(std::shared_ptr<JzRE::JzScene> scene)
 
             auto vao = mesh->GetVertexArray();
             if (!vao) continue;
+
+            // Set material uniforms based on mesh's material index
+            I32 matIndex = mesh->GetMaterialIndex();
+            if (matIndex >= 0 && matIndex < static_cast<I32>(materials.size())) {
+                const auto &mat = materials[matIndex];
+                if (mat) {
+                    const auto &props = mat->GetProperties();
+                    m_defaultPipeline->SetUniform("uAmbientColor", props.ambientColor);
+                    m_defaultPipeline->SetUniform("uDiffuseColor", props.diffuseColor);
+                    m_defaultPipeline->SetUniform("uSpecularColor", props.specularColor);
+                    m_defaultPipeline->SetUniform("uShininess", props.shininess);
+                } else {
+                    // Default material
+                    m_defaultPipeline->SetUniform("uAmbientColor", defaultAmbient);
+                    m_defaultPipeline->SetUniform("uDiffuseColor", defaultDiffuse);
+                    m_defaultPipeline->SetUniform("uSpecularColor", defaultSpecular);
+                    m_defaultPipeline->SetUniform("uShininess", defaultShininess);
+                }
+            } else {
+                // No material, use defaults
+                m_defaultPipeline->SetUniform("uAmbientColor", defaultAmbient);
+                m_defaultPipeline->SetUniform("uDiffuseColor", defaultDiffuse);
+                m_defaultPipeline->SetUniform("uSpecularColor", defaultSpecular);
+                m_defaultPipeline->SetUniform("uShininess", defaultShininess);
+            }
 
             // Bind vertex array
             device.BindVertexArray(vao);

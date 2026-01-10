@@ -10,8 +10,21 @@
 #include "JzRE/Resource/JzResource.h"
 #include "JzRE/RHI/JzRHIPipeline.h"
 #include "JzRE/RHI/JzGPUTextureObject.h"
+#include "JzRE/Core/JzVector.h"
 
 namespace JzRE {
+
+/**
+ * @brief Material properties structure for MTL file data
+ */
+struct JzMaterialProperties {
+    String name;                                     ///< Material name
+    JzVec3 ambientColor  = JzVec3(0.1f, 0.1f, 0.1f); ///< Ka - Ambient color
+    JzVec3 diffuseColor  = JzVec3(0.8f, 0.8f, 0.8f); ///< Kd - Diffuse color
+    JzVec3 specularColor = JzVec3(0.5f, 0.5f, 0.5f); ///< Ks - Specular color
+    F32    shininess     = 32.0f;                    ///< Ns - Shininess
+    F32    opacity       = 1.0f;                     ///< d - Opacity (1.0 = opaque)
+};
 
 /**
  * @brief Represents a material asset.
@@ -25,6 +38,13 @@ public:
      * @param path File path to the material.
      */
     JzMaterial(const String &path);
+
+    /**
+     * @brief Constructor with material properties.
+     *
+     * @param properties Material properties from MTL file.
+     */
+    JzMaterial(const JzMaterialProperties &properties);
 
     /**
      * @brief Destructor
@@ -63,8 +83,28 @@ public:
         return m_textures;
     }
 
+    /**
+     * @brief Get the material properties
+     *
+     * @return const JzMaterialProperties&
+     */
+    const JzMaterialProperties &GetProperties() const
+    {
+        return m_properties;
+    }
+
+    /**
+     * @brief Set the material properties
+     *
+     * @param properties
+     */
+    void SetProperties(const JzMaterialProperties &properties)
+    {
+        m_properties = properties;
+    }
+
 protected:
-    // GPU-side RHI resources
+    JzMaterialProperties                             m_properties;
     std::shared_ptr<JzRHIPipeline>                   m_pipeline;
     std::vector<std::shared_ptr<JzGPUTextureObject>> m_textures;
 };

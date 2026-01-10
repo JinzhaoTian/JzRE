@@ -7,6 +7,17 @@
 #include "JzRE/Core/JzServiceContainer.h"
 #include "JzRE/RHI/JzDevice.h"
 
+JzRE::JzMaterial::JzMaterial(const JzRE::String &path)
+{
+    m_state = JzEResourceState::Unloaded;
+}
+
+JzRE::JzMaterial::JzMaterial(const JzRE::JzMaterialProperties &properties) :
+    m_properties(properties)
+{
+    m_state = JzEResourceState::Loaded; // Material properties are already set
+}
+
 JzRE::Bool JzRE::JzMaterial::Load()
 {
     if (m_state == JzEResourceState::Loaded) {

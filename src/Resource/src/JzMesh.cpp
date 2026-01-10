@@ -9,8 +9,8 @@
 
 namespace JzRE {
 
-JzMesh::JzMesh(std::vector<JzVertex> vertices, std::vector<uint32_t> indices) :
-    m_vertices(std::move(vertices)), m_indices(std::move(indices))
+JzMesh::JzMesh(std::vector<JzVertex> vertices, std::vector<uint32_t> indices, I32 materialIndex) :
+    m_vertices(std::move(vertices)), m_indices(std::move(indices)), m_materialIndex(materialIndex)
 {
     m_state = JzEResourceState::Unloaded;
 }
