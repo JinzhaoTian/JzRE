@@ -34,7 +34,7 @@ JzRE::JzEditor::JzEditor(JzRE::JzWindow &window) :
 
     const auto layoutConfigPath = std::filesystem::current_path() / "config" / "layout.ini";
     m_uiManager->ResetLayout(layoutConfigPath.string());
-    m_uiManager->SetEditorLayoutSaveFilename("layout.ini");
+    m_uiManager->SetEditorLayoutSaveFilename(layoutConfigPath.string());
     m_uiManager->EnableEditorLayoutSave(true);
 
     const auto fontPath = std::filesystem::current_path() / "fonts" / "SourceHanSansCN-Regular.otf";
