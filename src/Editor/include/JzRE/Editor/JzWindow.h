@@ -40,6 +40,14 @@ public:
     void MakeCurrentContext() const;
 
     /**
+     * @brief Detach the OpenGL context from the current thread
+     *
+     * This is required for multi-threaded rendering. After detaching,
+     * another thread can call MakeCurrentContext() to acquire the context.
+     */
+    void DetachContext() const;
+
+    /**
      * @brief Get the GLFW window
      *
      * @return GLFWwindow*

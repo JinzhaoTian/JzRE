@@ -57,6 +57,11 @@ void JzRE::JzWindow::MakeCurrentContext() const
     glfwMakeContextCurrent(m_glfwWindow);
 }
 
+void JzRE::JzWindow::DetachContext() const
+{
+    glfwMakeContextCurrent(nullptr);
+}
+
 GLFWwindow *JzRE::JzWindow::GetGLFWWindow() const
 {
     return m_glfwWindow;

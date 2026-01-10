@@ -42,17 +42,41 @@ JzRE::JzREInstance::JzREInstance(JzERHIType rhiType, std::filesystem::path &open
 
     m_editor = std::make_unique<JzEditor>(*m_window);
 
+    // Create renderer and scene
+    m_renderer = std::make_unique<JzRHIRenderer>();
+    m_scene    = std::make_shared<JzScene>();
+
+    // Initialize renderer
+    m_frameData.frameSize = m_window->GetSize();
+    m_renderer->SetFrameSize(m_frameData.frameSize);
+    m_renderer->Initialize();
+
+    // Start background worker thread for non-GPU tasks
+    // The actual OpenGL rendering stays on the main thread
     m_renderThreadRunning = true;
     m_renderThread        = std::thread(&JzREInstance::_RenderThread, this);
 }
 
 JzRE::JzREInstance::~JzREInstance()
 {
+    // Signal worker thread to stop
     m_renderThreadRunning = false;
+
+    // Wake up the worker thread if it's waiting
+    {
+        std::lock_guard<std::mutex> lock(m_renderMutex);
+        m_frameReady = true;
+    }
     m_renderCondition.notify_all();
+
+    // Wait for worker thread to finish
     if (m_renderThread.joinable()) {
         m_renderThread.join();
     }
+
+    // Clean up in reverse order of creation
+    m_scene.reset();
+    m_renderer.reset();
 
     if (m_editor) {
         m_editor.reset();
@@ -80,20 +104,62 @@ void JzRE::JzREInstance::Run()
     JzRE::JzClock clock;
 
     while (IsRunning()) {
+        // Handle window events
         m_window->PollEvents();
+
+        // Update frame data
+        JzFrameData frameData;
+        frameData.deltaTime = clock.GetDeltaTime();
+        frameData.frameSize = m_window->GetSize();
+
+        // Signal worker thread for background processing
+        _SignalRenderFrame(frameData);
+
+        // Update renderer frame size if changed
+        if (frameData.frameSize != m_renderer->GetCurrentFrameSize()) {
+            m_renderer->SetFrameSize(frameData.frameSize);
+        }
+
+        // Begin frame rendering
+        m_renderer->BeginFrame();
+
+        // Render 3D scene to framebuffer
+        m_renderer->RenderScene(m_scene.get());
+
+        // End scene rendering
+        m_renderer->EndFrame();
+
+        // Update editor (includes ImGui rendering)
         m_editor->Update(clock.GetDeltaTime());
+
+        // Swap buffers
         m_window->SwapBuffers();
+
+        // Clear input events
         m_inputManager->ClearEvents();
 
+        // Wait for worker thread to complete background processing
+        _WaitForRenderComplete();
+
+        // Update clock
         clock.Update();
     }
 }
 
 void JzRE::JzREInstance::_RenderThread()
 {
-    JzRE::JzClock renderClock;
+    // This thread handles non-GPU tasks:
+    // - Scene culling
+    // - Animation updates
+    // - Physics simulation
+    // - Asset loading preparation
+    //
+    // Actual OpenGL rendering stays on the main thread
+
+    JzRE::JzClock workerClock;
 
     while (m_renderThreadRunning) {
+        // Wait for main thread to signal a new frame
         {
             std::unique_lock<std::mutex> lock(m_renderMutex);
             m_renderCondition.wait(lock, [this] {
@@ -104,22 +170,51 @@ void JzRE::JzREInstance::_RenderThread()
                 break;
             }
 
-            if (!m_shouldRender) {
-                continue;
-            }
-
             m_frameReady = false;
         }
 
-        // TODO execute render
-
+        // Get frame data safely
+        JzFrameData currentFrameData;
         {
             std::lock_guard<std::mutex> lock(m_renderMutex);
-            m_shouldRender = false;
+            currentFrameData = m_frameData;
         }
 
-        renderClock.Update();
+        // Perform background processing (non-GPU tasks)
+        // TODO: Add scene culling, animation updates, etc.
+        // Example:
+        // - m_scene->UpdateAnimations(currentFrameData.deltaTime);
+        // - m_scene->PerformCulling(camera);
+        // - m_resourceManager->ProcessLoadingQueue();
+
+        // Signal main thread that background processing is complete
+        {
+            std::lock_guard<std::mutex> lock(m_renderMutex);
+            m_renderComplete = true;
+        }
+        m_renderCompleteCondition.notify_one();
+
+        workerClock.Update();
     }
+}
+
+void JzRE::JzREInstance::_SignalRenderFrame(const JzFrameData &frameData)
+{
+    {
+        std::lock_guard<std::mutex> lock(m_renderMutex);
+        m_frameData      = frameData;
+        m_frameReady     = true;
+        m_renderComplete = false;
+    }
+    m_renderCondition.notify_one();
+}
+
+void JzRE::JzREInstance::_WaitForRenderComplete()
+{
+    std::unique_lock<std::mutex> lock(m_renderMutex);
+    m_renderCompleteCondition.wait(lock, [this] {
+        return m_renderComplete.load();
+    });
 }
 
 JzRE::Bool JzRE::JzREInstance::IsRunning() const

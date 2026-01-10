@@ -16,8 +16,18 @@
 #include "JzRE/Editor/JzInputManager.h"
 #include "JzRE/Editor/JzWindow.h"
 #include "JzRE/Editor/JzEditor.h"
+#include "JzRE/Editor/JzRHIRenderer.h"
+#include "JzRE/Editor/JzScene.h"
 
 namespace JzRE {
+
+/**
+ * @brief Frame data for render thread synchronization
+ */
+struct JzFrameData {
+    F32     deltaTime = 0.0f;
+    JzIVec2 frameSize = {0, 0};
+};
 
 /**
  * @brief JzRE Instance
@@ -47,7 +57,22 @@ public:
     Bool IsRunning() const;
 
 private:
+    /**
+     * @brief Render thread main function
+     */
     void _RenderThread();
+
+    /**
+     * @brief Signal the render thread to render a new frame
+     *
+     * @param frameData Frame data for the current frame
+     */
+    void _SignalRenderFrame(const JzFrameData &frameData);
+
+    /**
+     * @brief Wait for the render thread to complete the current frame
+     */
+    void _WaitForRenderComplete();
 
 private:
     std::unique_ptr<JzResourceManager> m_resourceManager;
@@ -55,12 +80,16 @@ private:
     std::unique_ptr<JzDevice>          m_device;
     std::unique_ptr<JzInputManager>    m_inputManager;
     std::unique_ptr<JzEditor>          m_editor;
+    std::unique_ptr<JzRHIRenderer>     m_renderer;
+    std::shared_ptr<JzScene>           m_scene;
 
     std::thread             m_renderThread;
     std::atomic<Bool>       m_renderThreadRunning{false};
     std::mutex              m_renderMutex;
     std::condition_variable m_renderCondition;
+    std::condition_variable m_renderCompleteCondition;
     std::atomic<Bool>       m_frameReady{false};
-    std::atomic<Bool>       m_shouldRender{false};
+    std::atomic<Bool>       m_renderComplete{true};
+    JzFrameData             m_frameData;
 };
 } // namespace JzRE
