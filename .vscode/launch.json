@@ -26,6 +26,32 @@
             "externalConsole": false,
             "MIMode": "lldb",
             "preLaunchTask": "CMake: Clean & Build"
+        },
+        {
+            "name": "RuntimeExample Debug",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/JzRE/RuntimeExample",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/build/JzRE",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "lldb",
+            "preLaunchTask": "CMake: Build"
+        },
+        {
+            "name": "RuntimeExample Debug (Clean + Build)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/JzRE/RuntimeExample",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/build/JzRE",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "lldb",
+            "preLaunchTask": "CMake: Clean & Build"
         }
     ]
 }

@@ -60,6 +60,9 @@ add_subdirectory(programs)
 # add src module
 add_subdirectory(src)
 
+# add examples
+add_subdirectory(examples)
+
 # add tests module
 option(BUILD_TESTS "Build the tests" ON)
 if(BUILD_TESTS)

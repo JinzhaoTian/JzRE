@@ -1,10 +1,42 @@
-file(GLOB JzRE_SOURCES CONFIGURE_DEPENDS 
-    "src/*.cpp"
+# Core App library (JzRERuntime, etc.)
+file(GLOB JzREApp_SOURCES CONFIGURE_DEPENDS 
+    "src/JzRERuntime.cpp"
+    "src/JzREHub.cpp"
+)
+
+add_library(
+    JzREApp
+    STATIC
+    ${JzREApp_SOURCES}
+)
+
+target_compile_features(
+    JzREApp
+    PUBLIC
+    cxx_std_20
+)
+
+target_include_directories(
+    JzREApp
+    PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+target_link_libraries(
+    JzREApp
+    PUBLIC
+    JzREEditor
+)
+
+# Main executable
+file(GLOB JzRE_MAIN_SOURCES CONFIGURE_DEPENDS 
+    "src/main.cpp"
+    "src/JzREInstance.cpp"
 )
 
 add_executable(
     JzRE
-    ${JzRE_SOURCES}
+    ${JzRE_MAIN_SOURCES}
 )
 
 target_compile_features(
@@ -22,5 +54,5 @@ target_include_directories(
 target_link_libraries(
     JzRE
     PUBLIC
-    JzREEditor
+    JzREApp
 )
