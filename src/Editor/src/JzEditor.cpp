@@ -90,10 +90,8 @@ void JzRE::JzEditor::UpdateCurrentEditorMode(JzRE::F32 deltaTime)
 
 void JzRE::JzEditor::RenderViews(JzRE::F32 deltaTime)
 {
-    // auto &assetView = m_panelsManager.GetPanelAs<JzAssetView>("Asset View");
     auto &sceneView = m_panelsManager->GetPanelAs<JzSceneView>("Scene View");
 
-    // assetView.Update(deltaTime);
     if (sceneView.IsOpened()) {
         sceneView.Update(deltaTime);
     }

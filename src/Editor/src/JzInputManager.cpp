@@ -20,6 +20,9 @@ JzRE::JzInputManager::JzInputManager(JzWindow &window) :
     m_mouseButtonReleasedListenerID = m_window.MouseButtonReleasedEvent += [this](I32 mouseButton) {
         m_mouseButtonStates[static_cast<JzEInputMouseButton>(mouseButton)] = JzEInputMouseButtonState::MOUSE_UP;
     };
+    m_mouseScrollListenerID = m_window.MouseScrolledEvent += [this](JzVec2 scroll) {
+        m_mouseScroll = scroll;
+    };
 }
 
 JzRE::JzInputManager::~JzInputManager()
@@ -28,6 +31,7 @@ JzRE::JzInputManager::~JzInputManager()
     m_window.KeyboardButtonReleasedEvent -= m_keyboardButtonReleasedListenerID;
     m_window.MouseButtonPressedEvent     -= m_mouseButtonPressedListenerID;
     m_window.MouseButtonReleasedEvent    -= m_mouseButtonReleasedListenerID;
+    m_window.MouseScrolledEvent          -= m_mouseScrollListenerID;
 }
 
 JzRE::JzEInputKeyboardButtonState JzRE::JzInputManager::GetKeyState(JzEInputKeyboardButton key) const
@@ -83,7 +87,6 @@ JzRE::JzVec2 JzRE::JzInputManager::GetMousePosition() const
 
 JzRE::JzVec2 JzRE::JzInputManager::GetMouseScroll() const
 {
-    // TODO
     return m_mouseScroll;
 }
 
@@ -91,4 +94,5 @@ void JzRE::JzInputManager::ClearEvents()
 {
     m_keyboardButtonStates.clear();
     m_mouseButtonStates.clear();
+    m_mouseScroll = JzVec2(0.0f, 0.0f);
 }

@@ -270,6 +270,7 @@ private:
     ListenerID                                                              m_mouseButtonPressedListenerID;
     ListenerID                                                              m_mouseButtonReleasedListenerID;
     std::unordered_map<JzEInputMouseButton, JzEInputMouseButtonState>       m_mouseButtonStates;
+    ListenerID                                                              m_mouseScrollListenerID;
     JzVec2                                                                  m_mouseScroll;
 };
 

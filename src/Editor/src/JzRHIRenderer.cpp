@@ -3,6 +3,7 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
+#include <cmath>
 #include "JzRE/Editor/JzRHIRenderer.h"
 #include "JzRE/RHI/JzDevice.h"
 #include "JzRE/Core/JzServiceContainer.h"
@@ -244,16 +245,42 @@ void JzRE::JzRHIRenderer::RenderImmediate(std::shared_ptr<JzRE::JzScene> scene)
     // Set up matrices
     JzMat4 modelMatrix = JzMat4x4::Identity();
 
-    // Camera setup for Cornell Box
+    // Camera setup - get from scene's main camera
     F32 aspect = m_frameSize.x() > 0 && m_frameSize.y() > 0 ? static_cast<F32>(m_frameSize.x()) / static_cast<F32>(m_frameSize.y()) : 1.0f;
 
-    // Camera at (0, 2.5, 8) looking at (0, 2.5, -3)
-    JzVec3 cameraPos    = JzVec3(0.0f, 2.5f, 8.0f);
-    JzVec3 cameraTarget = JzVec3(0.0f, 2.5f, -3.0f);
-    JzVec3 cameraUp     = JzVec3(0.0f, 1.0f, 0.0f);
+    JzVec3 cameraPos(0.0f, 0.0f, 10.0f);
+    JzVec3 cameraTarget(0.0f, 0.0f, 0.0f);
+    JzVec3 cameraUp(0.0f, 1.0f, 0.0f);
+    F32    fov = 60.0f;
+
+    auto *camera = scene->FindMainCamera();
+    if (camera) {
+        cameraPos = camera->GetPosition();
+        fov       = camera->GetFov();
+
+        // Get rotation (stored as pitch, yaw, roll, unused in x, y, z, w)
+        JzVec4 rotation = camera->GetRotation();
+        F32    pitch    = rotation.x(); // Rotation around X axis
+        F32    yaw      = rotation.y(); // Rotation around Y axis
+
+        // Calculate forward direction from pitch and yaw
+        // Forward = (sin(yaw) * cos(pitch), sin(pitch), -cos(yaw) * cos(pitch))
+        F32 cosPitch = std::cos(pitch);
+        F32 sinPitch = std::sin(pitch);
+        F32 cosYaw   = std::cos(yaw);
+        F32 sinYaw   = std::sin(yaw);
+
+        JzVec3 forward(sinYaw * cosPitch, sinPitch, -cosYaw * cosPitch);
+        cameraTarget = cameraPos + forward;
+
+        // Calculate right vector and correct up vector
+        JzVec3 worldUp(0.0f, 1.0f, 0.0f);
+        JzVec3 right = forward.Cross(worldUp).Normalized();
+        cameraUp     = right.Cross(forward).Normalized();
+    }
 
     JzMat4 viewMatrix = JzMat4x4::LookAt(cameraPos, cameraTarget, cameraUp);
-    JzMat4 projMatrix = JzMat4x4::Perspective(45.0f * 3.14159f / 180.0f, aspect, 0.1f, 100.0f);
+    JzMat4 projMatrix = JzMat4x4::Perspective(fov * 3.14159f / 180.0f, aspect, 0.1f, 100.0f);
 
     m_defaultPipeline->SetUniform("model", modelMatrix);
     m_defaultPipeline->SetUniform("view", viewMatrix);

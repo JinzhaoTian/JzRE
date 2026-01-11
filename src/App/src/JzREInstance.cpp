@@ -125,13 +125,13 @@ void JzRE::JzREInstance::Run()
         // Begin frame rendering
         m_renderer->BeginFrame();
 
-        // Render 3D scene to framebuffer
+        // Render 3D scene to framebuffer (camera is now updated)
         m_renderer->RenderScene(m_scene.get());
 
         // End scene rendering
         m_renderer->EndFrame();
 
-        // Update editor (includes ImGui rendering)
+        // Update and render editor UI (ImGui panels)
         m_editor->Update(clock.GetDeltaTime());
 
         // Swap buffers
