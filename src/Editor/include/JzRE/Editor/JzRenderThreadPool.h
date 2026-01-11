@@ -8,8 +8,8 @@
 #include <functional>
 #include <queue>
 #include <thread>
-#include "JzRE/Core/JzRETypes.h"
-#include "JzRE/RHI/JzRHICommandList.h"
+#include "JzRE/Runtime/Core/JzRETypes.h"
+#include "JzRE/Runtime/Platform/JzRHICommandList.h"
 #include "JzRE/Editor/JzRenderTask.h"
 #include "JzRE/Editor/JzTaskComparator.h"
 

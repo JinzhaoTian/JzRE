@@ -4,10 +4,10 @@
  */
 
 #include <cmath>
-#include "JzRE/Core/JzServiceContainer.h"
+#include "JzRE/Runtime/Core/JzServiceContainer.h"
 #include "JzRE/Editor/JzSceneView.h"
-#include "JzRE/Editor/JzInputManager.h"
-#include "JzRE/Editor/JzScene.h"
+#include "JzRE/Runtime/Function/Input/JzInputManager.h"
+#include "JzRE/Runtime/Function/Scene/JzScene.h"
 
 JzRE::JzSceneView::JzSceneView(const JzRE::String &name, JzRE::Bool is_opened) :
     JzRE::JzView(name, is_opened)

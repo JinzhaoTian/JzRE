@@ -4,7 +4,7 @@
  */
 
 #include <gtest/gtest.h>
-#include "JzRE/Core/JzRETypes.h"
+#include "JzRE/Runtime/Core/JzRETypes.h"
 
 // 基本测试，确保测试框架正常工作
 TEST(BasicTest, TypeDefinitions)

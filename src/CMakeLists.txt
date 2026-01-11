@@ -1,10 +1,8 @@
-add_subdirectory(Core)
-add_subdirectory(ECS)
-add_subdirectory(EnttECS)
-add_subdirectory(RHI)
-add_subdirectory(Graphics)
-add_subdirectory(Resource)
-add_subdirectory(UI)
-add_subdirectory(Platform)
+# Runtime module (contains Platform, Core, Resource, Function layers)
+add_subdirectory(Runtime)
+
+# Editor module (depends on Runtime)
 add_subdirectory(Editor)
+
+# Application entry points
 add_subdirectory(App)

@@ -4,9 +4,9 @@
  */
 
 #include "JzRE/Editor/JzHierarchy.h"
-#include "JzRE/UI/JzTreeNode.h"
-#include "JzRE/UI/JzGroup.h"
-#include "JzRE/UI/JzSeparator.h"
+#include "JzRE/Editor/UI/JzTreeNode.h"
+#include "JzRE/Editor/UI/JzGroup.h"
+#include "JzRE/Editor/UI/JzSeparator.h"
 
 JzRE::JzHierarchy::JzHierarchy(const JzRE::String &name, JzRE::Bool is_opened) :
     JzPanelWindow(name, is_opened),

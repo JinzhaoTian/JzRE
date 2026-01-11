@@ -5,11 +5,11 @@
 
 #pragma once
 
-#include "JzRE/Core/JzRETypes.h"
-#include "JzRE/Core/JzELog.h"
-#include "JzRE/UI/JzPanelWindow.h"
-#include "JzRE/UI/JzGroup.h"
-#include "JzRE/UI/JzText.h"
+#include "JzRE/Runtime/Core/JzRETypes.h"
+#include "JzRE/Runtime/Core/JzELog.h"
+#include "JzRE/Editor/UI/JzPanelWindow.h"
+#include "JzRE/Editor/UI/JzGroup.h"
+#include "JzRE/Editor/UI/JzText.h"
 
 namespace JzRE {
 /**

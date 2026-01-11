@@ -3,18 +3,18 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzRE/Core/JzLogger.h"
-#include "JzRE/Core/JzServiceContainer.h"
+#include "JzRE/Runtime/Core/JzLogger.h"
+#include "JzRE/Runtime/Core/JzServiceContainer.h"
 #include "JzRE/Editor/JzContext.h"
 #include "JzRE/Editor/JzAssetBrowser.h"
-#include "JzRE/UI/JzButton.h"
-#include "JzRE/UI/JzFileContextMenu.h"
-#include "JzRE/UI/JzFolderContextMenu.h"
-#include "JzRE/UI/JzIcon.h"
-#include "JzRE/UI/JzSeparator.h"
-#include "JzRE/UI/JzTextClickable.h"
-#include "JzRE/Resource/JzResourceManager.h"
-#include "JzRE/Resource/JzTexture.h"
+#include "JzRE/Editor/UI/JzButton.h"
+#include "JzRE/Editor/UI/JzFileContextMenu.h"
+#include "JzRE/Editor/UI/JzFolderContextMenu.h"
+#include "JzRE/Editor/UI/JzIcon.h"
+#include "JzRE/Editor/UI/JzSeparator.h"
+#include "JzRE/Editor/UI/JzTextClickable.h"
+#include "JzRE/Runtime/Resource/JzResourceManager.h"
+#include "JzRE/Runtime/Resource/JzTexture.h"
 
 JzRE::JzAssetBrowser::JzAssetBrowser(const JzRE::String &name, JzRE::Bool is_opened) :
     JzPanelWindow(name, is_opened)

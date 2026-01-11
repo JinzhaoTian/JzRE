@@ -1,0 +1,27 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2025 JzRE
+ */
+
+#include "JzRE/Editor/UI/JzMenuItem.h"
+#include <imgui.h>
+
+JzRE::JzMenuItem::JzMenuItem(const String &name, const String &shortcut, Bool isCheckable, Bool isChecked) :
+    JzDataWidget(m_selected),
+    name(name),
+    shortcut(shortcut),
+    checkable(isCheckable),
+    checked(isChecked) { }
+
+void JzRE::JzMenuItem::_Draw_Impl()
+{
+    JzRE::Bool previousValue = checked;
+
+    if (ImGui::MenuItem((name + m_widgetID).c_str(), shortcut.c_str(), checkable ? &checked : nullptr, enabled))
+        ClickedEvent.Invoke();
+
+    if (checked != previousValue) {
+        ValueChangedEvent.Invoke(checked);
+        this->NotifyChange();
+    }
+}

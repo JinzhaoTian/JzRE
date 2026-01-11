@@ -7,18 +7,18 @@
 #include <algorithm>
 #include <filesystem>
 #include <imgui.h>
-#include "JzRE/Core/JzServiceContainer.h"
-#include "JzRE/UI/JzGroup.h"
-#include "JzRE/UI/JzEAlignment.h"
-#include "JzRE/UI/JzText.h"
-#include "JzRE/UI/JzArrowButton.h"
-#include "JzRE/UI/JzSeparator.h"
-#include "JzRE/UI/JzConverter.h"
+#include "JzRE/Runtime/Core/JzServiceContainer.h"
+#include "JzRE/Editor/UI/JzGroup.h"
+#include "JzRE/Editor/UI/JzEAlignment.h"
+#include "JzRE/Editor/UI/JzText.h"
+#include "JzRE/Editor/UI/JzArrowButton.h"
+#include "JzRE/Editor/UI/JzSeparator.h"
+#include "JzRE/Editor/UI/JzConverter.h"
 #include "JzRE/Editor/JzSceneManager.h"
-#include "JzRE/Editor/JzInputManager.h"
-#include "JzRE/Editor/JzScene.h"
-#include "JzRE/Resource/JzModel.h"
-#include "JzRE/Platform/JzOpenFileDialog.h"
+#include "JzRE/Runtime/Function/Input/JzInputManager.h"
+#include "JzRE/Runtime/Function/Scene/JzScene.h"
+#include "JzRE/Runtime/Resource/JzModel.h"
+#include "JzRE/Runtime/Platform/JzOpenFileDialog.h"
 
 JzRE::JzMenuBar::JzMenuBar(JzRE::JzWindow &window) :
     m_window(window)

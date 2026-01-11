@@ -4,7 +4,7 @@
  */
 
 #include <gtest/gtest.h>
-#include "JzRE/Core/JzVector.h"
+#include "JzRE/Runtime/Core/JzVector.h"
 
 using namespace JzRE;
 

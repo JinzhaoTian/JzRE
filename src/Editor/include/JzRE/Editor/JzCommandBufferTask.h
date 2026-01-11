@@ -3,8 +3,8 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzRE/Core/JzRETypes.h"
-#include "JzRE/RHI/JzRHICommandList.h"
+#include "JzRE/Runtime/Core/JzRETypes.h"
+#include "JzRE/Runtime/Platform/JzRHICommandList.h"
 #include "JzRE/Editor/JzRenderTask.h"
 
 namespace JzRE {

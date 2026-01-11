@@ -4,12 +4,12 @@
  */
 
 #include "JzRE/Editor/JzConsole.h"
-#include "JzRE/Core/JzRETypes.h"
-#include "JzRE/Core/JzLogger.h"
-#include "JzRE/UI/JzText.h"
-#include "JzRE/UI/JzButton.h"
-#include "JzRE/UI/JzSeparator.h"
-#include "JzRE/UI/JzSpacing.h"
+#include "JzRE/Runtime/Core/JzRETypes.h"
+#include "JzRE/Runtime/Core/JzLogger.h"
+#include "JzRE/Editor/UI/JzText.h"
+#include "JzRE/Editor/UI/JzButton.h"
+#include "JzRE/Editor/UI/JzSeparator.h"
+#include "JzRE/Editor/UI/JzSpacing.h"
 
 JzRE::JzConsole::JzConsole(const String &name, Bool is_opened) :
     JzPanelWindow(name, is_opened)

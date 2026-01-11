@@ -12,9 +12,9 @@
 #endif
 #include <GLFW/glfw3.h>
 #include <imgui.h>
-#include "JzRE/Core/JzRETypes.h"
+#include "JzRE/Runtime/Core/JzRETypes.h"
 #include "JzCanvas.h"
-#include "JzWindow.h"
+#include "JzRE/Runtime/Function/Window/JzWindow.h"
 
 namespace JzRE {
 

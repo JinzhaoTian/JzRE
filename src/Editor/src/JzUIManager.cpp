@@ -4,7 +4,7 @@
  */
 
 #include "JzRE/Editor/JzUIManager.h"
-#include "JzRE/Editor/JzWindow.h"
+#include "JzRE/Runtime/Function/Window/JzWindow.h"
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>

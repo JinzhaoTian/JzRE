@@ -14,20 +14,20 @@
 #include <unistd.h>
 #endif
 #include <nlohmann/json.hpp>
-#include "JzRE/Core/JzServiceContainer.h"
-#include "JzRE/Core/JzLogger.h"
-#include "JzRE/Resource/JzTexture.h"
-#include "JzRE/Resource/JzTextureFactory.h"
-#include "JzRE/UI/JzIconButton.h"
-#include "JzRE/UI/JzGroup.h"
-#include "JzRE/UI/JzText.h"
-#include "JzRE/UI/JzInputText.h"
-#include "JzRE/UI/JzSpacing.h"
-#include "JzRE/UI/JzSeparator.h"
-#include "JzRE/UI/JzColumns.h"
-#include "JzRE/UI/JzConverter.h"
-#include "JzRE/Platform/JzOpenFileDialog.h"
-#include "JzRE/Editor/JzDeviceFactory.h"
+#include "JzRE/Runtime/Core/JzServiceContainer.h"
+#include "JzRE/Runtime/Core/JzLogger.h"
+#include "JzRE/Runtime/Resource/JzTexture.h"
+#include "JzRE/Runtime/Resource/JzTextureFactory.h"
+#include "JzRE/Editor/UI/JzIconButton.h"
+#include "JzRE/Editor/UI/JzGroup.h"
+#include "JzRE/Editor/UI/JzText.h"
+#include "JzRE/Editor/UI/JzInputText.h"
+#include "JzRE/Editor/UI/JzSpacing.h"
+#include "JzRE/Editor/UI/JzSeparator.h"
+#include "JzRE/Editor/UI/JzColumns.h"
+#include "JzRE/Editor/UI/JzConverter.h"
+#include "JzRE/Runtime/Platform/JzOpenFileDialog.h"
+#include "JzRE/Runtime/Function/Rendering/JzDeviceFactory.h"
 
 JzRE::JzREHub::JzREHub(JzERHIType rhiType)
 {

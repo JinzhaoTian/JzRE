@@ -5,8 +5,8 @@
 
 #include <imgui.h>
 #include "JzRE/Editor/JzView.h"
-#include "JzRE/Editor/JzRHIRenderer.h"
-#include "JzRE/Core/JzServiceContainer.h"
+#include "JzRE/Runtime/Function/Rendering/JzRHIRenderer.h"
+#include "JzRE/Runtime/Core/JzServiceContainer.h"
 
 JzRE::JzView::JzView(const JzRE::String &name, JzRE::Bool is_opened) :
     JzRE::JzPanelWindow(name, is_opened)

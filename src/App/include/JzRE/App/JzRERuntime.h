@@ -9,12 +9,12 @@
 #include <condition_variable>
 #include <mutex>
 #include <thread>
-#include "JzRE/Core/JzRETypes.h"
-#include "JzRE/Editor/JzRHIRenderer.h"
-#include "JzRE/Editor/JzScene.h"
-#include "JzRE/Editor/JzWindow.h"
-#include "JzRE/RHI/JzDevice.h"
-#include "JzRE/Resource/JzResourceManager.h"
+#include "JzRE/Runtime/Core/JzRETypes.h"
+#include "JzRE/Runtime/Function/Rendering/JzRHIRenderer.h"
+#include "JzRE/Runtime/Function/Scene/JzScene.h"
+#include "JzRE/Runtime/Function/Window/JzWindow.h"
+#include "JzRE/Runtime/Platform/JzDevice.h"
+#include "JzRE/Runtime/Resource/JzResourceManager.h"
 
 namespace JzRE {
 

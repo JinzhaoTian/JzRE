@@ -4,8 +4,8 @@
  */
 
 #include "JzRE/App/JzRERuntime.h"
-#include "JzRE/Editor/JzScene.h"
-#include "JzRE/Editor/JzRHIRenderer.h"
+#include "JzRE/Runtime/Function/Scene/JzScene.h"
+#include "JzRE/Runtime/Function/Rendering/JzRHIRenderer.h"
 
 /**
  * @brief Example application demonstrating JzRERuntime usage

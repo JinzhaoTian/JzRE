@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "JzRE/Core/JzRETypes.h"
+#include "JzRE/Runtime/Core/JzRETypes.h"
 
 namespace JzRE {
 

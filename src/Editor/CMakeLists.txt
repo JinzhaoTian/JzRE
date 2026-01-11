@@ -1,34 +1,32 @@
-file(GLOB JzREEditor_SOURCES CONFIGURE_DEPENDS 
+# Editor module - depends on Runtime
+file(GLOB_RECURSE JzEditor_SOURCES CONFIGURE_DEPENDS 
     "src/*.cpp"
 )
 
 add_library(
-    JzREEditor
+    JzEditor
     STATIC
-    ${JzREEditor_SOURCES}
+    ${JzEditor_SOURCES}
 )
 
 target_compile_features(
-    JzREEditor
+    JzEditor
     PUBLIC
     cxx_std_20
 )
 
 target_include_directories(
-    JzREEditor
+    JzEditor
     PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
+# External dependencies
+find_package(imgui CONFIG REQUIRED)
+
 target_link_libraries(
-    JzREEditor
+    JzEditor
     PUBLIC
     imgui::imgui
-    JzRECore
-    JzRERHI
-    JzREGraphics
-    JzREResource
-    JzREECS
-    JzREPlatform
-    JzREUI
+    JzRuntime
 )

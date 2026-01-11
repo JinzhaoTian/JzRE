@@ -4,7 +4,7 @@
  */
 
 #include <gtest/gtest.h>
-#include "JzRE/Core/JzMatrix.h"
+#include "JzRE/Runtime/Core/JzMatrix.h"
 
 using namespace JzRE;
 

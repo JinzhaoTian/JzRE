@@ -1,4 +1,6 @@
-# Core App library (JzRERuntime, etc.)
+# JzRE Application - Core runtime library and main executable
+
+# App library (contains JzRERuntime, JzREHub logic)
 file(GLOB JzREApp_SOURCES CONFIGURE_DEPENDS 
     "src/JzRERuntime.cpp"
     "src/JzREHub.cpp"
@@ -25,10 +27,10 @@ target_include_directories(
 target_link_libraries(
     JzREApp
     PUBLIC
-    JzREEditor
+    JzEditor
 )
 
-# Main executable
+# Main executable - Editor application
 file(GLOB JzRE_MAIN_SOURCES CONFIGURE_DEPENDS 
     "src/main.cpp"
     "src/JzREInstance.cpp"

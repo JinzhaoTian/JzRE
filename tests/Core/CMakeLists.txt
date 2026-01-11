@@ -16,7 +16,7 @@ target_compile_features(TESTJzRECore PUBLIC cxx_std_20)
 target_link_libraries(
     TESTJzRECore
     PRIVATE
-    JzRECore
+    JzRuntimeCore
     GTest::gtest_main
 )
 

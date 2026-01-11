@@ -4,11 +4,11 @@
  */
 
 #include "JzRE/App/JzRERuntime.h"
-#include "JzRE/Core/JzClock.h"
-#include "JzRE/Core/JzServiceContainer.h"
-#include "JzRE/Editor/JzDeviceFactory.h"
-#include "JzRE/Resource/JzTexture.h"
-#include "JzRE/Resource/JzTextureFactory.h"
+#include "JzRE/Runtime/Core/JzClock.h"
+#include "JzRE/Runtime/Core/JzServiceContainer.h"
+#include "JzRE/Runtime/Function/Rendering/JzDeviceFactory.h"
+#include "JzRE/Runtime/Resource/JzTexture.h"
+#include "JzRE/Runtime/Resource/JzTextureFactory.h"
 
 JzRE::JzRERuntime::JzRERuntime(JzERHIType rhiType, const String &windowTitle,
                                const JzIVec2 &windowSize)

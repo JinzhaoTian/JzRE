@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "JzRE/Editor/JzWindow.h"
+#include "JzRE/Runtime/Function/Window/JzWindow.h"
 #include "JzRE/Editor/JzCanvas.h"
 #include "JzRE/Editor/JzPanelsManager.h"
 #include "JzRE/Editor/JzUIManager.h"

@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 #include <thread>
 #include <chrono>
-#include "JzRE/Core/JzClock.h"
+#include "JzRE/Runtime/Core/JzClock.h"
 
 class TestJzClock : public ::testing::Test {
 protected:

@@ -5,10 +5,10 @@
 
 #pragma once
 
-#include "JzRE/Core/JzRETypes.h"
-#include "JzRE/UI/JzPanelWindow.h"
-#include "JzRE/UI/JzTreeNode.h"
-#include "JzRE/UI/JzWidgetContainer.h"
+#include "JzRE/Runtime/Core/JzRETypes.h"
+#include "JzRE/Editor/UI/JzPanelWindow.h"
+#include "JzRE/Editor/UI/JzTreeNode.h"
+#include "JzRE/Editor/UI/JzWidgetContainer.h"
 
 namespace JzRE {
 /**

@@ -1,10 +1,10 @@
 #pragma once
 
 #include <chrono>
-#include "JzRE/Core/JzRETypes.h"
-#include "JzRE/RHI/JzGPUBufferObject.h"
-#include "JzRE/RHI/JzRHICommandList.h"
-#include "JzRE/RHI/JzRHIStats.h"
+#include "JzRE/Runtime/Core/JzRETypes.h"
+#include "JzRE/Runtime/Platform/JzGPUBufferObject.h"
+#include "JzRE/Runtime/Platform/JzRHICommandList.h"
+#include "JzRE/Runtime/Platform/JzRHIStats.h"
 #include "JzRE/Editor/JzRenderThreadContext.h"
 #include "JzRE/Editor/JzRenderThreadPool.h"
 
