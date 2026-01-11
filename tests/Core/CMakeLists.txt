@@ -12,6 +12,9 @@ add_executable(
 # set test executable target compile properties
 target_compile_features(TESTJzRECore PUBLIC cxx_std_20)
 
+# External dependencies
+find_package(GTest CONFIG REQUIRED)
+
 # set test executable target link libraries
 target_link_libraries(
     TESTJzRECore

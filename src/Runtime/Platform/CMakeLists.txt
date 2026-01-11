@@ -41,15 +41,45 @@ target_include_directories(JzRuntimePlatform
         ${CMAKE_CURRENT_SOURCE_DIR}/Vulkan
 )
 
-# External dependencies
+# ============================================
+# External Dependencies (self-contained)
+# ============================================
+
+# Graphics API dependencies
 find_package(glad CONFIG REQUIRED)
 find_package(glfw3 CONFIG REQUIRED)
+
+# Platform-specific libraries
+if(WIN32)
+    find_package(OpenGL REQUIRED)
+    set(JZ_PLATFORM_LIBS opengl32 gdi32)
+    set(JZ_OPENGL_LIBS OpenGL::GL)
+elseif(APPLE)
+    find_library(COCOA_LIB Cocoa REQUIRED)
+    find_library(IOKIT_LIB IOKit REQUIRED)
+    find_library(COREVIDEO_LIB CoreVideo REQUIRED)
+    find_library(OPENGL_LIB OpenGL REQUIRED)
+    find_library(GLUT_LIB GLUT REQUIRED)
+    find_library(UNIFORMTYPEIDENTIFIERS_LIB UniformTypeIdentifiers REQUIRED)
+    set(JZ_PLATFORM_LIBS ${COCOA_LIB} ${IOKIT_LIB} ${COREVIDEO_LIB} ${UNIFORMTYPEIDENTIFIERS_LIB})
+    set(JZ_OPENGL_LIBS ${OPENGL_LIB} ${GLUT_LIB})
+elseif(UNIX)
+    find_package(OpenGL REQUIRED)
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(X11 REQUIRED x11)
+    set(JZ_PLATFORM_LIBS ${X11_LIBRARIES} ${CMAKE_DL_LIBS})
+    set(JZ_OPENGL_LIBS OpenGL::GL)
+endif()
+
+# Threading support
+find_package(Threads REQUIRED)
 
 target_link_libraries(JzRuntimePlatform
     PUBLIC
         JzRuntimeCore
         glad::glad
         glfw
-        ${OPENGL_LIBS}
-        ${PLATFORM_LIBS}
+        Threads::Threads
+        ${JZ_OPENGL_LIBS}
+        ${JZ_PLATFORM_LIBS}
 )
