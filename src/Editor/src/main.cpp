@@ -6,8 +6,8 @@
 #include <memory>
 #include <optional>
 #include <filesystem>
-#include "JzRE/App/JzREHub.h"
-#include "JzRE/App/JzREInstance.h"
+#include "JzRE/Editor/JzREHub.h"
+#include "JzRE/Editor/JzREInstance.h"
 
 int main(int argc, char **argv)
 {

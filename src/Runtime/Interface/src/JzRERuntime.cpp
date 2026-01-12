@@ -3,44 +3,37 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzRE/App/JzREInstance.h"
+#include "JzRE/Runtime/JzRERuntime.h"
 #include "JzRE/Runtime/Core/JzClock.h"
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
+#include "JzRE/Runtime/Function/Rendering/JzDeviceFactory.h"
 #include "JzRE/Runtime/Resource/JzTexture.h"
 #include "JzRE/Runtime/Resource/JzTextureFactory.h"
-#include "JzRE/Runtime/Function/Rendering/JzDeviceFactory.h"
-#include "JzRE/Editor/JzContext.h"
 
-JzRE::JzREInstance::JzREInstance(JzERHIType rhiType, std::filesystem::path &openDirectory)
+JzRE::JzRERuntime::JzRERuntime(JzERHIType rhiType, const String &windowTitle,
+                               const JzIVec2 &windowSize)
 {
     JzServiceContainer::Init();
 
+    // Initialize resource manager
     m_resourceManager = std::make_unique<JzResourceManager>();
     m_resourceManager->RegisterFactory<JzTexture>(std::make_unique<JzTextureFactory>());
     m_resourceManager->AddSearchPath("./icons");
     JzServiceContainer::Provide<JzResourceManager>(*m_resourceManager);
 
-    auto &context = JzContext::GetInstance();
-    if (!context.IsInitialized()) {
-        context.Initialize(openDirectory);
-    }
-
+    // Create window
     JzWindowSettings windowSettings;
-    windowSettings.title = "JzRE";
-    windowSettings.size  = {1280, 720};
+    windowSettings.title = windowTitle;
+    windowSettings.size  = windowSize;
 
     m_window = std::make_unique<JzWindow>(rhiType, windowSettings);
     m_window->MakeCurrentContext();
     m_window->SetAlignCentered();
     JzServiceContainer::Provide<JzWindow>(*m_window);
 
+    // Create device
     m_device = JzDeviceFactory::CreateDevice(rhiType);
     JzServiceContainer::Provide<JzDevice>(*m_device);
-
-    m_inputManager = std::make_unique<JzInputManager>(*m_window);
-    JzServiceContainer::Provide<JzInputManager>(*m_inputManager);
-
-    m_editor = std::make_unique<JzEditor>(*m_window);
 
     // Create renderer and scene
     m_renderer = std::make_unique<JzRHIRenderer>();
@@ -54,55 +47,39 @@ JzRE::JzREInstance::JzREInstance(JzERHIType rhiType, std::filesystem::path &open
     m_renderer->Initialize();
 
     // Start background worker thread for non-GPU tasks
-    // The actual OpenGL rendering stays on the main thread
-    m_renderThreadRunning = true;
-    m_renderThread        = std::thread(&JzREInstance::_RenderThread, this);
+    m_workerThreadRunning = true;
+    m_workerThread        = std::thread(&JzRERuntime::_WorkerThread, this);
 }
 
-JzRE::JzREInstance::~JzREInstance()
+JzRE::JzRERuntime::~JzRERuntime()
 {
     // Signal worker thread to stop
-    m_renderThreadRunning = false;
+    m_workerThreadRunning = false;
 
     // Wake up the worker thread if it's waiting
     {
-        std::lock_guard<std::mutex> lock(m_renderMutex);
+        std::lock_guard<std::mutex> lock(m_workerMutex);
         m_frameReady = true;
     }
-    m_renderCondition.notify_all();
+    m_workerCondition.notify_all();
 
     // Wait for worker thread to finish
-    if (m_renderThread.joinable()) {
-        m_renderThread.join();
+    if (m_workerThread.joinable()) {
+        m_workerThread.join();
     }
 
     // Clean up in reverse order of creation
     m_scene.reset();
     m_renderer.reset();
-
-    if (m_editor) {
-        m_editor.reset();
-    }
-
-    if (m_inputManager) {
-        m_inputManager.reset();
-    }
-
-    if (m_device) {
-        m_device.reset();
-    }
-
-    if (m_window) {
-        m_window.reset();
-    }
-
-    if (m_resourceManager) {
-        m_resourceManager.reset();
-    }
+    m_device.reset();
+    m_window.reset();
+    m_resourceManager.reset();
 }
 
-void JzRE::JzREInstance::Run()
+void JzRE::JzRERuntime::Run()
 {
+    OnStart();
+
     JzRE::JzClock clock;
 
     while (IsRunning()) {
@@ -110,45 +87,44 @@ void JzRE::JzREInstance::Run()
         m_window->PollEvents();
 
         // Update frame data
-        JzFrameData frameData;
+        JzRuntimeFrameData frameData;
         frameData.deltaTime = clock.GetDeltaTime();
         frameData.frameSize = m_window->GetSize();
 
         // Signal worker thread for background processing
-        _SignalRenderFrame(frameData);
+        _SignalWorkerFrame(frameData);
 
         // Update renderer frame size if changed
         if (frameData.frameSize != m_renderer->GetCurrentFrameSize()) {
             m_renderer->SetFrameSize(frameData.frameSize);
         }
 
+        // Call user update logic
+        OnUpdate(frameData.deltaTime);
+
         // Begin frame rendering
         m_renderer->BeginFrame();
 
-        // Render 3D scene to framebuffer (camera is now updated)
+        // Render 3D scene to framebuffer
         m_renderer->RenderScene(m_scene.get());
 
         // End scene rendering
         m_renderer->EndFrame();
 
-        // Update and render editor UI (ImGui panels)
-        m_editor->Update(clock.GetDeltaTime());
-
         // Swap buffers
         m_window->SwapBuffers();
 
-        // Clear input events
-        m_inputManager->ClearEvents();
-
         // Wait for worker thread to complete background processing
-        _WaitForRenderComplete();
+        _WaitForWorkerComplete();
 
         // Update clock
         clock.Update();
     }
+
+    OnStop();
 }
 
-void JzRE::JzREInstance::_RenderThread()
+void JzRE::JzRERuntime::_WorkerThread()
 {
     // This thread handles non-GPU tasks:
     // - Scene culling
@@ -160,15 +136,15 @@ void JzRE::JzREInstance::_RenderThread()
 
     JzRE::JzClock workerClock;
 
-    while (m_renderThreadRunning) {
+    while (m_workerThreadRunning) {
         // Wait for main thread to signal a new frame
         {
-            std::unique_lock<std::mutex> lock(m_renderMutex);
-            m_renderCondition.wait(lock, [this] {
-                return m_frameReady || !m_renderThreadRunning;
+            std::unique_lock<std::mutex> lock(m_workerMutex);
+            m_workerCondition.wait(lock, [this] {
+                return m_frameReady || !m_workerThreadRunning;
             });
 
-            if (!m_renderThreadRunning) {
+            if (!m_workerThreadRunning) {
                 break;
             }
 
@@ -176,9 +152,9 @@ void JzRE::JzREInstance::_RenderThread()
         }
 
         // Get frame data safely
-        JzFrameData currentFrameData;
+        JzRuntimeFrameData currentFrameData;
         {
-            std::lock_guard<std::mutex> lock(m_renderMutex);
+            std::lock_guard<std::mutex> lock(m_workerMutex);
             currentFrameData = m_frameData;
         }
 
@@ -191,35 +167,73 @@ void JzRE::JzREInstance::_RenderThread()
 
         // Signal main thread that background processing is complete
         {
-            std::lock_guard<std::mutex> lock(m_renderMutex);
-            m_renderComplete = true;
+            std::lock_guard<std::mutex> lock(m_workerMutex);
+            m_workerComplete = true;
         }
-        m_renderCompleteCondition.notify_one();
+        m_workerCompleteCondition.notify_one();
 
         workerClock.Update();
     }
 }
 
-void JzRE::JzREInstance::_SignalRenderFrame(const JzFrameData &frameData)
+void JzRE::JzRERuntime::_SignalWorkerFrame(const JzRuntimeFrameData &frameData)
 {
     {
-        std::lock_guard<std::mutex> lock(m_renderMutex);
+        std::lock_guard<std::mutex> lock(m_workerMutex);
         m_frameData      = frameData;
         m_frameReady     = true;
-        m_renderComplete = false;
+        m_workerComplete = false;
     }
-    m_renderCondition.notify_one();
+    m_workerCondition.notify_one();
 }
 
-void JzRE::JzREInstance::_WaitForRenderComplete()
+void JzRE::JzRERuntime::_WaitForWorkerComplete()
 {
-    std::unique_lock<std::mutex> lock(m_renderMutex);
-    m_renderCompleteCondition.wait(lock, [this] {
-        return m_renderComplete.load();
+    std::unique_lock<std::mutex> lock(m_workerMutex);
+    m_workerCompleteCondition.wait(lock, [this] {
+        return m_workerComplete.load();
     });
 }
 
-JzRE::Bool JzRE::JzREInstance::IsRunning() const
+JzRE::Bool JzRE::JzRERuntime::IsRunning() const
 {
     return !m_window->ShouldClose();
+}
+
+JzRE::JzWindow &JzRE::JzRERuntime::GetWindow()
+{
+    return *m_window;
+}
+
+JzRE::JzDevice &JzRE::JzRERuntime::GetDevice()
+{
+    return *m_device;
+}
+
+JzRE::JzRHIRenderer &JzRE::JzRERuntime::GetRenderer()
+{
+    return *m_renderer;
+}
+
+std::shared_ptr<JzRE::JzScene> JzRE::JzRERuntime::GetScene()
+{
+    return m_scene;
+}
+
+void JzRE::JzRERuntime::OnStart()
+{
+    // Default implementation does nothing
+    // Override in subclass for custom initialization
+}
+
+void JzRE::JzRERuntime::OnUpdate([[maybe_unused]] F32 deltaTime)
+{
+    // Default implementation does nothing
+    // Override in subclass for custom update logic
+}
+
+void JzRE::JzRERuntime::OnStop()
+{
+    // Default implementation does nothing
+    // Override in subclass for custom cleanup
 }

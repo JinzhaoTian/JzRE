@@ -3,7 +3,7 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzRE/App/JzREHub.h"
+#include "JzRE/Editor/JzREHub.h"
 #include <fstream>
 #include <memory>
 #ifdef _WIN32
