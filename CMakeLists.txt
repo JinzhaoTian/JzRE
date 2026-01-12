@@ -13,6 +13,15 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # set export compile commands
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# Enable folder organization in Visual Studio
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+# Add CMake modules path
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
+# Include helper modules
+include(JzSourceGroups)
+
 # set output path (works for both single-config and multi-config generators)
 set(JzRE_OUTPUT_DIR ${CMAKE_BINARY_DIR}/JzRE)
 

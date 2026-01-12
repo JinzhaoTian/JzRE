@@ -2,29 +2,33 @@
 add_library(JzRuntimePlatform STATIC)
 
 # Collect all RHI sources
-file(GLOB_RECURSE PLATFORM_HEADERS "include/*.h")
-file(GLOB RHI_SOURCES "src/*.cpp")
+file(GLOB_RECURSE PLATFORM_HEADERS CONFIGURE_DEPENDS "include/*.h")
+file(GLOB RHI_SOURCES CONFIGURE_DEPENDS "src/*.cpp")
 
 # OpenGL backend
-file(GLOB OPENGL_SOURCES "OpenGL/*.cpp")
-file(GLOB OPENGL_HEADERS "OpenGL/*.h")
+file(GLOB OPENGL_SOURCES CONFIGURE_DEPENDS "OpenGL/*.cpp")
+file(GLOB OPENGL_HEADERS CONFIGURE_DEPENDS "OpenGL/*.h")
 
 # Vulkan backend (conditional)
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Vulkan" AND IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/Vulkan")
-    file(GLOB VULKAN_SOURCES "Vulkan/*.cpp")
-    file(GLOB VULKAN_HEADERS "Vulkan/*.h")
+    file(GLOB VULKAN_SOURCES CONFIGURE_DEPENDS "Vulkan/*.cpp")
+    file(GLOB VULKAN_HEADERS CONFIGURE_DEPENDS "Vulkan/*.h")
 endif()
 
 # Platform-specific sources
 if(WIN32)
-    file(GLOB PLATFORM_SPECIFIC_SOURCES "Windows/*.cpp")
+    file(GLOB PLATFORM_SPECIFIC_SOURCES CONFIGURE_DEPENDS "Windows/*.cpp")
+    file(GLOB PLATFORM_SPECIFIC_HEADERS CONFIGURE_DEPENDS "Windows/*.h")
 elseif(APPLE)
-    file(GLOB PLATFORM_SPECIFIC_SOURCES "macOS/*.cpp" "macOS/*.mm")
+    file(GLOB PLATFORM_SPECIFIC_SOURCES CONFIGURE_DEPENDS "macOS/*.cpp" "macOS/*.mm")
+    file(GLOB PLATFORM_SPECIFIC_HEADERS CONFIGURE_DEPENDS "macOS/*.h")
 else()
-    file(GLOB PLATFORM_SPECIFIC_SOURCES "Linux/*.cpp")
+    file(GLOB PLATFORM_SPECIFIC_SOURCES CONFIGURE_DEPENDS "Linux/*.cpp")
+    file(GLOB PLATFORM_SPECIFIC_HEADERS CONFIGURE_DEPENDS "Linux/*.h")
 endif()
 
-target_sources(JzRuntimePlatform PRIVATE
+# Combine all sources
+set(ALL_PLATFORM_SOURCES
     ${PLATFORM_HEADERS}
     ${RHI_SOURCES}
     ${OPENGL_SOURCES}
@@ -32,7 +36,19 @@ target_sources(JzRuntimePlatform PRIVATE
     ${VULKAN_SOURCES}
     ${VULKAN_HEADERS}
     ${PLATFORM_SPECIFIC_SOURCES}
+    ${PLATFORM_SPECIFIC_HEADERS}
 )
+
+target_sources(JzRuntimePlatform PRIVATE ${ALL_PLATFORM_SOURCES})
+
+# Organize sources in Visual Studio filters
+source_group(
+    TREE "${CMAKE_CURRENT_SOURCE_DIR}"
+    FILES ${ALL_PLATFORM_SOURCES}
+)
+
+# Set target folder in Visual Studio
+set_target_properties(JzRuntimePlatform PROPERTIES FOLDER "Runtime")
 
 target_include_directories(JzRuntimePlatform
     PUBLIC 
@@ -83,3 +99,4 @@ target_link_libraries(JzRuntimePlatform
         ${JZ_OPENGL_LIBS}
         ${JZ_PLATFORM_LIBS}
 )
+

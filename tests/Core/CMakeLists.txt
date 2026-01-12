@@ -9,6 +9,15 @@ add_executable(
     ${TESTJzRECore_SOURCES}
 )
 
+# Organize sources in Visual Studio filters
+source_group(
+    TREE "${CMAKE_CURRENT_SOURCE_DIR}"
+    FILES ${TESTJzRECore_SOURCES}
+)
+
+# Set target folder in Visual Studio
+set_target_properties(TESTJzRECore PROPERTIES FOLDER "Tests")
+
 # set test executable target compile properties
 target_compile_features(TESTJzRECore PUBLIC cxx_std_20)
 
@@ -26,3 +35,4 @@ target_link_libraries(
 # add tests to CTest
 include(GoogleTest)
 gtest_discover_tests(TESTJzRECore)
+

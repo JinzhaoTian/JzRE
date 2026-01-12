@@ -3,6 +3,15 @@ add_executable(
     main.cpp
 )
 
+# Organize sources in Visual Studio filters
+source_group(
+    TREE "${CMAKE_CURRENT_SOURCE_DIR}"
+    FILES main.cpp
+)
+
+# Set target folder in Visual Studio
+set_target_properties(RuntimeExample PROPERTIES FOLDER "Examples")
+
 target_compile_features(
     RuntimeExample
     PUBLIC
