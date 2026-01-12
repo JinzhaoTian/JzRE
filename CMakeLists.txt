@@ -13,14 +13,25 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # set export compile commands
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# set output path
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/JzRE)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/JzRE)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/JzRE)
+# set output path (works for both single-config and multi-config generators)
+set(JzRE_OUTPUT_DIR ${CMAKE_BINARY_DIR}/JzRE)
 
-# copy resources to build directory
+# For single-config generators (Ninja, Makefiles)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${JzRE_OUTPUT_DIR})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${JzRE_OUTPUT_DIR})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${JzRE_OUTPUT_DIR})
+
+# For multi-config generators (Visual Studio, Xcode)
+# These override the per-config subdirectories
+foreach(CONFIG_TYPE DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${CONFIG_TYPE} ${JzRE_OUTPUT_DIR})
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${CONFIG_TYPE} ${JzRE_OUTPUT_DIR})
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${CONFIG_TYPE} ${JzRE_OUTPUT_DIR})
+endforeach()
+
+# copy resources to build directory (at configure time)
 file(COPY ${CMAKE_SOURCE_DIR}/resources/ 
-     DESTINATION ${CMAKE_BINARY_DIR}/JzRE/)
+     DESTINATION ${JzRE_OUTPUT_DIR}/)
 
 # project root path
 set(JzRE_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/src")

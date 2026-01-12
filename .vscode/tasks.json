@@ -2,16 +2,28 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "CMake: Configure",
+            "type": "shell",
+            "command": "cmake",
+            "args": ["--preset", "macos-clang-static"],
+            "windows": {
+                "args": ["--preset", "windows-msvc-static"]
+            },
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": [],
+            "detail": "Configure CMake project with platform-specific preset"
+        },
+        {
             "label": "CMake: Build",
             "type": "shell",
             "command": "cmake",
-            "args": [
-                "--build",
-                "build",
-                "--config",
-                "Debug",
-                "-j"
-            ],
+            "args": ["--build", "build", "--config", "Debug", "-j"],
             "group": {
                 "kind": "build",
                 "isDefault": true
@@ -22,22 +34,28 @@
                 "focus": false,
                 "panel": "shared"
             },
-            "problemMatcher": [
-                "$gcc"
-            ],
+            "problemMatcher": {
+                "owner": "cpp",
+                "fileLocation": ["relative", "${workspaceFolder}"],
+                "pattern": {
+                    "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+                    "file": 1,
+                    "line": 2,
+                    "column": 3,
+                    "severity": 4,
+                    "message": 5
+                }
+            },
+            "windows": {
+                "problemMatcher": "$msCompile"
+            },
             "detail": "Build project using CMake"
         },
         {
             "label": "CMake: Build Release",
             "type": "shell",
             "command": "cmake",
-            "args": [
-                "--build",
-                "build",
-                "--config",
-                "Release",
-                "-j"
-            ],
+            "args": ["--build", "build", "--config", "Release", "-j"],
             "group": "build",
             "presentation": {
                 "echo": true,
@@ -45,9 +63,21 @@
                 "focus": false,
                 "panel": "shared"
             },
-            "problemMatcher": [
-                "$gcc"
-            ],
+            "problemMatcher": {
+                "owner": "cpp",
+                "fileLocation": ["relative", "${workspaceFolder}"],
+                "pattern": {
+                    "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+                    "file": 1,
+                    "line": 2,
+                    "column": 3,
+                    "severity": 4,
+                    "message": 5
+                }
+            },
+            "windows": {
+                "problemMatcher": "$msCompile"
+            },
             "dependsOn": "CMake: Configure",
             "detail": "Build project in Release mode using CMake"
         },
@@ -55,12 +85,7 @@
             "label": "CMake: Clean",
             "type": "shell",
             "command": "cmake",
-            "args": [
-                "--build",
-                "build",
-                "--target",
-                "clean"
-            ],
+            "args": ["--build", "build", "--target", "clean"],
             "group": "build",
             "presentation": {
                 "echo": true,
@@ -74,10 +99,7 @@
         {
             "label": "CMake: Clean & Build",
             "dependsOrder": "sequence",
-            "dependsOn": [
-                "CMake: Clean",
-                "CMake: Build"
-            ],
+            "dependsOn": ["CMake: Clean", "CMake: Build"],
             "group": "build",
             "presentation": {
                 "echo": true,
@@ -85,9 +107,21 @@
                 "focus": false,
                 "panel": "shared"
             },
-            "problemMatcher": [
-                "$gcc"
-            ],
+            "problemMatcher": {
+                "owner": "cpp",
+                "fileLocation": ["relative", "${workspaceFolder}"],
+                "pattern": {
+                    "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+                    "file": 1,
+                    "line": 2,
+                    "column": 3,
+                    "severity": 4,
+                    "message": 5
+                }
+            },
+            "windows": {
+                "problemMatcher": "$msCompile"
+            },
             "detail": "Clean build artifacts and then build project"
         }
     ]

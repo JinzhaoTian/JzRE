@@ -2,7 +2,31 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "JzRE Debug",
+            "name": "JzRE Debug (Windows)",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/JzRE/JzRE.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/build/JzRE",
+            "environment": [],
+            "console": "integratedTerminal",
+            "preLaunchTask": "CMake: Build"
+        },
+        {
+            "name": "JzRE Debug (Windows, Clean + Build)",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/JzRE/JzRE.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/build/JzRE",
+            "environment": [],
+            "console": "integratedTerminal",
+            "preLaunchTask": "CMake: Clean & Build"
+        },
+        {
+            "name": "JzRE Debug (macOS/Linux)",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/JzRE/JzRE",
@@ -15,7 +39,7 @@
             "preLaunchTask": "CMake: Build"
         },
         {
-            "name": "JzRE Debug (Clean + Build)",
+            "name": "JzRE Debug (macOS/Linux, Clean + Build)",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/JzRE/JzRE",
@@ -28,7 +52,31 @@
             "preLaunchTask": "CMake: Clean & Build"
         },
         {
-            "name": "RuntimeExample Debug",
+            "name": "RuntimeExample Debug (Windows)",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/JzRE/RuntimeExample.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/build/JzRE",
+            "environment": [],
+            "console": "integratedTerminal",
+            "preLaunchTask": "CMake: Build"
+        },
+        {
+            "name": "RuntimeExample Debug (Windows, Clean + Build)",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/JzRE/RuntimeExample.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/build/JzRE",
+            "environment": [],
+            "console": "integratedTerminal",
+            "preLaunchTask": "CMake: Clean & Build"
+        },
+        {
+            "name": "RuntimeExample Debug (macOS/Linux)",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/JzRE/RuntimeExample",
@@ -41,7 +89,7 @@
             "preLaunchTask": "CMake: Build"
         },
         {
-            "name": "RuntimeExample Debug (Clean + Build)",
+            "name": "RuntimeExample Debug (macOS/Linux, Clean + Build)",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/JzRE/RuntimeExample",
