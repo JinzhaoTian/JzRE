@@ -1,21 +1,21 @@
-# JzRE 多线程演进路线
+# JzRE Multi-Threading Roadmap
 
-## 概述
+## Overview
 
-本文档描述 JzRE 引擎从单线程架构向多线程架构演进的规划。当前引擎已实现主线程渲染 + 工作线程后台处理的架构。
+This document describes the evolution plan from single-threaded to multi-threaded architecture for the JzRE engine. The engine currently implements main thread rendering + worker thread background processing architecture.
 
 ---
 
-## 当前状态
+## Current State
 
-### 已实现的架构 (JzREInstance)
+### Implemented Architecture (JzREInstance)
 
 **Last Updated**: 2026-01-10
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    Main Thread (主线程)                          │
-│                    持有 OpenGL 上下文                             │
+│                    Main Thread                                   │
+│                    Holds OpenGL Context                          │
 │                                                                  │
 │  ┌──────────┐  ┌────────────┐  ┌────────────┐  ┌─────────────┐  │
 │  │PollEvents│─►│BeginFrame  │─►│RenderScene │─►│Editor.Update│  │
@@ -26,37 +26,38 @@
 │                └───────────────┘    └─────────────┘              │
 └─────────────────────────────────────────────────────────────────┘
                             │
-                   同步 (mutex + condition_variable)
+                   Sync (mutex + condition_variable)
                             │
 ┌───────────────────────────▼─────────────────────────────────────┐
-│               Worker Thread (工作线程)                           │
-│               处理非 GPU 任务                                    │
+│               Worker Thread                                      │
+│               Handles Non-GPU Tasks                              │
 │                                                                  │
 │  ┌──────────────────────────────────────────────────────────┐   │
-│  │ 场景裁剪 / 动画更新 / 物理模拟 / 资源预加载 (TODO)          │   │
+│  │ Scene Culling / Animation Update / Physics / Resource    │   │
+│  │ Preloading (TODO)                                         │   │
 │  └──────────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### 已有的线程基础设施
+### Existing Threading Infrastructure
 
-| 组件 | 文件 | 状态 | 描述 |
-|------|------|------|------|
-| 线程池 | `JzThreadPool.h` | ✅ 已实现 | 通用任务并行执行 |
-| 任务队列 | `JzTaskQueue.h` | ✅ 已实现 | 优先级任务调度 |
-| 命令列表 | `JzRHICommandList.h` | ✅ 已实现 | 线程安全的命令记录 |
-| 帧同步 | `JzREInstance.cpp` | ✅ 已实现 | 主线程/工作线程同步 |
+| Component | File | Status | Description |
+|-----------|------|--------|-------------|
+| Thread Pool | `JzThreadPool.h` | ✅ Implemented | General task parallel execution |
+| Task Queue | `JzTaskQueue.h` | ✅ Implemented | Priority task scheduling |
+| Command List | `JzRHICommandList.h` | ✅ Implemented | Thread-safe command recording |
+| Frame Sync | `JzREInstance.cpp` | ✅ Implemented | Main/worker thread synchronization |
 
-### JzREInstance 线程同步实现
+### JzREInstance Thread Synchronization Implementation
 
 ```cpp
-// 帧数据结构
+// Frame data structure
 struct JzFrameData {
     F32     deltaTime = 0.0f;
     JzIVec2 frameSize = {0, 0};
 };
 
-// 同步变量
+// Synchronization variables
 std::thread             m_renderThread;
 std::atomic<Bool>       m_renderThreadRunning{false};
 std::mutex              m_renderMutex;
@@ -67,48 +68,47 @@ std::atomic<Bool>       m_renderComplete{true};
 JzFrameData             m_frameData;
 ```
 
-### 当前限制
+### Current Limitations
 
 ```cpp
 // JzOpenGLDevice.cpp
 Bool JzOpenGLDevice::SupportsMultithreading() const {
-    return false;  // OpenGL 不支持多线程渲染
+    return false;  // OpenGL doesn't support multi-threaded rendering
 }
 ```
 
-OpenGL 的限制:
-- 上下文绑定单一线程
-- 资源必须在正确的上下文中创建/使用
-- 无法并行生成渲染命令
-- ImGui 必须在拥有上下文的线程中初始化和渲染
-
+OpenGL limitations:
+- Context bound to single thread
+- Resources must be created/used in correct context
+- Cannot generate render commands in parallel
+- ImGui must be initialized and rendered in the thread owning the context
 
 ---
 
-## 演进阶段
+## Evolution Phases
 
 ```mermaid
 graph LR
-    subgraph "Phase 0 (当前)"
-        P0[单线程渲染]
+    subgraph "Phase 0 (Current)"
+        P0[Single-Threaded Rendering]
     end
-    
+
     subgraph "Phase 1"
-        P1[后台资源加载]
+        P1[Background Resource Loading]
     end
-    
+
     subgraph "Phase 2"
-        P2[并行 ECS 系统]
+        P2[Parallel ECS Systems]
     end
-    
+
     subgraph "Phase 3"
-        P3[多线程命令录制]
+        P3[Multi-Threaded Command Recording]
     end
-    
+
     subgraph "Phase 4"
-        P4[Job-Based 渲染]
+        P4[Job-Based Rendering]
     end
-    
+
     P0 --> P1
     P1 --> P2
     P2 --> P3
@@ -117,52 +117,52 @@ graph LR
 
 ---
 
-## Phase 1: 后台资源加载
+## Phase 1: Background Resource Loading
 
-**目标**: 将 I/O 密集操作移至后台线程，避免阻塞主线程。
+**Goal**: Move I/O intensive operations to background threads, avoiding main thread blocking.
 
-### 设计
+### Design
 
 ```mermaid
 sequenceDiagram
-    participant Main as 主线程
+    participant Main as Main Thread
     participant TaskQ as JzTaskQueue
-    participant Worker as 工作线程
-    participant GPU as GPU 上下文
-    
-    Main->>TaskQ: 请求加载资源
-    TaskQ->>Worker: 分发任务
-    Worker->>Worker: 读取文件 (I/O)
-    Worker->>Worker: 解码数据 (CPU)
-    Worker->>Main: 数据就绪回调
-    Main->>GPU: 上传到 GPU
+    participant Worker as Worker Thread
+    participant GPU as GPU Context
+
+    Main->>TaskQ: Request resource load
+    TaskQ->>Worker: Dispatch task
+    Worker->>Worker: Read file (I/O)
+    Worker->>Worker: Decode data (CPU)
+    Worker->>Main: Data ready callback
+    Main->>GPU: Upload to GPU
 ```
 
-### 实现要点
+### Implementation Points
 
-1. **文件 I/O 在工作线程**: 读取磁盘文件
-2. **CPU 处理在工作线程**: 图像解码、网格处理
-3. **GPU 上传在主线程**: OpenGL 资源创建必须在主线程
+1. **File I/O in worker thread**: Read disk files
+2. **CPU processing in worker thread**: Image decoding, mesh processing
+3. **GPU upload in main thread**: OpenGL resource creation must be on main thread
 
 ```cpp
-// 资源状态用于追踪加载进度
+// Resource state tracks loading progress
 enum class JzEResourceState {
-    Unloaded,  // 未加载
-    Loading,   // 后台加载中
-    Loaded,    // 已加载
-    Error      // 加载失败
+    Unloaded,  // Not loaded
+    Loading,   // Background loading
+    Loaded,    // Loaded
+    Error      // Load failed
 };
 
-// 使用现有 JzTaskQueue
+// Using existing JzTaskQueue
 void JzResourceManager::LoadAsync(const String& name) {
     auto& taskQueue = JzServiceContainer::Get<JzTaskQueue>();
-    
+
     taskQueue.Submit(JzETaskPriority::Normal, [this, name]() {
-        // 后台: 读文件、解码
+        // Background: read file, decode
         auto data = ReadFile(name);
         auto decoded = DecodeData(data);
-        
-        // 回调主线程: GPU 上传
+
+        // Callback main thread: GPU upload
         ScheduleMainThread([this, name, decoded]() {
             UploadToGPU(name, decoded);
         });
@@ -170,39 +170,39 @@ void JzResourceManager::LoadAsync(const String& name) {
 }
 ```
 
-### 依赖
+### Dependencies
 
-- 现有 `JzTaskQueue` 
-- 需要添加主线程回调机制
+- Existing `JzTaskQueue`
+- Need to add main thread callback mechanism
 
 ---
 
-## Phase 2: 并行 ECS 系统
+## Phase 2: Parallel ECS Systems
 
-**目标**: 并行执行独立的 ECS 系统更新。
+**Goal**: Execute independent ECS system updates in parallel.
 
-### 系统依赖分析
+### System Dependency Analysis
 
 ```mermaid
 graph TD
-    subgraph "可并行组"
+    subgraph "Parallelizable Group"
         MoveSystem[JzMoveSystem]
         CollisionSystem[JzCollisionDetectionSystem]
     end
-    
-    subgraph "依赖上一组"
+
+    subgraph "Depends on Previous Group"
         SceneGraph[JzSceneGraphSystem]
     end
-    
-    subgraph "依赖场景图"
+
+    subgraph "Depends on Scene Graph"
         Visibility[JzVisibilitySystem]
         Spatial[JzSpatialPartitionSystem]
     end
-    
-    subgraph "最后执行"
+
+    subgraph "Execute Last"
         RenderSystem[JzRenderSystem]
     end
-    
+
     MoveSystem --> SceneGraph
     CollisionSystem --> SceneGraph
     SceneGraph --> Visibility
@@ -211,103 +211,103 @@ graph TD
     Spatial --> RenderSystem
 ```
 
-### 实现要点
+### Implementation Points
 
-1. **系统分组**: 按依赖关系划分执行组
-2. **组内并行**: 同一组内的系统可并行执行
-3. **组间同步**: 组之间设置同步点
+1. **System grouping**: Divide execution groups by dependency
+2. **Parallel within group**: Systems in same group can run in parallel
+3. **Sync between groups**: Synchronization points between groups
 
 ```cpp
 class JzSystemScheduler {
 public:
     void AddSystem(std::shared_ptr<JzSystem> system, U32 group);
     void Update(JzEntityManager& manager, F32 delta);
-    
+
 private:
-    // 按组排序的系统列表
+    // Systems sorted by group
     std::map<U32, std::vector<std::shared_ptr<JzSystem>>> m_systemGroups;
     JzThreadPool m_threadPool;
 };
 
 void JzSystemScheduler::Update(JzEntityManager& manager, F32 delta) {
     for (auto& [group, systems] : m_systemGroups) {
-        // 组内并行
+        // Parallel within group
         std::vector<std::future<void>> futures;
         for (auto& system : systems) {
             futures.push_back(m_threadPool.Submit([&]() {
                 system->Update(manager, delta);
             }));
         }
-        // 等待当前组完成
+        // Wait for current group to complete
         for (auto& f : futures) {
             f.wait();
         }
-        // 然后执行下一组
+        // Then execute next group
     }
 }
 ```
 
-### 依赖
+### Dependencies
 
-- 现有 `JzThreadPool`
-- 需要添加 `JzSystemScheduler`
-- 需要确保组件访问线程安全
+- Existing `JzThreadPool`
+- Need to add `JzSystemScheduler`
+- Need to ensure thread-safe component access
 
 ---
 
-## Phase 3: 多线程命令录制
+## Phase 3: Multi-Threaded Command Recording
 
-**目标**: 并行生成渲染命令 (需要 Vulkan 后端)。
+**Goal**: Generate render commands in parallel (requires Vulkan backend).
 
-### 前提条件
+### Prerequisites
 
-- ✅ `JzRHICommandList` 已支持线程安全录制
-- ❌ 需要 Vulkan 后端实现
+- ✅ `JzRHICommandList` already supports thread-safe recording
+- ❌ Vulkan backend implementation needed
 
-### 设计
+### Design
 
 ```mermaid
 graph LR
-    subgraph "主线程"
-        Prepare[准备渲染数据]
-        Submit[提交命令列表]
-        Present[呈现]
+    subgraph "Main Thread"
+        Prepare[Prepare Render Data]
+        Submit[Submit Command Lists]
+        Present[Present]
     end
-    
-    subgraph "工作线程 1"
-        CmdList1[录制 CommandList 1]
+
+    subgraph "Worker Thread 1"
+        CmdList1[Record CommandList 1]
     end
-    
-    subgraph "工作线程 2"
-        CmdList2[录制 CommandList 2]
+
+    subgraph "Worker Thread 2"
+        CmdList2[Record CommandList 2]
     end
-    
-    subgraph "工作线程 3"
-        CmdList3[录制 CommandList 3]
+
+    subgraph "Worker Thread 3"
+        CmdList3[Record CommandList 3]
     end
-    
+
     Prepare --> CmdList1
     Prepare --> CmdList2
     Prepare --> CmdList3
-    
+
     CmdList1 --> Submit
     CmdList2 --> Submit
     CmdList3 --> Submit
     Submit --> Present
 ```
 
-### 实现要点
+### Implementation Points
 
 ```cpp
-// Vulkan 设备将支持多线程
+// Vulkan device will support multi-threading
 Bool JzVulkanDevice::SupportsMultithreading() const {
     return true;
 }
 
-// 并行命令录制
+// Parallel command recording
 void JzRenderer::RecordCommands(const std::vector<RenderBatch>& batches) {
     std::vector<std::future<std::shared_ptr<JzRHICommandList>>> futures;
-    
+
     for (const auto& batch : batches) {
         futures.push_back(m_threadPool.Submit([this, &batch]() {
             auto cmdList = m_device->CreateCommandList();
@@ -317,63 +317,63 @@ void JzRenderer::RecordCommands(const std::vector<RenderBatch>& batches) {
             return cmdList;
         }));
     }
-    
-    // 收集并提交
+
+    // Collect and submit
     for (auto& f : futures) {
         m_device->ExecuteCommandList(f.get());
     }
 }
 ```
 
-### 依赖
+### Dependencies
 
-- Vulkan 后端实现
-- 或 D3D12 后端实现
+- Vulkan backend implementation
+- Or D3D12 backend implementation
 
 ---
 
-## Phase 4: Job-Based 渲染流水线
+## Phase 4: Job-Based Render Pipeline
 
-**目标**: 完全基于任务的渲染架构，最大化 CPU 利用率。
+**Goal**: Fully task-based rendering architecture, maximizing CPU utilization.
 
-### 渲染流水线设计
+### Render Pipeline Design
 
 ```mermaid
 graph TB
-    subgraph "帧 N"
-        N_Sim[模拟更新]
-        N_Cull[视锥剔除]
-        N_Sort[排序批次]
-        N_Record[录制命令]
-        N_Submit[提交 GPU]
+    subgraph "Frame N"
+        N_Sim[Simulation Update]
+        N_Cull[Frustum Culling]
+        N_Sort[Sort Batches]
+        N_Record[Record Commands]
+        N_Submit[Submit to GPU]
     end
-    
-    subgraph "帧 N+1"
-        N1_Sim[模拟更新]
-        N1_Cull[视锥剔除]
-        N1_Sort[排序批次]
-        N1_Record[录制命令]
-        N1_Submit[提交 GPU]
+
+    subgraph "Frame N+1"
+        N1_Sim[Simulation Update]
+        N1_Cull[Frustum Culling]
+        N1_Sort[Sort Batches]
+        N1_Record[Record Commands]
+        N1_Submit[Submit to GPU]
     end
-    
+
     N_Sim --> N_Cull --> N_Sort --> N_Record --> N_Submit
     N_Submit --> N1_Sim
-    
-    %% 流水线重叠
-    N_Submit -.->|并行| N1_Sim
-    N1_Sim -.->|并行| N_Submit
+
+    %% Pipeline overlap
+    N_Submit -.->|Parallel| N1_Sim
+    N1_Sim -.->|Parallel| N_Submit
 ```
 
-### 核心组件
+### Core Components
 
 ```cpp
-// 渲染任务图
+// Render task graph
 class JzRenderGraph {
 public:
-    void AddPass(const String& name, RenderPassFunc func, 
+    void AddPass(const String& name, RenderPassFunc func,
                  const std::vector<String>& dependencies);
     void Execute(JzDevice& device);
-    
+
 private:
     struct RenderPass {
         String name;
@@ -383,20 +383,20 @@ private:
     std::vector<RenderPass> m_passes;
 };
 
-// 使用
+// Usage
 void JzRenderer::BuildRenderGraph() {
     m_graph.AddPass("ShadowPass", [this](auto& ctx) {
         RenderShadows(ctx);
     }, {});
-    
+
     m_graph.AddPass("GBufferPass", [this](auto& ctx) {
         RenderGBuffer(ctx);
     }, {"ShadowPass"});
-    
+
     m_graph.AddPass("LightingPass", [this](auto& ctx) {
         RenderLighting(ctx);
     }, {"GBufferPass"});
-    
+
     m_graph.AddPass("PostProcess", [this](auto& ctx) {
         RenderPostProcess(ctx);
     }, {"LightingPass"});
@@ -405,25 +405,25 @@ void JzRenderer::BuildRenderGraph() {
 
 ---
 
-## 数据导向设计考量
+## Data-Oriented Design Considerations
 
-### 缓存友好的组件布局
+### Cache-Friendly Component Layout
 
 ```cpp
-// 好: 相同类型组件连续存储
+// Good: Same type components stored contiguously
 template<typename T>
 class JzComponentPool {
-    std::vector<T> m_components;  // 连续内存
+    std::vector<T> m_components;  // Contiguous memory
     std::unordered_map<JzEntity, Size> m_entityToIndex;
 };
 
-// 系统按组件类型批量处理
+// Systems process by component type in batches
 void JzMoveSystem::Update(JzEntityManager& manager, F32 delta) {
-    // 获取组件池 (连续内存)
+    // Get component pools (contiguous memory)
     auto transformPool = manager.GetPool<JzTransformComponent>();
     auto velocityPool = manager.GetPool<JzVelocityComponent>();
-    
-    // 批量处理，缓存友好
+
+    // Batch processing, cache friendly
     for (Size i = 0; i < transformPool->Size(); ++i) {
         auto& transform = transformPool->At(i);
         auto& velocity = velocityPool->At(i);
@@ -432,33 +432,33 @@ void JzMoveSystem::Update(JzEntityManager& manager, F32 delta) {
 }
 ```
 
-### 避免伪共享
+### Avoiding False Sharing
 
 ```cpp
-// 为每个线程分配独立的工作缓存
-struct alignas(64) ThreadLocalData {  // 对齐到缓存行
+// Allocate independent work caches per thread
+struct alignas(64) ThreadLocalData {  // Align to cache line
     std::vector<RenderCommand> commands;
     // ...
 };
 
-std::vector<ThreadLocalData> m_threadData;  // 每线程一份
+std::vector<ThreadLocalData> m_threadData;  // One per thread
 ```
 
 ---
 
-## 同步原语
+## Synchronization Primitives
 
-### 现有实现
+### Existing Implementation
 
 ```cpp
-// JzRHICommandList 使用 mutex 保护
+// JzRHICommandList uses mutex protection
 class JzRHICommandList {
 private:
     std::atomic<Bool> m_isRecording{false};
     mutable std::mutex m_commandMutex;
 };
 
-// JzTaskQueue 使用条件变量
+// JzTaskQueue uses condition variables
 class JzTaskQueue {
 private:
     std::mutex m_queueMutex;
@@ -467,33 +467,33 @@ private:
 };
 ```
 
-### 后续需要添加
+### Future Additions Needed
 
-- 读写锁 (用于 ECS 组件访问)
-- 无锁队列 (用于高频命令传递)
-- 栅栏/信号量 (用于 GPU 同步)
+- Read-write locks (for ECS component access)
+- Lock-free queues (for high-frequency command passing)
+- Fences/Semaphores (for GPU synchronization)
 
 ---
 
-## 实施优先级
+## Implementation Priority
 
-| 阶段 | 优先级 | 复杂度 | 依赖 |
-|------|--------|--------|------|
-| Phase 1: 后台资源加载 | 低 | 低 | 无 |
-| Phase 2: 并行 ECS 系统 | 中 | 中 | Phase 1 |
-| Phase 3: 多线程命令录制 | 高 | 高 | Vulkan |
-| Phase 4: Job-Based 渲染 | 最高 | 最高 | Phase 3 |
+| Phase | Priority | Complexity | Dependencies |
+|-------|----------|------------|--------------|
+| Phase 1: Background Resource Loading | Low | Low | None |
+| Phase 2: Parallel ECS Systems | Medium | Medium | Phase 1 |
+| Phase 3: Multi-Threaded Command Recording | High | High | Vulkan |
+| Phase 4: Job-Based Rendering | Highest | Highest | Phase 3 |
 
 > [!NOTE]
-> Phase 1 (异步资源加载) 当前优先级为低，可根据实际需求调整。
+> Phase 1 (Async Resource Loading) is currently low priority, can be adjusted based on actual needs.
 
 ---
 
-## 总结
+## Summary
 
-JzRE 的多线程演进遵循渐进式原则:
+JzRE's multi-threading evolution follows a progressive approach:
 
-1. **现有基础**: `JzThreadPool` 和 `JzTaskQueue` 提供了线程基础设施
-2. **OpenGL 限制**: 当前 OpenGL 后端不支持多线程渲染
-3. **Vulkan 启用**: Vulkan 后端将启用真正的多线程命令录制
-4. **逐步演进**: 从后台 I/O 开始，逐步扩展到完整的并行渲染
+1. **Existing Foundation**: `JzThreadPool` and `JzTaskQueue` provide threading infrastructure
+2. **OpenGL Limitation**: Current OpenGL backend doesn't support multi-threaded rendering
+3. **Vulkan Enablement**: Vulkan backend will enable true multi-threaded command recording
+4. **Progressive Evolution**: Start from background I/O, gradually expand to full parallel rendering

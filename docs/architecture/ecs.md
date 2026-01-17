@@ -2,7 +2,7 @@
 
 ## Overview
 
-The JzRE project now supports two ECS implementations:
+The JzRE project supports two ECS implementations:
 
 1. **Original ECS** (`JzRE/ECS/`) - Custom sparse-set based implementation
 2. **EnTT ECS** (`JzRE/EnttECS/`) - Modern, high-performance ECS using the EnTT library
@@ -90,7 +90,7 @@ class MySystem : public JzRE::JzEnttSystem {
 public:
     void Update(JzEnttWorld& world, F32 delta) override {
         auto view = world.View<JzTransformComponent, JzVelocityComponent>();
-        
+
         for (auto [entity, transform, velocity] : view.each()) {
             transform.position += velocity.velocity * delta;
         }

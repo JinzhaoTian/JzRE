@@ -1,29 +1,29 @@
-# JzRE RHI (渲染硬件接口) 设计
+# JzRE RHI (Render Hardware Interface) Design
 
-## 概述
+## Overview
 
-JzRE RHI（Render Hardware Interface）是引擎的图形 API 抽象层，旨在提供跨平台的统一渲染接口。
-
----
-
-## 设计目标
-
-1. **跨平台支持**: 统一接口支持 OpenGL、Vulkan 等多种图形 API
-2. **命令缓冲**: 支持延迟渲染命令执行
-3. **现代化设计**: C++20 标准，智能指针管理
-4. **易于扩展**: 模块化后端，便于添加新 API
+JzRE RHI (Render Hardware Interface) is the engine's graphics API abstraction layer, designed to provide a unified cross-platform rendering interface.
 
 ---
 
-## 架构概览
+## Design Goals
+
+1. **Cross-Platform Support**: Unified interface supporting OpenGL, Vulkan, and other graphics APIs
+2. **Command Buffering**: Support for deferred rendering command execution
+3. **Modern Design**: C++20 standard, smart pointer management
+4. **Extensibility**: Modular backends for easy addition of new APIs
+
+---
+
+## Architecture Overview
 
 ```mermaid
 graph TB
-    subgraph "应用代码"
+    subgraph "Application Code"
         App[JzEditor / JzRenderSystem]
     end
-    
-    subgraph "RHI 抽象层"
+
+    subgraph "RHI Abstraction Layer"
         Device[JzDevice]
         CmdList[JzRHICommandList]
         Pipeline[JzRHIPipeline]
@@ -33,8 +33,8 @@ graph TB
         VAO[JzGPUVertexArrayObject]
         FBO[JzGPUFramebufferObject]
     end
-    
-    subgraph "OpenGL 后端 (当前)"
+
+    subgraph "OpenGL Backend (Current)"
         GLDevice[JzOpenGLDevice]
         GLBuffer[JzOpenGLBuffer]
         GLTexture[JzOpenGLTexture]
@@ -43,11 +43,11 @@ graph TB
         GLVAO[JzOpenGLVertexArray]
         GLFBO[JzOpenGLFramebuffer]
     end
-    
-    subgraph "Vulkan 后端 (计划)"
+
+    subgraph "Vulkan Backend (Planned)"
         VKDevice["JzVulkanDevice (TODO)"]
     end
-    
+
     App --> Device
     Device --> CmdList
     Device --> Pipeline
@@ -56,7 +56,7 @@ graph TB
     Device --> Shader
     Device --> VAO
     Device --> FBO
-    
+
     Device -.->|OpenGL| GLDevice
     GLDevice --> GLBuffer
     GLDevice --> GLTexture
@@ -64,17 +64,17 @@ graph TB
     GLDevice --> GLPipeline
     GLDevice --> GLVAO
     GLDevice --> GLFBO
-    
+
     Device -.->|Vulkan| VKDevice
 ```
 
 ---
 
-## 核心组件
+## Core Components
 
-### JzDevice (设备抽象)
+### JzDevice (Device Abstraction)
 
-RHI 的核心接口，提供资源创建和渲染操作。
+The core RHI interface providing resource creation and rendering operations.
 
 ```cpp
 class JzDevice {
@@ -82,13 +82,13 @@ public:
     JzDevice(JzERHIType rhiType);
     virtual ~JzDevice() = default;
 
-    // 设备信息
+    // Device Information
     JzERHIType GetRHIType() const;
     virtual String GetDeviceName() const = 0;
     virtual String GetVendorName() const = 0;
     virtual String GetDriverVersion() const = 0;
 
-    // 资源创建
+    // Resource Creation
     virtual std::shared_ptr<JzGPUBufferObject> CreateBuffer(const JzGPUBufferObjectDesc&) = 0;
     virtual std::shared_ptr<JzGPUTextureObject> CreateTexture(const JzGPUTextureObjectDesc&) = 0;
     virtual std::shared_ptr<JzGPUShaderProgramObject> CreateShader(const JzShaderProgramDesc&) = 0;
@@ -97,12 +97,12 @@ public:
     virtual std::shared_ptr<JzGPUVertexArrayObject> CreateVertexArray(const String&) = 0;
     virtual std::shared_ptr<JzRHICommandList> CreateCommandList(const String&) = 0;
 
-    // 帧管理
+    // Frame Management
     virtual void BeginFrame() = 0;
     virtual void EndFrame() = 0;
     virtual void Present() = 0;
 
-    // 立即模式渲染
+    // Immediate Mode Rendering
     virtual void Clear(const JzClearParams&) = 0;
     virtual void Draw(const JzDrawParams&) = 0;
     virtual void DrawIndexed(const JzDrawIndexedParams&) = 0;
@@ -110,28 +110,28 @@ public:
     virtual void BindVertexArray(std::shared_ptr<JzGPUVertexArrayObject>) = 0;
     virtual void BindTexture(std::shared_ptr<JzGPUTextureObject>, U32 slot) = 0;
 
-    // 命令列表执行
+    // Command List Execution
     virtual void ExecuteCommandList(std::shared_ptr<JzRHICommandList>) = 0;
 
-    // 多线程支持
+    // Multi-threading Support
     virtual Bool SupportsMultithreading() const = 0;
     virtual void MakeContextCurrent(U32 threadIndex = 0) = 0;
 };
 ```
 
-### JzRHICommandList (命令列表)
+### JzRHICommandList (Command List)
 
-支持延迟渲染命令的记录和执行。
+Supports deferred recording and execution of rendering commands.
 
 ```cpp
 class JzRHICommandList {
 public:
-    void Begin();   // 开始记录
-    void End();     // 结束记录
-    void Reset();   // 重置命令
-    void Execute(); // 执行命令
+    void Begin();   // Start recording
+    void End();     // End recording
+    void Reset();   // Reset commands
+    void Execute(); // Execute commands
 
-    // 记录命令
+    // Record Commands
     void Clear(const JzClearParams&);
     void Draw(const JzDrawParams&);
     void DrawIndexed(const JzDrawIndexedParams&);
@@ -150,9 +150,9 @@ private:
 };
 ```
 
-### JzRHICommand (命令基类)
+### JzRHICommand (Command Base Class)
 
-所有渲染命令的抽象基类。
+Abstract base class for all rendering commands.
 
 ```cpp
 enum class JzRHIECommandType : U8 {
@@ -174,9 +174,9 @@ public:
 
 ---
 
-## GPU 资源对象
+## GPU Resource Objects
 
-### 缓冲区 (JzGPUBufferObject)
+### Buffer (JzGPUBufferObject)
 
 ```cpp
 enum class JzEBufferType : U8 {
@@ -196,7 +196,7 @@ struct JzGPUBufferObjectDesc {
 };
 ```
 
-### 纹理 (JzGPUTextureObject)
+### Texture (JzGPUTextureObject)
 
 ```cpp
 enum class JzETextureFormat : U8 {
@@ -216,7 +216,7 @@ struct JzGPUTextureObjectDesc {
 };
 ```
 
-### 渲染管线 (JzRHIPipeline)
+### Render Pipeline (JzRHIPipeline)
 
 ```cpp
 struct JzPipelineDesc {
@@ -230,46 +230,46 @@ struct JzPipelineDesc {
 
 ---
 
-## OpenGL 后端实现
+## OpenGL Backend Implementation
 
-当前已完成的 OpenGL 后端实现:
+Currently completed OpenGL backend implementation:
 
-| 抽象类 | OpenGL 实现 | 状态 |
-|--------|-------------|------|
-| `JzDevice` | `JzOpenGLDevice` | ✅ 完成 |
-| `JzGPUBufferObject` | `JzOpenGLBuffer` | ✅ 完成 |
-| `JzGPUTextureObject` | `JzOpenGLTexture` | ✅ 完成 |
-| `JzGPUShaderProgramObject` | `JzOpenGLShader` | ✅ 完成 |
-| `JzRHIPipeline` | `JzOpenGLPipeline` | ✅ 完成 |
-| `JzGPUVertexArrayObject` | `JzOpenGLVertexArray` | ✅ 完成 |
-| `JzGPUFramebufferObject` | `JzOpenGLFramebuffer` | ✅ 完成 |
+| Abstract Class | OpenGL Implementation | Status |
+|----------------|----------------------|--------|
+| `JzDevice` | `JzOpenGLDevice` | ✅ Complete |
+| `JzGPUBufferObject` | `JzOpenGLBuffer` | ✅ Complete |
+| `JzGPUTextureObject` | `JzOpenGLTexture` | ✅ Complete |
+| `JzGPUShaderProgramObject` | `JzOpenGLShader` | ✅ Complete |
+| `JzRHIPipeline` | `JzOpenGLPipeline` | ✅ Complete |
+| `JzGPUVertexArrayObject` | `JzOpenGLVertexArray` | ✅ Complete |
+| `JzGPUFramebufferObject` | `JzOpenGLFramebuffer` | ✅ Complete |
 
-### OpenGL 特性
+### OpenGL Features
 
-- **版本要求**: OpenGL 3.3+
-- **多线程**: 不支持 (`SupportsMultithreading()` 返回 `false`)
-- **扩展**: 通过 glad 加载
+- **Version Requirement**: OpenGL 3.3+
+- **Multi-threading**: Not supported (`SupportsMultithreading()` returns `false`)
+- **Extensions**: Loaded via glad
 
 ---
 
-## 使用方式
+## Usage
 
-### 基本初始化
+### Basic Initialization
 
 ```cpp
-// 创建 OpenGL 设备
+// Create OpenGL device
 auto device = std::make_unique<JzOpenGLDevice>();
 
-// 获取设备信息
+// Get device information
 std::cout << "Device: " << device->GetDeviceName() << std::endl;
 std::cout << "Vendor: " << device->GetVendorName() << std::endl;
 std::cout << "Version: " << device->GetDriverVersion() << std::endl;
 ```
 
-### 资源创建
+### Resource Creation
 
 ```cpp
-// 创建顶点缓冲
+// Create vertex buffer
 JzGPUBufferObjectDesc vbDesc;
 vbDesc.type = JzEBufferType::Vertex;
 vbDesc.usage = JzEBufferUsage::StaticDraw;
@@ -277,7 +277,7 @@ vbDesc.size = sizeof(vertices);
 vbDesc.data = vertices;
 auto vertexBuffer = device->CreateBuffer(vbDesc);
 
-// 创建纹理
+// Create texture
 JzGPUTextureObjectDesc texDesc;
 texDesc.width = 512;
 texDesc.height = 512;
@@ -285,12 +285,12 @@ texDesc.format = JzETextureFormat::RGBA8;
 auto texture = device->CreateTexture(texDesc);
 ```
 
-### 立即模式渲染
+### Immediate Mode Rendering
 
 ```cpp
 device->BeginFrame();
 
-// 清除
+// Clear
 JzClearParams clearParams;
 clearParams.clearColor = true;
 clearParams.colorR = 0.2f;
@@ -299,7 +299,7 @@ clearParams.colorB = 0.8f;
 clearParams.colorA = 1.0f;
 device->Clear(clearParams);
 
-// 绑定并绘制
+// Bind and draw
 device->BindPipeline(pipeline);
 device->BindVertexArray(vertexArray);
 device->DrawIndexed(drawParams);
@@ -308,10 +308,10 @@ device->EndFrame();
 device->Present();
 ```
 
-### 命令缓冲模式
+### Command Buffer Mode
 
 ```cpp
-// 记录命令
+// Record commands
 auto cmdList = device->CreateCommandList("MainPass");
 cmdList->Begin();
 cmdList->Clear(clearParams);
@@ -320,23 +320,23 @@ cmdList->BindVertexArray(vertexArray);
 cmdList->DrawIndexed(drawParams);
 cmdList->End();
 
-// 执行命令
+// Execute commands
 device->ExecuteCommandList(cmdList);
 ```
 
 ---
 
-## Vulkan 后端规划
+## Vulkan Backend Planning
 
-### 实现优先级
+### Implementation Priority
 
-Vulkan 是 OpenGL 之后的下一个实现目标，将提供:
+Vulkan is the next implementation target after OpenGL, providing:
 
-1. **显式资源管理**: 更精细的 GPU 内存控制
-2. **多线程命令录制**: 并行生成渲染命令
-3. **现代渲染特性**: 支持计算着色器、光线追踪等
+1. **Explicit Resource Management**: Finer GPU memory control
+2. **Multi-threaded Command Recording**: Parallel render command generation
+3. **Modern Rendering Features**: Support for compute shaders, ray tracing, etc.
 
-### 需实现的类
+### Classes to Implement
 
 ```cpp
 class JzVulkanDevice : public JzDevice { ... };
@@ -348,53 +348,53 @@ class JzVulkanVertexArray : public JzGPUVertexArrayObject { ... };
 class JzVulkanFramebuffer : public JzGPUFramebufferObject { ... };
 ```
 
-### Vulkan 特有组件 (扩展)
+### Vulkan-Specific Components (Extensions)
 
 ```cpp
-class JzVulkanSwapchain { ... };       // 交换链管理
-class JzVulkanDescriptorSet { ... };   // 描述符集
-class JzVulkanRenderPass { ... };      // 原生渲染通道
-class JzVulkanSemaphore { ... };       // 同步原语
+class JzVulkanSwapchain { ... };       // Swap chain management
+class JzVulkanDescriptorSet { ... };   // Descriptor sets
+class JzVulkanRenderPass { ... };      // Native render passes
+class JzVulkanSemaphore { ... };       // Synchronization primitives
 ```
 
-### 后端特性对比
+### Backend Feature Comparison
 
-| 特性 | OpenGL | Vulkan |
-|------|--------|--------|
-| 多线程命令录制 | ❌ | ✅ |
-| 显式内存管理 | ❌ | ✅ |
-| 计算着色器 | ✅ | ✅ |
-| 光线追踪 | ❌ | ✅ (扩展) |
-| 跨平台 | ✅ | ✅ |
-| 学习曲线 | 低 | 高 |
+| Feature | OpenGL | Vulkan |
+|---------|--------|--------|
+| Multi-threaded Command Recording | ❌ | ✅ |
+| Explicit Memory Management | ❌ | ✅ |
+| Compute Shaders | ✅ | ✅ |
+| Ray Tracing | ❌ | ✅ (Extension) |
+| Cross-Platform | ✅ | ✅ |
+| Learning Curve | Low | High |
 
 ---
 
-## 性能统计
+## Performance Statistics
 
-`JzRHIStats` 用于运行时性能监控:
+`JzRHIStats` is used for runtime performance monitoring:
 
 ```cpp
 struct JzRHIStats {
-    U32 drawCalls;    // 绘制调用次数
-    U32 triangles;    // 三角形数量
-    U32 vertices;     // 顶点数量
-    U32 buffers;      // 缓冲区数量
-    U32 textures;     // 纹理数量
-    U32 shaders;      // 着色器数量
-    U32 pipelines;    // 管线数量
+    U32 drawCalls;    // Draw call count
+    U32 triangles;    // Triangle count
+    U32 vertices;     // Vertex count
+    U32 buffers;      // Buffer count
+    U32 textures;     // Texture count
+    U32 shaders;      // Shader count
+    U32 pipelines;    // Pipeline count
 };
 
-// 使用
+// Usage
 auto& stats = device->GetStats();
 std::cout << "Draw Calls: " << stats.drawCalls << std::endl;
 ```
 
 ---
 
-## 硬件能力查询
+## Hardware Capability Query
 
-`JzRHICapabilities` 用于查询硬件支持:
+`JzRHICapabilities` is used to query hardware support:
 
 ```cpp
 struct JzRHICapabilities {
@@ -410,28 +410,28 @@ struct JzRHICapabilities {
     U32 maxRenderThreads;
 };
 
-// 使用
+// Usage
 auto& caps = device->GetCapabilities();
 if (caps.supportsComputeShaders) {
-    // 启用计算着色器功能
+    // Enable compute shader features
 }
 ```
 
 ---
 
-## 扩展指南
+## Extension Guide
 
-### 添加新图形 API 后端
+### Adding a New Graphics API Backend
 
-1. 在 `JzERHIType` 添加新枚举值
-2. 创建后端目录 (如 `Graphics/D3D12/`)
-3. 实现所有 GPU 对象类
-4. 实现 `JzDevice` 派生类
-5. 在工厂中注册创建逻辑
+1. Add new enum value to `JzERHIType`
+2. Create backend directory (e.g., `Graphics/D3D12/`)
+3. Implement all GPU object classes
+4. Implement `JzDevice` derived class
+5. Register creation logic in factory
 
-### 添加新渲染命令
+### Adding New Render Commands
 
-1. 在 `JzRHIECommandType` 添加命令类型
-2. 创建新的命令类 (继承 `JzRHICommand`)
-3. 在 `JzRHICommandList` 添加记录方法
-4. 在各后端实现 `Execute()` 逻辑
+1. Add command type to `JzRHIECommandType`
+2. Create new command class (inheriting from `JzRHICommand`)
+3. Add recording method to `JzRHICommandList`
+4. Implement `Execute()` logic in each backend
