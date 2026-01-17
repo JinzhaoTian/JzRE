@@ -6,90 +6,70 @@
 #pragma once
 
 #include <filesystem>
-#include <thread>
-#include <mutex>
-#include <atomic>
-#include <condition_variable>
-#include "JzRE/Runtime/Core/JzRETypes.h"
-#include "JzRE/Runtime/Platform/JzDevice.h"
-#include "JzRE/Runtime/Resource/JzResourceManager.h"
-#include "JzRE/Runtime/Function/Input/JzInputManager.h"
-#include "JzRE/Runtime/Function/Window/JzWindow.h"
+#include "JzRE/Runtime/JzRERuntime.h"
 #include "JzRE/Editor/JzEditor.h"
-#include "JzRE/Runtime/Function/Rendering/JzRHIRenderer.h"
-#include "JzRE/Runtime/Function/Scene/JzScene.h"
 
 namespace JzRE {
 
 /**
- * @brief Frame data for render thread synchronization
+ * @brief JzRE Editor Instance
+ *
+ * This class extends JzRERuntime to provide a complete editor experience.
+ * It integrates the JzEditor UI with the runtime's rendering pipeline.
+ *
+ * The inheritance from JzRERuntime allows:
+ * - Reusing all runtime functionality (window, device, renderer, scene, input)
+ * - Injecting editor UI rendering via the OnRender hook
+ * - Sharing the same architecture for both standalone and editor modes
  */
-struct JzFrameData {
-    F32     deltaTime = 0.0f;
-    JzIVec2 frameSize = {0, 0};
-};
-
-/**
- * @brief JzRE Instance
- */
-class JzREInstance {
+class JzREInstance : public JzRERuntime {
 public:
     /**
      * @brief Constructor
+     *
+     * @param rhiType The RHI type to use for rendering
+     * @param openDirectory The directory to open in the editor
      */
     JzREInstance(JzERHIType rhiType, std::filesystem::path &openDirectory);
 
     /**
      * @brief Destructor
      */
-    ~JzREInstance();
+    ~JzREInstance() override;
 
     /**
-     * @brief Run the render engine
-     */
-    void Run();
-
-    /**
-     * @brief Check if the render engine is running
+     * @brief Get the editor instance
      *
-     * @return Bool
+     * @return JzEditor& Reference to the editor
      */
-    Bool IsRunning() const;
+    JzEditor &GetEditor();
+
+protected:
+    /**
+     * @brief Called before the main loop starts
+     *
+     * Initializes editor-specific components.
+     */
+    void OnStart() override;
+
+    /**
+     * @brief Called after 3D scene rendering, before buffer swap
+     *
+     * @param deltaTime Time elapsed since the last frame in seconds
+     *
+     * Renders the editor UI (ImGui panels).
+     */
+    void OnRender(F32 deltaTime) override;
+
+    /**
+     * @brief Called after the main loop ends
+     *
+     * Cleans up editor-specific components.
+     */
+    void OnStop() override;
 
 private:
-    /**
-     * @brief Render thread main function
-     */
-    void _RenderThread();
-
-    /**
-     * @brief Signal the render thread to render a new frame
-     *
-     * @param frameData Frame data for the current frame
-     */
-    void _SignalRenderFrame(const JzFrameData &frameData);
-
-    /**
-     * @brief Wait for the render thread to complete the current frame
-     */
-    void _WaitForRenderComplete();
-
-private:
-    std::unique_ptr<JzResourceManager> m_resourceManager;
-    std::unique_ptr<JzWindow>          m_window;
-    std::unique_ptr<JzDevice>          m_device;
-    std::unique_ptr<JzInputManager>    m_inputManager;
-    std::unique_ptr<JzEditor>          m_editor;
-    std::unique_ptr<JzRHIRenderer>     m_renderer;
-    std::shared_ptr<JzScene>           m_scene;
-
-    std::thread             m_renderThread;
-    std::atomic<Bool>       m_renderThreadRunning{false};
-    std::mutex              m_renderMutex;
-    std::condition_variable m_renderCondition;
-    std::condition_variable m_renderCompleteCondition;
-    std::atomic<Bool>       m_frameReady{false};
-    std::atomic<Bool>       m_renderComplete{true};
-    JzFrameData             m_frameData;
+    std::filesystem::path        m_openDirectory;
+    std::unique_ptr<JzEditor>    m_editor;
 };
 } // namespace JzRE

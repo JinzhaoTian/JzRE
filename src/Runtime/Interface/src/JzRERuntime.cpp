@@ -35,6 +35,10 @@ JzRE::JzRERuntime::JzRERuntime(JzERHIType rhiType, const String &windowTitle,
     m_device = JzDeviceFactory::CreateDevice(rhiType);
     JzServiceContainer::Provide<JzDevice>(*m_device);
 
+    // Create input manager
+    m_inputManager = std::make_unique<JzInputManager>(*m_window);
+    JzServiceContainer::Provide<JzInputManager>(*m_inputManager);
+
     // Create renderer and scene
     m_renderer = std::make_unique<JzRHIRenderer>();
     m_scene    = std::make_shared<JzScene>();
@@ -71,6 +75,7 @@ JzRE::JzRERuntime::~JzRERuntime()
     // Clean up in reverse order of creation
     m_scene.reset();
     m_renderer.reset();
+    m_inputManager.reset();
     m_device.reset();
     m_window.reset();
     m_resourceManager.reset();
@@ -111,8 +116,14 @@ void JzRE::JzRERuntime::Run()
         // End scene rendering
         m_renderer->EndFrame();
 
+        // Call render hook for additional rendering (e.g., ImGui UI)
+        OnRender(frameData.deltaTime);
+
         // Swap buffers
         m_window->SwapBuffers();
+
+        // Clear input events
+        m_inputManager->ClearEvents();
 
         // Wait for worker thread to complete background processing
         _WaitForWorkerComplete();
@@ -220,6 +231,26 @@ std::shared_ptr<JzRE::JzScene> JzRE::JzRERuntime::GetScene()
     return m_scene;
 }
 
+JzRE::JzInputManager &JzRE::JzRERuntime::GetInputManager()
+{
+    return *m_inputManager;
+}
+
+JzRE::JzResourceManager &JzRE::JzRERuntime::GetResourceManager()
+{
+    return *m_resourceManager;
+}
+
+JzRE::F32 JzRE::JzRERuntime::GetDeltaTime() const
+{
+    return m_frameData.deltaTime;
+}
+
+const JzRE::JzRuntimeFrameData &JzRE::JzRERuntime::GetFrameData() const
+{
+    return m_frameData;
+}
+
 void JzRE::JzRERuntime::OnStart()
 {
     // Default implementation does nothing
@@ -230,6 +261,12 @@ void JzRE::JzRERuntime::OnUpdate([[maybe_unused]] F32 deltaTime)
 {
     // Default implementation does nothing
     // Override in subclass for custom update logic
+}
+
+void JzRE::JzRERuntime::OnRender([[maybe_unused]] F32 deltaTime)
+{
+    // Default implementation does nothing
+    // Override in subclass to render additional content (e.g., ImGui UI)
 }
 
 void JzRE::JzRERuntime::OnStop()

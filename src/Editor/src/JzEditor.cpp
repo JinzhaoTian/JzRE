@@ -11,9 +11,11 @@
 #include "JzRE/Editor/JzConsole.h"
 #include "JzRE/Editor/JzHierarchy.h"
 #include "JzRE/Editor/JzMaterialEditor.h"
+#include "JzRE/Runtime/JzRERuntime.h"
 
 JzRE::JzEditor::JzEditor(JzRE::JzWindow &window) :
-    m_window(window)
+    m_window(window),
+    m_runtime(nullptr)
 {
     m_uiManager     = std::make_unique<JzUIManager>(m_window);
     m_canvas        = std::make_unique<JzCanvas>();
@@ -21,6 +23,24 @@ JzRE::JzEditor::JzEditor(JzRE::JzWindow &window) :
 
     m_canvas->SetDockspace(true);
 
+    InitializePanels();
+}
+
+JzRE::JzEditor::JzEditor(JzRE::JzRERuntime &runtime) :
+    m_window(runtime.GetWindow()),
+    m_runtime(&runtime)
+{
+    m_uiManager     = std::make_unique<JzUIManager>(m_window);
+    m_canvas        = std::make_unique<JzCanvas>();
+    m_panelsManager = std::make_unique<JzPanelsManager>(*m_canvas);
+
+    m_canvas->SetDockspace(true);
+
+    InitializePanels();
+}
+
+void JzRE::JzEditor::InitializePanels()
+{
     m_panelsManager->CreatePanel<JzMenuBar>("Menu Bar", m_window);
     m_panelsManager->CreatePanel<JzAssetBrowser>("Asset Browser", true);
     m_panelsManager->CreatePanel<JzSceneView>("Scene View", true);
@@ -76,6 +96,16 @@ void JzRE::JzEditor::Update(JzRE::F32 deltaTime)
 void JzRE::JzEditor::PostUpdate()
 {
     ++m_elapsedFrames;
+}
+
+JzRE::JzPanelsManager &JzRE::JzEditor::GetPanelsManager()
+{
+    return *m_panelsManager;
+}
+
+JzRE::JzUIManager &JzRE::JzEditor::GetUIManager()
+{
+    return *m_uiManager;
 }
 
 void JzRE::JzEditor::HandleGlobalShortcuts()

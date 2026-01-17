@@ -10,6 +10,7 @@
 #include <mutex>
 #include <thread>
 #include "JzRE/Runtime/Core/JzRETypes.h"
+#include "JzRE/Runtime/Function/Input/JzInputManager.h"
 #include "JzRE/Runtime/Function/Rendering/JzRHIRenderer.h"
 #include "JzRE/Runtime/Function/Scene/JzScene.h"
 #include "JzRE/Runtime/Function/Window/JzWindow.h"
@@ -29,9 +30,13 @@ struct JzRuntimeFrameData {
 /**
  * @brief JzRE Runtime Application
  *
- * This class provides core rendering functionality without Editor features.
- * It manages the rendering pipeline, scene, and background worker thread
- * for non-GPU tasks like culling and animation updates.
+ * This class provides core rendering functionality that can be used standalone
+ * or as a base for the Editor. It manages the rendering pipeline, scene,
+ * input handling, and background worker thread for non-GPU tasks.
+ *
+ * Usage patterns:
+ * 1. Standalone runtime: Override OnStart/OnUpdate/OnStop for custom logic
+ * 2. Editor integration: Override OnRender to inject UI rendering after 3D scene
  */
 class JzRERuntime {
 public:
@@ -46,9 +51,9 @@ public:
                 const JzIVec2 &windowSize = {1280, 720});
 
     /**
-     * @brief Destructor
+     * @brief Virtual destructor
      */
-    ~JzRERuntime();
+    virtual ~JzRERuntime();
 
     /**
      * @brief Run the runtime application main loop
@@ -86,9 +91,30 @@ public:
     /**
      * @brief Get the scene instance
      *
-     * @return JzScene& Reference to the scene
+     * @return std::shared_ptr<JzScene> Shared pointer to the scene
      */
     std::shared_ptr<JzScene> GetScene();
+
+    /**
+     * @brief Get the input manager instance
+     *
+     * @return JzInputManager& Reference to the input manager
+     */
+    JzInputManager &GetInputManager();
+
+    /**
+     * @brief Get the resource manager instance
+     *
+     * @return JzResourceManager& Reference to the resource manager
+     */
+    JzResourceManager &GetResourceManager();
+
+    /**
+     * @brief Get current frame delta time
+     *
+     * @return F32 Delta time in seconds
+     */
+    F32 GetDeltaTime() const;
 
 protected:
     /**
@@ -103,9 +129,19 @@ protected:
      *
      * @param deltaTime Time elapsed since the last frame in seconds
      *
-     * Override this method to update game logic.
+     * Override this method to update game logic, camera movement, etc.
      */
     virtual void OnUpdate(F32 deltaTime);
+
+    /**
+     * @brief Called after 3D scene rendering, before buffer swap
+     *
+     * @param deltaTime Time elapsed since the last frame in seconds
+     *
+     * Override this method to render additional content (e.g., ImGui UI).
+     * The 3D scene has already been rendered to the framebuffer at this point.
+     */
+    virtual void OnRender(F32 deltaTime);
 
     /**
      * @brief Called after the main loop ends
@@ -113,6 +149,13 @@ protected:
      * Override this method to perform custom cleanup.
      */
     virtual void OnStop();
+
+    /**
+     * @brief Access the current frame data
+     *
+     * @return const JzRuntimeFrameData& Current frame data
+     */
+    const JzRuntimeFrameData &GetFrameData() const;
 
 private:
     /**
@@ -132,13 +175,15 @@ private:
      */
     void _WaitForWorkerComplete();
 
-private:
+protected:
     std::unique_ptr<JzResourceManager> m_resourceManager;
     std::unique_ptr<JzWindow>          m_window;
     std::unique_ptr<JzDevice>          m_device;
+    std::unique_ptr<JzInputManager>    m_inputManager;
     std::unique_ptr<JzRHIRenderer>     m_renderer;
     std::shared_ptr<JzScene>           m_scene;
 
+private:
     // Worker thread for non-GPU tasks
     std::thread             m_workerThread;
     std::atomic<Bool>       m_workerThreadRunning{false};
