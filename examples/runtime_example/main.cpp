@@ -6,20 +6,112 @@
 #include "JzRE/Runtime/JzRERuntime.h"
 #include "JzRE/Runtime/Function/Scene/JzScene.h"
 #include "JzRE/Runtime/Function/Rendering/JzRHIRenderer.h"
+#include "JzRE/Runtime/Resource/JzModel.h"
+
+#include <iostream>
+#include <string>
+#include <cstring>
 
 /**
- * @brief Example application demonstrating JzRERuntime usage
- *
- * This example shows how to create a simple rendering application
- * using the JzRERuntime class without Editor features.
+ * @brief Command line arguments structure
  */
-class RuntimeExample : public JzRE::JzRERuntime {
+struct CommandLineArgs {
+    std::string inputModel;
+    JzRE::JzERHIType graphicApi = JzRE::JzERHIType::OpenGL;
+};
+
+/**
+ * @brief Print usage information
+ *
+ * @param programName Name of the program
+ */
+void PrintUsage(const char* programName)
+{
+    std::cout << "Usage: " << programName << " --input <model_file> [--graphic_api <api>]\n"
+              << "\n"
+              << "Options:\n"
+              << "  --input, -i        Path to the model file to open (required)\n"
+              << "  --graphic_api, -g  Graphics API to use: opengl, vulkan (default: opengl)\n"
+              << "  --help, -h         Show this help message\n"
+              << "\n"
+              << "Examples:\n"
+              << "  " << programName << " --input model.obj\n"
+              << "  " << programName << " -i model.fbx --graphic_api vulkan\n";
+}
+
+/**
+ * @brief Parse command line arguments
+ *
+ * @param argc Argument count
+ * @param argv Argument values
+ * @param args Output arguments structure
+ * @return true if parsing succeeded, false otherwise
+ */
+bool ParseCommandLine(int argc, char* argv[], CommandLineArgs& args)
+{
+    for (int i = 1; i < argc; ++i) {
+        std::string arg = argv[i];
+
+        if (arg == "--help" || arg == "-h") {
+            PrintUsage(argv[0]);
+            return false;
+        }
+        else if (arg == "--input" || arg == "-i") {
+            if (i + 1 >= argc) {
+                std::cerr << "Error: --input requires a file path argument\n";
+                return false;
+            }
+            args.inputModel = argv[++i];
+        }
+        else if (arg == "--graphic_api" || arg == "-g") {
+            if (i + 1 >= argc) {
+                std::cerr << "Error: --graphic_api requires an API name argument\n";
+                return false;
+            }
+            std::string api = argv[++i];
+            if (api == "opengl" || api == "OpenGL") {
+                args.graphicApi = JzRE::JzERHIType::OpenGL;
+            }
+            else if (api == "vulkan" || api == "Vulkan") {
+                args.graphicApi = JzRE::JzERHIType::Vulkan;
+            }
+            else {
+                std::cerr << "Error: Unknown graphics API '" << api << "'. Supported: opengl, vulkan\n";
+                return false;
+            }
+        }
+        else {
+            std::cerr << "Error: Unknown argument '" << arg << "'\n";
+            PrintUsage(argv[0]);
+            return false;
+        }
+    }
+
+    if (args.inputModel.empty()) {
+        std::cerr << "Error: --input is required\n";
+        PrintUsage(argv[0]);
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * @brief 3D Model Viewer application
+ *
+ * A command-line driven 3D rendering application that loads and displays
+ * a model file specified via command line arguments.
+ */
+class ModelViewer : public JzRE::JzRERuntime {
 public:
     /**
      * @brief Constructor
+     *
+     * @param args Parsed command line arguments
      */
-    RuntimeExample() :
-        JzRERuntime(JzRE::JzERHIType::OpenGL, "JzRE Runtime Example", {1280, 720})
+    explicit ModelViewer(const CommandLineArgs& args) :
+        JzRERuntime(args.graphicApi, "JzRE Model Viewer", {1280, 720}),
+        m_modelPath(args.inputModel)
     {
     }
 
@@ -29,12 +121,18 @@ protected:
      */
     void OnStart() override
     {
-        // Get the scene and add objects
         auto scene = GetScene();
 
-        // You can add entities, models, and other scene objects here
-        // Example:
-        // scene->AddModel("path/to/model.obj");
+        std::cout << "Loading model: " << m_modelPath << "\n";
+
+        auto model = std::make_shared<JzRE::JzModel>(m_modelPath);
+        if (model->Load()) {
+            scene->AddModel(model);
+            std::cout << "Model loaded successfully\n";
+        }
+        else {
+            std::cerr << "Error: Failed to load model: " << m_modelPath << "\n";
+        }
     }
 
     /**
@@ -44,14 +142,7 @@ protected:
      */
     void OnUpdate([[maybe_unused]] JzRE::F32 deltaTime) override
     {
-        // Update game logic here
-        // Example: Update animations, physics, camera movement, etc.
-
-        // Access the renderer if needed
-        // auto& renderer = GetRenderer();
-
-        // Access the window if needed
-        // auto& window = GetWindow();
+        // Camera controls and other interactions can be added here
     }
 
     /**
@@ -59,18 +150,34 @@ protected:
      */
     void OnStop() override
     {
-        // Cleanup resources here
+        std::cout << "Closing Model Viewer\n";
     }
+
+private:
+    std::string m_modelPath;
 };
 
 /**
  * @brief Main entry point
  *
+ * @param argc Argument count
+ * @param argv Argument values
  * @return int Exit code
  */
-int main()
+int main(int argc, char* argv[])
 {
-    RuntimeExample app;
+    CommandLineArgs args;
+
+    if (!ParseCommandLine(argc, argv, args)) {
+        return 1;
+    }
+
+    std::cout << "Starting JzRE Model Viewer\n"
+              << "  Model: " << args.inputModel << "\n"
+              << "  Graphics API: " << (args.graphicApi == JzRE::JzERHIType::OpenGL ? "OpenGL" : "Vulkan") << "\n";
+
+    ModelViewer app(args);
     app.Run();
+
     return 0;
 }
