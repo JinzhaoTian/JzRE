@@ -44,6 +44,11 @@ JzRE::JzRERuntime::JzRERuntime(JzERHIType rhiType, const String &windowTitle,
     // Initialize ECS world and systems
     InitializeECS();
 
+    // Provide ECS services for Editor access
+    JzServiceContainer::Provide<JzEnttWorld>(*m_world);
+    JzServiceContainer::Provide<JzEnttCameraSystem>(*m_cameraSystem);
+    JzServiceContainer::Provide<JzEnttRenderSystem>(*m_renderSystem);
+
     // Initialize frame data with framebuffer size (for Retina/HiDPI displays)
     m_frameData.frameSize = m_window->GetFramebufferSize();
     m_renderSystem->SetFrameSize(m_frameData.frameSize);
@@ -111,11 +116,11 @@ void JzRE::JzRERuntime::CreateDefaultCameraEntity()
     camera.farPlane     = 100.0f;
 
     // Add orbit controller component
-    auto &orbit     = m_world->AddComponent<JzEnttOrbitControllerComponent>(m_mainCameraEntity);
-    orbit.distance  = 5.0f;
-    orbit.pitch     = 0.3f;
-    orbit.yaw       = 0.0f;
-    orbit.target    = JzVec3(0.0f, 0.0f, 0.0f);
+    auto &orbit    = m_world->AddComponent<JzEnttOrbitControllerComponent>(m_mainCameraEntity);
+    orbit.distance = 5.0f;
+    orbit.pitch    = 0.3f;
+    orbit.yaw      = 0.0f;
+    orbit.target   = JzVec3(0.0f, 0.0f, 0.0f);
 
     // Add main camera tag (empty struct, use emplace directly)
     m_world->GetRegistry().emplace<JzMainCameraTag>(m_mainCameraEntity);
@@ -129,10 +134,10 @@ void JzRE::JzRERuntime::CreateDefaultLightEntity()
     m_world->AddComponent<JzTransformComponent>(lightEntity);
 
     // Add directional light component
-    auto &light      = m_world->AddComponent<JzEnttDirectionalLightComponent>(lightEntity);
-    light.direction  = JzVec3(0.3f, -1.0f, -0.5f);
-    light.color      = JzVec3(1.0f, 1.0f, 1.0f);
-    light.intensity  = 1.0f;
+    auto &light     = m_world->AddComponent<JzEnttDirectionalLightComponent>(lightEntity);
+    light.direction = JzVec3(0.3f, -1.0f, -0.5f);
+    light.color     = JzVec3(1.0f, 1.0f, 1.0f);
+    light.intensity = 1.0f;
 }
 
 void JzRE::JzRERuntime::Run()
@@ -155,8 +160,7 @@ void JzRE::JzRERuntime::Run()
 
         // Update camera system aspect ratio
         if (frameData.frameSize.x() > 0 && frameData.frameSize.y() > 0) {
-            F32 aspect = static_cast<F32>(frameData.frameSize.x()) /
-                         static_cast<F32>(frameData.frameSize.y());
+            F32 aspect = static_cast<F32>(frameData.frameSize.x()) / static_cast<F32>(frameData.frameSize.y());
             m_cameraSystem->SetAspectRatio(aspect);
         }
 

@@ -5,7 +5,7 @@
 
 #include <imgui.h>
 #include "JzRE/Editor/JzView.h"
-#include "JzRE/Runtime/Function/Rendering/JzRHIRenderer.h"
+#include "JzRE/Runtime/Function/ECS/EnTT/Systems/JzEnttRenderSystem.h"
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
 
 JzRE::JzView::JzView(const JzRE::String &name, JzRE::Bool is_opened) :
@@ -25,18 +25,18 @@ void JzRE::JzView::Render()
 {
     auto winSize = GetSafeSize();
     if (winSize.x() > 0 && winSize.y() > 0) {
-        auto &renderer = JzServiceContainer::Get<JzRHIRenderer>();
+        auto &renderSystem = JzServiceContainer::Get<JzEnttRenderSystem>();
 
         // Update frame size if necessary
-        if (winSize.x() != renderer.GetCurrentFrameSize().x() || winSize.y() != renderer.GetCurrentFrameSize().y()) {
-            renderer.SetFrameSize(winSize);
+        if (winSize.x() != renderSystem.GetCurrentFrameSize().x() || winSize.y() != renderSystem.GetCurrentFrameSize().y()) {
+            renderSystem.SetFrameSize(winSize);
         }
 
         if (m_frame) {
             m_frame->frameSize = JzVec2(static_cast<F32>(winSize.x()), static_cast<F32>(winSize.y()));
 
-            // Get the render texture from the renderer
-            auto texture = renderer.GetCurrentTexture();
+            // Get the render texture from the render system
+            auto texture = renderSystem.GetColorTexture();
             if (texture) {
                 m_frame->frameTextureId = texture->GetTextureID();
             }

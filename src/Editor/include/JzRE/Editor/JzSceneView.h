@@ -83,6 +83,11 @@ private:
      */
     void UpdateCameraFromOrbit();
 
+    /**
+     * @brief Sync orbit parameters from the ECS camera component
+     */
+    void SyncOrbitFromCamera();
+
 private:
     JzEGizmoOperation m_currentOperation = JzEGizmoOperation::TRANSLATE;
 

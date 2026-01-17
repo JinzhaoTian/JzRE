@@ -7,12 +7,13 @@
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
 #include "JzRE/Editor/JzSceneView.h"
 #include "JzRE/Runtime/Function/Input/JzInputManager.h"
-#include "JzRE/Runtime/Function/Scene/JzScene.h"
+#include "JzRE/Runtime/Function/ECS/EnTT/JzEnttWorld.h"
+#include "JzRE/Runtime/Function/ECS/EnTT/JzEnttRenderComponents.h"
 
 JzRE::JzSceneView::JzSceneView(const JzRE::String &name, JzRE::Bool is_opened) :
     JzRE::JzView(name, is_opened)
 {
-    // Note: Camera initialization is done on first Update() since JzScene
+    // Note: Camera initialization is done on first Update() since JzEnttWorld
     // is not yet registered in JzServiceContainer at construction time.
 }
 
@@ -20,9 +21,9 @@ void JzRE::JzSceneView::Update(JzRE::F32 deltaTime)
 {
     JzView::Update(deltaTime);
 
-    // Initialize camera on first update when JzScene is available
+    // Initialize camera on first update when JzEnttWorld is available
     if (!m_cameraInitialized) {
-        UpdateCameraFromOrbit();
+        SyncOrbitFromCamera();
         m_cameraInitialized = true;
     }
 
@@ -176,6 +177,26 @@ void JzRE::JzSceneView::HandleZoom(JzRE::F32 scrollY)
     UpdateCameraFromOrbit();
 }
 
+void JzRE::JzSceneView::SyncOrbitFromCamera()
+{
+    // Sync orbit parameters from the camera's OrbitControllerComponent
+    auto &world = JzServiceContainer::Get<JzEnttWorld>();
+
+    // Find the main camera entity with OrbitControllerComponent
+    auto view = world.View<JzEnttCameraComponent, JzEnttOrbitControllerComponent>();
+    for (auto entity : view) {
+        auto &camera = world.GetComponent<JzEnttCameraComponent>(entity);
+        if (camera.isMainCamera) {
+            auto &orbit     = world.GetComponent<JzEnttOrbitControllerComponent>(entity);
+            m_orbitTarget   = orbit.target;
+            m_orbitYaw      = orbit.yaw;
+            m_orbitPitch    = orbit.pitch;
+            m_orbitDistance = orbit.distance;
+            break;
+        }
+    }
+}
+
 void JzRE::JzSceneView::UpdateCameraFromOrbit()
 {
     // Calculate camera position using spherical coordinates
@@ -192,20 +213,29 @@ void JzRE::JzSceneView::UpdateCameraFromOrbit()
     cameraPos.y() = m_orbitTarget.y() + m_orbitDistance * sinPitch;
     cameraPos.z() = m_orbitTarget.z() + m_orbitDistance * cosPitch * cosYaw;
 
-    // Get the scene and camera
-    auto &scene  = JzServiceContainer::Get<JzScene>();
-    auto *camera = scene.FindMainCamera();
-    if (camera) {
-        camera->SetPosition(cameraPos);
+    // Get the ECS world and update camera components
+    auto &world = JzServiceContainer::Get<JzEnttWorld>();
 
-        // Set camera rotation to look at target
-        // The rotation is stored as (pitch, yaw, roll, 0) for now
-        // TODO: Convert to proper quaternion when quaternion support is added
-        JzVec4 rotation;
-        rotation.x() = -m_orbitPitch; // Pitch (rotation around X axis)
-        rotation.y() = m_orbitYaw;    // Yaw (rotation around Y axis)
-        rotation.z() = 0.0f;          // Roll
-        rotation.w() = 0.0f;          // Unused (will be quaternion W when converted)
-        camera->SetRotation(rotation);
+    // Find the main camera entity and update its components
+    auto view = world.View<JzEnttCameraComponent, JzEnttOrbitControllerComponent>();
+    for (auto entity : view) {
+        auto &camera = world.GetComponent<JzEnttCameraComponent>(entity);
+        if (camera.isMainCamera) {
+            // Update camera position and rotation
+            camera.position     = cameraPos;
+            camera.rotation.x() = -m_orbitPitch; // Pitch
+            camera.rotation.y() = m_orbitYaw;    // Yaw
+            camera.rotation.z() = 0.0f;          // Roll
+            camera.rotation.w() = 0.0f;          // Unused
+
+            // Update orbit controller component to stay in sync
+            auto &orbit    = world.GetComponent<JzEnttOrbitControllerComponent>(entity);
+            orbit.target   = m_orbitTarget;
+            orbit.yaw      = m_orbitYaw;
+            orbit.pitch    = m_orbitPitch;
+            orbit.distance = m_orbitDistance;
+
+            break;
+        }
     }
 }
