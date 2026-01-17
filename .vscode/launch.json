@@ -56,7 +56,10 @@
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/JzRE/RuntimeExample.exe",
-            "args": [ "--input", "${workspaceFolder}/build/JzRE/models/cornell_box.obj" ],
+            "args": [
+                "--input",
+                "${workspaceFolder}/build/JzRE/models/cornell-box.obj"
+            ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build/JzRE",
             "environment": [],
@@ -68,7 +71,10 @@
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/JzRE/RuntimeExample.exe",
-            "args": [ "--input", "${workspaceFolder}/build/JzRE/models/cornell_box.obj" ],
+            "args": [
+                "--input",
+                "${workspaceFolder}/build/JzRE/models/cornell-box.obj"
+            ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build/JzRE",
             "environment": [],
@@ -80,7 +86,10 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/JzRE/RuntimeExample",
-            "args": [ "--input", "${workspaceFolder}/build/JzRE/models/cornell_box.obj" ],
+            "args": [
+                "--input",
+                "${workspaceFolder}/build/JzRE/models/cornell-box.obj"
+            ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build/JzRE",
             "environment": [],
@@ -93,7 +102,10 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/JzRE/RuntimeExample",
-            "args": [ "--input", "${workspaceFolder}/build/JzRE/models/cornell_box.obj" ],
+            "args": [
+                "--input",
+                "${workspaceFolder}/build/JzRE/models/cornell-box.obj"
+            ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build/JzRE",
             "environment": [],

@@ -105,6 +105,16 @@ public:
     JzIVec2 GetSize() const;
 
     /**
+     * @brief Get the framebuffer size in pixels
+     *
+     * On high-DPI displays (e.g., macOS Retina), the framebuffer size
+     * may be larger than the window size. Use this for rendering operations.
+     *
+     * @return JzIVec2 Framebuffer size in pixels
+     */
+    JzIVec2 GetFramebufferSize() const;
+
+    /**
      * @brief Is the windows minimized
      *
      * @return Bool

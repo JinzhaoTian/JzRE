@@ -245,6 +245,30 @@ void JzRE::JzOpenGLDevice::BindFramebuffer(std::shared_ptr<JzRE::JzGPUFramebuffe
     }
 }
 
+void JzRE::JzOpenGLDevice::BlitFramebufferToScreen(std::shared_ptr<JzRE::JzGPUFramebufferObject> framebuffer,
+                                                   U32 srcWidth, U32 srcHeight,
+                                                   U32 dstWidth, U32 dstHeight)
+{
+    auto glFramebuffer = std::static_pointer_cast<JzOpenGLFramebuffer>(framebuffer);
+    if (!glFramebuffer) {
+        return;
+    }
+
+    // Bind source framebuffer for reading
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, glFramebuffer->GetHandle());
+    // Bind default framebuffer (screen) for drawing
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+
+    // Blit the color buffer
+    glBlitFramebuffer(0, 0, static_cast<GLint>(srcWidth), static_cast<GLint>(srcHeight),
+                      0, 0, static_cast<GLint>(dstWidth), static_cast<GLint>(dstHeight),
+                      GL_COLOR_BUFFER_BIT, GL_LINEAR);
+
+    // Reset to default framebuffer
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    m_currentFramebuffer = nullptr;
+}
+
 void JzRE::JzOpenGLDevice::Flush()
 {
     glFlush();

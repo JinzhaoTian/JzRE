@@ -6,6 +6,7 @@
 #include "JzRE/Runtime/JzRERuntime.h"
 #include "JzRE/Runtime/Function/Scene/JzScene.h"
 #include "JzRE/Runtime/Function/Rendering/JzRHIRenderer.h"
+#include "JzRE/Runtime/Function/ECS/JzCamera.h"
 #include "JzRE/Runtime/Resource/JzModel.h"
 
 #include <iostream>
@@ -123,6 +124,14 @@ protected:
     {
         auto scene = GetScene();
 
+        // Create and setup camera
+        auto camera = std::make_shared<JzRE::JzCamera>();
+        camera->SetPosition(JzRE::JzVec3(0.0f, 1.0f, 5.0f));
+        camera->SetRotation(JzRE::JzVec4(0.0f, 0.0f, 0.0f, 0.0f));
+        camera->SetFov(60.0f);
+        scene->SetCamera(camera);
+        m_camera = camera;
+
         std::cout << "Loading model: " << m_modelPath << "\n";
 
         auto model = std::make_shared<JzRE::JzModel>(m_modelPath);
@@ -155,6 +164,7 @@ protected:
 
 private:
     std::string m_modelPath;
+    std::shared_ptr<JzRE::JzCamera> m_camera;
 };
 
 /**

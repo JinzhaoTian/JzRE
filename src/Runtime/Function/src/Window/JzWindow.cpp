@@ -125,6 +125,13 @@ JzRE::JzIVec2 JzRE::JzWindow::GetSize() const
     return {width, height};
 }
 
+JzRE::JzIVec2 JzRE::JzWindow::GetFramebufferSize() const
+{
+    I32 width, height;
+    glfwGetFramebufferSize(m_glfwWindow, &width, &height);
+    return {width, height};
+}
+
 JzRE::Bool JzRE::JzWindow::IsMinimized() const
 {
     return glfwGetWindowAttrib(m_glfwWindow, GLFW_ICONIFIED) == GLFW_TRUE;

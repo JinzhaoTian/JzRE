@@ -200,6 +200,19 @@ public:
     void BindFramebuffer(std::shared_ptr<JzGPUFramebufferObject> framebuffer) override;
 
     /**
+     * @brief Blit framebuffer content to the default framebuffer (screen)
+     *
+     * @param framebuffer Source framebuffer to blit from
+     * @param srcWidth Source width
+     * @param srcHeight Source height
+     * @param dstWidth Destination width
+     * @param dstHeight Destination height
+     */
+    void BlitFramebufferToScreen(std::shared_ptr<JzGPUFramebufferObject> framebuffer,
+                                 U32 srcWidth, U32 srcHeight,
+                                 U32 dstWidth, U32 dstHeight) override;
+
+    /**
      * @brief Flush
      */
     void Flush() override;

@@ -232,6 +232,19 @@ public:
     virtual void BindFramebuffer(std::shared_ptr<JzGPUFramebufferObject> framebuffer) = 0;
 
     /**
+     * @brief Blit framebuffer content to the default framebuffer (screen)
+     *
+     * @param framebuffer Source framebuffer to blit from
+     * @param srcWidth Source width
+     * @param srcHeight Source height
+     * @param dstWidth Destination width
+     * @param dstHeight Destination height
+     */
+    virtual void BlitFramebufferToScreen(std::shared_ptr<JzGPUFramebufferObject> framebuffer,
+                                         U32 srcWidth, U32 srcHeight,
+                                         U32 dstWidth, U32 dstHeight) = 0;
+
+    /**
      * @brief Flush
      */
     virtual void Flush() = 0;

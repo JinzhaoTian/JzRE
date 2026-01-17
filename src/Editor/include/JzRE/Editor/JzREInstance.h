@@ -68,6 +68,13 @@ protected:
      */
     void OnStop() override;
 
+    /**
+     * @brief Should not blit to screen since Editor uses ImGui for display
+     *
+     * @return Bool Always returns false
+     */
+    Bool ShouldBlitToScreen() const override;
+
 private:
     std::filesystem::path        m_openDirectory;
     std::unique_ptr<JzEditor>    m_editor;

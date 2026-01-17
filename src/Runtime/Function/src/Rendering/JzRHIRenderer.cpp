@@ -508,3 +508,16 @@ std::shared_ptr<JzRE::JzGPUTextureObject> JzRE::JzRHIRenderer::GetCurrentTexture
 {
     return m_colorTexture;
 }
+
+void JzRE::JzRHIRenderer::BlitToScreen(U32 screenWidth, U32 screenHeight)
+{
+    if (!m_framebuffer) {
+        return;
+    }
+
+    auto &device = JzServiceContainer::Get<JzDevice>();
+    device.BlitFramebufferToScreen(m_framebuffer,
+                                   static_cast<U32>(m_frameSize.x()),
+                                   static_cast<U32>(m_frameSize.y()),
+                                   screenWidth, screenHeight);
+}

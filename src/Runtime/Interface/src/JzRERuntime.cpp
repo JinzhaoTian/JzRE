@@ -45,8 +45,8 @@ JzRE::JzRERuntime::JzRERuntime(JzERHIType rhiType, const String &windowTitle,
     JzServiceContainer::Provide<JzRHIRenderer>(*m_renderer);
     JzServiceContainer::Provide<JzScene>(*m_scene);
 
-    // Initialize renderer
-    m_frameData.frameSize = m_window->GetSize();
+    // Initialize renderer with framebuffer size (for Retina/HiDPI displays)
+    m_frameData.frameSize = m_window->GetFramebufferSize();
     m_renderer->SetFrameSize(m_frameData.frameSize);
     m_renderer->Initialize();
 
@@ -91,10 +91,10 @@ void JzRE::JzRERuntime::Run()
         // Handle window events
         m_window->PollEvents();
 
-        // Update frame data
+        // Update frame data (use framebuffer size for Retina/HiDPI)
         JzRuntimeFrameData frameData;
         frameData.deltaTime = clock.GetDeltaTime();
-        frameData.frameSize = m_window->GetSize();
+        frameData.frameSize = m_window->GetFramebufferSize();
 
         // Signal worker thread for background processing
         _SignalWorkerFrame(frameData);
@@ -115,6 +115,14 @@ void JzRE::JzRERuntime::Run()
 
         // End scene rendering
         m_renderer->EndFrame();
+
+        // Blit to screen for standalone runtime (if not using ImGui)
+        if (ShouldBlitToScreen()) {
+            // Use actual framebuffer size for Retina/HiDPI displays
+            JzIVec2 fbSize = m_window->GetFramebufferSize();
+            m_renderer->BlitToScreen(static_cast<U32>(fbSize.x()),
+                                     static_cast<U32>(fbSize.y()));
+        }
 
         // Call render hook for additional rendering (e.g., ImGui UI)
         OnRender(frameData.deltaTime);
@@ -273,4 +281,11 @@ void JzRE::JzRERuntime::OnStop()
 {
     // Default implementation does nothing
     // Override in subclass for custom cleanup
+}
+
+JzRE::Bool JzRE::JzRERuntime::ShouldBlitToScreen() const
+{
+    // Default: blit to screen for standalone runtime
+    // Override and return false in Editor to use ImGui for display
+    return true;
 }

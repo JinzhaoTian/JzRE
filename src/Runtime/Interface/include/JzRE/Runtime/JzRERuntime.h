@@ -151,6 +151,17 @@ protected:
     virtual void OnStop();
 
     /**
+     * @brief Should the renderer blit the framebuffer content to the screen
+     *
+     * Override this method and return false if you handle rendering display
+     * yourself (e.g., in Editor with ImGui). Default returns true for
+     * standalone runtime applications.
+     *
+     * @return Bool True to blit framebuffer to screen, false otherwise
+     */
+    virtual Bool ShouldBlitToScreen() const;
+
+    /**
      * @brief Access the current frame data
      *
      * @return const JzRuntimeFrameData& Current frame data

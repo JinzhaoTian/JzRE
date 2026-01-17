@@ -139,6 +139,17 @@ public:
      */
     std::shared_ptr<JzGPUTextureObject> GetCurrentTexture();
 
+    /**
+     * @brief Blit the rendered framebuffer content to the screen
+     *
+     * This should be called after RenderScene() for standalone runtime applications
+     * that want to display the rendered content directly on screen without ImGui.
+     *
+     * @param screenWidth Width of the screen/window
+     * @param screenHeight Height of the screen/window
+     */
+    void BlitToScreen(U32 screenWidth, U32 screenHeight);
+
 private:
     Bool CreateFramebuffer();
     Bool CreateDefaultPipeline();
