@@ -7,12 +7,17 @@
 
 #include <atomic>
 #include <condition_variable>
+#include <memory>
 #include <mutex>
 #include <thread>
+
 #include "JzRE/Runtime/Core/JzRETypes.h"
+#include "JzRE/Runtime/Function/ECS/EnTT/JzEnttEntity.h"
+#include "JzRE/Runtime/Function/ECS/EnTT/JzEnttWorld.h"
+#include "JzRE/Runtime/Function/ECS/EnTT/Systems/JzEnttCameraSystem.h"
+#include "JzRE/Runtime/Function/ECS/EnTT/Systems/JzEnttLightSystem.h"
+#include "JzRE/Runtime/Function/ECS/EnTT/Systems/JzEnttRenderSystem.h"
 #include "JzRE/Runtime/Function/Input/JzInputManager.h"
-#include "JzRE/Runtime/Function/Rendering/JzRHIRenderer.h"
-#include "JzRE/Runtime/Function/Scene/JzScene.h"
 #include "JzRE/Runtime/Function/Window/JzWindow.h"
 #include "JzRE/Runtime/Platform/JzDevice.h"
 #include "JzRE/Runtime/Resource/JzResourceManager.h"
@@ -30,13 +35,18 @@ struct JzRuntimeFrameData {
 /**
  * @brief JzRE Runtime Application
  *
- * This class provides core rendering functionality that can be used standalone
- * or as a base for the Editor. It manages the rendering pipeline, scene,
- * input handling, and background worker thread for non-GPU tasks.
+ * This class provides core rendering functionality using an ECS-based architecture.
+ * It manages the rendering pipeline through EnTT systems, input handling,
+ * and background worker thread for non-GPU tasks.
  *
  * Usage patterns:
  * 1. Standalone runtime: Override OnStart/OnUpdate/OnStop for custom logic
  * 2. Editor integration: Override OnRender to inject UI rendering after 3D scene
+ *
+ * ECS Systems (updated in order):
+ * 1. JzEnttCameraSystem - Camera matrix updates, orbit control
+ * 2. JzEnttLightSystem - Light data collection
+ * 3. JzEnttRenderSystem - Renders all entities with Transform + Mesh + Material
  */
 class JzRERuntime {
 public:
@@ -82,18 +92,32 @@ public:
     JzDevice &GetDevice();
 
     /**
-     * @brief Get the renderer instance
+     * @brief Get the ECS world
      *
-     * @return JzRHIRenderer& Reference to the renderer
+     * @return JzEnttWorld& Reference to the ECS world
      */
-    JzRHIRenderer &GetRenderer();
+    JzEnttWorld &GetWorld();
 
     /**
-     * @brief Get the scene instance
+     * @brief Get the camera system
      *
-     * @return std::shared_ptr<JzScene> Shared pointer to the scene
+     * @return std::shared_ptr<JzEnttCameraSystem> The camera system
      */
-    std::shared_ptr<JzScene> GetScene();
+    std::shared_ptr<JzEnttCameraSystem> GetCameraSystem();
+
+    /**
+     * @brief Get the light system
+     *
+     * @return std::shared_ptr<JzEnttLightSystem> The light system
+     */
+    std::shared_ptr<JzEnttLightSystem> GetLightSystem();
+
+    /**
+     * @brief Get the render system
+     *
+     * @return std::shared_ptr<JzEnttRenderSystem> The render system
+     */
+    std::shared_ptr<JzEnttRenderSystem> GetRenderSystem();
 
     /**
      * @brief Get the input manager instance
@@ -115,6 +139,13 @@ public:
      * @return F32 Delta time in seconds
      */
     F32 GetDeltaTime() const;
+
+    /**
+     * @brief Get the main camera entity
+     *
+     * @return JzEnttEntity The main camera entity
+     */
+    JzEnttEntity GetMainCameraEntity() const;
 
 protected:
     /**
@@ -168,17 +199,22 @@ protected:
      */
     const JzRuntimeFrameData &GetFrameData() const;
 
-protected:
-    /**
-     * @brief Update camera position and rotation from orbit parameters
-     *
-     * Call this method after modifying orbit parameters (m_orbitTarget,
-     * m_orbitYaw, m_orbitPitch, m_orbitDistance) to apply the changes
-     * to the camera immediately.
-     */
-    void UpdateCameraFromOrbit();
-
 private:
+    /**
+     * @brief Initialize the ECS world and systems
+     */
+    void InitializeECS();
+
+    /**
+     * @brief Create the default camera entity with orbit controller
+     */
+    void CreateDefaultCameraEntity();
+
+    /**
+     * @brief Create the default directional light entity
+     */
+    void CreateDefaultLightEntity();
+
     /**
      * @brief Worker thread main function for background processing
      */
@@ -196,67 +232,20 @@ private:
      */
     void _WaitForWorkerComplete();
 
-    /**
-     * @brief Handle default input actions for camera control
-     *
-     * Provides built-in orbit camera controls:
-     * - Left mouse drag: Orbit rotation
-     * - Right mouse drag: Panning
-     * - Scroll wheel: Zoom in/out
-     *
-     * @param deltaTime Time elapsed since the last frame in seconds
-     */
-    void _HandleDefaultInputActions(F32 deltaTime);
-
-    /**
-     * @brief Handle orbit rotation from mouse movement
-     *
-     * @param deltaX Horizontal mouse movement
-     * @param deltaY Vertical mouse movement
-     */
-    void _HandleOrbitRotation(F32 deltaX, F32 deltaY);
-
-    /**
-     * @brief Handle camera panning from mouse movement
-     *
-     * @param deltaX Horizontal mouse movement
-     * @param deltaY Vertical mouse movement
-     */
-    void _HandlePanning(F32 deltaX, F32 deltaY);
-
-    /**
-     * @brief Handle zoom from scroll wheel
-     *
-     * @param scrollY Vertical scroll amount
-     */
-    void _HandleZoom(F32 scrollY);
-
 protected:
     std::unique_ptr<JzResourceManager> m_resourceManager;
     std::unique_ptr<JzWindow>          m_window;
     std::unique_ptr<JzDevice>          m_device;
     std::unique_ptr<JzInputManager>    m_inputManager;
-    std::unique_ptr<JzRHIRenderer>     m_renderer;
-    std::shared_ptr<JzScene>           m_scene;
 
-    // Orbit camera control state
-    JzVec3 m_orbitTarget{0.0f, 0.0f, 0.0f}; ///< Point the camera orbits around
-    F32    m_orbitYaw      = 0.0f;          ///< Horizontal orbit angle in radians
-    F32    m_orbitPitch    = 0.3f;          ///< Vertical orbit angle in radians
-    F32    m_orbitDistance = 5.0f;          ///< Distance from target
+    // ECS world and systems
+    std::unique_ptr<JzEnttWorld>        m_world;
+    std::shared_ptr<JzEnttCameraSystem> m_cameraSystem;
+    std::shared_ptr<JzEnttLightSystem>  m_lightSystem;
+    std::shared_ptr<JzEnttRenderSystem> m_renderSystem;
 
-    // Camera control parameters
-    F32 m_orbitSensitivity = 0.005f; ///< Sensitivity for orbit rotation
-    F32 m_panSensitivity   = 0.002f; ///< Sensitivity for panning
-    F32 m_zoomSensitivity  = 0.5f;   ///< Sensitivity for zooming
-    F32 m_minDistance      = 0.5f;   ///< Minimum orbit distance
-    F32 m_maxDistance      = 100.0f; ///< Maximum orbit distance
-
-    // Mouse tracking state
-    Bool   m_leftMousePressed  = false; ///< Left mouse button state
-    Bool   m_rightMousePressed = false; ///< Right mouse button state
-    Bool   m_firstMouse        = true;  ///< First mouse input flag
-    JzVec2 m_lastMousePos{0.0f, 0.0f};  ///< Last mouse position
+    // Main camera entity
+    JzEnttEntity m_mainCameraEntity = INVALID_ENTT_ENTITY;
 
 private:
     // Worker thread for non-GPU tasks

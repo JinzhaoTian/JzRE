@@ -5,10 +5,9 @@
 
 #include "JzRE/Runtime/JzRERuntime.h"
 
-#include <cmath>
-
 #include "JzRE/Runtime/Core/JzClock.h"
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
+#include "JzRE/Runtime/Function/ECS/EnTT/JzEnttRenderComponents.h"
 #include "JzRE/Runtime/Function/Rendering/JzDeviceFactory.h"
 #include "JzRE/Runtime/Resource/JzTexture.h"
 #include "JzRE/Runtime/Resource/JzTextureFactory.h"
@@ -42,16 +41,12 @@ JzRE::JzRERuntime::JzRERuntime(JzERHIType rhiType, const String &windowTitle,
     m_inputManager = std::make_unique<JzInputManager>(*m_window);
     JzServiceContainer::Provide<JzInputManager>(*m_inputManager);
 
-    // Create renderer and scene
-    m_renderer = std::make_unique<JzRHIRenderer>();
-    m_scene    = std::make_shared<JzScene>();
-    JzServiceContainer::Provide<JzRHIRenderer>(*m_renderer);
-    JzServiceContainer::Provide<JzScene>(*m_scene);
+    // Initialize ECS world and systems
+    InitializeECS();
 
-    // Initialize renderer with framebuffer size (for Retina/HiDPI displays)
+    // Initialize frame data with framebuffer size (for Retina/HiDPI displays)
     m_frameData.frameSize = m_window->GetFramebufferSize();
-    m_renderer->SetFrameSize(m_frameData.frameSize);
-    m_renderer->Initialize();
+    m_renderSystem->SetFrameSize(m_frameData.frameSize);
 
     // Start background worker thread for non-GPU tasks
     m_workerThreadRunning = true;
@@ -76,12 +71,68 @@ JzRE::JzRERuntime::~JzRERuntime()
     }
 
     // Clean up in reverse order of creation
-    m_scene.reset();
-    m_renderer.reset();
+    m_renderSystem.reset();
+    m_lightSystem.reset();
+    m_cameraSystem.reset();
+    m_world.reset();
     m_inputManager.reset();
     m_device.reset();
     m_window.reset();
     m_resourceManager.reset();
+}
+
+void JzRE::JzRERuntime::InitializeECS()
+{
+    m_world = std::make_unique<JzEnttWorld>();
+
+    // Register systems in update order
+    m_cameraSystem = m_world->RegisterSystem<JzEnttCameraSystem>();
+    m_lightSystem  = m_world->RegisterSystem<JzEnttLightSystem>();
+    m_renderSystem = m_world->RegisterSystem<JzEnttRenderSystem>();
+
+    // Wire up system dependencies
+    m_renderSystem->SetCameraSystem(m_cameraSystem);
+    m_renderSystem->SetLightSystem(m_lightSystem);
+
+    // Create default entities
+    CreateDefaultCameraEntity();
+    CreateDefaultLightEntity();
+}
+
+void JzRE::JzRERuntime::CreateDefaultCameraEntity()
+{
+    m_mainCameraEntity = m_world->CreateEntity();
+
+    // Add camera component
+    auto &camera        = m_world->AddComponent<JzEnttCameraComponent>(m_mainCameraEntity);
+    camera.isMainCamera = true;
+    camera.fov          = 60.0f;
+    camera.nearPlane    = 0.1f;
+    camera.farPlane     = 100.0f;
+
+    // Add orbit controller component
+    auto &orbit     = m_world->AddComponent<JzEnttOrbitControllerComponent>(m_mainCameraEntity);
+    orbit.distance  = 5.0f;
+    orbit.pitch     = 0.3f;
+    orbit.yaw       = 0.0f;
+    orbit.target    = JzVec3(0.0f, 0.0f, 0.0f);
+
+    // Add main camera tag (empty struct, use emplace directly)
+    m_world->GetRegistry().emplace<JzMainCameraTag>(m_mainCameraEntity);
+}
+
+void JzRE::JzRERuntime::CreateDefaultLightEntity()
+{
+    JzEnttEntity lightEntity = m_world->CreateEntity();
+
+    // Add transform component (not strictly needed for directional light but for consistency)
+    m_world->AddComponent<JzTransformComponent>(lightEntity);
+
+    // Add directional light component
+    auto &light      = m_world->AddComponent<JzEnttDirectionalLightComponent>(lightEntity);
+    light.direction  = JzVec3(0.3f, -1.0f, -0.5f);
+    light.color      = JzVec3(1.0f, 1.0f, 1.0f);
+    light.intensity  = 1.0f;
 }
 
 void JzRE::JzRERuntime::Run()
@@ -102,32 +153,36 @@ void JzRE::JzRERuntime::Run()
         // Signal worker thread for background processing
         _SignalWorkerFrame(frameData);
 
-        // Update renderer frame size if changed
-        if (frameData.frameSize != m_renderer->GetCurrentFrameSize()) {
-            m_renderer->SetFrameSize(frameData.frameSize);
+        // Update camera system aspect ratio
+        if (frameData.frameSize.x() > 0 && frameData.frameSize.y() > 0) {
+            F32 aspect = static_cast<F32>(frameData.frameSize.x()) /
+                         static_cast<F32>(frameData.frameSize.y());
+            m_cameraSystem->SetAspectRatio(aspect);
         }
-
-        // Handle default input actions (orbit camera controls)
-        _HandleDefaultInputActions(frameData.deltaTime);
 
         // Call user update logic
         OnUpdate(frameData.deltaTime);
 
-        // Begin frame rendering
-        m_renderer->BeginFrame();
+        // Update renderer frame size if changed
+        if (frameData.frameSize != m_renderSystem->GetCurrentFrameSize()) {
+            m_renderSystem->SetFrameSize(frameData.frameSize);
+        }
 
-        // Render 3D scene to framebuffer
-        m_renderer->RenderScene(m_scene.get());
+        // Begin frame rendering
+        m_renderSystem->BeginFrame();
+
+        // ECS update: Camera -> Light -> Render (in registration order)
+        m_world->Update(frameData.deltaTime);
 
         // End scene rendering
-        m_renderer->EndFrame();
+        m_renderSystem->EndFrame();
 
         // Blit to screen for standalone runtime (if not using ImGui)
         if (ShouldBlitToScreen()) {
             // Use actual framebuffer size for Retina/HiDPI displays
             JzIVec2 fbSize = m_window->GetFramebufferSize();
-            m_renderer->BlitToScreen(static_cast<U32>(fbSize.x()),
-                                     static_cast<U32>(fbSize.y()));
+            m_renderSystem->BlitToScreen(static_cast<U32>(fbSize.x()),
+                                         static_cast<U32>(fbSize.y()));
         }
 
         // Call render hook for additional rendering (e.g., ImGui UI)
@@ -185,10 +240,6 @@ void JzRE::JzRERuntime::_WorkerThread()
 
         // Perform background processing (non-GPU tasks)
         // TODO: Add scene culling, animation updates, etc.
-        // Example:
-        // - m_scene->UpdateAnimations(currentFrameData.deltaTime);
-        // - m_scene->PerformCulling(camera);
-        // - m_resourceManager->ProcessLoadingQueue();
 
         // Signal main thread that background processing is complete
         {
@@ -235,14 +286,24 @@ JzRE::JzDevice &JzRE::JzRERuntime::GetDevice()
     return *m_device;
 }
 
-JzRE::JzRHIRenderer &JzRE::JzRERuntime::GetRenderer()
+JzRE::JzEnttWorld &JzRE::JzRERuntime::GetWorld()
 {
-    return *m_renderer;
+    return *m_world;
 }
 
-std::shared_ptr<JzRE::JzScene> JzRE::JzRERuntime::GetScene()
+std::shared_ptr<JzRE::JzEnttCameraSystem> JzRE::JzRERuntime::GetCameraSystem()
 {
-    return m_scene;
+    return m_cameraSystem;
+}
+
+std::shared_ptr<JzRE::JzEnttLightSystem> JzRE::JzRERuntime::GetLightSystem()
+{
+    return m_lightSystem;
+}
+
+std::shared_ptr<JzRE::JzEnttRenderSystem> JzRE::JzRERuntime::GetRenderSystem()
+{
+    return m_renderSystem;
 }
 
 JzRE::JzInputManager &JzRE::JzRERuntime::GetInputManager()
@@ -258,6 +319,11 @@ JzRE::JzResourceManager &JzRE::JzRERuntime::GetResourceManager()
 JzRE::F32 JzRE::JzRERuntime::GetDeltaTime() const
 {
     return m_frameData.deltaTime;
+}
+
+JzRE::JzEnttEntity JzRE::JzRERuntime::GetMainCameraEntity() const
+{
+    return m_mainCameraEntity;
 }
 
 const JzRE::JzRuntimeFrameData &JzRE::JzRERuntime::GetFrameData() const
@@ -294,154 +360,4 @@ JzRE::Bool JzRE::JzRERuntime::ShouldBlitToScreen() const
     // Default: blit to screen for standalone runtime
     // Override and return false in Editor to use ImGui for display
     return true;
-}
-
-void JzRE::JzRERuntime::_HandleDefaultInputActions([[maybe_unused]] F32 deltaTime)
-{
-    // Get current mouse position
-    JzVec2 currentMousePos = m_inputManager->GetMousePosition();
-
-    // Calculate mouse delta
-    F32 deltaX = 0.0f;
-    F32 deltaY = 0.0f;
-    if (!m_firstMouse) {
-        deltaX = currentMousePos.x() - m_lastMousePos.x();
-        deltaY = currentMousePos.y() - m_lastMousePos.y();
-    }
-
-    // Track button states - use GetMouseButtonState for real-time GLFW state
-    Bool leftPressed  = m_inputManager->GetMouseButtonState(JzEInputMouseButton::MOUSE_BUTTON_LEFT) == JzEInputMouseButtonState::MOUSE_DOWN;
-    Bool rightPressed = m_inputManager->GetMouseButtonState(JzEInputMouseButton::MOUSE_BUTTON_RIGHT) == JzEInputMouseButtonState::MOUSE_DOWN;
-
-    // Handle left mouse button - Orbit rotation
-    if (leftPressed) {
-        if (!m_leftMousePressed) {
-            // Just started pressing left button
-            m_leftMousePressed = true;
-            m_firstMouse       = true;
-        } else if (!m_firstMouse) {
-            // Dragging with left button
-            _HandleOrbitRotation(deltaX, deltaY);
-        }
-    } else {
-        m_leftMousePressed = false;
-    }
-
-    // Handle right mouse button - Panning
-    if (rightPressed) {
-        if (!m_rightMousePressed) {
-            // Just started pressing right button
-            m_rightMousePressed = true;
-            m_firstMouse        = true;
-        } else if (!m_firstMouse) {
-            // Dragging with right button
-            _HandlePanning(deltaX, deltaY);
-        }
-    } else {
-        m_rightMousePressed = false;
-    }
-
-    // Handle scroll wheel - Zoom
-    JzVec2 scroll = m_inputManager->GetMouseScroll();
-    if (std::abs(scroll.y()) > 0.001f) {
-        _HandleZoom(scroll.y());
-    }
-
-    // Update last mouse position
-    m_lastMousePos = currentMousePos;
-    m_firstMouse   = false;
-}
-
-void JzRE::JzRERuntime::_HandleOrbitRotation(F32 deltaX, F32 deltaY)
-{
-    // Update yaw and pitch based on mouse movement (drag-object style)
-    // - Yaw uses -= : drag right → model rotates right → see left side of model
-    // - Pitch uses -= : drag down → model rotates down → see top of model
-    m_orbitYaw   -= deltaX * m_orbitSensitivity;
-    m_orbitPitch -= deltaY * m_orbitSensitivity;
-
-    // Clamp pitch to avoid gimbal lock (between -89 and 89 degrees)
-    constexpr F32 maxPitch = 1.55f; // ~89 degrees in radians
-    m_orbitPitch           = std::clamp(m_orbitPitch, -maxPitch, maxPitch);
-
-    // Update camera position
-    UpdateCameraFromOrbit();
-}
-
-void JzRE::JzRERuntime::_HandlePanning(F32 deltaX, F32 deltaY)
-{
-    // Calculate the right and up vectors in world space based on current orientation
-    F32 cosYaw   = std::cos(m_orbitYaw);
-    F32 sinYaw   = std::sin(m_orbitYaw);
-    F32 cosPitch = std::cos(m_orbitPitch);
-    F32 sinPitch = std::sin(m_orbitPitch);
-
-    // Right vector (perpendicular to the view direction in the horizontal plane)
-    JzVec3 right(cosYaw, 0.0f, sinYaw);
-
-    // Up vector (perpendicular to both right and forward)
-    JzVec3 up(-sinYaw * sinPitch, cosPitch, cosYaw * sinPitch);
-
-    // Calculate pan amount based on distance (further = larger pan)
-    F32 panScale = m_orbitDistance * m_panSensitivity;
-
-    // Move the target point
-    m_orbitTarget.x() -= right.x() * deltaX * panScale + up.x() * deltaY * panScale;
-    m_orbitTarget.y() += up.y() * deltaY * panScale;
-    m_orbitTarget.z() -= right.z() * deltaX * panScale + up.z() * deltaY * panScale;
-
-    // Update camera position
-    UpdateCameraFromOrbit();
-}
-
-void JzRE::JzRERuntime::_HandleZoom(F32 scrollY)
-{
-    // Adjust orbit distance based on scroll
-    m_orbitDistance -= scrollY * m_zoomSensitivity;
-
-    // Clamp distance to valid range
-    m_orbitDistance = std::clamp(m_orbitDistance, m_minDistance, m_maxDistance);
-
-    // Update camera position
-    UpdateCameraFromOrbit();
-}
-
-void JzRE::JzRERuntime::UpdateCameraFromOrbit()
-{
-    // Calculate camera position using spherical coordinates
-    // x = r * cos(pitch) * sin(yaw)
-    // y = r * sin(pitch)
-    // z = r * cos(pitch) * cos(yaw)
-    F32 cosPitch = std::cos(m_orbitPitch);
-    F32 sinPitch = std::sin(m_orbitPitch);
-    F32 cosYaw   = std::cos(m_orbitYaw);
-    F32 sinYaw   = std::sin(m_orbitYaw);
-
-    JzVec3 cameraPos;
-    cameraPos.x() = m_orbitTarget.x() + m_orbitDistance * cosPitch * sinYaw;
-    cameraPos.y() = m_orbitTarget.y() + m_orbitDistance * sinPitch;
-    cameraPos.z() = m_orbitTarget.z() + m_orbitDistance * cosPitch * cosYaw;
-
-    // Get the scene camera and update its transform
-    auto *camera = m_scene->FindMainCamera();
-    if (camera) {
-        camera->SetPosition(cameraPos);
-
-        // Set camera rotation to look at target
-        // The rotation is stored as (pitch, yaw, roll, 0) for now
-        // TODO: Convert to proper quaternion when quaternion support is added
-        //
-        // Camera position uses: x = sin(yaw), z = cos(yaw)
-        // So at yaw=0, camera is at +Z looking toward target at origin
-        // The forward vector formula in renderer: forward.z = -cos(yaw)
-        // At yaw=0, forward = (0, 0, -1), pointing toward -Z
-        // To make camera look at target (which is at -Z relative to camera),
-        // we need to add PI to yaw so the forward vector points toward target
-        JzVec4 rotation;
-        rotation.x() = -m_orbitPitch;                          // Pitch (rotation around X axis)
-        rotation.y() = m_orbitYaw + 3.14159265358979323846f;   // Yaw + PI to face target
-        rotation.z() = 0.0f;                                   // Roll
-        rotation.w() = 0.0f;                                   // Unused
-        camera->SetRotation(rotation);
-    }
 }

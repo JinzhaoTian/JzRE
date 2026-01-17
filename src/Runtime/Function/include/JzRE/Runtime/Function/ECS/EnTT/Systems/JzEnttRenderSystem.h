@@ -6,85 +6,154 @@
 #pragma once
 
 #include <memory>
+
+#include "JzRE/Runtime/Core/JzRETypes.h"
+#include "JzRE/Runtime/Core/JzVector.h"
+#include "JzRE/Runtime/Function/ECS/EnTT/JzEnttComponents.h"
 #include "JzRE/Runtime/Function/ECS/EnTT/JzEnttSystem.h"
 #include "JzRE/Runtime/Function/ECS/EnTT/JzEnttWorld.h"
-#include "JzRE/Runtime/Function/ECS/EnTT/JzEnttComponents.h"
 #include "JzRE/Runtime/Platform/JzDevice.h"
-#include "JzRE/Runtime/Resource/JzMesh.h"
-#include "JzRE/Runtime/Resource/JzMaterial.h"
+#include "JzRE/Runtime/Platform/JzGPUFramebufferObject.h"
+#include "JzRE/Runtime/Platform/JzGPUTextureObject.h"
+#include "JzRE/Runtime/Platform/JzRHIPipeline.h"
 
 namespace JzRE {
 
+// Forward declarations
+class JzEnttCameraSystem;
+class JzEnttLightSystem;
+
 /**
- * @brief Render system that draws all renderable entities.
+ * @brief Enhanced render system that integrates with camera and light systems.
  *
- * This is an EnTT-based reimplementation of the original JzRenderSystem.
- * It demonstrates the EnTT idioms for querying and rendering entities
- * with mesh and material components.
+ * This system manages:
+ * - Framebuffer, color texture, and depth texture
+ * - Default rendering pipeline with shaders
+ * - Rendering all entities with Transform + Mesh + Material components
+ * - Blitting to screen for standalone runtime
  */
 class JzEnttRenderSystem : public JzEnttSystem {
 public:
     /**
-     * @brief Constructs the render system with a device.
-     *
-     * @param device The RHI device to use for rendering.
+     * @brief Constructs the render system.
      */
-    explicit JzEnttRenderSystem(std::shared_ptr<JzDevice> device) :
-        m_device(std::move(device)) { }
+    JzEnttRenderSystem();
+
+    void OnInit(JzEnttWorld &world) override;
+    void Update(JzEnttWorld &world, F32 delta) override;
+    void OnShutdown(JzEnttWorld &world) override;
+
+    // ==================== Camera and Light System References ====================
 
     /**
-     * @brief Renders all entities with transform, mesh, and material components.
-     *
-     * @param world The EnTT world containing entities and components.
-     * @param delta The delta time since the last frame.
+     * @brief Set the camera system reference.
      */
-    void Update(JzEnttWorld &world, F32 delta) override
-    {
-        if (!m_device) {
-            return;
-        }
+    void SetCameraSystem(std::shared_ptr<JzEnttCameraSystem> cameraSystem);
 
-        // Create a view for renderable entities
-        auto view = world.View<JzTransformComponent, JzMeshComponent, JzMaterialComponent>();
+    /**
+     * @brief Set the light system reference.
+     */
+    void SetLightSystem(std::shared_ptr<JzEnttLightSystem> lightSystem);
 
-        for (auto [entity, transform, meshComp, matComp] : view.each()) {
-            // Get resources from components
-            auto mesh     = std::static_pointer_cast<JzMesh>(meshComp.mesh);
-            auto material = std::static_pointer_cast<JzMaterial>(matComp.material);
+    // ==================== Framebuffer Management ====================
 
-            // Validate resources
-            if (!mesh || !material || mesh->GetState() != JzEResourceState::Loaded || material->GetState() != JzEResourceState::Loaded) {
-                continue; // Skip if resources aren't ready
-            }
+    /**
+     * @brief Set the frame size for the framebuffer.
+     *
+     * @param size The width and height of the frame.
+     */
+    void SetFrameSize(JzIVec2 size);
 
-            // Get RHI resources
-            auto pipeline    = material->GetPipeline();
-            auto vertexArray = mesh->GetVertexArray();
-            auto textures    = material->GetTextures();
+    /**
+     * @brief Get the current frame size.
+     */
+    JzIVec2 GetCurrentFrameSize() const;
 
-            if (!pipeline || !vertexArray) {
-                continue; // Skip if essential RHI resources are missing
-            }
+    /**
+     * @brief Get the framebuffer.
+     */
+    std::shared_ptr<JzGPUFramebufferObject> GetFramebuffer() const;
 
-            // Issue rendering commands
-            m_device->BindPipeline(pipeline);
+    /**
+     * @brief Get the color texture for display (e.g., in ImGui).
+     */
+    std::shared_ptr<JzGPUTextureObject> GetColorTexture() const;
 
-            // Bind textures
-            for (Size i = 0; i < textures.size(); ++i) {
-                m_device->BindTexture(textures[i], i);
-            }
+    /**
+     * @brief Get the depth texture.
+     */
+    std::shared_ptr<JzGPUTextureObject> GetDepthTexture() const;
 
-            m_device->BindVertexArray(vertexArray);
+    /**
+     * @brief Get the default rendering pipeline.
+     */
+    std::shared_ptr<JzRHIPipeline> GetDefaultPipeline() const;
 
-            // Issue draw call
-            JzDrawIndexedParams drawParams{};
-            drawParams.indexCount = mesh->GetIndexCount();
-            m_device->DrawIndexed(drawParams);
-        }
-    }
+    // ==================== Frame Control ====================
+
+    /**
+     * @brief Begin frame rendering.
+     */
+    void BeginFrame();
+
+    /**
+     * @brief End frame rendering.
+     */
+    void EndFrame();
+
+    /**
+     * @brief Blit the framebuffer content to the screen.
+     *
+     * @param screenWidth The width of the screen.
+     * @param screenHeight The height of the screen.
+     */
+    void BlitToScreen(U32 screenWidth, U32 screenHeight);
+
+    /**
+     * @brief Check if the render system is initialized.
+     */
+    Bool IsInitialized() const;
 
 private:
-    std::shared_ptr<JzDevice> m_device; ///< The RHI device for rendering.
+    /**
+     * @brief Create the framebuffer and its attachments.
+     */
+    Bool CreateFramebuffer();
+
+    /**
+     * @brief Create the default rendering pipeline with shaders.
+     */
+    Bool CreateDefaultPipeline();
+
+    /**
+     * @brief Setup viewport and clear the framebuffer.
+     */
+    void SetupViewportAndClear();
+
+    /**
+     * @brief Render all entities with Transform + Mesh + Material.
+     */
+    void RenderEntities(JzEnttWorld &world);
+
+    /**
+     * @brief Clean up all GPU resources.
+     */
+    void CleanupResources();
+
+    // System references
+    std::shared_ptr<JzEnttCameraSystem> m_cameraSystem;
+    std::shared_ptr<JzEnttLightSystem>  m_lightSystem;
+
+    // GPU resources
+    std::shared_ptr<JzGPUFramebufferObject> m_framebuffer;
+    std::shared_ptr<JzGPUTextureObject>     m_colorTexture;
+    std::shared_ptr<JzGPUTextureObject>     m_depthTexture;
+    std::shared_ptr<JzRHIPipeline>          m_defaultPipeline;
+
+    // Frame state
+    JzIVec2 m_frameSize{1280, 720};
+    Bool    m_frameSizeChanged = true;
+    Bool    m_isInitialized    = false;
 };
 
 } // namespace JzRE

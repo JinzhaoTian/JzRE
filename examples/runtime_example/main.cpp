@@ -4,14 +4,12 @@
  */
 
 #include "JzRE/Runtime/JzRERuntime.h"
-#include "JzRE/Runtime/Function/Scene/JzScene.h"
-#include "JzRE/Runtime/Function/Rendering/JzRHIRenderer.h"
-#include "JzRE/Runtime/Function/ECS/JzCamera.h"
+#include "JzRE/Runtime/Function/ECS/EnTT/JzEnttModelSpawner.h"
+#include "JzRE/Runtime/Function/ECS/EnTT/JzEnttRenderComponents.h"
 #include "JzRE/Runtime/Resource/JzModel.h"
 
 #include <iostream>
 #include <string>
-#include <cstring>
 
 /**
  * @brief Command line arguments structure
@@ -96,7 +94,8 @@ bool ParseCommandLine(int argc, char *argv[], CommandLineArgs &args)
  * @brief 3D Model Viewer application
  *
  * A command-line driven 3D rendering application that loads and displays
- * a model file specified via command line arguments.
+ * a model file specified via command line arguments using the ECS-based
+ * rendering pipeline.
  */
 class ModelViewer : public JzRE::JzRERuntime {
 public:
@@ -117,31 +116,28 @@ protected:
      */
     void OnStart() override
     {
-        auto scene = GetScene();
-
-        // Create and setup camera
-        auto camera = std::make_shared<JzRE::JzCamera>();
-        camera->SetFov(60.0f);
-        scene->SetCamera(camera);
-        m_camera = camera;
-
         std::cout << "Loading model: " << m_modelPath << "\n";
 
         auto model = std::make_shared<JzRE::JzModel>(m_modelPath);
         if (model->Load()) {
-            scene->AddModel(model);
-            std::cout << "Model loaded successfully\n";
+            // Spawn model as ECS entities
+            m_modelEntities = JzRE::JzEnttModelSpawner::SpawnModel(GetWorld(), model);
+            std::cout << "Model loaded successfully (" << m_modelEntities.size() << " entities)\n";
 
-            // Set orbit camera target to model center
-            // Cornell Box approximate center: X=[-3, 2.5], Y=[-0.16, 5.3], Z=[-5.8, -0.24]
-            // Center ≈ (-0.25, 2.5, -3.0)
-            m_orbitTarget   = JzRE::JzVec3(-0.25f, 2.5f, -3.0f);
-            m_orbitDistance = 8.0f; // Suitable viewing distance
-            m_orbitPitch    = 0.2f; // Slight upward angle
-            m_orbitYaw      = 0.0f; // Front view
-
-            // Update camera to reflect orbit settings immediately
-            UpdateCameraFromOrbit();
+            // Configure orbit camera for viewing the model
+            // Get the main camera entity and modify its orbit controller
+            auto mainCamera = GetMainCameraEntity();
+            if (JzRE::IsValidEntity(mainCamera)) {
+                auto *orbit = GetWorld().TryGetComponent<JzRE::JzEnttOrbitControllerComponent>(mainCamera);
+                if (orbit) {
+                    // Cornell Box approximate center: X=[-3, 2.5], Y=[-0.16, 5.3], Z=[-5.8, -0.24]
+                    // Center ≈ (-0.25, 2.5, -3.0)
+                    orbit->target   = JzRE::JzVec3(-0.25f, 2.5f, -3.0f);
+                    orbit->distance = 8.0f;
+                    orbit->pitch    = 0.2f;
+                    orbit->yaw      = 0.0f;
+                }
+            }
         } else {
             std::cerr << "Error: Failed to load model: " << m_modelPath << "\n";
         }
@@ -154,7 +150,8 @@ protected:
      */
     void OnUpdate([[maybe_unused]] JzRE::F32 deltaTime) override
     {
-        // Camera controls and other interactions can be added here
+        // Camera controls are now handled by the JzEnttCameraSystem
+        // Additional user logic can be added here
     }
 
     /**
@@ -163,11 +160,14 @@ protected:
     void OnStop() override
     {
         std::cout << "Closing Model Viewer\n";
+
+        // Clean up spawned entities
+        JzRE::JzEnttModelSpawner::DestroyEntities(GetWorld(), m_modelEntities);
     }
 
 private:
-    std::string                     m_modelPath;
-    std::shared_ptr<JzRE::JzCamera> m_camera;
+    std::string                       m_modelPath;
+    std::vector<JzRE::JzEnttEntity>   m_modelEntities;
 };
 
 /**
