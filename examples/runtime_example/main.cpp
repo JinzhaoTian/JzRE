@@ -17,7 +17,7 @@
  * @brief Command line arguments structure
  */
 struct CommandLineArgs {
-    std::string inputModel;
+    std::string      inputModel;
     JzRE::JzERHIType graphicApi = JzRE::JzERHIType::OpenGL;
 };
 
@@ -26,7 +26,7 @@ struct CommandLineArgs {
  *
  * @param programName Name of the program
  */
-void PrintUsage(const char* programName)
+void PrintUsage(const char *programName)
 {
     std::cout << "Usage: " << programName << " --input <model_file> [--graphic_api <api>]\n"
               << "\n"
@@ -48,7 +48,7 @@ void PrintUsage(const char* programName)
  * @param args Output arguments structure
  * @return true if parsing succeeded, false otherwise
  */
-bool ParseCommandLine(int argc, char* argv[], CommandLineArgs& args)
+bool ParseCommandLine(int argc, char *argv[], CommandLineArgs &args)
 {
     for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];
@@ -56,15 +56,13 @@ bool ParseCommandLine(int argc, char* argv[], CommandLineArgs& args)
         if (arg == "--help" || arg == "-h") {
             PrintUsage(argv[0]);
             return false;
-        }
-        else if (arg == "--input" || arg == "-i") {
+        } else if (arg == "--input" || arg == "-i") {
             if (i + 1 >= argc) {
                 std::cerr << "Error: --input requires a file path argument\n";
                 return false;
             }
             args.inputModel = argv[++i];
-        }
-        else if (arg == "--graphic_api" || arg == "-g") {
+        } else if (arg == "--graphic_api" || arg == "-g") {
             if (i + 1 >= argc) {
                 std::cerr << "Error: --graphic_api requires an API name argument\n";
                 return false;
@@ -72,16 +70,13 @@ bool ParseCommandLine(int argc, char* argv[], CommandLineArgs& args)
             std::string api = argv[++i];
             if (api == "opengl" || api == "OpenGL") {
                 args.graphicApi = JzRE::JzERHIType::OpenGL;
-            }
-            else if (api == "vulkan" || api == "Vulkan") {
+            } else if (api == "vulkan" || api == "Vulkan") {
                 args.graphicApi = JzRE::JzERHIType::Vulkan;
-            }
-            else {
+            } else {
                 std::cerr << "Error: Unknown graphics API '" << api << "'. Supported: opengl, vulkan\n";
                 return false;
             }
-        }
-        else {
+        } else {
             std::cerr << "Error: Unknown argument '" << arg << "'\n";
             PrintUsage(argv[0]);
             return false;
@@ -110,7 +105,7 @@ public:
      *
      * @param args Parsed command line arguments
      */
-    explicit ModelViewer(const CommandLineArgs& args) :
+    explicit ModelViewer(const CommandLineArgs &args) :
         JzRERuntime(args.graphicApi, "JzRE Model Viewer", {1280, 720}),
         m_modelPath(args.inputModel)
     {
@@ -126,8 +121,6 @@ protected:
 
         // Create and setup camera
         auto camera = std::make_shared<JzRE::JzCamera>();
-        camera->SetPosition(JzRE::JzVec3(0.0f, 1.0f, 5.0f));
-        camera->SetRotation(JzRE::JzVec4(0.0f, 0.0f, 0.0f, 0.0f));
         camera->SetFov(60.0f);
         scene->SetCamera(camera);
         m_camera = camera;
@@ -138,8 +131,18 @@ protected:
         if (model->Load()) {
             scene->AddModel(model);
             std::cout << "Model loaded successfully\n";
-        }
-        else {
+
+            // Set orbit camera target to model center
+            // Cornell Box approximate center: X=[-3, 2.5], Y=[-0.16, 5.3], Z=[-5.8, -0.24]
+            // Center ≈ (-0.25, 2.5, -3.0)
+            m_orbitTarget   = JzRE::JzVec3(-0.25f, 2.5f, -3.0f);
+            m_orbitDistance = 8.0f; // Suitable viewing distance
+            m_orbitPitch    = 0.2f; // Slight upward angle
+            m_orbitYaw      = 0.0f; // Front view
+
+            // Update camera to reflect orbit settings immediately
+            UpdateCameraFromOrbit();
+        } else {
             std::cerr << "Error: Failed to load model: " << m_modelPath << "\n";
         }
     }
@@ -163,7 +166,7 @@ protected:
     }
 
 private:
-    std::string m_modelPath;
+    std::string                     m_modelPath;
     std::shared_ptr<JzRE::JzCamera> m_camera;
 };
 
@@ -174,7 +177,7 @@ private:
  * @param argv Argument values
  * @return int Exit code
  */
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
     CommandLineArgs args;
 

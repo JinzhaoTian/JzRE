@@ -168,6 +168,16 @@ protected:
      */
     const JzRuntimeFrameData &GetFrameData() const;
 
+protected:
+    /**
+     * @brief Update camera position and rotation from orbit parameters
+     *
+     * Call this method after modifying orbit parameters (m_orbitTarget,
+     * m_orbitYaw, m_orbitPitch, m_orbitDistance) to apply the changes
+     * to the camera immediately.
+     */
+    void UpdateCameraFromOrbit();
+
 private:
     /**
      * @brief Worker thread main function for background processing
@@ -186,6 +196,41 @@ private:
      */
     void _WaitForWorkerComplete();
 
+    /**
+     * @brief Handle default input actions for camera control
+     *
+     * Provides built-in orbit camera controls:
+     * - Left mouse drag: Orbit rotation
+     * - Right mouse drag: Panning
+     * - Scroll wheel: Zoom in/out
+     *
+     * @param deltaTime Time elapsed since the last frame in seconds
+     */
+    void _HandleDefaultInputActions(F32 deltaTime);
+
+    /**
+     * @brief Handle orbit rotation from mouse movement
+     *
+     * @param deltaX Horizontal mouse movement
+     * @param deltaY Vertical mouse movement
+     */
+    void _HandleOrbitRotation(F32 deltaX, F32 deltaY);
+
+    /**
+     * @brief Handle camera panning from mouse movement
+     *
+     * @param deltaX Horizontal mouse movement
+     * @param deltaY Vertical mouse movement
+     */
+    void _HandlePanning(F32 deltaX, F32 deltaY);
+
+    /**
+     * @brief Handle zoom from scroll wheel
+     *
+     * @param scrollY Vertical scroll amount
+     */
+    void _HandleZoom(F32 scrollY);
+
 protected:
     std::unique_ptr<JzResourceManager> m_resourceManager;
     std::unique_ptr<JzWindow>          m_window;
@@ -193,6 +238,25 @@ protected:
     std::unique_ptr<JzInputManager>    m_inputManager;
     std::unique_ptr<JzRHIRenderer>     m_renderer;
     std::shared_ptr<JzScene>           m_scene;
+
+    // Orbit camera control state
+    JzVec3 m_orbitTarget{0.0f, 0.0f, 0.0f}; ///< Point the camera orbits around
+    F32    m_orbitYaw      = 0.0f;          ///< Horizontal orbit angle in radians
+    F32    m_orbitPitch    = 0.3f;          ///< Vertical orbit angle in radians
+    F32    m_orbitDistance = 5.0f;          ///< Distance from target
+
+    // Camera control parameters
+    F32 m_orbitSensitivity = 0.005f; ///< Sensitivity for orbit rotation
+    F32 m_panSensitivity   = 0.002f; ///< Sensitivity for panning
+    F32 m_zoomSensitivity  = 0.5f;   ///< Sensitivity for zooming
+    F32 m_minDistance      = 0.5f;   ///< Minimum orbit distance
+    F32 m_maxDistance      = 100.0f; ///< Maximum orbit distance
+
+    // Mouse tracking state
+    Bool   m_leftMousePressed  = false; ///< Left mouse button state
+    Bool   m_rightMousePressed = false; ///< Right mouse button state
+    Bool   m_firstMouse        = true;  ///< First mouse input flag
+    JzVec2 m_lastMousePos{0.0f, 0.0f};  ///< Last mouse position
 
 private:
     // Worker thread for non-GPU tasks
