@@ -11,10 +11,17 @@
 
 namespace JzRE {
 
-/**
- * @brief Matrix Class
- */
+// Forward declaration
 template <U16 M, U16 N, typename T = F32>
+class JzMatrix;
+
+/**
+ * @brief Base Matrix Class (for arbitrary dimensions)
+ *
+ * This is the generic template for matrices of any dimension.
+ * For dimensions 2x2, 3x3, and 4x4, specialized templates with union-based member access are provided.
+ */
+template <U16 M, U16 N, typename T>
 class JzMatrix {
 public:
     /**
@@ -192,186 +199,632 @@ public:
         return m_Data + i * N;
     }
 
-    // matrix-vector operations
+    /**
+     * @brief Get a pointer to the underlying data array
+     *
+     * @return Pointer to the first element
+     */
+    inline T *Data()
+    {
+        return m_Data;
+    }
 
-    // 4*4 matrices only
+    /**
+     * @brief Get a const pointer to the underlying data array
+     *
+     * @return Const pointer to the first element
+     */
+    inline const T *Data() const
+    {
+        return m_Data;
+    }
 
-    // protected:
+private:
     T m_Data[M * N];
 };
 
-using JzMat2 = JzMatrix<2, 2, F32>;
-using JzMat3 = JzMatrix<3, 3, F32>;
-using JzMat4 = JzMatrix<4, 4, F32>;
-
-class JzMat4x4 : public JzMatrix<4, 4, F32> {
+/**
+ * @brief 2x2 Matrix Specialization with union-based member access
+ *
+ * Provides direct member access via m00, m01, m10, m11.
+ */
+template <typename T>
+class JzMatrix<2, 2, T> {
 public:
-    inline JzMat4x4()
+    union {
+        struct {
+            T m00, m01;
+            T m10, m11;
+        };
+        T data[4];
+    };
+
+    inline JzMatrix() :
+        m00(T(0)), m01(T(0)), m10(T(0)), m11(T(0)) { }
+
+    inline JzMatrix(const T &value) :
+        m00(value), m01(value), m10(value), m11(value) { }
+
+    inline JzMatrix(T m00_, T m01_, T m10_, T m11_) :
+        m00(m00_), m01(m01_), m10(m10_), m11(m11_) { }
+
+    inline JzMatrix(const T *values)
     {
-        std::memset(m_Data, 0, sizeof(m_Data));
-        m_Data[0] = m_Data[5] = m_Data[10] = m_Data[15] = 1.0f;
+        std::memcpy(data, values, sizeof(data));
     }
 
-    inline JzMat4x4(
-        F32 m00, F32 m01, F32 m02, F32 m03,
-        F32 m10, F32 m11, F32 m12, F32 m13,
-        F32 m20, F32 m21, F32 m22, F32 m23,
-        F32 m30, F32 m31, F32 m32, F32 m33)
+    inline JzMatrix(const JzMatrix &other)
     {
-        this->At(0, 0) = m00;
-        this->At(0, 1) = m01;
-        this->At(0, 2) = m02;
-        this->At(0, 3) = m03;
-        this->At(1, 0) = m10;
-        this->At(1, 1) = m11;
-        this->At(1, 2) = m12;
-        this->At(1, 3) = m13;
-        this->At(2, 0) = m20;
-        this->At(2, 1) = m21;
-        this->At(2, 2) = m22;
-        this->At(2, 3) = m23;
-        this->At(3, 0) = m30;
-        this->At(3, 1) = m31;
-        this->At(3, 2) = m32;
-        this->At(3, 3) = m33;
+        std::memcpy(data, other.data, sizeof(data));
     }
 
-    inline JzMat4x4(const JzVector<4, F32> &v0, const JzVector<4, F32> &v1, const JzVector<4, F32> &v2, const JzVector<4, F32> &v3)
+    inline JzMatrix<2, 2, T> &operator=(const JzMatrix<2, 2, T> &other)
     {
-        this->At(0, 0) = v0[0];
-        this->At(0, 1) = v0[1];
-        this->At(0, 2) = v0[2];
-        this->At(0, 3) = v0[3];
-        this->At(1, 0) = v1[0];
-        this->At(1, 1) = v1[1];
-        this->At(1, 2) = v1[2];
-        this->At(1, 3) = v1[3];
-        this->At(2, 0) = v2[0];
-        this->At(2, 1) = v2[1];
-        this->At(2, 2) = v2[2];
-        this->At(2, 3) = v2[3];
-        this->At(3, 0) = v3[0];
-        this->At(3, 1) = v3[1];
-        this->At(3, 2) = v3[2];
-        this->At(3, 3) = v3[3];
+        std::memcpy(data, other.data, sizeof(data));
+        return *this;
     }
 
-    inline JzMat4x4 Mul(const JzMatrix<4, 4, F32> &other) const
+    inline const T &At(U16 i, U16 j) const
     {
-        JzMat4x4 result;
-        for (U16 i = 0; i < 4; ++i) {
-            for (U16 j = 0; j < 4; ++j) {
-                result.At(i, j) = this->At(i, 0) * other.At(0, j) + this->At(i, 1) * other.At(1, j) + this->At(i, 2) * other.At(2, j) + this->At(i, 3) * other.At(3, j);
-            }
-        }
-        return result;
+        return data[i * 2 + j];
     }
 
-    inline JzVector<4, F32> Mul(const JzVector<4, F32> &v) const
+    inline T &At(U16 i, U16 j)
     {
-        JzVec4 result;
-        for (U16 i = 0; i < 4; ++i) {
-            result[i] = this->At(i, 0) * v[0] + this->At(i, 1) * v[1] + this->At(i, 2) * v[2] + this->At(i, 3) * v[3];
-        }
-        return result;
+        return data[i * 2 + j];
     }
 
-    static JzMat4x4 Identity()
+    inline const T &operator()(U16 i, U16 j) const
     {
-        return JzMat4x4(
-            1.0f, 0.0f, 0.0f, 0.0f,
-            0.0f, 1.0f, 0.0f, 0.0f,
-            0.0f, 0.0f, 1.0f, 0.0f,
-            0.0f, 0.0f, 0.0f, 1.0f);
+        return At(i, j);
     }
 
-    static JzMat4x4 Translate(const JzVector<3, F32> &v)
+    inline T &operator()(U16 i, U16 j)
     {
-        return JzMat4x4(
-            1.0f, 0.0f, 0.0f, v[0],
-            0.0f, 1.0f, 0.0f, v[1],
-            0.0f, 0.0f, 1.0f, v[2],
-            0.0f, 0.0f, 0.0f, 1.0f);
+        return At(i, j);
     }
 
-    static JzMat4x4 Scale(const JzVector<3, F32> &v)
+    inline const T *operator[](U16 i) const
     {
-        return JzMat4x4(
-            v[0], 0.0f, 0.0f, 0.0f,
-            0.0f, v[1], 0.0f, 0.0f,
-            0.0f, 0.0f, v[2], 0.0f,
-            0.0f, 0.0f, 0.0f, 1.0f);
+        return data + i * 2;
     }
 
-    static JzMat4x4 RotateX(F32 angle)
+    inline T *operator[](U16 i)
     {
-        F32 c = std::cos(angle);
-        F32 s = std::sin(angle);
-        return JzMat4x4(
-            1.0f, 0.0f, 0.0f, 0.0f,
-            0.0f, c, -s, 0.0f,
-            0.0f, s, c, 0.0f,
-            0.0f, 0.0f, 0.0f, 1.0f);
+        return data + i * 2;
     }
 
-    static JzMat4x4 RotateY(F32 angle)
+    inline JzMatrix<2, 2, T> operator+(const JzMatrix<2, 2, T> &other) const
     {
-        F32 c = std::cos(angle);
-        F32 s = std::sin(angle);
-        return JzMat4x4(
-            c, 0.0f, s, 0.0f,
-            0.0f, 1.0f, 0.0f, 0.0f,
-            -s, 0.0f, c, 0.0f,
-            0.0f, 0.0f, 0.0f, 1.0f);
+        return JzMatrix<2, 2, T>(m00 + other.m00, m01 + other.m01, m10 + other.m10, m11 + other.m11);
     }
 
-    static JzMat4x4 RotateZ(F32 angle)
+    inline JzMatrix<2, 2, T> operator-(const JzMatrix<2, 2, T> &other) const
     {
-        F32 c = std::cos(angle);
-        F32 s = std::sin(angle);
-        return JzMat4x4(
-            c, -s, 0.0f, 0.0f,
-            s, c, 0.0f, 0.0f,
-            0.0f, 0.0f, 1.0f, 0.0f,
-            0.0f, 0.0f, 0.0f, 1.0f);
+        return JzMatrix<2, 2, T>(m00 - other.m00, m01 - other.m01, m10 - other.m10, m11 - other.m11);
     }
 
-    static JzMat4x4 LookAt(const JzVector<3, F32> &eye, const JzVector<3, F32> &center, const JzVector<3, F32> &up)
+    inline JzMatrix<2, 2, T> operator*(const JzMatrix<2, 2, T> &other) const
     {
-        JzVector<3, F32> z = (eye - center).Normalized();
-        JzVector<3, F32> x = up.Cross(z).Normalized();
-        JzVector<3, F32> y = z.Cross(x).Normalized();
-
-        return JzMat4x4(
-            x[0], x[1], x[2], -x.Dot(eye),
-            y[0], y[1], y[2], -y.Dot(eye),
-            z[0], z[1], z[2], -z.Dot(eye),
-            0.0f, 0.0f, 0.0f, 1.0f);
+        return JzMatrix<2, 2, T>(
+            m00 * other.m00 + m01 * other.m10,
+            m00 * other.m01 + m01 * other.m11,
+            m10 * other.m00 + m11 * other.m10,
+            m10 * other.m01 + m11 * other.m11);
     }
 
-    static JzMat4x4 Perspective(F32 fov, F32 aspect, F32 zNear, F32 zFar)
+    inline JzMatrix<2, 2, T> operator*(const T &value) const
     {
-        F32 tanHalfFov = std::tan(fov / 2.0f);
-        F32 zRange     = zNear - zFar;
-        return JzMat4x4(
-            1.0f / (aspect * tanHalfFov), 0.0f, 0.0f, 0.0f,
-            0.0f, 1.0f / tanHalfFov, 0.0f, 0.0f,
-            0.0f, 0.0f, -(-zNear - zFar) / zRange, 2.0f * zFar * zNear / zRange,
-            0.0f, 0.0f, -1.0f, 0.0f);
+        return JzMatrix<2, 2, T>(m00 * value, m01 * value, m10 * value, m11 * value);
     }
 
-    static JzMat4x4 Orthographics(F32 left, F32 right, F32 bottom, F32 top, F32 zNear, F32 zFar)
+    inline JzMatrix<2, 2, T> Transpose() const
     {
-        F32 width  = right - left;
-        F32 height = top - bottom;
-        F32 depth  = zFar - zNear;
+        return JzMatrix<2, 2, T>(m00, m10, m01, m11);
+    }
 
-        return JzMat4x4(
-            2.0f / width, 0.0f, 0.0f, -(right + left) / width,
-            0.0f, 2.0f / height, 0.0f, -(top + bottom) / height,
-            0.0f, 0.0f, -2.0f / depth, -(zFar + zNear) / depth,
-            0.0f, 0.0f, 0.0f, 1.0f);
+    inline T Determinant() const
+    {
+        return m00 * m11 - m01 * m10;
+    }
+
+    inline T *Data()
+    {
+        return data;
+    }
+
+    inline const T *Data() const
+    {
+        return data;
+    }
+
+    static JzMatrix<2, 2, T> Identity()
+    {
+        return JzMatrix<2, 2, T>(T(1), T(0), T(0), T(1));
     }
 };
+
+/**
+ * @brief 3x3 Matrix Specialization with union-based member access
+ *
+ * Provides direct member access via m00, m01, m02, m10, m11, m12, m20, m21, m22.
+ */
+template <typename T>
+class JzMatrix<3, 3, T> {
+public:
+    union {
+        struct {
+            T m00, m01, m02;
+            T m10, m11, m12;
+            T m20, m21, m22;
+        };
+        T data[9];
+    };
+
+    inline JzMatrix() :
+        m00(T(0)), m01(T(0)), m02(T(0)), m10(T(0)), m11(T(0)), m12(T(0)), m20(T(0)), m21(T(0)), m22(T(0)) { }
+
+    inline JzMatrix(const T &value) :
+        m00(value), m01(value), m02(value), m10(value), m11(value), m12(value), m20(value), m21(value), m22(value) { }
+
+    inline JzMatrix(
+        T m00_, T m01_, T m02_,
+        T m10_, T m11_, T m12_,
+        T m20_, T m21_, T m22_) :
+        m00(m00_), m01(m01_), m02(m02_), m10(m10_), m11(m11_), m12(m12_), m20(m20_), m21(m21_), m22(m22_)
+    {
+    }
+
+    inline JzMatrix(const T *values)
+    {
+        std::memcpy(data, values, sizeof(data));
+    }
+
+    inline JzMatrix(const JzMatrix &other)
+    {
+        std::memcpy(data, other.data, sizeof(data));
+    }
+
+    inline JzMatrix<3, 3, T> &operator=(const JzMatrix<3, 3, T> &other)
+    {
+        std::memcpy(data, other.data, sizeof(data));
+        return *this;
+    }
+
+    inline const T &At(U16 i, U16 j) const
+    {
+        return data[i * 3 + j];
+    }
+
+    inline T &At(U16 i, U16 j)
+    {
+        return data[i * 3 + j];
+    }
+
+    inline const T &operator()(U16 i, U16 j) const
+    {
+        return At(i, j);
+    }
+
+    inline T &operator()(U16 i, U16 j)
+    {
+        return At(i, j);
+    }
+
+    inline const T *operator[](U16 i) const
+    {
+        return data + i * 3;
+    }
+
+    inline T *operator[](U16 i)
+    {
+        return data + i * 3;
+    }
+
+    inline JzMatrix<3, 3, T> operator+(const JzMatrix<3, 3, T> &other) const
+    {
+        return JzMatrix<3, 3, T>(
+            m00 + other.m00, m01 + other.m01, m02 + other.m02,
+            m10 + other.m10, m11 + other.m11, m12 + other.m12,
+            m20 + other.m20, m21 + other.m21, m22 + other.m22);
+    }
+
+    inline JzMatrix<3, 3, T> operator-(const JzMatrix<3, 3, T> &other) const
+    {
+        return JzMatrix<3, 3, T>(
+            m00 - other.m00, m01 - other.m01, m02 - other.m02,
+            m10 - other.m10, m11 - other.m11, m12 - other.m12,
+            m20 - other.m20, m21 - other.m21, m22 - other.m22);
+    }
+
+    inline JzMatrix<3, 3, T> operator*(const JzMatrix<3, 3, T> &other) const
+    {
+        return JzMatrix<3, 3, T>(
+            m00 * other.m00 + m01 * other.m10 + m02 * other.m20,
+            m00 * other.m01 + m01 * other.m11 + m02 * other.m21,
+            m00 * other.m02 + m01 * other.m12 + m02 * other.m22,
+            m10 * other.m00 + m11 * other.m10 + m12 * other.m20,
+            m10 * other.m01 + m11 * other.m11 + m12 * other.m21,
+            m10 * other.m02 + m11 * other.m12 + m12 * other.m22,
+            m20 * other.m00 + m21 * other.m10 + m22 * other.m20,
+            m20 * other.m01 + m21 * other.m11 + m22 * other.m21,
+            m20 * other.m02 + m21 * other.m12 + m22 * other.m22);
+    }
+
+    inline JzMatrix<3, 3, T> operator*(const T &value) const
+    {
+        return JzMatrix<3, 3, T>(
+            m00 * value, m01 * value, m02 * value,
+            m10 * value, m11 * value, m12 * value,
+            m20 * value, m21 * value, m22 * value);
+    }
+
+    inline JzMatrix<3, 3, T> Transpose() const
+    {
+        return JzMatrix<3, 3, T>(
+            m00, m10, m20,
+            m01, m11, m21,
+            m02, m12, m22);
+    }
+
+    inline T Determinant() const
+    {
+        return m00 * (m11 * m22 - m12 * m21) - m01 * (m10 * m22 - m12 * m20) + m02 * (m10 * m21 - m11 * m20);
+    }
+
+    inline T *Data()
+    {
+        return data;
+    }
+
+    inline const T *Data() const
+    {
+        return data;
+    }
+
+    static JzMatrix<3, 3, T> Identity()
+    {
+        return JzMatrix<3, 3, T>(
+            T(1), T(0), T(0),
+            T(0), T(1), T(0),
+            T(0), T(0), T(1));
+    }
+};
+
+/**
+ * @brief 4x4 Matrix Specialization with union-based member access
+ *
+ * Provides direct member access via m00, m01, m02, m03, m10, m11, m12, m13, etc.
+ * Also provides row accessors: row0, row1, row2, row3.
+ */
+template <typename T>
+class JzMatrix<4, 4, T> {
+public:
+    union {
+        struct {
+            T m00, m01, m02, m03;
+            T m10, m11, m12, m13;
+            T m20, m21, m22, m23;
+            T m30, m31, m32, m33;
+        };
+        T data[16];
+    };
+
+    inline JzMatrix() :
+        m00(T(0)), m01(T(0)), m02(T(0)), m03(T(0)), m10(T(0)), m11(T(0)), m12(T(0)), m13(T(0)), m20(T(0)), m21(T(0)), m22(T(0)), m23(T(0)), m30(T(0)), m31(T(0)), m32(T(0)), m33(T(0)) { }
+
+    inline JzMatrix(const T &value) :
+        m00(value), m01(value), m02(value), m03(value), m10(value), m11(value), m12(value), m13(value), m20(value), m21(value), m22(value), m23(value), m30(value), m31(value), m32(value), m33(value) { }
+
+    inline JzMatrix(
+        T m00_, T m01_, T m02_, T m03_,
+        T m10_, T m11_, T m12_, T m13_,
+        T m20_, T m21_, T m22_, T m23_,
+        T m30_, T m31_, T m32_, T m33_) :
+        m00(m00_), m01(m01_), m02(m02_), m03(m03_), m10(m10_), m11(m11_), m12(m12_), m13(m13_), m20(m20_), m21(m21_), m22(m22_), m23(m23_), m30(m30_), m31(m31_), m32(m32_), m33(m33_)
+    {
+    }
+
+    inline JzMatrix(const T *values)
+    {
+        std::memcpy(data, values, sizeof(data));
+    }
+
+    inline JzMatrix(const JzMatrix &other)
+    {
+        std::memcpy(data, other.data, sizeof(data));
+    }
+
+    /**
+     * @brief Construct from four row vectors
+     */
+    inline JzMatrix(const JzVector<4, T> &v0, const JzVector<4, T> &v1, const JzVector<4, T> &v2, const JzVector<4, T> &v3)
+    {
+        m00 = v0.x;
+        m01 = v0.y;
+        m02 = v0.z;
+        m03 = v0.w;
+        m10 = v1.x;
+        m11 = v1.y;
+        m12 = v1.z;
+        m13 = v1.w;
+        m20 = v2.x;
+        m21 = v2.y;
+        m22 = v2.z;
+        m23 = v2.w;
+        m30 = v3.x;
+        m31 = v3.y;
+        m32 = v3.z;
+        m33 = v3.w;
+    }
+
+    inline JzMatrix<4, 4, T> &operator=(const JzMatrix<4, 4, T> &other)
+    {
+        std::memcpy(data, other.data, sizeof(data));
+        return *this;
+    }
+
+    inline const T &At(U16 i, U16 j) const
+    {
+        return data[i * 4 + j];
+    }
+
+    inline T &At(U16 i, U16 j)
+    {
+        return data[i * 4 + j];
+    }
+
+    inline const T &operator()(U16 i, U16 j) const
+    {
+        return At(i, j);
+    }
+
+    inline T &operator()(U16 i, U16 j)
+    {
+        return At(i, j);
+    }
+
+    inline const T *operator[](U16 i) const
+    {
+        return data + i * 4;
+    }
+
+    inline T *operator[](U16 i)
+    {
+        return data + i * 4;
+    }
+
+    inline JzMatrix<4, 4, T> &operator+=(const JzMatrix<4, 4, T> &other)
+    {
+        for (U16 i = 0; i < 16; ++i) {
+            data[i] += other.data[i];
+        }
+        return *this;
+    }
+
+    inline JzMatrix<4, 4, T> &operator-=(const JzMatrix<4, 4, T> &other)
+    {
+        for (U16 i = 0; i < 16; ++i) {
+            data[i] -= other.data[i];
+        }
+        return *this;
+    }
+
+    inline JzMatrix<4, 4, T> &operator*=(const T &value)
+    {
+        for (U16 i = 0; i < 16; ++i) {
+            data[i] *= value;
+        }
+        return *this;
+    }
+
+    inline JzMatrix<4, 4, T> &operator/=(const T &value)
+    {
+        for (U16 i = 0; i < 16; ++i) {
+            data[i] /= value;
+        }
+        return *this;
+    }
+
+    inline JzMatrix<4, 4, T> operator+(const JzMatrix<4, 4, T> &other) const
+    {
+        JzMatrix<4, 4, T> result  = *this;
+        result                   += other;
+        return result;
+    }
+
+    inline JzMatrix<4, 4, T> operator-(const JzMatrix<4, 4, T> &other) const
+    {
+        JzMatrix<4, 4, T> result  = *this;
+        result                   -= other;
+        return result;
+    }
+
+    inline JzMatrix<4, 4, T> operator*(const JzMatrix<4, 4, T> &other) const
+    {
+        return JzMatrix<4, 4, T>(
+            m00 * other.m00 + m01 * other.m10 + m02 * other.m20 + m03 * other.m30,
+            m00 * other.m01 + m01 * other.m11 + m02 * other.m21 + m03 * other.m31,
+            m00 * other.m02 + m01 * other.m12 + m02 * other.m22 + m03 * other.m32,
+            m00 * other.m03 + m01 * other.m13 + m02 * other.m23 + m03 * other.m33,
+            m10 * other.m00 + m11 * other.m10 + m12 * other.m20 + m13 * other.m30,
+            m10 * other.m01 + m11 * other.m11 + m12 * other.m21 + m13 * other.m31,
+            m10 * other.m02 + m11 * other.m12 + m12 * other.m22 + m13 * other.m32,
+            m10 * other.m03 + m11 * other.m13 + m12 * other.m23 + m13 * other.m33,
+            m20 * other.m00 + m21 * other.m10 + m22 * other.m20 + m23 * other.m30,
+            m20 * other.m01 + m21 * other.m11 + m22 * other.m21 + m23 * other.m31,
+            m20 * other.m02 + m21 * other.m12 + m22 * other.m22 + m23 * other.m32,
+            m20 * other.m03 + m21 * other.m13 + m22 * other.m23 + m23 * other.m33,
+            m30 * other.m00 + m31 * other.m10 + m32 * other.m20 + m33 * other.m30,
+            m30 * other.m01 + m31 * other.m11 + m32 * other.m21 + m33 * other.m31,
+            m30 * other.m02 + m31 * other.m12 + m32 * other.m22 + m33 * other.m32,
+            m30 * other.m03 + m31 * other.m13 + m32 * other.m23 + m33 * other.m33);
+    }
+
+    /**
+     * @brief Matrix-vector multiplication
+     */
+    inline JzVector<4, T> operator*(const JzVector<4, T> &v) const
+    {
+        return JzVector<4, T>(
+            m00 * v.x + m01 * v.y + m02 * v.z + m03 * v.w,
+            m10 * v.x + m11 * v.y + m12 * v.z + m13 * v.w,
+            m20 * v.x + m21 * v.y + m22 * v.z + m23 * v.w,
+            m30 * v.x + m31 * v.y + m32 * v.z + m33 * v.w);
+    }
+
+    inline JzMatrix<4, 4, T> operator*(const T &value) const
+    {
+        JzMatrix<4, 4, T> result  = *this;
+        result                   *= value;
+        return result;
+    }
+
+    inline JzMatrix<4, 4, T> operator/(const T &value) const
+    {
+        JzMatrix<4, 4, T> result  = *this;
+        result                   /= value;
+        return result;
+    }
+
+    inline JzMatrix<4, 4, T> Transpose() const
+    {
+        return JzMatrix<4, 4, T>(
+            m00, m10, m20, m30,
+            m01, m11, m21, m31,
+            m02, m12, m22, m32,
+            m03, m13, m23, m33);
+    }
+
+    /**
+     * @brief Get row as a vector
+     */
+    inline JzVector<4, T> Row(U16 i) const
+    {
+        return JzVector<4, T>(data[i * 4], data[i * 4 + 1], data[i * 4 + 2], data[i * 4 + 3]);
+    }
+
+    /**
+     * @brief Get column as a vector
+     */
+    inline JzVector<4, T> Column(U16 j) const
+    {
+        return JzVector<4, T>(data[j], data[4 + j], data[8 + j], data[12 + j]);
+    }
+
+    inline T *Data()
+    {
+        return data;
+    }
+
+    inline const T *Data() const
+    {
+        return data;
+    }
+
+    static JzMatrix<4, 4, T> Identity()
+    {
+        return JzMatrix<4, 4, T>(
+            T(1), T(0), T(0), T(0),
+            T(0), T(1), T(0), T(0),
+            T(0), T(0), T(1), T(0),
+            T(0), T(0), T(0), T(1));
+    }
+
+    static JzMatrix<4, 4, T> Translate(const JzVector<3, T> &v)
+    {
+        return JzMatrix<4, 4, T>(
+            T(1), T(0), T(0), v.x,
+            T(0), T(1), T(0), v.y,
+            T(0), T(0), T(1), v.z,
+            T(0), T(0), T(0), T(1));
+    }
+
+    static JzMatrix<4, 4, T> Scale(const JzVector<3, T> &v)
+    {
+        return JzMatrix<4, 4, T>(
+            v.x, T(0), T(0), T(0),
+            T(0), v.y, T(0), T(0),
+            T(0), T(0), v.z, T(0),
+            T(0), T(0), T(0), T(1));
+    }
+
+    static JzMatrix<4, 4, T> RotateX(T angle)
+    {
+        T c = std::cos(angle);
+        T s = std::sin(angle);
+        return JzMatrix<4, 4, T>(
+            T(1), T(0), T(0), T(0),
+            T(0), c, -s, T(0),
+            T(0), s, c, T(0),
+            T(0), T(0), T(0), T(1));
+    }
+
+    static JzMatrix<4, 4, T> RotateY(T angle)
+    {
+        T c = std::cos(angle);
+        T s = std::sin(angle);
+        return JzMatrix<4, 4, T>(
+            c, T(0), s, T(0),
+            T(0), T(1), T(0), T(0),
+            -s, T(0), c, T(0),
+            T(0), T(0), T(0), T(1));
+    }
+
+    static JzMatrix<4, 4, T> RotateZ(T angle)
+    {
+        T c = std::cos(angle);
+        T s = std::sin(angle);
+        return JzMatrix<4, 4, T>(
+            c, -s, T(0), T(0),
+            s, c, T(0), T(0),
+            T(0), T(0), T(1), T(0),
+            T(0), T(0), T(0), T(1));
+    }
+
+    static JzMatrix<4, 4, T> LookAt(const JzVector<3, T> &eye, const JzVector<3, T> &center, const JzVector<3, T> &up)
+    {
+        JzVector<3, T> z = (eye - center).Normalized();
+        JzVector<3, T> x = up.Cross(z).Normalized();
+        JzVector<3, T> y = z.Cross(x).Normalized();
+
+        return JzMatrix<4, 4, T>(
+            x.x, x.y, x.z, -x.Dot(eye),
+            y.x, y.y, y.z, -y.Dot(eye),
+            z.x, z.y, z.z, -z.Dot(eye),
+            T(0), T(0), T(0), T(1));
+    }
+
+    static JzMatrix<4, 4, T> Perspective(T fov, T aspect, T zNear, T zFar)
+    {
+        T tanHalfFov = std::tan(fov / T(2));
+        T zRange     = zNear - zFar;
+        return JzMatrix<4, 4, T>(
+            T(1) / (aspect * tanHalfFov), T(0), T(0), T(0),
+            T(0), T(1) / tanHalfFov, T(0), T(0),
+            T(0), T(0), -(-zNear - zFar) / zRange, T(2) * zFar * zNear / zRange,
+            T(0), T(0), T(-1), T(0));
+    }
+
+    static JzMatrix<4, 4, T> Orthographic(T left, T right, T bottom, T top, T zNear, T zFar)
+    {
+        T width  = right - left;
+        T height = top - bottom;
+        T depth  = zFar - zNear;
+
+        return JzMatrix<4, 4, T>(
+            T(2) / width, T(0), T(0), -(right + left) / width,
+            T(0), T(2) / height, T(0), -(top + bottom) / height,
+            T(0), T(0), T(-2) / depth, -(zFar + zNear) / depth,
+            T(0), T(0), T(0), T(1));
+    }
+};
+
+using JzMat2   = JzMatrix<2, 2, F32>;
+using JzMat3   = JzMatrix<3, 3, F32>;
+using JzMat4   = JzMatrix<4, 4, F32>;
+using JzMat2x2 = JzMatrix<2, 2, F32>;
+using JzMat3x3 = JzMatrix<3, 3, F32>;
+using JzMat4x4 = JzMatrix<4, 4, F32>;
 
 } // namespace JzRE
