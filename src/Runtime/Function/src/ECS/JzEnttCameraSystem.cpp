@@ -51,8 +51,8 @@ void JzEnttCameraSystem::Update(JzEnttWorld &world, F32 delta)
 void JzEnttCameraSystem::UpdateCameraMatrices(JzEnttCameraComponent &camera)
 {
     // Get rotation (stored as pitch, yaw, roll, unused in x, y, z, w)
-    F32 pitch = camera.rotation.x();
-    F32 yaw   = camera.rotation.y();
+    F32 pitch = camera.rotation.x;
+    F32 yaw   = camera.rotation.y;
 
     // Calculate forward direction from pitch and yaw
     F32 cosPitch = std::cos(pitch);
@@ -72,13 +72,13 @@ void JzEnttCameraSystem::UpdateCameraMatrices(JzEnttCameraComponent &camera)
     camera.viewMatrix = JzMat4x4::LookAt(camera.position, cameraTarget, cameraUp);
 
     // Compute projection matrix
-    F32 fovRadians        = camera.fov * 3.14159265358979323846f / 180.0f;
+    F32 fovRadians = camera.fov * 3.14159265358979323846f / 180.0f;
     camera.projectionMatrix =
         JzMat4x4::Perspective(fovRadians, camera.aspect, camera.nearPlane, camera.farPlane);
 }
 
 void JzEnttCameraSystem::HandleOrbitController(JzEnttCameraComponent          &camera,
-                                                JzEnttOrbitControllerComponent &orbit)
+                                               JzEnttOrbitControllerComponent &orbit)
 {
     // Get input manager from service container
     JzInputManager *inputManagerPtr = nullptr;
@@ -97,17 +97,15 @@ void JzEnttCameraSystem::HandleOrbitController(JzEnttCameraComponent          &c
     F32 deltaX = 0.0f;
     F32 deltaY = 0.0f;
     if (!orbit.firstMouse) {
-        deltaX = currentMousePos.x() - orbit.lastMousePos.x();
-        deltaY = currentMousePos.y() - orbit.lastMousePos.y();
+        deltaX = currentMousePos.x - orbit.lastMousePos.x;
+        deltaY = currentMousePos.y - orbit.lastMousePos.y;
     }
 
     // Track button states
     Bool leftPressed =
-        inputManager.GetMouseButtonState(JzEInputMouseButton::MOUSE_BUTTON_LEFT) ==
-        JzEInputMouseButtonState::MOUSE_DOWN;
+        inputManager.GetMouseButtonState(JzEInputMouseButton::MOUSE_BUTTON_LEFT) == JzEInputMouseButtonState::MOUSE_DOWN;
     Bool rightPressed =
-        inputManager.GetMouseButtonState(JzEInputMouseButton::MOUSE_BUTTON_RIGHT) ==
-        JzEInputMouseButtonState::MOUSE_DOWN;
+        inputManager.GetMouseButtonState(JzEInputMouseButton::MOUSE_BUTTON_RIGHT) == JzEInputMouseButtonState::MOUSE_DOWN;
 
     // Handle left mouse button - Orbit rotation
     if (leftPressed) {
@@ -135,8 +133,8 @@ void JzEnttCameraSystem::HandleOrbitController(JzEnttCameraComponent          &c
 
     // Handle scroll wheel - Zoom
     JzVec2 scroll = inputManager.GetMouseScroll();
-    if (std::abs(scroll.y()) > 0.001f) {
-        HandleZoom(orbit, scroll.y());
+    if (std::abs(scroll.y) > 0.001f) {
+        HandleZoom(orbit, scroll.y);
     }
 
     // Update last mouse position
@@ -148,10 +146,10 @@ void JzEnttCameraSystem::HandleOrbitController(JzEnttCameraComponent          &c
 }
 
 void JzEnttCameraSystem::HandleOrbitRotation(JzEnttOrbitControllerComponent &orbit, F32 deltaX,
-                                              F32 deltaY)
+                                             F32 deltaY)
 {
     // Update yaw and pitch based on mouse movement (drag-object style)
-    orbit.yaw -= deltaX * orbit.orbitSensitivity;
+    orbit.yaw   -= deltaX * orbit.orbitSensitivity;
     orbit.pitch -= deltaY * orbit.orbitSensitivity;
 
     // Clamp pitch to avoid gimbal lock (between -89 and 89 degrees)
@@ -160,7 +158,7 @@ void JzEnttCameraSystem::HandleOrbitRotation(JzEnttOrbitControllerComponent &orb
 }
 
 void JzEnttCameraSystem::HandlePanning(JzEnttOrbitControllerComponent &orbit, F32 deltaX,
-                                        F32 deltaY)
+                                       F32 deltaY)
 {
     // Calculate the right and up vectors in world space based on current orientation
     F32 cosYaw   = std::cos(orbit.yaw);
@@ -178,9 +176,9 @@ void JzEnttCameraSystem::HandlePanning(JzEnttOrbitControllerComponent &orbit, F3
     F32 panScale = orbit.distance * orbit.panSensitivity;
 
     // Move the target point
-    orbit.target.x() -= right.x() * deltaX * panScale + up.x() * deltaY * panScale;
-    orbit.target.y() += up.y() * deltaY * panScale;
-    orbit.target.z() -= right.z() * deltaX * panScale + up.z() * deltaY * panScale;
+    orbit.target.x -= right.x * deltaX * panScale + up.x * deltaY * panScale;
+    orbit.target.y += up.y * deltaY * panScale;
+    orbit.target.z -= right.z * deltaX * panScale + up.z * deltaY * panScale;
 }
 
 void JzEnttCameraSystem::HandleZoom(JzEnttOrbitControllerComponent &orbit, F32 scrollY)
@@ -193,7 +191,7 @@ void JzEnttCameraSystem::HandleZoom(JzEnttOrbitControllerComponent &orbit, F32 s
 }
 
 void JzEnttCameraSystem::UpdateCameraFromOrbit(JzEnttCameraComponent          &camera,
-                                                JzEnttOrbitControllerComponent &orbit)
+                                               JzEnttOrbitControllerComponent &orbit)
 {
     // Calculate camera position using spherical coordinates
     F32 cosPitch = std::cos(orbit.pitch);
@@ -201,18 +199,18 @@ void JzEnttCameraSystem::UpdateCameraFromOrbit(JzEnttCameraComponent          &c
     F32 cosYaw   = std::cos(orbit.yaw);
     F32 sinYaw   = std::sin(orbit.yaw);
 
-    camera.position.x() = orbit.target.x() + orbit.distance * cosPitch * sinYaw;
-    camera.position.y() = orbit.target.y() + orbit.distance * sinPitch;
-    camera.position.z() = orbit.target.z() + orbit.distance * cosPitch * cosYaw;
+    camera.position.x = orbit.target.x + orbit.distance * cosPitch * sinYaw;
+    camera.position.y = orbit.target.y + orbit.distance * sinPitch;
+    camera.position.z = orbit.target.z + orbit.distance * cosPitch * cosYaw;
 
     // Set camera rotation to look at target
     // Camera position uses: x = sin(yaw), z = cos(yaw)
     // So at yaw=0, camera is at +Z looking toward target at origin
     // Add PI to yaw so the forward vector points toward target
-    camera.rotation.x() = -orbit.pitch;
-    camera.rotation.y() = orbit.yaw + 3.14159265358979323846f;
-    camera.rotation.z() = 0.0f;
-    camera.rotation.w() = 0.0f;
+    camera.rotation.x = -orbit.pitch;
+    camera.rotation.y = orbit.yaw + 3.14159265358979323846f;
+    camera.rotation.z = 0.0f;
+    camera.rotation.w = 0.0f;
 }
 
 } // namespace JzRE

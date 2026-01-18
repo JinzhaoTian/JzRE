@@ -309,7 +309,7 @@ void JzRE::JzREHubPanel::Draw()
 
     const JzVec2 contentSize = _CalculateContentSize();
 
-    JzVec2 padding = {std::max((panelSize.x() - contentSize.x()) * 0.5f, 0.0f), 50.f};
+    JzVec2 padding = {std::max((panelSize.x - contentSize.x) * 0.5f, 0.0f), 50.f};
 
     ImGui::PushStyleColor(ImGuiCol_WindowBg, JzConverter::HexToImVec4(m_backgroudColor));
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, JzConverter::ToImVec2(padding));

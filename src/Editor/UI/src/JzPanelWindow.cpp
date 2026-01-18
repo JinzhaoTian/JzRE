@@ -229,10 +229,10 @@ JzRE::JzVec2 JzRE::JzPanelWindow::CalculatePositionAlignmentOffset(JzRE::Bool p_
             // No offset needed for left alignment
             break;
         case JzEHorizontalAlignment::CENTER:
-            result.x() -= m_size.x() / 2.0f;
+            result.x -= m_size.x / 2.0f;
             break;
         case JzEHorizontalAlignment::RIGHT:
-            result.x() -= m_size.x();
+            result.x -= m_size.x;
             break;
     }
 
@@ -241,10 +241,10 @@ JzRE::JzVec2 JzRE::JzPanelWindow::CalculatePositionAlignmentOffset(JzRE::Bool p_
             // No offset needed for top alignment
             break;
         case JzEVerticalAlignment::MIDDLE:
-            result.y() -= m_size.y() / 2.0f;
+            result.y -= m_size.y / 2.0f;
             break;
         case JzEVerticalAlignment::BOTTOM:
-            result.y() -= m_size.y();
+            result.y -= m_size.y;
             break;
     }
 
@@ -253,14 +253,14 @@ JzRE::JzVec2 JzRE::JzPanelWindow::CalculatePositionAlignmentOffset(JzRE::Bool p_
 
 void JzRE::JzPanelWindow::UpdatePosition()
 {
-    if (m_defaultPosition.x() != -1.f && m_defaultPosition.y() != 1.f) {
+    if (m_defaultPosition.x != -1.f && m_defaultPosition.y != 1.f) {
         JzVec2 offsettedDefaultPos = m_defaultPosition + CalculatePositionAlignmentOffset(true);
         ImGui::SetWindowPos(JzRE::JzConverter::ToImVec2(offsettedDefaultPos), ImGuiCond_Once);
     }
 
     if (m_positionChanged || m_alignmentChanged) {
         JzVec2 offset = CalculatePositionAlignmentOffset(false);
-        JzVec2 offsetPos(m_position.x() + offset.x(), m_position.y() + offset.y());
+        JzVec2 offsetPos(m_position.x + offset.x, m_position.y + offset.y);
         ImGui::SetWindowPos(JzConverter::ToImVec2(offsetPos), ImGuiCond_Always);
         m_positionChanged  = false;
         m_alignmentChanged = false;

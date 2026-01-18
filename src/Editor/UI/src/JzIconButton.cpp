@@ -38,10 +38,10 @@ void JzRE::JzIconButton::_Draw_Impl()
     const Bool isHovered = ImGui::IsItemHovered();
 
     const ImVec2 buttonMin  = ImGui::GetItemRectMin();
-    const ImVec2 iconMinPos = ImVec2(buttonMin.x + (buttonSize.x() - iconSize.x()) * 0.5f,
-                                     buttonMin.y + (buttonSize.y() - iconSize.y()) * 0.5f);
-    const ImVec2 iconMaxPos = ImVec2(iconMinPos.x + iconSize.x(),
-                                     iconMinPos.y + iconSize.y());
+    const ImVec2 iconMinPos = ImVec2(buttonMin.x + (buttonSize.x - iconSize.x) * 0.5f,
+                                     buttonMin.y + (buttonSize.y - iconSize.y) * 0.5f);
+    const ImVec2 iconMaxPos = ImVec2(iconMinPos.x + iconSize.x,
+                                     iconMinPos.y + iconSize.y);
 
     if (m_iconTexture) {
         String finalIconColor = iconIdleColor;

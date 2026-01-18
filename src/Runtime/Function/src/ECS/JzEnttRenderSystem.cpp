@@ -114,8 +114,8 @@ void JzEnttRenderSystem::BlitToScreen(U32 screenWidth, U32 screenHeight)
     }
 
     auto &device = JzServiceContainer::Get<JzDevice>();
-    device.BlitFramebufferToScreen(m_framebuffer, static_cast<U32>(m_frameSize.x()),
-                                   static_cast<U32>(m_frameSize.y()), screenWidth, screenHeight);
+    device.BlitFramebufferToScreen(m_framebuffer, static_cast<U32>(m_frameSize.x),
+                                   static_cast<U32>(m_frameSize.y), screenWidth, screenHeight);
 }
 
 Bool JzEnttRenderSystem::IsInitialized() const
@@ -137,8 +137,8 @@ Bool JzEnttRenderSystem::CreateFramebuffer()
     JzGPUTextureObjectDesc colorDesc;
     colorDesc.type      = JzETextureResourceType::Texture2D;
     colorDesc.format    = JzETextureResourceFormat::RGBA8;
-    colorDesc.width     = static_cast<U32>(m_frameSize.x());
-    colorDesc.height    = static_cast<U32>(m_frameSize.y());
+    colorDesc.width     = static_cast<U32>(m_frameSize.x);
+    colorDesc.height    = static_cast<U32>(m_frameSize.y);
     colorDesc.debugName = "ECSRendererColor";
     m_colorTexture      = device.CreateTexture(colorDesc);
 
@@ -150,8 +150,8 @@ Bool JzEnttRenderSystem::CreateFramebuffer()
     JzGPUTextureObjectDesc depthDesc;
     depthDesc.type      = JzETextureResourceType::Texture2D;
     depthDesc.format    = JzETextureResourceFormat::Depth24;
-    depthDesc.width     = static_cast<U32>(m_frameSize.x());
-    depthDesc.height    = static_cast<U32>(m_frameSize.y());
+    depthDesc.width     = static_cast<U32>(m_frameSize.x);
+    depthDesc.height    = static_cast<U32>(m_frameSize.y);
     depthDesc.debugName = "ECSRendererDepth";
     m_depthTexture      = device.CreateTexture(depthDesc);
 
@@ -271,8 +271,8 @@ void JzEnttRenderSystem::SetupViewportAndClear()
     JzViewport viewport;
     viewport.x        = 0.0f;
     viewport.y        = 0.0f;
-    viewport.width    = static_cast<F32>(m_frameSize.x());
-    viewport.height   = static_cast<F32>(m_frameSize.y());
+    viewport.width    = static_cast<F32>(m_frameSize.x);
+    viewport.height   = static_cast<F32>(m_frameSize.y);
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
     device.SetViewport(viewport);
@@ -288,9 +288,9 @@ void JzEnttRenderSystem::SetupViewportAndClear()
     clearParams.clearColor   = true;
     clearParams.clearDepth   = true;
     clearParams.clearStencil = false;
-    clearParams.colorR       = clearColor.x();
-    clearParams.colorG       = clearColor.y();
-    clearParams.colorB       = clearColor.z();
+    clearParams.colorR       = clearColor.x;
+    clearParams.colorG       = clearColor.y;
+    clearParams.colorB       = clearColor.z;
     clearParams.colorA       = 1.0f;
     clearParams.depth        = 1.0f;
     clearParams.stencil      = 0;
@@ -362,9 +362,9 @@ void JzEnttRenderSystem::RenderEntities(JzEnttWorld &world)
         // TODO: Compute full model matrix from position, rotation, scale
         JzMat4 entityModelMatrix = JzMat4x4::Identity();
         // For now just use translation
-        entityModelMatrix(0, 3) = transform.position.x();
-        entityModelMatrix(1, 3) = transform.position.y();
-        entityModelMatrix(2, 3) = transform.position.z();
+        entityModelMatrix(0, 3) = transform.position.x;
+        entityModelMatrix(1, 3) = transform.position.y;
+        entityModelMatrix(2, 3) = transform.position.z;
         m_defaultPipeline->SetUniform("model", entityModelMatrix);
 
         // Set material uniforms

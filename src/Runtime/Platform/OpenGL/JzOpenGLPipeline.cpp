@@ -71,7 +71,7 @@ void JzRE::JzOpenGLPipeline::SetUniform(const JzRE::String &name, const JzRE::Jz
 {
     GLint location = GetUniformLocation(name);
     if (location != -1) {
-        glUniform2fv(location, 1, value.m_Data);
+        glUniform2fv(location, 1, value.Data());
     }
 }
 
@@ -79,7 +79,7 @@ void JzRE::JzOpenGLPipeline::SetUniform(const JzRE::String &name, const JzRE::Jz
 {
     GLint location = GetUniformLocation(name);
     if (location != -1) {
-        glUniform3fv(location, 1, value.m_Data);
+        glUniform3fv(location, 1, value.Data());
     }
 }
 
@@ -87,7 +87,7 @@ void JzRE::JzOpenGLPipeline::SetUniform(const JzRE::String &name, const JzRE::Jz
 {
     GLint location = GetUniformLocation(name);
     if (location != -1) {
-        glUniform4fv(location, 1, value.m_Data);
+        glUniform4fv(location, 1, value.Data());
     }
 }
 

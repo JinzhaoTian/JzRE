@@ -42,8 +42,8 @@ void JzRE::JzSceneView::Update(JzRE::F32 deltaTime)
     F32 deltaX = 0.0f;
     F32 deltaY = 0.0f;
     if (!m_firstMouse) {
-        deltaX = currentMousePos.x() - m_lastMousePos.x();
-        deltaY = currentMousePos.y() - m_lastMousePos.y();
+        deltaX = currentMousePos.x - m_lastMousePos.x;
+        deltaY = currentMousePos.y - m_lastMousePos.y;
     }
 
     // Track button states - use GetMouseButtonState for real-time GLFW state
@@ -81,8 +81,8 @@ void JzRE::JzSceneView::Update(JzRE::F32 deltaTime)
 
     // Handle scroll wheel - Zoom
     JzVec2 scroll = inputManager.GetMouseScroll();
-    if (std::abs(scroll.y()) > 0.001f) {
-        HandleZoom(scroll.y());
+    if (std::abs(scroll.y) > 0.001f) {
+        HandleZoom(scroll.y);
     }
 
     // Update last mouse position
@@ -157,9 +157,9 @@ void JzRE::JzSceneView::HandlePanning(JzRE::F32 deltaX, JzRE::F32 deltaY)
     F32 panScale = m_orbitDistance * m_panSensitivity;
 
     // Move the target point
-    m_orbitTarget.x() -= right.x() * deltaX * panScale + up.x() * deltaY * panScale;
-    m_orbitTarget.y() += up.y() * deltaY * panScale;
-    m_orbitTarget.z() -= right.z() * deltaX * panScale + up.z() * deltaY * panScale;
+    m_orbitTarget.x -= right.x * deltaX * panScale + up.x * deltaY * panScale;
+    m_orbitTarget.y += up.y * deltaY * panScale;
+    m_orbitTarget.z -= right.z * deltaX * panScale + up.z * deltaY * panScale;
 
     // Update camera position
     UpdateCameraFromOrbit();
@@ -209,9 +209,9 @@ void JzRE::JzSceneView::UpdateCameraFromOrbit()
     F32 sinYaw   = std::sin(m_orbitYaw);
 
     JzVec3 cameraPos;
-    cameraPos.x() = m_orbitTarget.x() + m_orbitDistance * cosPitch * sinYaw;
-    cameraPos.y() = m_orbitTarget.y() + m_orbitDistance * sinPitch;
-    cameraPos.z() = m_orbitTarget.z() + m_orbitDistance * cosPitch * cosYaw;
+    cameraPos.x = m_orbitTarget.x + m_orbitDistance * cosPitch * sinYaw;
+    cameraPos.y = m_orbitTarget.y + m_orbitDistance * sinPitch;
+    cameraPos.z = m_orbitTarget.z + m_orbitDistance * cosPitch * cosYaw;
 
     // Get the ECS world and update camera components
     auto &world = JzServiceContainer::Get<JzEnttWorld>();
@@ -222,11 +222,11 @@ void JzRE::JzSceneView::UpdateCameraFromOrbit()
         auto &camera = world.GetComponent<JzEnttCameraComponent>(entity);
         if (camera.isMainCamera) {
             // Update camera position and rotation
-            camera.position     = cameraPos;
-            camera.rotation.x() = -m_orbitPitch; // Pitch
-            camera.rotation.y() = m_orbitYaw;    // Yaw
-            camera.rotation.z() = 0.0f;          // Roll
-            camera.rotation.w() = 0.0f;          // Unused
+            camera.position   = cameraPos;
+            camera.rotation.x = -m_orbitPitch; // Pitch
+            camera.rotation.y = m_orbitYaw;    // Yaw
+            camera.rotation.z = 0.0f;          // Roll
+            camera.rotation.w = 0.0f;          // Unused
 
             // Update orbit controller component to stay in sync
             auto &orbit    = world.GetComponent<JzEnttOrbitControllerComponent>(entity);

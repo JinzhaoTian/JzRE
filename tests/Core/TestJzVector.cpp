@@ -26,21 +26,21 @@ TEST_F(TestJzVector, Constructor)
 {
     // 测试默认构造
     JzVec3 v1(0.0f);
-    EXPECT_FLOAT_EQ(v1.x(), 0.0f);
-    EXPECT_FLOAT_EQ(v1.y(), 0.0f);
-    EXPECT_FLOAT_EQ(v1.z(), 0.0f);
+    EXPECT_FLOAT_EQ(v1.x, 0.0f);
+    EXPECT_FLOAT_EQ(v1.y, 0.0f);
+    EXPECT_FLOAT_EQ(v1.z, 0.0f);
 
     // 测试参数构造
     JzVec3 v2(1.0f, 2.0f, 3.0f);
-    EXPECT_FLOAT_EQ(v2.x(), 1.0f);
-    EXPECT_FLOAT_EQ(v2.y(), 2.0f);
-    EXPECT_FLOAT_EQ(v2.z(), 3.0f);
+    EXPECT_FLOAT_EQ(v2.x, 1.0f);
+    EXPECT_FLOAT_EQ(v2.y, 2.0f);
+    EXPECT_FLOAT_EQ(v2.z, 3.0f);
 
     // 测试拷贝构造
     JzVec3 v3(v2);
-    EXPECT_FLOAT_EQ(v3.x(), 1.0f);
-    EXPECT_FLOAT_EQ(v3.y(), 2.0f);
-    EXPECT_FLOAT_EQ(v3.z(), 3.0f);
+    EXPECT_FLOAT_EQ(v3.x, 1.0f);
+    EXPECT_FLOAT_EQ(v3.y, 2.0f);
+    EXPECT_FLOAT_EQ(v3.z, 3.0f);
 }
 
 // 测试向量运算符
@@ -51,21 +51,21 @@ TEST_F(TestJzVector, Operators)
 
     // 测试加法
     JzVec3 result = v1 + v2;
-    EXPECT_FLOAT_EQ(result.x(), 5.0f);
-    EXPECT_FLOAT_EQ(result.y(), 7.0f);
-    EXPECT_FLOAT_EQ(result.z(), 9.0f);
+    EXPECT_FLOAT_EQ(result.x, 5.0f);
+    EXPECT_FLOAT_EQ(result.y, 7.0f);
+    EXPECT_FLOAT_EQ(result.z, 9.0f);
 
     // 测试减法
     result = v2 - v1;
-    EXPECT_FLOAT_EQ(result.x(), 3.0f);
-    EXPECT_FLOAT_EQ(result.y(), 3.0f);
-    EXPECT_FLOAT_EQ(result.z(), 3.0f);
+    EXPECT_FLOAT_EQ(result.x, 3.0f);
+    EXPECT_FLOAT_EQ(result.y, 3.0f);
+    EXPECT_FLOAT_EQ(result.z, 3.0f);
 
     // 测试标量乘法
     result = v1 * 2.0f;
-    EXPECT_FLOAT_EQ(result.x(), 2.0f);
-    EXPECT_FLOAT_EQ(result.y(), 4.0f);
-    EXPECT_FLOAT_EQ(result.z(), 6.0f);
+    EXPECT_FLOAT_EQ(result.x, 2.0f);
+    EXPECT_FLOAT_EQ(result.y, 4.0f);
+    EXPECT_FLOAT_EQ(result.z, 6.0f);
 
     // 测试相等性
     JzVec3 v3(1.0f, 2.0f, 3.0f);
@@ -99,9 +99,9 @@ TEST_F(TestJzVector, MathFunctions)
     JzVec3 v3(1.0f, 0.0f, 0.0f);
     JzVec3 v4(0.0f, 1.0f, 0.0f);
     JzVec3 cross = v3.Cross(v4);
-    EXPECT_FLOAT_EQ(cross.x(), 0.0f);
-    EXPECT_FLOAT_EQ(cross.y(), 0.0f);
-    EXPECT_FLOAT_EQ(cross.z(), 1.0f);
+    EXPECT_FLOAT_EQ(cross.x, 0.0f);
+    EXPECT_FLOAT_EQ(cross.y, 0.0f);
+    EXPECT_FLOAT_EQ(cross.z, 1.0f);
 }
 
 // 测试向量负号
@@ -110,9 +110,9 @@ TEST_F(TestJzVector, Negation)
     JzVec3 v1(1.0f, -2.0f, 3.0f);
     JzVec3 negated = -v1;
 
-    EXPECT_FLOAT_EQ(negated.x(), -1.0f);
-    EXPECT_FLOAT_EQ(negated.y(), 2.0f);
-    EXPECT_FLOAT_EQ(negated.z(), -3.0f);
+    EXPECT_FLOAT_EQ(negated.x, -1.0f);
+    EXPECT_FLOAT_EQ(negated.y, 2.0f);
+    EXPECT_FLOAT_EQ(negated.z, -3.0f);
 }
 
 // 测试向量复合赋值操作符
@@ -123,27 +123,27 @@ TEST_F(TestJzVector, CompoundAssignmentOperators)
 
     // 测试 +=
     v1 += v2;
-    EXPECT_FLOAT_EQ(v1.x(), 5.0f);
-    EXPECT_FLOAT_EQ(v1.y(), 7.0f);
-    EXPECT_FLOAT_EQ(v1.z(), 9.0f);
+    EXPECT_FLOAT_EQ(v1.x, 5.0f);
+    EXPECT_FLOAT_EQ(v1.y, 7.0f);
+    EXPECT_FLOAT_EQ(v1.z, 9.0f);
 
     // 测试 -=
     v1 -= v2;
-    EXPECT_FLOAT_EQ(v1.x(), 1.0f);
-    EXPECT_FLOAT_EQ(v1.y(), 2.0f);
-    EXPECT_FLOAT_EQ(v1.z(), 3.0f);
+    EXPECT_FLOAT_EQ(v1.x, 1.0f);
+    EXPECT_FLOAT_EQ(v1.y, 2.0f);
+    EXPECT_FLOAT_EQ(v1.z, 3.0f);
 
     // 测试 *=
     v1 *= 2.0f;
-    EXPECT_FLOAT_EQ(v1.x(), 2.0f);
-    EXPECT_FLOAT_EQ(v1.y(), 4.0f);
-    EXPECT_FLOAT_EQ(v1.z(), 6.0f);
+    EXPECT_FLOAT_EQ(v1.x, 2.0f);
+    EXPECT_FLOAT_EQ(v1.y, 4.0f);
+    EXPECT_FLOAT_EQ(v1.z, 6.0f);
 
     // 测试 /=
     v1 /= 2.0f;
-    EXPECT_FLOAT_EQ(v1.x(), 1.0f);
-    EXPECT_FLOAT_EQ(v1.y(), 2.0f);
-    EXPECT_FLOAT_EQ(v1.z(), 3.0f);
+    EXPECT_FLOAT_EQ(v1.x, 1.0f);
+    EXPECT_FLOAT_EQ(v1.y, 2.0f);
+    EXPECT_FLOAT_EQ(v1.z, 3.0f);
 }
 
 // 测试不同维度的向量
@@ -151,19 +151,19 @@ TEST_F(TestJzVector, DifferentDimensions)
 {
     // 2D向量测试
     JzVec2 v2d(1.0f, 2.0f);
-    EXPECT_FLOAT_EQ(v2d.x(), 1.0f);
-    EXPECT_FLOAT_EQ(v2d.y(), 2.0f);
+    EXPECT_FLOAT_EQ(v2d.x, 1.0f);
+    EXPECT_FLOAT_EQ(v2d.y, 2.0f);
 
     // 4D向量测试
     JzVec4 v4d(1.0f, 2.0f, 3.0f, 4.0f);
-    EXPECT_FLOAT_EQ(v4d.x(), 1.0f);
-    EXPECT_FLOAT_EQ(v4d.y(), 2.0f);
-    EXPECT_FLOAT_EQ(v4d.z(), 3.0f);
-    EXPECT_FLOAT_EQ(v4d.w(), 4.0f);
+    EXPECT_FLOAT_EQ(v4d.x, 1.0f);
+    EXPECT_FLOAT_EQ(v4d.y, 2.0f);
+    EXPECT_FLOAT_EQ(v4d.z, 3.0f);
+    EXPECT_FLOAT_EQ(v4d.w, 4.0f);
 
     // 整数向量测试
     JzIVec3 iv(1, 2, 3);
-    EXPECT_EQ(iv.x(), 1);
-    EXPECT_EQ(iv.y(), 2);
-    EXPECT_EQ(iv.z(), 3);
+    EXPECT_EQ(iv.x, 1);
+    EXPECT_EQ(iv.y, 2);
+    EXPECT_EQ(iv.z, 3);
 }

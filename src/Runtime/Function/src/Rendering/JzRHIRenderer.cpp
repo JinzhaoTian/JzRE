@@ -75,8 +75,8 @@ JzRE::Bool JzRE::JzRHIRenderer::CreateFramebuffer()
     JzGPUTextureObjectDesc colorDesc;
     colorDesc.type      = JzETextureResourceType::Texture2D;
     colorDesc.format    = JzETextureResourceFormat::RGBA8;
-    colorDesc.width     = static_cast<U32>(m_frameSize.x());
-    colorDesc.height    = static_cast<U32>(m_frameSize.y());
+    colorDesc.width     = static_cast<U32>(m_frameSize.x);
+    colorDesc.height    = static_cast<U32>(m_frameSize.y);
     colorDesc.debugName = "RendererColor";
     m_colorTexture      = device.CreateTexture(colorDesc);
 
@@ -89,8 +89,8 @@ JzRE::Bool JzRE::JzRHIRenderer::CreateFramebuffer()
     JzGPUTextureObjectDesc depthDesc;
     depthDesc.type      = JzETextureResourceType::Texture2D;
     depthDesc.format    = JzETextureResourceFormat::Depth24;
-    depthDesc.width     = static_cast<U32>(m_frameSize.x());
-    depthDesc.height    = static_cast<U32>(m_frameSize.y());
+    depthDesc.width     = static_cast<U32>(m_frameSize.x);
+    depthDesc.height    = static_cast<U32>(m_frameSize.y);
     depthDesc.debugName = "RendererDepth";
     m_depthTexture      = device.CreateTexture(depthDesc);
 
@@ -223,8 +223,8 @@ void JzRE::JzRHIRenderer::RenderImmediate(std::shared_ptr<JzRE::JzScene> scene)
     JzViewport viewport;
     viewport.x        = 0.0f;
     viewport.y        = 0.0f;
-    viewport.width    = static_cast<F32>(m_frameSize.x());
-    viewport.height   = static_cast<F32>(m_frameSize.y());
+    viewport.width    = static_cast<F32>(m_frameSize.x);
+    viewport.height   = static_cast<F32>(m_frameSize.y);
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
     device.SetViewport(viewport);
@@ -246,7 +246,7 @@ void JzRE::JzRHIRenderer::RenderImmediate(std::shared_ptr<JzRE::JzScene> scene)
     JzMat4 modelMatrix = JzMat4x4::Identity();
 
     // Camera setup - get from scene's main camera
-    F32 aspect = m_frameSize.x() > 0 && m_frameSize.y() > 0 ? static_cast<F32>(m_frameSize.x()) / static_cast<F32>(m_frameSize.y()) : 1.0f;
+    F32 aspect = m_frameSize.x > 0 && m_frameSize.y > 0 ? static_cast<F32>(m_frameSize.x) / static_cast<F32>(m_frameSize.y) : 1.0f;
 
     JzVec3 cameraPos(0.0f, 0.0f, 10.0f);
     JzVec3 cameraTarget(0.0f, 0.0f, 0.0f);
@@ -260,8 +260,8 @@ void JzRE::JzRHIRenderer::RenderImmediate(std::shared_ptr<JzRE::JzScene> scene)
 
         // Get rotation (stored as pitch, yaw, roll, unused in x, y, z, w)
         JzVec4 rotation = camera->GetRotation();
-        F32    pitch    = rotation.x(); // Rotation around X axis
-        F32    yaw      = rotation.y(); // Rotation around Y axis
+        F32    pitch    = rotation.x; // Rotation around X axis
+        F32    yaw      = rotation.y; // Rotation around Y axis
 
         // Calculate forward direction from pitch and yaw
         // Forward = (sin(yaw) * cos(pitch), sin(pitch), -cos(yaw) * cos(pitch))
@@ -517,7 +517,7 @@ void JzRE::JzRHIRenderer::BlitToScreen(U32 screenWidth, U32 screenHeight)
 
     auto &device = JzServiceContainer::Get<JzDevice>();
     device.BlitFramebufferToScreen(m_framebuffer,
-                                   static_cast<U32>(m_frameSize.x()),
-                                   static_cast<U32>(m_frameSize.y()),
+                                   static_cast<U32>(m_frameSize.x),
+                                   static_cast<U32>(m_frameSize.y),
                                    screenWidth, screenHeight);
 }

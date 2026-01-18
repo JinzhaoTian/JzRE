@@ -13,9 +13,9 @@ void JzRE::JzSpatialPartitionSystem::Update(JzRE::JzEntityManager &manager, JzRE
     for (auto entity : view) {
         auto &spatial = manager.GetComponent<JzSpatialComponent>(entity);
 
-        I32 newCellX = static_cast<I32>(spatial.position.x() / CELL_SIZE);
-        I32 newCellY = static_cast<I32>(spatial.position.y() / CELL_SIZE);
-        I32 newCellZ = static_cast<I32>(spatial.position.z() / CELL_SIZE);
+        I32 newCellX = static_cast<I32>(spatial.position.x / CELL_SIZE);
+        I32 newCellY = static_cast<I32>(spatial.position.y / CELL_SIZE);
+        I32 newCellZ = static_cast<I32>(spatial.position.z / CELL_SIZE);
 
         if (newCellX != spatial.gridCellX || newCellY != spatial.gridCellY || newCellZ != spatial.gridCellZ) {
             // TODO

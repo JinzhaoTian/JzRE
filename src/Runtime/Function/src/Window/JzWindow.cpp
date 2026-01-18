@@ -98,7 +98,7 @@ JzRE::String JzRE::JzWindow::GetTitle() const
 void JzRE::JzWindow::SetPosition(JzRE::JzIVec2 p_position)
 {
     if (!m_fullscreen) {
-        glfwSetWindowPos(m_glfwWindow, p_position.x(), p_position.y());
+        glfwSetWindowPos(m_glfwWindow, p_position.x, p_position.y);
         m_position = p_position;
     }
 }
@@ -113,7 +113,7 @@ JzRE::JzIVec2 JzRE::JzWindow::GetPosition() const
 void JzRE::JzWindow::SetSize(JzRE::JzIVec2 p_size)
 {
     if (!m_fullscreen) {
-        glfwSetWindowSize(m_glfwWindow, p_size.x(), p_size.y());
+        glfwSetWindowSize(m_glfwWindow, p_size.x, p_size.y);
         m_size = p_size;
     }
 }
@@ -191,10 +191,10 @@ void JzRE::JzWindow::SetFullscreen(JzRE::Bool value)
         glfwSetWindowMonitor(
             m_glfwWindow,
             glfwGetPrimaryMonitor(),
-            static_cast<I32>(m_position.x()),
-            static_cast<I32>(m_position.y()),
-            static_cast<I32>(m_size.x()),
-            static_cast<I32>(m_size.y()),
+            static_cast<I32>(m_position.x),
+            static_cast<I32>(m_position.y),
+            static_cast<I32>(m_size.x),
+            static_cast<I32>(m_size.y),
             m_refreshRate);
     } else {
         m_fullscreen = false;
@@ -204,10 +204,10 @@ void JzRE::JzWindow::SetFullscreen(JzRE::Bool value)
         glfwSetWindowMonitor(
             m_glfwWindow,
             nullptr,
-            static_cast<I32>(m_position.x()),
-            static_cast<I32>(m_position.y()),
-            static_cast<I32>(m_size.x()),
-            static_cast<I32>(m_size.y()),
+            static_cast<I32>(m_position.x),
+            static_cast<I32>(m_position.y),
+            static_cast<I32>(m_size.x),
+            static_cast<I32>(m_size.y),
             m_refreshRate);
     }
 }
@@ -335,8 +335,8 @@ void JzRE::JzWindow::CreateGlfwWindow(const JzRE::JzWindowSettings &windowSettin
     }
 
     m_glfwWindow = glfwCreateWindow(
-        m_size.x(),
-        m_size.y(),
+        m_size.x,
+        m_size.y,
         m_title.c_str(),
         selectedMonitor,
         nullptr);
@@ -353,15 +353,15 @@ void JzRE::JzWindow::CreateGlfwWindow(const JzRE::JzWindowSettings &windowSettin
     } else {
         glfwSetWindowSizeLimits(
             m_glfwWindow,
-            m_minimumSize.x(),
-            m_minimumSize.y(),
-            m_maximumSize.x(),
-            m_maximumSize.y());
+            m_minimumSize.x,
+            m_minimumSize.y,
+            m_maximumSize.x,
+            m_maximumSize.y);
 
         glfwSetWindowPos(
             m_glfwWindow,
-            m_position.x(),
-            m_position.y());
+            m_position.x,
+            m_position.y);
 
         __WINDOWS_MAP[m_glfwWindow] = this;
     }
@@ -534,8 +534,8 @@ void JzRE::JzWindow::UpdateSizeLimit() const
 {
     glfwSetWindowSizeLimits(
         m_glfwWindow,
-        m_minimumSize.x(),
-        m_minimumSize.y(),
-        m_maximumSize.x(),
-        m_maximumSize.y());
+        m_minimumSize.x,
+        m_minimumSize.y,
+        m_maximumSize.x,
+        m_maximumSize.y);
 }

@@ -160,8 +160,8 @@ void JzRE::JzRERuntime::Run()
         _SignalWorkerFrame(frameData);
 
         // Update camera system aspect ratio
-        if (frameData.frameSize.x() > 0 && frameData.frameSize.y() > 0) {
-            F32 aspect = static_cast<F32>(frameData.frameSize.x()) / static_cast<F32>(frameData.frameSize.y());
+        if (frameData.frameSize.x > 0 && frameData.frameSize.y > 0) {
+            F32 aspect = static_cast<F32>(frameData.frameSize.x) / static_cast<F32>(frameData.frameSize.y);
             m_cameraSystem->SetAspectRatio(aspect);
         }
 
@@ -186,8 +186,8 @@ void JzRE::JzRERuntime::Run()
         if (ShouldBlitToScreen()) {
             // Use actual framebuffer size for Retina/HiDPI displays
             JzIVec2 fbSize = m_window->GetFramebufferSize();
-            m_renderSystem->BlitToScreen(static_cast<U32>(fbSize.x()),
-                                         static_cast<U32>(fbSize.y()));
+            m_renderSystem->BlitToScreen(static_cast<U32>(fbSize.x),
+                                         static_cast<U32>(fbSize.y));
         }
 
         // Call render hook for additional rendering (e.g., ImGui UI)
