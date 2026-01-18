@@ -52,8 +52,6 @@ endif()
 
 target_link_libraries(JzRuntimeFunction
     PUBLIC
-        JzRuntimeCore
-        JzRuntimePlatform
         JzRuntimeResource
 )
 

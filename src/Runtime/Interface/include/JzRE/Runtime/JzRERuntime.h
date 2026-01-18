@@ -21,6 +21,7 @@
 #include "JzRE/Runtime/Function/Window/JzWindow.h"
 #include "JzRE/Runtime/Platform/JzDevice.h"
 #include "JzRE/Runtime/Resource/JzResourceManager.h"
+#include "JzRE/Runtime/Resource/JzShaderManager.h"
 
 namespace JzRE {
 
@@ -233,10 +234,11 @@ private:
     void _WaitForWorkerComplete();
 
 protected:
-    std::unique_ptr<JzResourceManager> m_resourceManager;
     std::unique_ptr<JzWindow>          m_window;
     std::unique_ptr<JzDevice>          m_device;
     std::unique_ptr<JzInputManager>    m_inputManager;
+    std::unique_ptr<JzResourceManager> m_resourceManager;
+    std::unique_ptr<JzShaderManager>   m_shaderManager;
 
     // ECS world and systems
     std::unique_ptr<JzEnttWorld>        m_world;

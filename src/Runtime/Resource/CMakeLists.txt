@@ -26,7 +26,6 @@ find_package(Freetype REQUIRED)
 
 target_link_libraries(JzRuntimeResource
     PUBLIC
-        JzRuntimeCore
         JzRuntimePlatform
         assimp::assimp
         Freetype::Freetype

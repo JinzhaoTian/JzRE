@@ -30,7 +30,5 @@ target_include_directories(
 target_link_libraries(
     JzEditorCore
     PUBLIC
-    JzRERuntime
-    JzEditorUI
     JzEditorPanels
 )

@@ -162,23 +162,111 @@ classDiagram
 
 ---
 
-## Workflow
+## Context-Based Initialization
 
-### 1. Resource Registration (Initialization Phase)
+### JzContext (Initialization Coordinator)
+
+`JzContext` is a singleton class that coordinates engine and project resource initialization. It follows a two-phase initialization pattern:
 
 ```cpp
-// Register all factories during engine initialization
-auto& resourceManager = JzServiceContainer::Get<JzResourceManager>();
+enum class JzEContextState {
+    Uninitialized,       // Context not initialized
+    EngineInitialized,   // Engine resources ready (factories registered, engine paths set)
+    ProjectInitialized,  // Project resources ready (Editor mode with project paths)
+    Error                // Initialization failed
+};
 
+class JzContext {
+public:
+    static JzContext& GetInstance();
+
+    // Phase 1: Engine initialization
+    Bool InitializeEngine(JzResourceManager& resourceManager);
+
+    // Phase 2: Project initialization (Editor only)
+    Bool InitializeProject(JzResourceManager& resourceManager,
+                          const std::filesystem::path& projectPath);
+
+    // State queries
+    Bool IsEngineInitialized() const;
+    Bool IsProjectInitialized() const;
+    JzEContextState GetState() const;
+
+    // Path getters
+    std::filesystem::path GetEnginePath() const;
+    std::filesystem::path GetProjectPath() const;
+};
+```
+
+### Initialization Flow
+
+```mermaid
+flowchart TD
+    A[JzRERuntime Constructor] --> B[Create JzResourceManager]
+    B --> C[JzContext::InitializeEngine]
+    C --> D[Register All Factories]
+    D --> E[Setup Engine Search Paths]
+    E --> F[Engine Ready]
+
+    G[JzREInstance Constructor] --> H[JzRERuntime Constructor]
+    H --> I[JzContext::InitializeProject]
+    I --> J[Setup Project Search Paths]
+    J --> K[Project Ready]
+```
+
+### Phase 1: Engine Initialization
+
+Called automatically by `JzRERuntime` constructor:
+
+```cpp
+// Internal: JzContext::InitializeEngine registers all factories
 resourceManager.RegisterFactory<JzTexture>(std::make_unique<JzTextureFactory>());
 resourceManager.RegisterFactory<JzMesh>(std::make_unique<JzMeshFactory>());
 resourceManager.RegisterFactory<JzMaterial>(std::make_unique<JzMaterialFactory>());
 resourceManager.RegisterFactory<JzShader>(std::make_unique<JzShaderFactory>());
 resourceManager.RegisterFactory<JzModel>(std::make_unique<JzModelFactory>());
+resourceManager.RegisterFactory<JzFont>(std::make_unique<JzFontFactory>());
 
-// Add resource search paths
-resourceManager.AddSearchPath("./resources");
-resourceManager.AddSearchPath("./assets");
+// Engine search paths
+resourceManager.AddSearchPath("./icons");
+resourceManager.AddSearchPath("./shaders");
+```
+
+### Phase 2: Project Initialization (Editor Only)
+
+Called by `JzREInstance` when opening a project:
+
+```cpp
+// Convention-based project paths (auto-detected if they exist)
+// - {projectPath}/
+// - {projectPath}/assets/
+// - {projectPath}/textures/
+// - {projectPath}/models/
+// - {projectPath}/shaders/
+// - {projectPath}/materials/
+// - {projectPath}/fonts/
+
+auto& context = JzContext::GetInstance();
+context.InitializeProject(resourceManager, projectPath);
+```
+
+---
+
+## Workflow
+
+### 1. Resource Registration (Automatic via JzContext)
+
+Factory registration is now handled automatically by `JzContext::InitializeEngine()`:
+
+```cpp
+// Automatic: JzRERuntime constructor calls JzContext::InitializeEngine()
+// which registers all factories and sets up engine search paths
+
+// For custom scenarios, you can also manually check state:
+auto& context = JzContext::GetInstance();
+if (context.IsEngineInitialized()) {
+    // Engine resources are ready
+}
 ```
 
 ### 2. Resource Loading
@@ -377,6 +465,161 @@ if (iconTexture) {
         // Handle click
     });
 }
+```
+
+---
+
+## ShaderManager
+
+### Overview
+
+`JzShaderManager` provides centralized shader program management with a variant system for cross-platform shader compilation. It enables different shader configurations (e.g., with/without shadows, skeletal animation) through keyword-based variants.
+
+### Architecture
+
+```mermaid
+classDiagram
+    class JzShaderManager {
+        +Initialize() void
+        +Shutdown() void
+        +RegisterShaderProgram(name, program) void
+        +GetShaderProgram(name) JzShaderProgram*
+        +GetVariant(programName, variantKey) JzShaderVariant*
+        +GetStandardShader(variantKey) JzShaderVariant*
+        +GetUnlitShader() JzShaderVariant*
+        -CompileVariant(program, variantKey) JzShaderVariant*
+        -GenerateDefines(program, variantKey) String
+        -RegisterBuiltInShaders() void
+    }
+
+    class JzShaderProgram {
+        +GetName() String
+        +SetVertexSource(source) void
+        +SetFragmentSource(source) void
+        +AddKeyword(keyword) void
+        +GetKeywords() vector
+        +SetRenderState(state) void
+        +GetDefaultVariantKey() JzShaderVariantKey
+    }
+
+    class JzShaderVariant {
+        +GetKey() JzShaderVariantKey
+        +GetPipeline() JzRHIPipeline*
+        +IsValid() Bool
+    }
+
+    class JzShaderVariantKey {
+        +keywordMask U64
+        +Hash struct
+    }
+
+    class JzShaderKeyword {
+        +name String
+        +index U32
+        +defaultEnabled Bool
+    }
+
+    JzShaderManager *-- JzShaderProgram
+    JzShaderManager *-- JzShaderVariant
+    JzShaderProgram *-- JzShaderKeyword
+    JzShaderVariant --> JzShaderVariantKey
+    JzShaderVariant --> JzRHIPipeline
+```
+
+### Key Components
+
+| Component | Purpose |
+|-----------|---------|
+| `JzShaderManager` | Central manager for shader programs and variant caching |
+| `JzShaderProgram` | Defines a shader with source code and keyword definitions |
+| `JzShaderVariant` | A compiled variant holding the RHI pipeline |
+| `JzShaderVariantKey` | Bitmask identifying which keywords are enabled |
+| `JzShaderKeyword` | Definition of a variant keyword (name, index, default) |
+
+### Variant System
+
+Variants are created by enabling/disabling keywords. Each keyword maps to a preprocessor `#define`:
+
+```cpp
+// Define keywords in shader program
+program->AddKeyword({"SKINNED", 0, false});      // Bit 0
+program->AddKeyword({"SHADOWS", 1, false});      // Bit 1
+program->AddKeyword({"NORMAL_MAPPING", 2, false}); // Bit 2
+
+// Request a variant with SKINNED enabled
+JzShaderVariantKeyBuilder builder;
+builder.EnableKeyword(0);  // Enable SKINNED
+auto variant = shaderManager.GetVariant("standard", builder.Build());
+```
+
+When compiling, keywords are prepended as defines:
+
+```glsl
+#define SKINNED 1
+// ... rest of shader source
+```
+
+### Shader File Loading
+
+Shaders are loaded from external files in the `shaders/` directory (relative to the executable working directory). The ShaderManager provides methods to load shader programs from files:
+
+```cpp
+// Load shader from files
+Bool LoadShaderProgram(const String& name,
+                       const std::filesystem::path& vertexPath,
+                       const std::filesystem::path& fragmentPath,
+                       const std::filesystem::path& geometryPath = {});
+
+// Built-in shaders are loaded from:
+// - shaders/standard.vert, shaders/standard.frag
+// - shaders/unlit.vert, shaders/unlit.frag
+```
+
+Shader files are stored in `resources/shaders/` in the source tree and copied to the build directory during CMake configuration.
+
+### Usage
+
+```cpp
+// Get ShaderManager from service container
+auto& shaderManager = JzServiceContainer::Get<JzShaderManager>();
+
+// Get default standard shader (no keywords enabled)
+auto variant = shaderManager.GetStandardShader();
+
+// Get variant with specific features
+JzShaderVariantKeyBuilder builder;
+builder.EnableKeyword(0);  // SKINNED
+builder.EnableKeyword(1);  // SHADOWS
+auto skinnedShadowVariant = shaderManager.GetVariant("standard", builder.Build());
+
+// Use the pipeline
+if (variant && variant->IsValid()) {
+    device.BindPipeline(variant->GetPipeline());
+}
+
+// Load custom shader from files
+auto shaderDir = std::filesystem::current_path() / "shaders";
+shaderManager.LoadShaderProgram("custom", shaderDir / "custom.vert", shaderDir / "custom.frag");
+```
+
+### Built-in Shaders
+
+The ShaderManager provides two built-in shaders:
+
+| Shader | Description | Keywords |
+|--------|-------------|----------|
+| `standard` | Blinn-Phong lighting with material support | SKINNED, SHADOWS, NORMAL_MAPPING |
+| `unlit` | Simple unlit shader with color uniform | None |
+
+### Initialization
+
+ShaderManager is initialized automatically by `JzRERuntime` after device creation:
+
+```cpp
+// In JzRERuntime constructor (automatic)
+m_shaderManager = std::make_unique<JzShaderManager>();
+m_shaderManager->Initialize();
+JzServiceContainer::Provide<JzShaderManager>(*m_shaderManager);
 ```
 
 ---

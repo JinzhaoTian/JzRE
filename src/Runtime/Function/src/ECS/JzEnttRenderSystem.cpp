@@ -12,6 +12,7 @@
 #include "JzRE/Runtime/Platform/JzDevice.h"
 #include "JzRE/Runtime/Resource/JzMaterial.h"
 #include "JzRE/Runtime/Resource/JzMesh.h"
+#include "JzRE/Runtime/Resource/JzShaderManager.h"
 
 namespace JzRE {
 
@@ -164,96 +165,16 @@ Bool JzEnttRenderSystem::CreateFramebuffer()
 
 Bool JzEnttRenderSystem::CreateDefaultPipeline()
 {
-    auto &device = JzServiceContainer::Get<JzDevice>();
+    auto &shaderManager = JzServiceContainer::Get<JzShaderManager>();
 
-    // Vertex shader with MVP transform
-    const char *vsSrc = R"(
-        #version 330 core
+    // Get default standard shader variant from ShaderManager
+    auto variant = shaderManager.GetStandardShader();
 
-        layout (location = 0) in vec3 aPos;
-        layout (location = 1) in vec3 aNormal;
-        layout (location = 2) in vec2 aTexCoords;
+    if (!variant || !variant->IsValid()) {
+        return false;
+    }
 
-        out vec3 vNormal;
-        out vec3 vWorldPos;
-
-        uniform mat4 model;
-        uniform mat4 view;
-        uniform mat4 projection;
-
-        void main()
-        {
-            vec4 worldPos = model * vec4(aPos, 1.0);
-            vWorldPos = worldPos.xyz;
-            vNormal = mat3(model) * aNormal;
-            gl_Position = projection * view * worldPos;
-        }
-    )";
-
-    // Fragment shader with material support and basic lighting
-    const char *fsSrc = R"(
-        #version 330 core
-
-        in vec3 vNormal;
-        in vec3 vWorldPos;
-
-        out vec4 FragColor;
-
-        // Material properties
-        uniform vec3 uAmbientColor;
-        uniform vec3 uDiffuseColor;
-        uniform vec3 uSpecularColor;
-        uniform float uShininess;
-
-        // Light properties
-        uniform vec3 uLightDir;
-        uniform vec3 uLightColor;
-
-        // Camera position for specular
-        uniform vec3 uCameraPos;
-
-        void main()
-        {
-            // Normalize the normal
-            vec3 normal = normalize(vNormal);
-
-            // Ambient
-            vec3 ambient = uAmbientColor * 0.3;
-
-            // Diffuse
-            float diff = max(dot(normal, uLightDir), 0.0);
-            vec3 diffuse = uDiffuseColor * diff * uLightColor;
-
-            // Specular (Blinn-Phong)
-            vec3 viewDir = normalize(uCameraPos - vWorldPos);
-            vec3 halfwayDir = normalize(uLightDir + viewDir);
-            float spec = pow(max(dot(normal, halfwayDir), 0.0), uShininess);
-            vec3 specular = uSpecularColor * spec * uLightColor * 0.5;
-
-            vec3 color = ambient + diffuse + specular;
-            FragColor = vec4(color, 1.0);
-        }
-    )";
-
-    JzShaderProgramDesc vsDesc{};
-    vsDesc.type       = JzEShaderProgramType::Vertex;
-    vsDesc.source     = vsSrc;
-    vsDesc.entryPoint = "main";
-    vsDesc.debugName  = "ECSRendererVS";
-
-    JzShaderProgramDesc fsDesc{};
-    fsDesc.type       = JzEShaderProgramType::Fragment;
-    fsDesc.source     = fsSrc;
-    fsDesc.entryPoint = "main";
-    fsDesc.debugName  = "ECSRendererFS";
-
-    JzPipelineDesc pipeDesc{};
-    pipeDesc.shaders               = {vsDesc, fsDesc};
-    pipeDesc.renderState.depthTest = true;
-    pipeDesc.renderState.cullMode  = JzECullMode::Back;
-    pipeDesc.debugName             = "ECSRendererDefaultPipeline";
-
-    m_defaultPipeline = device.CreatePipeline(pipeDesc);
+    m_defaultPipeline = variant->GetPipeline();
     return m_defaultPipeline != nullptr;
 }
 

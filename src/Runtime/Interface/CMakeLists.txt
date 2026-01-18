@@ -22,11 +22,8 @@ target_include_directories(JzRERuntime
         ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-# Link all runtime layers
+# Link top-level runtime layer (includes Core, Platform, Resource transitively)
 target_link_libraries(JzRERuntime 
     PUBLIC
-        JzRuntimeCore
-        JzRuntimePlatform
-        JzRuntimeResource
         JzRuntimeFunction
 )

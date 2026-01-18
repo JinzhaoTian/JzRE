@@ -39,6 +39,11 @@ JzRE::JzRERuntime::JzRERuntime(JzERHIType rhiType, const String &windowTitle,
     m_device = JzDeviceFactory::CreateDevice(rhiType);
     JzServiceContainer::Provide<JzDevice>(*m_device);
 
+    // Initialize shader manager (requires device to be ready)
+    m_shaderManager = std::make_unique<JzShaderManager>();
+    m_shaderManager->Initialize();
+    JzServiceContainer::Provide<JzShaderManager>(*m_shaderManager);
+
     // Create input manager
     m_inputManager = std::make_unique<JzInputManager>(*m_window);
     JzServiceContainer::Provide<JzInputManager>(*m_inputManager);
@@ -77,12 +82,17 @@ JzRE::JzRERuntime::~JzRERuntime()
         m_workerThread.join();
     }
 
+    if (m_shaderManager) {
+        m_shaderManager->Shutdown();
+    }
+
     // Clean up in reverse order of creation
     m_renderSystem.reset();
     m_lightSystem.reset();
     m_cameraSystem.reset();
     m_world.reset();
     m_inputManager.reset();
+    m_shaderManager.reset();
     m_device.reset();
     m_window.reset();
     m_resourceManager.reset();
