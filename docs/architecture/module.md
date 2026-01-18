@@ -57,7 +57,6 @@ JzRE/
 │   │       ├── CMakeLists.txt
 │   │       ├── include/JzRE/Runtime/Function/
 │   │       │   ├── Rendering/
-│   │       │   │   └── JzRHIRenderer.h
 │   │       │   ├── Scene/
 │   │       │   │   ├── JzScene.h
 │   │       │   │   └── JzActor.h

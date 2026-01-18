@@ -311,7 +311,7 @@ Before completing any task, verify:
 
 ### Example: Adding a New Renderer Feature
 
-After adding code in `src/Editor/src/JzRHIRenderer.cpp`:
+After adding rendering code in `src/Runtime/Function/src/Rendering/`:
 
 1. Update `docs/rhi.md` with new rendering capabilities
 2. Update `docs/design.md` if new class relationships were added

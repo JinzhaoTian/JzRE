@@ -111,7 +111,7 @@ High-level engine systems built on lower layers.
 
 | Subsystem     | Description                                   |
 | ------------- | --------------------------------------------- |
-| **Rendering** | `JzRHIRenderer` - High-level render commands  |
+| **Rendering** | `JzDeviceFactory` - Device creation utilities |
 | **Scene**     | `JzScene`, `JzActor`, `JzWorld` - Scene graph |
 | **ECS**       | `JzEntityManager`, Systems, Components        |
 | **Input**     | `JzInputManager` - Keyboard/mouse handling    |
