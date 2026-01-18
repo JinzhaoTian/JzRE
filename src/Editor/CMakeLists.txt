@@ -1,52 +1,23 @@
-# Editor module - depends on Runtime
-file(GLOB_RECURSE JzEditor_HEADERS CONFIGURE_DEPENDS "include/*.h")
-file(GLOB_RECURSE JzEditor_SOURCES CONFIGURE_DEPENDS "src/*.cpp")
+# Editor module - depends on Runtime, UI, Panels, and Core
+add_subdirectory(UI)
+add_subdirectory(Panels)
+add_subdirectory(Core)
 
-# Exclude main.cpp from library sources if it exists
-list(FILTER JzEditor_SOURCES EXCLUDE REGEX ".*main\\.cpp$")
-
-add_library(
-    JzEditor
-    STATIC
-    ${JzEditor_SOURCES}
-    ${JzEditor_HEADERS}
-)
-
-# Organize sources in Visual Studio filters
-source_group(
-    TREE "${CMAKE_CURRENT_SOURCE_DIR}"
-    FILES ${JzEditor_SOURCES} ${JzEditor_HEADERS}
-)
-
-# Set target folder in Visual Studio
-set_target_properties(JzEditor PROPERTIES FOLDER "Editor")
-
-target_compile_features(
-    JzEditor
-    PUBLIC
-    cxx_std_20
-)
-
-target_include_directories(
-    JzEditor
-    PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-)
-
-# External dependencies
-find_package(imgui CONFIG REQUIRED)
+# JzEditor is now an interface library that aggregates all editor submodules
+add_library(JzEditor INTERFACE)
 
 target_link_libraries(
     JzEditor
-    PUBLIC
-    imgui::imgui
-    JzRERuntime
+    INTERFACE
+    JzEditorCore
+    JzEditorUI
+    JzEditorPanels
 )
 
 # Main executable - JzRE Editor Application
 add_executable(
     JzRE
-    src/main.cpp
+    main.cpp
 )
 
 # Organize main.cpp in Visual Studio filters

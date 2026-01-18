@@ -71,16 +71,19 @@ JzRE/
 │   │
 │   ├── Editor/                     # Editor Application
 │   │   ├── CMakeLists.txt
-│   │   ├── include/JzRE/Editor/
-│   │   │   ├── JzEditor.h
-│   │   │   ├── JzPanelsManager.h
-│   │   │   ├── UI/                 # ImGui wrappers
-│   │   │   ├── JzREHub.h
-│   │   │   └── JzREInstance.h
-│   │   └── src/
-│   │       └── main.cpp            # Main Entry Points
-│   │
-│   └── CMakeLists.txt
+│   │   ├── Core/                   # Editor Core
+│   │   │   ├── CMakeLists.txt
+│   │   │   ├── include/JzRE/Editor/
+│   │   │   └── src/
+│   │   ├── Panels/                 # Editor Panels
+│   │   │   ├── CMakeLists.txt
+│   │   │   ├── include/JzRE/Editor/Panels/
+│   │   │   └── src/
+│   │   ├── UI/                     # Editor UI
+│   │   │   ├── CMakeLists.txt
+│   │   │   ├── include/JzRE/Editor/UI/
+│   │   │   └── src/
+│   │   └── main.cpp                # Main Entry Points
 │
 ├── tests/
 ├── examples/

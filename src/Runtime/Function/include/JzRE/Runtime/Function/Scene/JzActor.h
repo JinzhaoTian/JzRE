@@ -8,7 +8,7 @@
 #include <memory>
 #include <vector>
 
-#include "JzRE/Editor/JzObject.h"
+#include "JzRE/Runtime/Core/JzObject.h"
 #include "JzRE/Runtime/Function/Scene/JzActorComponent.h"
 
 namespace JzRE {
