@@ -104,7 +104,7 @@ High-level engine systems:
 | Subsystem | Directory    | Key Classes                                    |
 | --------- | ------------ | ---------------------------------------------- |
 | Rendering | `Rendering/` | `JzDeviceFactory`                              |
-| Scene     | `Scene/`     | `JzScene`, `JzActor`, `JzWorld`                |
+| Scene     | `Scene/`     | `JzActor`                                      |
 | ECS       | `ECS/`       | `JzEntityManager`, `Jz*System`, `Jz*Component` |
 | Input     | `Input/`     | `JzInputManager`                               |
 | Window    | `Window/`    | `JzWindow`                                     |

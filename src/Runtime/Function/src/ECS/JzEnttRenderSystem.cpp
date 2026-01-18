@@ -8,7 +8,7 @@
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
 #include "JzRE/Runtime/Function/ECS/JzEnttCameraSystem.h"
 #include "JzRE/Runtime/Function/ECS/JzEnttLightSystem.h"
-#include "JzRE/Runtime/Function/ECS/JzComponent.h"
+#include "JzRE/Runtime/Function/ECS/JzEnttComponents.h"
 #include "JzRE/Runtime/Platform/JzDevice.h"
 #include "JzRE/Runtime/Resource/JzMaterial.h"
 #include "JzRE/Runtime/Resource/JzMesh.h"

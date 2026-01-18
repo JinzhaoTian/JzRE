@@ -112,7 +112,7 @@ High-level engine systems built on lower layers.
 | Subsystem     | Description                                   |
 | ------------- | --------------------------------------------- |
 | **Rendering** | `JzDeviceFactory` - Device creation utilities |
-| **Scene**     | `JzScene`, `JzActor`, `JzWorld` - Scene graph |
+| **Scene**     | `JzActor` - Scene graph                       |
 | **ECS**       | `JzEntityManager`, Systems, Components        |
 | **Input**     | `JzInputManager` - Keyboard/mouse handling    |
 | **Window**    | `JzWindow` - GLFW window wrapper              |

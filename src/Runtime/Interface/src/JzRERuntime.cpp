@@ -7,7 +7,7 @@
 
 #include "JzRE/Runtime/Core/JzClock.h"
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
-#include "JzRE/Runtime/Function/ECS/JzComponent.h"
+#include "JzRE/Runtime/Function/ECS/JzEnttComponents.h"
 #include "JzRE/Runtime/Function/ECS/JzEnttRenderComponents.h"
 #include "JzRE/Runtime/Function/Rendering/JzDeviceFactory.h"
 #include "JzRE/Runtime/JzContext.h"

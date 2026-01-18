@@ -15,11 +15,7 @@
 #include "JzRE/Editor/UI/JzSeparator.h"
 #include "JzRE/Editor/UI/JzConverter.h"
 // TODO: Re-enable when migrated to EnTT ECS
-// #include "JzRE/Editor/JzSceneManager.h"
 #include "JzRE/Runtime/Function/Input/JzInputManager.h"
-// TODO: Re-enable when migrated to EnTT ECS
-// #include "JzRE/Runtime/Function/Scene/JzScene.h"
-#include "JzRE/Runtime/Resource/JzModel.h"
 #include "JzRE/Runtime/Platform/JzOpenFileDialog.h"
 
 JzRE::JzMenuBar::JzMenuBar(JzRE::JzWindow &window) :
@@ -43,9 +39,7 @@ void JzRE::JzMenuBar::HandleShortcuts(F32 deltaTime)
 
     if (inputMgr.GetKeyState(JzEInputKeyboardButton::KEY_LEFT_CONTROL) == JzEInputKeyboardButtonState::KEY_DOWN) {
         if (inputMgr.IsKeyPressed(JzEInputKeyboardButton::KEY_N)) {
-            // TODO: Migrate to EnTT ECS - JzSceneManager is no longer used
-            // auto &sceneMgr = JzServiceContainer::Get<JzSceneManager>();
-            // sceneMgr.LoadDefaultScene();
+            // TODO: Migrate to EnTT ECS
         }
 
         if (inputMgr.IsKeyPressed(JzEInputKeyboardButton::KEY_S)) {
@@ -114,14 +108,7 @@ void JzRE::JzMenuBar::CreateFileMenu()
             std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
 
             if (extension == ".obj") {
-                // Load the OBJ model
-                auto model = std::make_shared<JzModel>(filePath.string());
-                if (model->Load()) {
-                    // TODO: Migrate to EnTT ECS - JzScene is no longer used
-                    // Need to create a mesh entity with render components instead
-                    // auto &scene = JzServiceContainer::Get<JzScene>();
-                    // scene.AddModel(model);
-                }
+                // TODO: Migrate to EnTT ECS
             }
         }
     };

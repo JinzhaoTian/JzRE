@@ -58,7 +58,6 @@ JzRE/
 │   │       ├── include/JzRE/Runtime/Function/
 │   │       │   ├── Rendering/
 │   │       │   ├── Scene/
-│   │       │   │   ├── JzScene.h
 │   │       │   │   └── JzActor.h
 │   │       │   ├── ECS/
 │   │       │   │   └── JzEntityManager.h
@@ -143,7 +142,6 @@ target_link_libraries(JzRERuntime INTERFACE
 // Cross-module: use full path
 #include <JzRE/Runtime/Core/JzLogger.h>
 #include <JzRE/Runtime/Platform/JzDevice.h>
-#include <JzRE/Runtime/Function/Scene/JzScene.h>
 
 // Within module: relative path allowed
 #include "JzInternalHelper.h"

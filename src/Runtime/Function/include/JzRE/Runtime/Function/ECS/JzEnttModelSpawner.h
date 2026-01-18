@@ -11,7 +11,7 @@
 #include "JzRE/Runtime/Core/JzRETypes.h"
 #include "JzRE/Runtime/Function/ECS/JzEnttEntity.h"
 #include "JzRE/Runtime/Function/ECS/JzEnttWorld.h"
-#include "JzRE/Runtime/Function/ECS/JzComponent.h"
+#include "JzRE/Runtime/Function/ECS/JzEnttComponents.h"
 #include "JzRE/Runtime/Resource/JzMaterial.h"
 #include "JzRE/Runtime/Resource/JzMesh.h"
 #include "JzRE/Runtime/Resource/JzModel.h"
@@ -40,9 +40,9 @@ public:
      * @param rootTransform Transform to apply to all entities.
      * @return Vector of created entities.
      */
-    static std::vector<JzEnttEntity> SpawnModel(JzEnttWorld                   &world,
-                                                std::shared_ptr<JzModel>       model,
-                                                const JzTransformComponent    &rootTransform = {});
+    static std::vector<JzEnttEntity> SpawnModel(JzEnttWorld                &world,
+                                                std::shared_ptr<JzModel>    model,
+                                                const JzTransformComponent &rootTransform = {});
 
     /**
      * @brief Spawn a single mesh as an entity.
@@ -54,11 +54,11 @@ public:
      * @param name Optional name for the entity.
      * @return The created entity.
      */
-    static JzEnttEntity SpawnMesh(JzEnttWorld                    &world,
-                                  std::shared_ptr<JzMesh>         mesh,
-                                  std::shared_ptr<JzMaterial>     material,
-                                  const JzTransformComponent     &transform = {},
-                                  const String                   &name      = "");
+    static JzEnttEntity SpawnMesh(JzEnttWorld                &world,
+                                  std::shared_ptr<JzMesh>     mesh,
+                                  std::shared_ptr<JzMaterial> material,
+                                  const JzTransformComponent &transform = {},
+                                  const String               &name      = "");
 
     /**
      * @brief Destroy all entities spawned from a model.
