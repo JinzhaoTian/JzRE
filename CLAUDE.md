@@ -45,7 +45,7 @@ App (JzRE executable)
 | `JzRuntimeCore` | Math (JzVector, JzMatrix), types (JzRETypes), threading (JzThreadPool), logging (JzLogger) |
 | `JzRuntimePlatform` | RHI command pattern (`JzRHICommandList`, `JzDevice`), GPU objects, platform file dialogs |
 | `JzRuntimeResource` | `JzResourceManager`, factories for Texture/Mesh/Model/Shader/Material/Font |
-| `JzRuntimeFunction` | `JzRHIRenderer`, `JzScene`, `JzEntityManager`, `JzInputManager`, `JzWindow` |
+| `JzRuntimeFunction` | ECS systems (`JzEnttRenderSystem`, `JzEnttCameraSystem`, `JzEnttLightSystem`), `JzInputManager`, `JzWindow` |
 | `JzREInterface` | Runtime application base class (`JzRERuntime`) with virtual `OnStart/OnUpdate/OnStop` hooks |
 | `JzEditor` | ImGui-based editor panels, UI widget wrappers |
 
@@ -85,3 +85,28 @@ The test executable `TESTJzRECore` links against `JzRuntimeCore` and `GTest::gte
 ## External Dependencies (vcpkg)
 
 glfw3, glad, imgui (with docking), assimp, stb, gtest, nlohmann-json, spdlog, fmt, freetype, entt
+
+## Documentation Requirements
+
+**IMPORTANT**: When making changes to the engine architecture, you MUST update the corresponding documentation in `/docs/architecture/`:
+
+| Document | Content |
+|----------|---------|
+| `overview.md` | High-level engine architecture and design philosophy |
+| `layers.md` | Layer dependency hierarchy (Core → Platform → Resource → Function) |
+| `module.md` | Module structure and inter-module dependencies |
+| `ecs.md` | ECS components, systems, and entity management |
+| `rendering_pipeline.md` | Rendering flow and system update order |
+| `rhi.md` | RHI abstraction and command pattern |
+| `resource.md` | Resource management and asset factories |
+| `threading.md` | Threading model and thread pool usage |
+
+Architecture changes that require documentation updates include:
+- Adding/removing/modifying ECS systems or components
+- Changing the rendering pipeline or system execution order
+- Modifying core abstractions (JzRERuntime, JzEnttWorld, etc.)
+- Adding new subsystems to any layer
+- Changing layer dependencies or module structure
+- Modifying RHI commands or resource loading patterns
+
+**Always keep documentation in sync with code changes.**
