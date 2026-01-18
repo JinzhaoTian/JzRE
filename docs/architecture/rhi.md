@@ -89,13 +89,13 @@ public:
     virtual String GetDriverVersion() const = 0;
 
     // Resource Creation
+    virtual std::shared_ptr<JzRHIPipeline> CreatePipeline(const JzPipelineDesc&) = 0;
+    virtual std::shared_ptr<JzRHICommandList> CreateCommandList(const String&) = 0;
     virtual std::shared_ptr<JzGPUBufferObject> CreateBuffer(const JzGPUBufferObjectDesc&) = 0;
     virtual std::shared_ptr<JzGPUTextureObject> CreateTexture(const JzGPUTextureObjectDesc&) = 0;
     virtual std::shared_ptr<JzGPUShaderProgramObject> CreateShader(const JzShaderProgramDesc&) = 0;
-    virtual std::shared_ptr<JzRHIPipeline> CreatePipeline(const JzPipelineDesc&) = 0;
     virtual std::shared_ptr<JzGPUFramebufferObject> CreateFramebuffer(const String&) = 0;
     virtual std::shared_ptr<JzGPUVertexArrayObject> CreateVertexArray(const String&) = 0;
-    virtual std::shared_ptr<JzRHICommandList> CreateCommandList(const String&) = 0;
 
     // Frame Management
     virtual void BeginFrame() = 0;
@@ -234,15 +234,15 @@ struct JzPipelineDesc {
 
 Currently completed OpenGL backend implementation:
 
-| Abstract Class | OpenGL Implementation | Status |
-|----------------|----------------------|--------|
-| `JzDevice` | `JzOpenGLDevice` | ✅ Complete |
-| `JzGPUBufferObject` | `JzOpenGLBuffer` | ✅ Complete |
-| `JzGPUTextureObject` | `JzOpenGLTexture` | ✅ Complete |
-| `JzGPUShaderProgramObject` | `JzOpenGLShader` | ✅ Complete |
-| `JzRHIPipeline` | `JzOpenGLPipeline` | ✅ Complete |
-| `JzGPUVertexArrayObject` | `JzOpenGLVertexArray` | ✅ Complete |
-| `JzGPUFramebufferObject` | `JzOpenGLFramebuffer` | ✅ Complete |
+| Abstract Class             | OpenGL Implementation | Status      |
+| -------------------------- | --------------------- | ----------- |
+| `JzDevice`                 | `JzOpenGLDevice`      | ✅ Complete |
+| `JzGPUBufferObject`        | `JzOpenGLBuffer`      | ✅ Complete |
+| `JzGPUTextureObject`       | `JzOpenGLTexture`     | ✅ Complete |
+| `JzGPUShaderProgramObject` | `JzOpenGLShader`      | ✅ Complete |
+| `JzRHIPipeline`            | `JzOpenGLPipeline`    | ✅ Complete |
+| `JzGPUVertexArrayObject`   | `JzOpenGLVertexArray` | ✅ Complete |
+| `JzGPUFramebufferObject`   | `JzOpenGLFramebuffer` | ✅ Complete |
 
 ### OpenGL Features
 
@@ -359,14 +359,14 @@ class JzVulkanSemaphore { ... };       // Synchronization primitives
 
 ### Backend Feature Comparison
 
-| Feature | OpenGL | Vulkan |
-|---------|--------|--------|
-| Multi-threaded Command Recording | ❌ | ✅ |
-| Explicit Memory Management | ❌ | ✅ |
-| Compute Shaders | ✅ | ✅ |
-| Ray Tracing | ❌ | ✅ (Extension) |
-| Cross-Platform | ✅ | ✅ |
-| Learning Curve | Low | High |
+| Feature                          | OpenGL | Vulkan         |
+| -------------------------------- | ------ | -------------- |
+| Multi-threaded Command Recording | ❌     | ✅             |
+| Explicit Memory Management       | ❌     | ✅             |
+| Compute Shaders                  | ✅     | ✅             |
+| Ray Tracing                      | ❌     | ✅ (Extension) |
+| Cross-Platform                   | ✅     | ✅             |
+| Learning Curve                   | Low    | High           |
 
 ---
 

@@ -14,25 +14,25 @@ The engine follows a strict **Runtime + Editor** architecture where dependencies
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                     App (JzRE Executable)                    │
+│              JzREInstance (JzRE Executable)                 │
 ├─────────────────────────────────────────────────────────────┤
-│                     Editor (JzEditor)                        │
-│              ImGui-based development tools                   │
+│                     Editor (JzEditor)                       │
+│              ImGui-based development tools                  │
 ├─────────────────────────────────────────────────────────────┤
-│                  JzRERuntime (Interface)                     │
-│           Runtime application framework                      │
+│                  JzRERuntime (Interface)                    │
+│           Runtime application framework interface           │
 ├─────────────────────────────────────────────────────────────┤
-│                    Function Layer                            │
-│         ECS, Rendering, Scene, Input, Window                 │
+│                    Function Layer                           │
+│                ECS, Input, Window                           │
 ├─────────────────────────────────────────────────────────────┤
-│                    Resource Layer                            │
-│       ResourceManager, Asset Factories, Caching              │
+│                    Resource Layer                           │
+│       ResourceManager, Asset Factories, Caching             │
 ├─────────────────────────────────────────────────────────────┤
-│                    Platform Layer                            │
-│     RHI Abstraction, Graphics Backends, OS APIs              │
+│                    Platform Layer                           │
+│     RHI Abstraction, Graphics Backends, OS APIs             │
 ├─────────────────────────────────────────────────────────────┤
-│                      Core Layer                              │
-│        Types, Math, Threading, Events, Logging               │
+│                      Core Layer                             │
+│        Types, Math, Threading, Events, Logging              │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -195,10 +195,9 @@ for (auto [entity, transform, velocity] : view.each()) {
 | `JzRuntimePlatform` | Static Library    | RHI + Graphics backends  |
 | `JzRuntimeResource` | Static Library    | Resource management      |
 | `JzRuntimeFunction` | Static Library    | High-level systems       |
-| `JzRuntime`         | Interface Library | Links all runtime layers |
+| `JzRERuntime`       | Interface Library | Links all runtime layers |
 | `JzEditor`          | Static Library    | Editor logic             |
-| `JzREApp`           | Static Library    | Application logic        |
-| `JzRE`              | Executable        | Main application         |
+| `JzREInstance`      | Executable        | Main application         |
 
 ---
 

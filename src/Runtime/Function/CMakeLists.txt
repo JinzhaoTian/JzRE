@@ -4,10 +4,8 @@ add_library(JzRuntimeFunction STATIC)
 # Collect all sources by subsystem
 file(GLOB_RECURSE FUNCTION_HEADERS CONFIGURE_DEPENDS "include/*.h" "include/*.inl")
 
-# ECS sources
+# ECS sources (all files now in ECS/ directory)
 file(GLOB ECS_SOURCES CONFIGURE_DEPENDS "src/ECS/*.cpp")
-file(GLOB ENTT_SOURCES CONFIGURE_DEPENDS "src/ECS/EnTT/*.cpp")
-file(GLOB ENTT_SYSTEMS_SOURCES CONFIGURE_DEPENDS "src/ECS/EnTT/Systems/*.cpp")
 
 # Rendering sources
 file(GLOB RENDERING_SOURCES CONFIGURE_DEPENDS "src/Rendering/*.cpp")
@@ -25,8 +23,6 @@ file(GLOB WINDOW_SOURCES CONFIGURE_DEPENDS "src/Window/*.cpp")
 set(ALL_FUNCTION_SOURCES
     ${FUNCTION_HEADERS}
     ${ECS_SOURCES}
-    ${ENTT_SOURCES}
-    ${ENTT_SYSTEMS_SOURCES}
     ${RENDERING_SOURCES}
     ${SCENE_SOURCES}
     ${INPUT_SOURCES}

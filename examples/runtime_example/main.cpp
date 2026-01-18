@@ -4,8 +4,8 @@
  */
 
 #include "JzRE/Runtime/JzRERuntime.h"
-#include "JzRE/Runtime/Function/ECS/EnTT/JzEnttModelSpawner.h"
-#include "JzRE/Runtime/Function/ECS/EnTT/JzEnttRenderComponents.h"
+#include "JzRE/Runtime/Function/ECS/JzEnttModelSpawner.h"
+#include "JzRE/Runtime/Function/ECS/JzEnttRenderComponents.h"
 #include "JzRE/Runtime/Resource/JzModel.h"
 
 #include <iostream>

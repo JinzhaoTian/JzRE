@@ -3,7 +3,7 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzRE/Runtime/Function/ECS/EnTT/Systems/JzEnttLightSystem.h"
+#include "JzRE/Runtime/Function/ECS/JzEnttLightSystem.h"
 
 #include "JzRE/Runtime/Function/ECS/JzComponent.h"
 

@@ -179,13 +179,13 @@ void JzRERuntime::Run() {
 
 ## Available Systems
 
-| System | Description |
-|--------|-------------|
-| `JzEnttCameraSystem` | Updates camera matrices, handles orbit controller input |
-| `JzEnttLightSystem` | Collects light data for rendering |
+| System               | Description                                              |
+| -------------------- | -------------------------------------------------------- |
+| `JzEnttCameraSystem` | Updates camera matrices, handles orbit controller input  |
+| `JzEnttLightSystem`  | Collects light data for rendering                        |
 | `JzEnttRenderSystem` | Manages framebuffer, renders entities with mesh/material |
-| `JzEnttMoveSystem` | Updates position based on velocity |
-| `JzEnttSceneSystem` | Updates world transforms in hierarchy |
+| `JzEnttMoveSystem`   | Updates position based on velocity                       |
+| `JzEnttSceneSystem`  | Updates world transforms in hierarchy                    |
 
 ---
 
@@ -202,13 +202,13 @@ void JzRERuntime::Run() {
 
 ### Rendering Components
 
-| Component | Description |
-|-----------|-------------|
-| `JzEnttCameraComponent` | Full camera state (position, rotation, fov, near/far, matrices) |
-| `JzEnttOrbitControllerComponent` | Orbit camera controller (target, yaw, pitch, distance, sensitivity) |
-| `JzEnttDirectionalLightComponent` | Directional light (direction, color, intensity) |
-| `JzEnttPointLightComponent` | Point light (color, intensity, range, attenuation) |
-| `JzEnttSpotLightComponent` | Spot light (direction, color, intensity, cutoff angles) |
+| Component                         | Description                                                         |
+| --------------------------------- | ------------------------------------------------------------------- |
+| `JzEnttCameraComponent`           | Full camera state (position, rotation, fov, near/far, matrices)     |
+| `JzEnttOrbitControllerComponent`  | Orbit camera controller (target, yaw, pitch, distance, sensitivity) |
+| `JzEnttDirectionalLightComponent` | Directional light (direction, color, intensity)                     |
+| `JzEnttPointLightComponent`       | Point light (color, intensity, range, attenuation)                  |
+| `JzEnttSpotLightComponent`        | Spot light (direction, color, intensity, cutoff angles)             |
 
 ### Tag Components
 
@@ -323,28 +323,25 @@ src/Runtime/Function/
 ├── include/JzRE/Runtime/Function/ECS/
 │   ├── JzComponent.h              # Shared component definitions
 │   ├── JzEntity.h                 # Entity type
-│   └── EnTT/
-│       ├── JzEnttECS.h            # Convenience header
-│       ├── JzEnttEntity.h         # Entity type definitions
-│       ├── JzEnttWorld.h          # Core world class
-│       ├── JzEnttWorld.inl        # Template implementations
-│       ├── JzEnttSystem.h         # System base class
-│       ├── JzEnttComponents.h     # Component re-exports + tags
-│       ├── JzEnttRenderComponents.h  # Camera, light, rendering components
-│       ├── JzEnttModelSpawner.h   # Model to entity conversion
-│       └── Systems/
-│           ├── JzEnttCameraSystem.h
-│           ├── JzEnttLightSystem.h
-│           ├── JzEnttRenderSystem.h
-│           ├── JzEnttMoveSystem.h
-│           └── JzEnttSceneSystem.h
+│   ├── JzEnttECS.h            # Convenience header
+│   ├── JzEnttEntity.h         # Entity type definitions
+│   ├── JzEnttWorld.h          # Core world class
+│   ├── JzEnttWorld.inl        # Template implementations
+│   ├── JzEnttSystem.h         # System base class
+│   ├── JzEnttComponents.h     # Component re-exports + tags
+│   ├── JzEnttRenderComponents.h  # Camera, light, rendering components
+│   ├── JzEnttModelSpawner.h   # Model to entity conversion
+│   ├── JzEnttCameraSystem.h
+│   ├── JzEnttLightSystem.h
+│   ├── JzEnttRenderSystem.h
+│   ├── JzEnttMoveSystem.h
+│   └── JzEnttSceneSystem.h
 └── src/ECS/EnTT/
     ├── JzEnttWorld.cpp
     ├── JzEnttModelSpawner.cpp
-    └── Systems/
-        ├── JzEnttCameraSystem.cpp
-        ├── JzEnttLightSystem.cpp
-        └── JzEnttRenderSystem.cpp
+    ├── JzEnttCameraSystem.cpp
+    ├── JzEnttLightSystem.cpp
+    └── JzEnttRenderSystem.cpp
 ```
 
 ---

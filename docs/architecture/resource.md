@@ -93,14 +93,14 @@ private:
 
 ### Implemented Resource Types
 
-| Resource Type | Class Name | Factory Class | Purpose |
-|---------------|------------|---------------|---------|
-| Texture | `JzTexture` | `JzTextureFactory` | Image resources |
-| Mesh | `JzMesh` | `JzMeshFactory` | Geometry data |
-| Material | `JzMaterial` | `JzMaterialFactory` | Render materials |
-| Shader | `JzShader` | `JzShaderFactory` | GPU programs |
-| Model | `JzModel` | `JzModelFactory` | Complete 3D models |
-| Font | `JzFont` | `JzFontFactory` | Text rendering |
+| Resource Type | Class Name   | Factory Class       | Purpose            |
+| ------------- | ------------ | ------------------- | ------------------ |
+| Texture       | `JzTexture`  | `JzTextureFactory`  | Image resources    |
+| Mesh          | `JzMesh`     | `JzMeshFactory`     | Geometry data      |
+| Material      | `JzMaterial` | `JzMaterialFactory` | Render materials   |
+| Shader        | `JzShader`   | `JzShaderFactory`   | GPU programs       |
+| Model         | `JzModel`    | `JzModelFactory`    | Complete 3D models |
+| Font          | `JzFont`     | `JzFontFactory`     | Text rendering     |
 
 ### Resource Class Relationships
 

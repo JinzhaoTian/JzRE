@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "JzRE/Runtime/Function/ECS/EnTT/JzEnttWorld.h"
+#include "JzRE/Runtime/Function/ECS/JzEnttWorld.h"
 
 namespace JzRE {
 

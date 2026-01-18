@@ -14,39 +14,39 @@ This document describes the evolution plan from single-threaded to multi-threade
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    Main Thread                                   │
-│                    Holds OpenGL Context                          │
-│                                                                  │
+│                    Main Thread                                  │
+│                    Holds OpenGL Context                         │
+│                                                                 │
 │  ┌──────────┐  ┌────────────┐  ┌────────────┐  ┌─────────────┐  │
 │  │PollEvents│─►│BeginFrame  │─►│RenderScene │─►│Editor.Update│  │
 │  └──────────┘  └────────────┘  └────────────┘  └─────────────┘  │
-│       │                                              │           │
-│       │        ┌───────────────┐    ┌─────────────┐  │           │
-│       └───────►│ SwapBuffers  │◄───│ ImGui Render│◄─┘           │
-│                └───────────────┘    └─────────────┘              │
+│       │                                              │          │
+│       │        ┌───────────────┐    ┌─────────────┐  │          │
+│       └───────►│  SwapBuffers  │◄───│ ImGui Render│◄─┘          │
+│                └───────────────┘    └─────────────┘             │
 └─────────────────────────────────────────────────────────────────┘
                             │
                    Sync (mutex + condition_variable)
                             │
 ┌───────────────────────────▼─────────────────────────────────────┐
-│               Worker Thread                                      │
-│               Handles Non-GPU Tasks                              │
-│                                                                  │
+│               Worker Thread                                     │
+│               Handles Non-GPU Tasks                             │
+│                                                                 │
 │  ┌──────────────────────────────────────────────────────────┐   │
 │  │ Scene Culling / Animation Update / Physics / Resource    │   │
-│  │ Preloading (TODO)                                         │   │
+│  │ Preloading (TODO)                                        │   │
 │  └──────────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ### Existing Threading Infrastructure
 
-| Component | File | Status | Description |
-|-----------|------|--------|-------------|
-| Thread Pool | `JzThreadPool.h` | ✅ Implemented | General task parallel execution |
-| Task Queue | `JzTaskQueue.h` | ✅ Implemented | Priority task scheduling |
-| Command List | `JzRHICommandList.h` | ✅ Implemented | Thread-safe command recording |
-| Frame Sync | `JzREInstance.cpp` | ✅ Implemented | Main/worker thread synchronization |
+| Component    | File                 | Status         | Description                        |
+| ------------ | -------------------- | -------------- | ---------------------------------- |
+| Thread Pool  | `JzThreadPool.h`     | ✅ Implemented | General task parallel execution    |
+| Task Queue   | `JzTaskQueue.h`      | ✅ Implemented | Priority task scheduling           |
+| Command List | `JzRHICommandList.h` | ✅ Implemented | Thread-safe command recording      |
+| Frame Sync   | `JzREInstance.cpp`   | ✅ Implemented | Main/worker thread synchronization |
 
 ### JzREInstance Thread Synchronization Implementation
 
@@ -78,6 +78,7 @@ Bool JzOpenGLDevice::SupportsMultithreading() const {
 ```
 
 OpenGL limitations:
+
 - Context bound to single thread
 - Resources must be created/used in correct context
 - Cannot generate render commands in parallel
@@ -477,12 +478,12 @@ private:
 
 ## Implementation Priority
 
-| Phase | Priority | Complexity | Dependencies |
-|-------|----------|------------|--------------|
-| Phase 1: Background Resource Loading | Low | Low | None |
-| Phase 2: Parallel ECS Systems | Medium | Medium | Phase 1 |
-| Phase 3: Multi-Threaded Command Recording | High | High | Vulkan |
-| Phase 4: Job-Based Rendering | Highest | Highest | Phase 3 |
+| Phase                                     | Priority | Complexity | Dependencies |
+| ----------------------------------------- | -------- | ---------- | ------------ |
+| Phase 1: Background Resource Loading      | Low      | Low        | None         |
+| Phase 2: Parallel ECS Systems             | Medium   | Medium     | Phase 1      |
+| Phase 3: Multi-Threaded Command Recording | High     | High       | Vulkan       |
+| Phase 4: Job-Based Rendering              | Highest  | Highest    | Phase 3      |
 
 > [!NOTE]
 > Phase 1 (Async Resource Loading) is currently low priority, can be adjusted based on actual needs.

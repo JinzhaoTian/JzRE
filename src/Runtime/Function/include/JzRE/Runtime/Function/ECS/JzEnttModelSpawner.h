@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "JzRE/Runtime/Core/JzRETypes.h"
-#include "JzRE/Runtime/Function/ECS/EnTT/JzEnttEntity.h"
-#include "JzRE/Runtime/Function/ECS/EnTT/JzEnttWorld.h"
+#include "JzRE/Runtime/Function/ECS/JzEnttEntity.h"
+#include "JzRE/Runtime/Function/ECS/JzEnttWorld.h"
 #include "JzRE/Runtime/Function/ECS/JzComponent.h"
 #include "JzRE/Runtime/Resource/JzMaterial.h"
 #include "JzRE/Runtime/Resource/JzMesh.h"

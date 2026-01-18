@@ -13,6 +13,12 @@ JzRE/
 ├── src/
 │   ├── Runtime/                    # Game Engine Runtime
 │   │   ├── CMakeLists.txt
+│   │   ├── Interface/              # Interface
+│   │   │   ├── CMakeLists.txt
+│   │   │   ├── include/JzRE/Runtime/
+│   │   │   │   └── JzRERuntime.h
+│   │   │   └── src/
+│   │   │
 │   │   ├── Core/                   # Layer 1: Core Utilities
 │   │   │   ├── CMakeLists.txt
 │   │   │   ├── include/JzRE/Runtime/Core/
@@ -68,17 +74,11 @@ JzRE/
 │   │   ├── include/JzRE/Editor/
 │   │   │   ├── JzEditor.h
 │   │   │   ├── JzPanelsManager.h
-│   │   │   └── UI/                 # ImGui wrappers
-│   │   └── src/
-│   │
-│   ├── App/                        # Main Entry Points
-│   │   ├── CMakeLists.txt
-│   │   ├── include/JzRE/App/
+│   │   │   ├── UI/                 # ImGui wrappers
 │   │   │   ├── JzREHub.h
-│   │   │   ├── JzREInstance.h
-│   │   │   └── JzRERuntime.h
+│   │   │   └── JzREInstance.h
 │   │   └── src/
-│   │       └── main.cpp
+│   │       └── main.cpp            # Main Entry Points
 │   │
 │   └── CMakeLists.txt
 │
@@ -95,9 +95,8 @@ JzRE/
 
 ```mermaid
 graph TD
-    App --> Editor
-    Editor --> JzRuntime
-    JzRuntime --> JzRuntimeFunction
+    Editor --> JzRERuntime
+    JzRERuntime --> JzRuntimeFunction
     JzRuntimeFunction --> JzRuntimeResource
     JzRuntimeResource --> JzRuntimePlatform
     JzRuntimePlatform --> JzRuntimeCore
@@ -115,9 +114,6 @@ add_subdirectory(Runtime)
 
 # Editor module (depends on Runtime)
 add_subdirectory(Editor)
-
-# Application entry points
-add_subdirectory(App)
 ```
 
 ### src/Runtime/CMakeLists.txt
@@ -128,8 +124,8 @@ add_subdirectory(Platform)
 add_subdirectory(Resource)
 add_subdirectory(Function)
 
-add_library(JzRuntime INTERFACE)
-target_link_libraries(JzRuntime INTERFACE
+add_library(JzRERuntime INTERFACE)
+target_link_libraries(JzRERuntime INTERFACE
     JzRuntimeCore
     JzRuntimePlatform
     JzRuntimeResource
@@ -187,13 +183,12 @@ cd build && ctest --output-on-failure
 
 ## Build Targets Summary
 
-| Target | Type | Dependencies |
-|--------|------|--------------|
-| `JzRuntimeCore` | Static | spdlog |
-| `JzRuntimePlatform` | Static | JzRuntimeCore, glad, glfw |
-| `JzRuntimeResource` | Static | JzRuntimeCore, JzRuntimePlatform, assimp |
-| `JzRuntimeFunction` | Static | JzRuntimeCore, JzRuntimePlatform, JzRuntimeResource |
-| `JzRuntime` | Interface | All runtime layers |
-| `JzEditor` | Static | JzRuntime, imgui |
-| `JzREApp` | Static | JzEditor |
-| `JzRE` | Executable | JzREApp |
+| Target              | Type       | Dependencies                                        |
+| ------------------- | ---------- | --------------------------------------------------- |
+| `JzRuntimeCore`     | Static     | spdlog                                              |
+| `JzRuntimePlatform` | Static     | JzRuntimeCore, glad, glfw                           |
+| `JzRuntimeResource` | Static     | JzRuntimeCore, JzRuntimePlatform, assimp            |
+| `JzRuntimeFunction` | Static     | JzRuntimeCore, JzRuntimePlatform, JzRuntimeResource |
+| `JzRERuntime`       | Interface  | All runtime layers                                  |
+| `JzEditor`          | Static     | JzRERuntime, imgui                                  |
+| `JzREInstance`      | Executable | JzRERuntime, JzEditor                               |

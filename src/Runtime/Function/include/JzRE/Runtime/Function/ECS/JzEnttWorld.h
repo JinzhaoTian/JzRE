@@ -9,8 +9,8 @@
 #include <vector>
 #include <entt/entt.hpp>
 #include "JzRE/Runtime/Core/JzRETypes.h"
-#include "JzRE/Runtime/Function/ECS/EnTT/JzEnttEntity.h"
-#include "JzRE/Runtime/Function/ECS/EnTT/JzEnttSystem.h"
+#include "JzRE/Runtime/Function/ECS/JzEnttEntity.h"
+#include "JzRE/Runtime/Function/ECS/JzEnttSystem.h"
 
 namespace JzRE {
 

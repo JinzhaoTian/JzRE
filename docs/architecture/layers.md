@@ -66,24 +66,24 @@ graph TB
 
 Engine foundation - no dependencies on other modules.
 
-| Component | Files |
-|-----------|-------|
-| Types | `JzRETypes.h` |
-| Math | `JzVector.h`, `JzMatrix.h` |
+| Component | Files                             |
+| --------- | --------------------------------- |
+| Types     | `JzRETypes.h`                     |
+| Math      | `JzVector.h`, `JzMatrix.h`        |
 | Threading | `JzThreadPool.h`, `JzTaskQueue.h` |
-| Events | `JzEvent.h` |
-| Services | `JzServiceContainer.h` |
-| Logging | `JzLogger.h` |
+| Events    | `JzEvent.h`                       |
+| Services  | `JzServiceContainer.h`            |
+| Logging   | `JzLogger.h`                      |
 
 ### 2. Platform Layer (`src/Runtime/Platform/`)
 
 Provides platform-agnostic services through abstraction:
 
-| Component | Description |
-|-----------|-------------|
-| **RHI** | Rendering Hardware Interface - abstracts graphics APIs |
-| **Graphics Backends** | OpenGL, Vulkan (planned) implementations |
-| **Platform APIs** | File dialogs, message boxes per OS |
+| Component             | Description                                            |
+| --------------------- | ------------------------------------------------------ |
+| **RHI**               | Rendering Hardware Interface - abstracts graphics APIs |
+| **Graphics Backends** | OpenGL, Vulkan (planned) implementations               |
+| **Platform APIs**     | File dialogs, message boxes per OS                     |
 
 **Key Classes**: `JzDevice`, `JzRHICommandList`, `JzGPU*Object`, `JzFileDialog`
 
@@ -91,23 +91,23 @@ Provides platform-agnostic services through abstraction:
 
 Asset loading, caching, and lifecycle management.
 
-| Component | Description |
-|-----------|-------------|
-| `JzResourceManager` | Unified resource access |
-| `Jz*Factory` | Type-specific resource creation |
-| Resource Types | `JzTexture`, `JzMesh`, `JzModel`, `JzShader`, `JzMaterial`, `JzFont` |
+| Component           | Description                                                          |
+| ------------------- | -------------------------------------------------------------------- |
+| `JzResourceManager` | Unified resource access                                              |
+| `Jz*Factory`        | Type-specific resource creation                                      |
+| Resource Types      | `JzTexture`, `JzMesh`, `JzModel`, `JzShader`, `JzMaterial`, `JzFont` |
 
 ### 4. Function Layer (`src/Runtime/Function/`)
 
 High-level engine systems:
 
-| Subsystem | Directory | Key Classes |
-|-----------|-----------|-------------|
-| Rendering | `Rendering/` | `JzRHIRenderer`, `JzDeviceFactory` |
-| Scene | `Scene/` | `JzScene`, `JzActor`, `JzWorld` |
-| ECS | `ECS/` | `JzEntityManager`, `Jz*System`, `Jz*Component` |
-| Input | `Input/` | `JzInputManager` |
-| Window | `Window/` | `JzWindow` |
+| Subsystem | Directory    | Key Classes                                    |
+| --------- | ------------ | ---------------------------------------------- |
+| Rendering | `Rendering/` | `JzRHIRenderer`, `JzDeviceFactory`             |
+| Scene     | `Scene/`     | `JzScene`, `JzActor`, `JzWorld`                |
+| ECS       | `ECS/`       | `JzEntityManager`, `Jz*System`, `Jz*Component` |
+| Input     | `Input/`     | `JzInputManager`                               |
+| Window    | `Window/`    | `JzWindow`                                     |
 
 ---
 
@@ -115,13 +115,13 @@ High-level engine systems:
 
 Development tools built on top of Runtime:
 
-| Component | Description |
-|-----------|-------------|
-| `JzEditor` | Editor main loop |
-| `JzPanelsManager` | Panel layout |
-| `JzUIManager` | ImGui management |
-| `UI/` | ImGui widget wrappers |
-| Panels | `JzSceneView`, `JzHierarchy`, `JzAssetBrowser`, `JzConsole` |
+| Component         | Description                                                 |
+| ----------------- | ----------------------------------------------------------- |
+| `JzEditor`        | Editor main loop                                            |
+| `JzPanelsManager` | Panel layout                                                |
+| `JzUIManager`     | ImGui management                                            |
+| `UI/`             | ImGui widget wrappers                                       |
+| Panels            | `JzSceneView`, `JzHierarchy`, `JzAssetBrowser`, `JzConsole` |
 
 ---
 
@@ -149,17 +149,20 @@ graph LR
 ## Design Principles
 
 ### Data-Oriented Design (DOD)
+
 - Component pools with contiguous memory
 - Systems separate from data
 - Cache-friendly batch processing
 
 ### Dependency Injection
+
 ```cpp
 JzServiceContainer::Provide<JzResourceManager>(manager);
 auto& mgr = JzServiceContainer::Get<JzResourceManager>();
 ```
 
 ### Command Pattern
+
 ```cpp
 auto cmdList = device->CreateCommandList();
 cmdList->Begin();
@@ -173,9 +176,9 @@ device->ExecuteCommandList(cmdList);
 
 ## Cross-Platform Support
 
-| Aspect | Solution |
-|--------|----------|
-| File paths | `std::filesystem::path` |
-| Dialogs | `JzFileDialog` (per-platform) |
-| Windowing | GLFW |
-| Graphics APIs | RHI abstraction |
+| Aspect        | Solution                      |
+| ------------- | ----------------------------- |
+| File paths    | `std::filesystem::path`       |
+| Dialogs       | `JzFileDialog` (per-platform) |
+| Windowing     | GLFW                          |
+| Graphics APIs | RHI abstraction               |

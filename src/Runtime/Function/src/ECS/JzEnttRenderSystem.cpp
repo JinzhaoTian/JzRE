@@ -3,11 +3,11 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzRE/Runtime/Function/ECS/EnTT/Systems/JzEnttRenderSystem.h"
+#include "JzRE/Runtime/Function/ECS/JzEnttRenderSystem.h"
 
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
-#include "JzRE/Runtime/Function/ECS/EnTT/Systems/JzEnttCameraSystem.h"
-#include "JzRE/Runtime/Function/ECS/EnTT/Systems/JzEnttLightSystem.h"
+#include "JzRE/Runtime/Function/ECS/JzEnttCameraSystem.h"
+#include "JzRE/Runtime/Function/ECS/JzEnttLightSystem.h"
 #include "JzRE/Runtime/Function/ECS/JzComponent.h"
 #include "JzRE/Runtime/Platform/JzDevice.h"
 #include "JzRE/Runtime/Resource/JzMaterial.h"

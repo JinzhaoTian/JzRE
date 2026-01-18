@@ -3,7 +3,7 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzRE/Runtime/Function/ECS/EnTT/JzEnttWorld.h"
+#include "JzRE/Runtime/Function/ECS/JzEnttWorld.h"
 
 namespace JzRE {
 

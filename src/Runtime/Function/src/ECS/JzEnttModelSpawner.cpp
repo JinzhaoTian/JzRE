@@ -3,10 +3,10 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzRE/Runtime/Function/ECS/EnTT/JzEnttModelSpawner.h"
+#include "JzRE/Runtime/Function/ECS/JzEnttModelSpawner.h"
 
-#include "JzRE/Runtime/Function/ECS/EnTT/JzEnttComponents.h"
-#include "JzRE/Runtime/Function/ECS/EnTT/JzEnttRenderComponents.h"
+#include "JzRE/Runtime/Function/ECS/JzEnttComponents.h"
+#include "JzRE/Runtime/Function/ECS/JzEnttRenderComponents.h"
 
 namespace JzRE {
 

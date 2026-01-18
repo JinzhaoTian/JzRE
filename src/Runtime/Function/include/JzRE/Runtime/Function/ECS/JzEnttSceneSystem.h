@@ -5,9 +5,9 @@
 
 #pragma once
 
-#include "JzRE/Runtime/Function/ECS/EnTT/JzEnttSystem.h"
-#include "JzRE/Runtime/Function/ECS/EnTT/JzEnttWorld.h"
-#include "JzRE/Runtime/Function/ECS/EnTT/JzEnttComponents.h"
+#include "JzRE/Runtime/Function/ECS/JzEnttSystem.h"
+#include "JzRE/Runtime/Function/ECS/JzEnttWorld.h"
+#include "JzRE/Runtime/Function/ECS/JzEnttComponents.h"
 
 namespace JzRE {
 

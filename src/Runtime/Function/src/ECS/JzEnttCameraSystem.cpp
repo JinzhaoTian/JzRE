@@ -3,7 +3,7 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzRE/Runtime/Function/ECS/EnTT/Systems/JzEnttCameraSystem.h"
+#include "JzRE/Runtime/Function/ECS/JzEnttCameraSystem.h"
 
 #include <algorithm>
 #include <cmath>

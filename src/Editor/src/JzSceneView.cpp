@@ -7,8 +7,8 @@
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
 #include "JzRE/Editor/JzSceneView.h"
 #include "JzRE/Runtime/Function/Input/JzInputManager.h"
-#include "JzRE/Runtime/Function/ECS/EnTT/JzEnttWorld.h"
-#include "JzRE/Runtime/Function/ECS/EnTT/JzEnttRenderComponents.h"
+#include "JzRE/Runtime/Function/ECS/JzEnttWorld.h"
+#include "JzRE/Runtime/Function/ECS/JzEnttRenderComponents.h"
 
 JzRE::JzSceneView::JzSceneView(const JzRE::String &name, JzRE::Bool is_opened) :
     JzRE::JzView(name, is_opened)

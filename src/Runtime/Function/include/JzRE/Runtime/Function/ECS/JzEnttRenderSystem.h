@@ -9,9 +9,9 @@
 
 #include "JzRE/Runtime/Core/JzRETypes.h"
 #include "JzRE/Runtime/Core/JzVector.h"
-#include "JzRE/Runtime/Function/ECS/EnTT/JzEnttComponents.h"
-#include "JzRE/Runtime/Function/ECS/EnTT/JzEnttSystem.h"
-#include "JzRE/Runtime/Function/ECS/EnTT/JzEnttWorld.h"
+#include "JzRE/Runtime/Function/ECS/JzEnttComponents.h"
+#include "JzRE/Runtime/Function/ECS/JzEnttSystem.h"
+#include "JzRE/Runtime/Function/ECS/JzEnttWorld.h"
 #include "JzRE/Runtime/Platform/JzDevice.h"
 #include "JzRE/Runtime/Platform/JzGPUFramebufferObject.h"
 #include "JzRE/Runtime/Platform/JzGPUTextureObject.h"

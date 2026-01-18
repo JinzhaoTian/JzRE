@@ -8,9 +8,9 @@
 #include "JzRE/Runtime/Core/JzMatrix.h"
 #include "JzRE/Runtime/Core/JzRETypes.h"
 #include "JzRE/Runtime/Core/JzVector.h"
-#include "JzRE/Runtime/Function/ECS/EnTT/JzEnttRenderComponents.h"
-#include "JzRE/Runtime/Function/ECS/EnTT/JzEnttSystem.h"
-#include "JzRE/Runtime/Function/ECS/EnTT/JzEnttWorld.h"
+#include "JzRE/Runtime/Function/ECS/JzEnttRenderComponents.h"
+#include "JzRE/Runtime/Function/ECS/JzEnttSystem.h"
+#include "JzRE/Runtime/Function/ECS/JzEnttWorld.h"
 
 namespace JzRE {
 

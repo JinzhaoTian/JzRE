@@ -18,11 +18,11 @@ JzRERuntime
 
 ### System Responsibilities
 
-| System | Responsibilities |
-|--------|------------------|
+| System                 | Responsibilities                                                 |
+| ---------------------- | ---------------------------------------------------------------- |
 | **JzEnttCameraSystem** | Process orbit controller input, compute view/projection matrices |
-| **JzEnttLightSystem** | Collect light entities, provide primary light direction/color |
-| **JzEnttRenderSystem** | Manage framebuffer/textures, create pipeline, render entities |
+| **JzEnttLightSystem**  | Collect light entities, provide primary light direction/color    |
+| **JzEnttRenderSystem** | Manage framebuffer/textures, create pipeline, render entities    |
 
 ---
 
@@ -136,11 +136,11 @@ struct JzEnttSpotLightComponent {
 
 An entity is rendered if it has these components:
 
-| Component | Purpose |
-|-----------|---------|
-| `JzTransformComponent` | Position, rotation, scale |
-| `JzMeshComponent` | Reference to `JzMesh` resource |
-| `JzMaterialComponent` | Reference to `JzMaterial` resource |
+| Component              | Purpose                            |
+| ---------------------- | ---------------------------------- |
+| `JzTransformComponent` | Position, rotation, scale          |
+| `JzMeshComponent`      | Reference to `JzMesh` resource     |
+| `JzMaterialComponent`  | Reference to `JzMaterial` resource |
 
 ---
 
@@ -305,12 +305,12 @@ sequenceDiagram
 
 ## Key Type Relationships
 
-| Component | Resource | RHI Objects |
-|-----------|----------|-------------|
-| `JzMeshComponent` | `JzMesh` | `JzGPUVertexArrayObject`, `JzGPUBufferObject` |
-| `JzMaterialComponent` | `JzMaterial` | `JzRHIPipeline`, `JzGPUTextureObject` |
-| `JzEnttCameraComponent` | - | Uniform data |
-| `JzEntt*LightComponent` | - | Uniform data |
+| Component               | Resource     | RHI Objects                                   |
+| ----------------------- | ------------ | --------------------------------------------- |
+| `JzMeshComponent`       | `JzMesh`     | `JzGPUVertexArrayObject`, `JzGPUBufferObject` |
+| `JzMaterialComponent`   | `JzMaterial` | `JzRHIPipeline`, `JzGPUTextureObject`         |
+| `JzEnttCameraComponent` | -            | Uniform data                                  |
+| `JzEntt*LightComponent` | -            | Uniform data                                  |
 
 ---
 
@@ -319,10 +319,12 @@ sequenceDiagram
 The `JzEnttRenderSystem` creates a default pipeline with Blinn-Phong shading:
 
 **Vertex Shader:**
+
 - MVP transformation
 - Pass normal and world position to fragment
 
 **Fragment Shader:**
+
 - Ambient + Diffuse + Specular lighting
 - Material colors: `uAmbientColor`, `uDiffuseColor`, `uSpecularColor`, `uShininess`
 - Light: `uLightDir`, `uLightColor`
