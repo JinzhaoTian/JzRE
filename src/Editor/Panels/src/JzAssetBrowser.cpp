@@ -19,7 +19,7 @@
 JzRE::JzAssetBrowser::JzAssetBrowser(const JzRE::String &name, JzRE::Bool is_opened) :
     JzPanelWindow(name, is_opened)
 {
-    m_openDirectory = JzContext::GetInstance().GetCurrentPath();
+    m_openDirectory = JzContext::GetInstance().GetProjectPath();
 
     auto &refreshButton             = CreateWidget<JzButton>("Refresh");
     refreshButton.buttonIdleColor   = "#e3c79f";

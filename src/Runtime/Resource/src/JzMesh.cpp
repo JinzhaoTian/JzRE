@@ -9,6 +9,12 @@
 
 namespace JzRE {
 
+JzMesh::JzMesh(const String &path)
+{
+    m_name  = path;
+    m_state = JzEResourceState::Unloaded;
+}
+
 JzMesh::JzMesh(std::vector<JzVertex> vertices, std::vector<uint32_t> indices, I32 materialIndex) :
     m_vertices(std::move(vertices)), m_indices(std::move(indices)), m_materialIndex(materialIndex)
 {

@@ -22,12 +22,14 @@ target_include_directories(JzRuntimeResource
 # External dependencies
 find_package(assimp CONFIG REQUIRED)
 find_package(Stb REQUIRED)
+find_package(Freetype REQUIRED)
 
 target_link_libraries(JzRuntimeResource
     PUBLIC
         JzRuntimeCore
         JzRuntimePlatform
         assimp::assimp
+        Freetype::Freetype
 )
 
 target_include_directories(JzRuntimeResource PRIVATE ${Stb_INCLUDE_DIR})

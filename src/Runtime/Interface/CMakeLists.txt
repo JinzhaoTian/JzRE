@@ -1,10 +1,10 @@
-# Runtime Interface Layer - Runtime interface framework
-add_library(JzREInterface STATIC)
+# Runtime Interface Layer
+add_library(JzRERuntime STATIC)
 
 file(GLOB_RECURSE RUNTIME_APP_SOURCES CONFIGURE_DEPENDS "src/*.cpp")
 file(GLOB_RECURSE RUNTIME_APP_HEADERS CONFIGURE_DEPENDS "include/*.h")
 
-target_sources(JzREInterface PRIVATE ${RUNTIME_APP_SOURCES} ${RUNTIME_APP_HEADERS})
+target_sources(JzRERuntime PRIVATE ${RUNTIME_APP_SOURCES} ${RUNTIME_APP_HEADERS})
 
 # Organize sources in Visual Studio filters
 source_group(
@@ -13,17 +13,20 @@ source_group(
 )
 
 # Set target folder in Visual Studio
-set_target_properties(JzREInterface PROPERTIES FOLDER "Runtime")
+set_target_properties(JzRERuntime PROPERTIES FOLDER "Runtime")
 
-target_include_directories(JzREInterface
-    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
+target_compile_features(JzRERuntime PUBLIC cxx_std_20)
+
+target_include_directories(JzRERuntime
+    PUBLIC 
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-target_link_libraries(JzREInterface
+# Link all runtime layers
+target_link_libraries(JzRERuntime 
     PUBLIC
         JzRuntimeCore
         JzRuntimePlatform
         JzRuntimeResource
         JzRuntimeFunction
 )
-

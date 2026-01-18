@@ -10,10 +10,10 @@ JzRE::JzREInstance::JzREInstance(JzERHIType rhiType, std::filesystem::path &open
     JzRERuntime(rhiType, "JzRE", {1280, 720}),
     m_openDirectory(openDirectory)
 {
-    // Initialize editor context
+    // Initialize project context (engine init already done in JzRERuntime constructor)
     auto &context = JzContext::GetInstance();
-    if (!context.IsInitialized()) {
-        context.Initialize(m_openDirectory);
+    if (!context.IsProjectInitialized()) {
+        context.InitializeProject(GetResourceManager(), m_openDirectory);
     }
 
     // Create editor with runtime reference

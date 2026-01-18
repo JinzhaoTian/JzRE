@@ -9,8 +9,7 @@
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
 #include "JzRE/Runtime/Function/ECS/JzEnttRenderComponents.h"
 #include "JzRE/Runtime/Function/Rendering/JzDeviceFactory.h"
-#include "JzRE/Runtime/Resource/JzTexture.h"
-#include "JzRE/Runtime/Resource/JzTextureFactory.h"
+#include "JzRE/Runtime/JzContext.h"
 
 JzRE::JzRERuntime::JzRERuntime(JzERHIType rhiType, const String &windowTitle,
                                const JzIVec2 &windowSize)
@@ -19,9 +18,11 @@ JzRE::JzRERuntime::JzRERuntime(JzERHIType rhiType, const String &windowTitle,
 
     // Initialize resource manager
     m_resourceManager = std::make_unique<JzResourceManager>();
-    m_resourceManager->RegisterFactory<JzTexture>(std::make_unique<JzTextureFactory>());
-    m_resourceManager->AddSearchPath("./icons");
     JzServiceContainer::Provide<JzResourceManager>(*m_resourceManager);
+
+    // Initialize engine context (registers factories and engine search paths)
+    auto &context = JzContext::GetInstance();
+    context.InitializeEngine(*m_resourceManager);
 
     // Create window
     JzWindowSettings windowSettings;
