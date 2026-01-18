@@ -6,6 +6,7 @@
 #include "JzRE/Runtime/Function/ECS/JzEnttLightSystem.h"
 
 #include "JzRE/Runtime/Function/ECS/JzEnttComponents.h"
+#include "JzRE/Runtime/Function/ECS/JzEnttRenderComponents.h"
 
 namespace JzRE {
 

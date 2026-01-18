@@ -38,4 +38,34 @@ void JzEnttWorld::Update(F32 delta)
     }
 }
 
+void JzEnttWorld::UpdateLogic(F32 delta)
+{
+    // Update all logic phase systems in order: Input -> Physics -> Animation -> Logic
+    for (auto &system : m_systems) {
+        if (system && system->IsEnabled() && IsLogicPhase(system->GetPhase())) {
+            system->Update(*this, delta);
+        }
+    }
+}
+
+void JzEnttWorld::UpdatePreRender(F32 delta)
+{
+    // Update all pre-render phase systems in order: PreRender -> Culling
+    for (auto &system : m_systems) {
+        if (system && system->IsEnabled() && IsPreRenderPhase(system->GetPhase())) {
+            system->Update(*this, delta);
+        }
+    }
+}
+
+void JzEnttWorld::UpdateRender(F32 delta)
+{
+    // Update all render phase systems in order: RenderPrep -> Render
+    for (auto &system : m_systems) {
+        if (system && system->IsEnabled() && IsRenderPhase(system->GetPhase())) {
+            system->Update(*this, delta);
+        }
+    }
+}
+
 } // namespace JzRE

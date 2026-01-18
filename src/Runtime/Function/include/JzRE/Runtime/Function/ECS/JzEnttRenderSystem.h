@@ -41,6 +41,14 @@ public:
     void Update(JzEnttWorld &world, F32 delta) override;
     void OnShutdown(JzEnttWorld &world) override;
 
+    /**
+     * @brief Render system runs in Render phase.
+     */
+    JzSystemPhase GetPhase() const override
+    {
+        return JzSystemPhase::Render;
+    }
+
     // ==================== Camera and Light System References ====================
 
     /**

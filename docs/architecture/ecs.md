@@ -83,6 +83,8 @@ for (auto entity : view) {
 
 ### Creating Systems
 
+Systems can specify their execution phase via `GetPhase()`:
+
 ```cpp
 class MySystem : public JzRE::JzEnttSystem {
 public:
@@ -101,91 +103,153 @@ public:
     void OnShutdown(JzEnttWorld& world) override {
         // Called when system is destroyed
     }
+
+    // Override to specify execution phase (default: Logic)
+    JzSystemPhase GetPhase() const override {
+        return JzSystemPhase::Logic;  // or PreRender, Render
+    }
 };
 ```
+
+### System Phases
+
+Systems are categorized into 8 phases for proper synchronization:
+
+| Phase Group   | Phase         | Enum                        | Purpose                                    |
+| ------------- | ------------- | --------------------------- | ------------------------------------------ |
+| **Logic**     | Input         | `JzSystemPhase::Input`      | Input processing, event handling           |
+|               | Physics       | `JzSystemPhase::Physics`    | Physics simulation, collision detection    |
+|               | Animation     | `JzSystemPhase::Animation`  | Skeletal animation, blend trees            |
+|               | Logic         | `JzSystemPhase::Logic`      | General game logic, AI, scripts            |
+| **PreRender** | PreRender     | `JzSystemPhase::PreRender`  | Camera matrices, light collection          |
+|               | Culling       | `JzSystemPhase::Culling`    | Frustum culling, occlusion, LOD selection  |
+| **Render**    | RenderPrep    | `JzSystemPhase::RenderPrep` | Batch building, instance data preparation  |
+|               | Render        | `JzSystemPhase::Render`     | Actual GPU draw calls                      |
+
+Helper functions are available to check phase groups:
+- `IsLogicPhase(phase)` - Returns true for Input, Physics, Animation, Logic
+- `IsPreRenderPhase(phase)` - Returns true for PreRender, Culling
+- `IsRenderPhase(phase)` - Returns true for RenderPrep, Render
 
 ### Registering Systems
 
 ```cpp
 JzRE::JzEnttWorld world;
 
-// Register systems in update order
-auto cameraSystem = world.RegisterSystem<JzEnttCameraSystem>();
-auto lightSystem = world.RegisterSystem<JzEnttLightSystem>();
-auto renderSystem = world.RegisterSystem<JzEnttRenderSystem>();
+// Register systems in execution order
+// Logic phases (can run parallel with GPU)
+world.RegisterSystem<InputSystem>();       // Input
+world.RegisterSystem<PhysicsSystem>();     // Physics
+world.RegisterSystem<AnimationSystem>();   // Animation
+world.RegisterSystem<AISystem>();          // Logic
+
+// PreRender phases (after sync point)
+auto cameraSystem = world.RegisterSystem<JzEnttCameraSystem>();  // PreRender
+auto lightSystem = world.RegisterSystem<JzEnttLightSystem>();    // PreRender
+world.RegisterSystem<CullingSystem>();     // Culling
+
+// Render phases
+world.RegisterSystem<BatchBuildingSystem>();   // RenderPrep
+world.RegisterSystem<InstanceDataSystem>();    // RenderPrep
+auto renderSystem = world.RegisterSystem<JzEnttRenderSystem>();  // Render
 
 // Update all systems (in registration order)
 world.Update(deltaTime);
+
+// Or update by phase group:
+world.UpdateLogic(deltaTime);     // All logic phases (Input -> Physics -> Animation -> Logic)
+world.UpdatePreRender(deltaTime); // All pre-render phases (PreRender -> Culling)
+world.UpdateRender(deltaTime);    // All render phases (RenderPrep -> Render)
+
+// Or update a specific phase:
+world.UpdatePhase(JzSystemPhase::Physics, deltaTime);  // Physics only
 ```
 
 ---
 
 ## JzRERuntime ECS Architecture
 
-The `JzRERuntime` class uses ECS as its primary rendering architecture:
+The `JzRERuntime` class uses ECS as its primary rendering architecture with phase-based system execution:
 
 ```
 JzRERuntime
   └── JzEnttWorld (entity/component storage, system management)
-        ├── JzEnttCameraSystem (camera matrix updates, orbit control)
-        ├── JzEnttLightSystem (light data collection)
-        └── JzEnttRenderSystem (framebuffer, pipeline, entity rendering)
+        ├── Logic Systems        (JzSystemPhase::Logic)
+        │     └── User-defined logic systems
+        ├── PreRender Systems    (JzSystemPhase::PreRender)
+        │     ├── JzEnttCameraSystem (camera matrix updates, orbit control)
+        │     └── JzEnttLightSystem (light data collection)
+        └── Render Systems       (JzSystemPhase::Render)
+              └── JzEnttRenderSystem (framebuffer, pipeline, entity rendering)
 ```
 
 ### System Update Order
 
-Systems are updated in the order they are registered:
+Systems are grouped by phase and executed in registration order within each phase:
 
-1. **JzEnttCameraSystem** - Processes input, computes view/projection matrices
-2. **JzEnttLightSystem** - Collects light data from light entities
-3. **JzEnttRenderSystem** - Renders all entities with Transform + Mesh + Material
+1. **Logic Phase** - Game logic, physics, AI, animations (user-defined systems)
+2. **PreRender Phase** - Camera, lights, culling (JzEnttCameraSystem, JzEnttLightSystem)
+3. **Render Phase** - GPU rendering (JzEnttRenderSystem)
 
 ### Main Loop Flow
+
+The main loop executes in 8 distinct phases for proper synchronization:
 
 ```cpp
 void JzRERuntime::Run() {
     OnStart();
 
     while (IsRunning()) {
+        // Phase 1: Frame Start - Input and Window Events
         m_window->PollEvents();
 
-        // Update camera aspect ratio
-        m_cameraSystem->SetAspectRatio(aspect);
+        // Phase 2: Async Processing - Start Background Tasks
+        _SignalWorkerFrame(frameData);
 
+        // Phase 3: ECS Logic Update (can run parallel with GPU)
+        _UpdateECSLogic(frameData);  // m_world->UpdateLogic()
+
+        // User Logic Hook
         OnUpdate(deltaTime);
 
-        // Update frame size
-        m_renderSystem->SetFrameSize(frameSize);
+        // Phase 4: Sync Point - Wait for Background Tasks
+        _WaitForWorkerComplete();
 
-        // ECS update: Camera -> Light -> Render
-        m_renderSystem->BeginFrame();
-        m_world->Update(deltaTime);
-        m_renderSystem->EndFrame();
+        // Phase 5: ECS Pre-Render Update (camera, lights, culling)
+        _UpdateECSPreRender(frameData);  // m_world->UpdatePreRender()
 
-        // Blit to screen (standalone) or provide texture (Editor)
-        if (ShouldBlitToScreen()) {
-            m_renderSystem->BlitToScreen(width, height);
-        }
+        // Phase 6: ECS Render Update
+        _UpdateECSRender(frameData);  // m_world->UpdateRender()
 
-        OnRender(deltaTime);
-        m_window->SwapBuffers();
+        // Phase 7: Execute Rendering
+        _ExecuteRendering(frameData);  // BeginFrame, EndFrame, BlitToScreen
+
+        // Phase 8: Frame End
+        _FinishFrame(frameData);  // SwapBuffers, ClearEvents
     }
 
     OnStop();
 }
 ```
 
+### Phase Separation Benefits
+
+1. **Parallel Execution**: Logic systems can run in parallel with GPU work
+2. **Clear Synchronization**: Explicit sync point ensures background tasks complete before rendering
+3. **Data Isolation**: PreRender phase prepares render data after logic updates
+4. **Extensibility**: Easy to add new systems by specifying their phase
+
 ---
 
 ## Available Systems
 
-| System               | Description                                              |
-| -------------------- | -------------------------------------------------------- |
-| `JzEnttCameraSystem` | Updates camera matrices, handles orbit controller input  |
-| `JzEnttLightSystem`  | Collects light data for rendering                        |
-| `JzEnttRenderSystem` | Manages framebuffer, renders entities with mesh/material |
-| `JzEnttMoveSystem`   | Updates position based on velocity                       |
-| `JzEnttSceneSystem`  | Updates world transforms in hierarchy                    |
+| System               | Phase     | Description                                              |
+| -------------------- | --------- | -------------------------------------------------------- |
+| `JzEnttMoveSystem`   | Logic     | Updates position based on velocity                       |
+| `JzEnttSceneSystem`  | Logic     | Updates world transforms in hierarchy                    |
+| `JzEnttCameraSystem` | PreRender | Updates camera matrices, handles orbit controller input  |
+| `JzEnttLightSystem`  | PreRender | Collects light data for rendering                        |
+| `JzEnttRenderSystem` | Render    | Manages framebuffer, renders entities with mesh/material |
 
 ---
 
@@ -321,16 +385,16 @@ JzVec3 lightColor = lightSystem->GetPrimaryLightColor();
 ```
 src/Runtime/Function/
 ├── include/JzRE/Runtime/Function/ECS/
-│   ├── JzComponent.h              # Shared component definitions
-│   ├── JzEntity.h                 # Entity type
-│   ├── JzEnttECS.h            # Convenience header
-│   ├── JzEnttEntity.h         # Entity type definitions
-│   ├── JzEnttWorld.h          # Core world class
-│   ├── JzEnttWorld.inl        # Template implementations
-│   ├── JzEnttSystem.h         # System base class
-│   ├── JzEnttComponents.h     # Component re-exports + tags
-│   ├── JzEnttRenderComponents.h  # Camera, light, rendering components
-│   ├── JzEnttModelSpawner.h   # Model to entity conversion
+│   ├── JzComponent.h               # Shared component definitions
+│   ├── JzEntity.h                  # Entity type
+│   ├── JzEnttECS.h                 # Convenience header
+│   ├── JzEnttEntity.h              # Entity type definitions
+│   ├── JzEnttWorld.h               # Core world class
+│   ├── JzEnttWorld.inl             # Template implementations
+│   ├── JzEnttSystem.h              # System base class
+│   ├── JzEnttComponents.h          # Component re-exports + tags
+│   ├── JzEnttRenderComponents.h    # Camera, light, rendering components
+│   ├── JzEnttModelSpawner.h        # Model to entity conversion
 │   ├── JzEnttCameraSystem.h
 │   ├── JzEnttLightSystem.h
 │   ├── JzEnttRenderSystem.h

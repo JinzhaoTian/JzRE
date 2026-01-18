@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document describes the ECS-based rendering pipeline in JzRE. The rendering is handled by three cooperating systems within `JzEnttWorld`.
+This document describes the ECS-based rendering pipeline in JzRE. The rendering is handled by three cooperating systems within `JzEnttWorld`, organized into distinct execution phases for proper synchronization between logic and rendering.
 
 ---
 
@@ -11,76 +11,127 @@ This document describes the ECS-based rendering pipeline in JzRE. The rendering 
 ```
 JzRERuntime
   └── JzEnttWorld
-        ├── JzEnttCameraSystem (1st) - Camera matrices, orbit control
-        ├── JzEnttLightSystem  (2nd) - Light data collection
-        └── JzEnttRenderSystem (3rd) - Framebuffer, pipeline, rendering
+        ├── Logic Systems        (JzSystemPhase::Logic)
+        │     └── User logic systems (movement, physics, AI, animations)
+        ├── PreRender Systems    (JzSystemPhase::PreRender)
+        │     ├── JzEnttCameraSystem - Camera matrices, orbit control
+        │     └── JzEnttLightSystem  - Light data collection
+        └── Render Systems       (JzSystemPhase::Render)
+              └── JzEnttRenderSystem - Framebuffer, pipeline, rendering
 ```
+
+### System Phases
+
+Systems execute in 8 phases grouped into 3 categories:
+
+| Group         | Phase      | Purpose                                    | Example Systems                       |
+| ------------- | ---------- | ------------------------------------------ | ------------------------------------- |
+| **Logic**     | Input      | Input processing, event handling           | InputSystem                           |
+|               | Physics    | Physics simulation, collision detection    | PhysicsSystem                         |
+|               | Animation  | Skeletal animation, blend trees            | AnimationSystem                       |
+|               | Logic      | General game logic, AI, scripts            | AISystem, ScriptSystem                |
+| **PreRender** | PreRender  | Camera matrices, light collection          | JzEnttCameraSystem, JzEnttLightSystem |
+|               | Culling    | Frustum culling, occlusion, LOD selection  | CullingSystem                         |
+| **Render**    | RenderPrep | Batch building, instance data preparation  | BatchBuildingSystem, InstanceSystem   |
+|               | Render     | Actual GPU draw calls                      | JzEnttRenderSystem                    |
 
 ### System Responsibilities
 
-| System                 | Responsibilities                                                 |
-| ---------------------- | ---------------------------------------------------------------- |
-| **JzEnttCameraSystem** | Process orbit controller input, compute view/projection matrices |
-| **JzEnttLightSystem**  | Collect light entities, provide primary light direction/color    |
-| **JzEnttRenderSystem** | Manage framebuffer/textures, create pipeline, render entities    |
+| System                 | Phase     | Responsibilities                                                 |
+| ---------------------- | --------- | ---------------------------------------------------------------- |
+| **JzEnttCameraSystem** | PreRender | Process orbit controller input, compute view/projection matrices |
+| **JzEnttLightSystem**  | PreRender | Collect light entities, provide primary light direction/color    |
+| **JzEnttRenderSystem** | Render    | Manage framebuffer/textures, create pipeline, render entities    |
 
 ---
 
-## Rendering Data Flow
+## Frame Execution Flow
+
+The main loop in `JzRERuntime::Run()` executes in 8 distinct phases:
 
 ```
-[Main Loop - JzRERuntime::Run()]
+[Phase 1: Frame Start - Input and Window Events]
+   m_window->PollEvents()
    |
    v
-[m_renderSystem->BeginFrame()] -> GPU frame begin
+[Phase 2: Async Processing - Start Background Tasks]
+   _SignalWorkerFrame(frameData)
    |
    v
-[m_world->Update(deltaTime)]
-   |
-   +---> [JzEnttCameraSystem::Update]
-   |        |
-   |        +---> Process orbit controller (mouse input)
-   |        +---> Update camera position/rotation
-   |        +---> Compute view matrix (LookAt)
-   |        +---> Compute projection matrix (Perspective)
-   |        +---> Cache main camera data
-   |
-   +---> [JzEnttLightSystem::Update]
-   |        |
-   |        +---> Query DirectionalLight entities
-   |        +---> Query PointLight entities
-   |        +---> Query SpotLight entities
-   |        +---> Cache primary light direction/color
-   |
-   +---> [JzEnttRenderSystem::Update]
-            |
-            +---> Create/resize framebuffer if needed
-            +---> Bind framebuffer
-            +---> Set viewport
-            +---> Clear (color from camera)
-            +---> Get camera matrices from CameraSystem
-            +---> Get light data from LightSystem
-            +---> Set common uniforms (view, projection, camera pos, light)
-            +---> Query entities with Transform + Mesh + Material
-            +---> For each entity:
-            |       +---> Compute model matrix
-            |       +---> Set material uniforms
-            |       +---> Bind vertex array
-            |       +---> DrawIndexed
-            +---> Unbind framebuffer
+[Phase 3: ECS Logic Update (can run parallel with GPU)]
+   _UpdateECSLogic(frameData)
+     └── m_world->UpdateLogic(deltaTime)
+         └── All systems with JzSystemPhase::Logic
    |
    v
-[m_renderSystem->EndFrame()] -> GPU frame end
+[User Logic Hook]
+   OnUpdate(deltaTime)
    |
    v
-[m_renderSystem->BlitToScreen()] -> Copy framebuffer to screen (if standalone)
+[Phase 4: Sync Point - Wait for Background Tasks]
+   _WaitForWorkerComplete()
    |
    v
-[OnRender()] -> Additional rendering (ImGui UI)
+[Phase 5: ECS Pre-Render Update]
+   _UpdateECSPreRender(frameData)
+     ├── Update aspect ratio
+     ├── Update frame size
+     └── m_world->UpdatePreRender(deltaTime)
+         ├── JzEnttCameraSystem::Update
+         │     ├── Process orbit controller (mouse input)
+         │     ├── Update camera position/rotation
+         │     ├── Compute view matrix (LookAt)
+         │     ├── Compute projection matrix (Perspective)
+         │     └── Cache main camera data
+         └── JzEnttLightSystem::Update
+               ├── Query DirectionalLight entities
+               ├── Query PointLight entities
+               ├── Query SpotLight entities
+               └── Cache primary light direction/color
    |
    v
-[SwapBuffers()]
+[Phase 6: ECS Render Update]
+   _UpdateECSRender(frameData)
+     └── m_world->UpdateRender(deltaTime)
+         └── JzEnttRenderSystem::Update
+               ├── Create/resize framebuffer if needed
+               ├── Bind framebuffer
+               ├── Set viewport
+               ├── Clear (color from camera)
+               ├── Get camera matrices from CameraSystem
+               ├── Get light data from LightSystem
+               ├── Set common uniforms
+               ├── Query entities with Transform + Mesh + Material
+               ├── For each entity:
+               │     ├── Compute model matrix
+               │     ├── Set material uniforms
+               │     ├── Bind vertex array
+               │     └── DrawIndexed
+               └── Unbind framebuffer
+   |
+   v
+[Phase 7: Execute Rendering]
+   _ExecuteRendering(frameData)
+     ├── m_renderSystem->BeginFrame()
+     ├── m_renderSystem->EndFrame()
+     ├── m_renderSystem->BlitToScreen() (if standalone)
+     └── OnRender(deltaTime) (ImGui UI)
+   |
+   v
+[Phase 8: Frame End]
+   _FinishFrame(frameData)
+     ├── m_window->SwapBuffers()
+     └── m_inputManager->ClearEvents()
 ```
+
+---
+
+## Phase Separation Benefits
+
+1. **Parallel Execution**: Logic systems can run in parallel with GPU work from previous frame
+2. **Clear Synchronization**: Explicit sync point ensures background tasks complete before rendering
+3. **Data Isolation**: PreRender phase prepares render data after logic updates are complete
+4. **Extensibility**: Easy to add new systems by specifying their phase
 
 ---
 
@@ -257,27 +308,41 @@ The Editor overrides `ShouldBlitToScreen()` to return `false`, preventing automa
 ```mermaid
 sequenceDiagram
     participant App as JzRERuntime
+    participant Worker as WorkerThread
     participant World as JzEnttWorld
     participant Camera as JzEnttCameraSystem
     participant Light as JzEnttLightSystem
     participant Render as JzEnttRenderSystem
     participant GPU as GPU/RHI
 
-    App->>Render: BeginFrame()
-    Render->>GPU: BeginFrame()
+    Note over App: Phase 1: Frame Start
+    App->>App: PollEvents()
 
-    App->>World: Update(deltaTime)
+    Note over App,Worker: Phase 2: Async Processing
+    App->>Worker: SignalWorkerFrame()
+
+    Note over App,World: Phase 3: Logic Update (parallel with Worker)
+    App->>World: UpdateLogic(deltaTime)
+    World->>World: Logic systems (movement, physics, AI)
+
+    App->>App: OnUpdate(deltaTime)
+
+    Note over App,Worker: Phase 4: Sync Point
+    App->>Worker: WaitForWorkerComplete()
+
+    Note over App,Light: Phase 5: Pre-Render Update
+    App->>World: UpdatePreRender(deltaTime)
     World->>Camera: Update()
     Camera->>Camera: Process orbit input
     Camera->>Camera: Compute matrices
-
     World->>Light: Update()
     Light->>Light: Collect light entities
 
+    Note over App,Render: Phase 6: Render Update
+    App->>World: UpdateRender(deltaTime)
     World->>Render: Update()
     Render->>Render: Setup framebuffer
     Render->>Camera: GetViewMatrix()
-    Render->>Camera: GetProjectionMatrix()
     Render->>Light: GetPrimaryLightDirection()
     Render->>GPU: BindFramebuffer()
     Render->>GPU: Clear()
@@ -290,15 +355,20 @@ sequenceDiagram
 
     Render->>GPU: UnbindFramebuffer()
 
+    Note over App,GPU: Phase 7: Execute Rendering
+    App->>Render: BeginFrame()
     App->>Render: EndFrame()
-    Render->>GPU: EndFrame()
 
     alt Standalone Runtime
         App->>Render: BlitToScreen()
         Render->>GPU: BlitFramebuffer()
     end
 
+    App->>App: OnRender(deltaTime)
+
+    Note over App: Phase 8: Frame End
     App->>App: SwapBuffers()
+    App->>App: ClearEvents()
 ```
 
 ---

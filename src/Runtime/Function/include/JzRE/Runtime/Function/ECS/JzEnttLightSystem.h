@@ -9,7 +9,6 @@
 
 #include "JzRE/Runtime/Core/JzRETypes.h"
 #include "JzRE/Runtime/Core/JzVector.h"
-#include "JzRE/Runtime/Function/ECS/JzEnttRenderComponents.h"
 #include "JzRE/Runtime/Function/ECS/JzEnttSystem.h"
 #include "JzRE/Runtime/Function/ECS/JzEnttWorld.h"
 
@@ -28,13 +27,13 @@ enum class JzELightType : U32 {
  * @brief Collected light data for rendering.
  */
 struct JzLightData {
-    JzVec3      position;
-    JzVec3      direction;
-    JzVec3      color;
-    F32         intensity;
-    F32         range;
-    F32         innerCutoff;
-    F32         outerCutoff;
+    JzVec3       position;
+    JzVec3       direction;
+    JzVec3       color;
+    F32          intensity;
+    F32          range;
+    F32          innerCutoff;
+    F32          outerCutoff;
     JzELightType type;
 };
 
@@ -50,6 +49,14 @@ public:
 
     void OnInit(JzEnttWorld &world) override;
     void Update(JzEnttWorld &world, F32 delta) override;
+
+    /**
+     * @brief Light system runs in PreRender phase.
+     */
+    JzSystemPhase GetPhase() const override
+    {
+        return JzSystemPhase::PreRender;
+    }
 
     /**
      * @brief Get all collected lights.

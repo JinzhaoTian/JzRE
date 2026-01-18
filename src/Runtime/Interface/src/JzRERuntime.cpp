@@ -159,65 +159,102 @@ void JzRE::JzRERuntime::Run()
     JzRE::JzClock clock;
 
     while (IsRunning()) {
-        // Handle window events
+        // ========== Phase 1: Frame Start - Input and Window Events ==========
         m_window->PollEvents();
 
-        // Update frame data (use framebuffer size for Retina/HiDPI)
+        // Prepare frame data (use framebuffer size for Retina/HiDPI)
         JzRuntimeFrameData frameData;
         frameData.deltaTime = clock.GetDeltaTime();
         frameData.frameSize = m_window->GetFramebufferSize();
 
-        // Signal worker thread for background processing
+        // ========== Phase 2: Async Processing - Start Background Tasks ==========
         _SignalWorkerFrame(frameData);
 
-        // Update camera system aspect ratio
-        if (frameData.frameSize.x > 0 && frameData.frameSize.y > 0) {
-            F32 aspect = static_cast<F32>(frameData.frameSize.x) / static_cast<F32>(frameData.frameSize.y);
-            m_cameraSystem->SetAspectRatio(aspect);
-        }
+        // ========== Phase 3: ECS Logic Update (can run parallel with GPU) ==========
+        _UpdateECSLogic(frameData);
 
-        // Call user update logic
+        // Call user update logic (after logic systems, before render prep)
         OnUpdate(frameData.deltaTime);
 
-        // Update renderer frame size if changed
-        if (frameData.frameSize != m_renderSystem->GetCurrentFrameSize()) {
-            m_renderSystem->SetFrameSize(frameData.frameSize);
-        }
-
-        // Begin frame rendering
-        m_renderSystem->BeginFrame();
-
-        // ECS update: Camera -> Light -> Render (in registration order)
-        m_world->Update(frameData.deltaTime);
-
-        // End scene rendering
-        m_renderSystem->EndFrame();
-
-        // Blit to screen for standalone runtime (if not using ImGui)
-        if (ShouldBlitToScreen()) {
-            // Use actual framebuffer size for Retina/HiDPI displays
-            JzIVec2 fbSize = m_window->GetFramebufferSize();
-            m_renderSystem->BlitToScreen(static_cast<U32>(fbSize.x),
-                                         static_cast<U32>(fbSize.y));
-        }
-
-        // Call render hook for additional rendering (e.g., ImGui UI)
-        OnRender(frameData.deltaTime);
-
-        // Swap buffers
-        m_window->SwapBuffers();
-
-        // Clear input events
-        m_inputManager->ClearEvents();
-
-        // Wait for worker thread to complete background processing
+        // ========== Phase 4: Sync Point - Wait for Background Tasks ==========
         _WaitForWorkerComplete();
 
-        // Update clock
+        // ========== Phase 5: ECS Pre-Render Update (camera, lights, culling) ==========
+        _UpdateECSPreRender(frameData);
+
+        // ========== Phase 6: ECS Render Update ==========
+        _UpdateECSRender(frameData);
+
+        // ========== Phase 7: Execute Rendering ==========
+        _ExecuteRendering(frameData);
+
+        // ========== Phase 8: Frame End ==========
+        _FinishFrame(frameData);
+
+        // Update clock for next frame
         clock.Update();
     }
 
     OnStop();
+}
+
+void JzRE::JzRERuntime::_UpdateECSLogic(const JzRuntimeFrameData &frameData)
+{
+    // Update all Logic phase systems (movement, physics, AI, animations)
+    m_world->UpdateLogic(frameData.deltaTime);
+}
+
+void JzRE::JzRERuntime::_UpdateECSPreRender(const JzRuntimeFrameData &frameData)
+{
+    // Update camera system aspect ratio
+    if (frameData.frameSize.x > 0 && frameData.frameSize.y > 0) {
+        F32 aspect = static_cast<F32>(frameData.frameSize.x) / static_cast<F32>(frameData.frameSize.y);
+        m_cameraSystem->SetAspectRatio(aspect);
+    }
+
+    // Update renderer frame size if changed
+    if (frameData.frameSize != m_renderSystem->GetCurrentFrameSize()) {
+        m_renderSystem->SetFrameSize(frameData.frameSize);
+    }
+
+    // Update all PreRender phase systems (camera matrices, light collection, culling)
+    m_world->UpdatePreRender(frameData.deltaTime);
+}
+
+void JzRE::JzRERuntime::_UpdateECSRender(const JzRuntimeFrameData &frameData)
+{
+    // Update all Render phase systems (actual rendering)
+    m_world->UpdateRender(frameData.deltaTime);
+}
+
+void JzRE::JzRERuntime::_ExecuteRendering(const JzRuntimeFrameData &frameData)
+{
+    // Begin frame rendering
+    m_renderSystem->BeginFrame();
+
+    // The render system's Update() is called in _UpdateECSRender,
+    // which performs the actual entity rendering
+
+    // End scene rendering
+    m_renderSystem->EndFrame();
+
+    // Blit to screen for standalone runtime (if not using ImGui)
+    if (ShouldBlitToScreen()) {
+        m_renderSystem->BlitToScreen(static_cast<U32>(frameData.frameSize.x),
+                                     static_cast<U32>(frameData.frameSize.y));
+    }
+
+    // Call render hook for additional rendering (e.g., ImGui UI)
+    OnRender(frameData.deltaTime);
+}
+
+void JzRE::JzRERuntime::_FinishFrame([[maybe_unused]] const JzRuntimeFrameData &frameData)
+{
+    // Swap buffers
+    m_window->SwapBuffers();
+
+    // Clear input events for next frame
+    m_inputManager->ClearEvents();
 }
 
 void JzRE::JzRERuntime::_WorkerThread()

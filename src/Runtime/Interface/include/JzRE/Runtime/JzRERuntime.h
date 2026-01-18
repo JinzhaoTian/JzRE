@@ -233,6 +233,51 @@ private:
      */
     void _WaitForWorkerComplete();
 
+    // ==================== Frame Phase Methods ====================
+
+    /**
+     * @brief Update ECS logic systems (movement, physics, AI, animations)
+     *
+     * This phase can run in parallel with GPU work from the previous frame.
+     *
+     * @param frameData Current frame data
+     */
+    void _UpdateECSLogic(const JzRuntimeFrameData &frameData);
+
+    /**
+     * @brief Update ECS pre-render systems (camera, lights, culling)
+     *
+     * Prepares data for rendering after logic updates are complete.
+     *
+     * @param frameData Current frame data
+     */
+    void _UpdateECSPreRender(const JzRuntimeFrameData &frameData);
+
+    /**
+     * @brief Update ECS render systems and execute rendering
+     *
+     * Performs actual GPU rendering operations.
+     *
+     * @param frameData Current frame data
+     */
+    void _UpdateECSRender(const JzRuntimeFrameData &frameData);
+
+    /**
+     * @brief Execute the rendering pipeline
+     *
+     * Handles BeginFrame, EndFrame, and BlitToScreen operations.
+     *
+     * @param frameData Current frame data
+     */
+    void _ExecuteRendering(const JzRuntimeFrameData &frameData);
+
+    /**
+     * @brief Finish the frame (swap buffers, clear input, update clock)
+     *
+     * @param frameData Current frame data
+     */
+    void _FinishFrame(const JzRuntimeFrameData &frameData);
+
 protected:
     std::unique_ptr<JzWindow>          m_window;
     std::unique_ptr<JzDevice>          m_device;

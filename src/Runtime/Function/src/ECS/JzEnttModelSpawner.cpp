@@ -11,7 +11,7 @@
 namespace JzRE {
 
 std::vector<JzEnttEntity> JzEnttModelSpawner::SpawnModel(JzEnttWorld                &world,
-                                                         std::shared_ptr<JzModel>   model,
+                                                         std::shared_ptr<JzModel>    model,
                                                          const JzTransformComponent &rootTransform)
 {
     std::vector<JzEnttEntity> entities;
@@ -91,7 +91,7 @@ JzEnttEntity JzEnttModelSpawner::SpawnMesh(JzEnttWorld                &world,
 }
 
 void JzEnttModelSpawner::DestroyEntities(JzEnttWorld                     &world,
-                                          const std::vector<JzEnttEntity> &entities)
+                                         const std::vector<JzEnttEntity> &entities)
 {
     for (auto entity : entities) {
         if (world.IsValid(entity)) {

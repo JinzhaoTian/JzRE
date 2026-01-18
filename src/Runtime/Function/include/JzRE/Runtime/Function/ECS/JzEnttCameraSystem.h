@@ -30,6 +30,14 @@ public:
     void Update(JzEnttWorld &world, F32 delta) override;
 
     /**
+     * @brief Camera system runs in PreRender phase.
+     */
+    JzSystemPhase GetPhase() const override
+    {
+        return JzSystemPhase::PreRender;
+    }
+
+    /**
      * @brief Get the main camera's view matrix.
      */
     const JzMat4 &GetViewMatrix() const
