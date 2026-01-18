@@ -10,8 +10,6 @@
 #include "JzRE/Runtime/Function/ECS/JzEnttLightSystem.h"
 #include "JzRE/Runtime/Function/ECS/JzEnttComponents.h"
 #include "JzRE/Runtime/Platform/JzDevice.h"
-#include "JzRE/Runtime/Resource/JzMaterial.h"
-#include "JzRE/Runtime/Resource/JzMesh.h"
 #include "JzRE/Runtime/Resource/JzShaderManager.h"
 
 namespace JzRE {
@@ -255,9 +253,6 @@ void JzEnttRenderSystem::RenderEntities(JzEnttWorld &world)
     m_defaultPipeline->SetUniform("directionalLight[0].direction", lightDir.Normalized());
     m_defaultPipeline->SetUniform("directionalLight[0].color", lightColor);
 
-    // Default material shininess for fallback
-    F32 defaultShininess = 32.0f;
-
     // Render all entities with Transform + Mesh + Material
     auto view = world.View<JzTransformComponent, JzMeshComponent, JzMaterialComponent>();
 
@@ -266,50 +261,27 @@ void JzEnttRenderSystem::RenderEntities(JzEnttWorld &world)
         auto &meshComp  = world.GetComponent<JzMeshComponent>(entity);
         auto &matComp   = world.GetComponent<JzMaterialComponent>(entity);
 
-        // Get resources
-        auto mesh     = std::static_pointer_cast<JzMesh>(meshComp.mesh);
-        auto material = std::static_pointer_cast<JzMaterial>(matComp.material);
-
-        // Validate resources
-        if (!mesh || mesh->GetState() != JzEResourceState::Loaded) {
+        // Validate mesh has GPU resources
+        if (!meshComp.HasGPUResources()) {
             continue;
         }
 
-        auto vertexArray = mesh->GetVertexArray();
-        if (!vertexArray) {
-            continue;
-        }
-
-        // Set model matrix from transform
-        // TODO: Compute full model matrix from position, rotation, scale
-        JzMat4 entityModelMatrix = JzMat4x4::Identity();
-        // For now just use translation
-        entityModelMatrix(0, 3) = transform.position.x;
-        entityModelMatrix(1, 3) = transform.position.y;
-        entityModelMatrix(2, 3) = transform.position.z;
+        // Get world matrix from transform component (uses cached matrix with lazy update)
+        const JzMat4 &entityModelMatrix = transform.GetWorldMatrix();
         m_defaultPipeline->SetUniform("model", entityModelMatrix);
 
-        // Set material uniforms (standard shader uses material struct with ambient, diffuse, specular, shininess)
-        if (material && material->GetState() == JzEResourceState::Loaded) {
-            const auto &props = material->GetProperties();
-            m_defaultPipeline->SetUniform("material.ambient", props.ambientColor);
-            m_defaultPipeline->SetUniform("material.diffuse", props.diffuseColor);
-            m_defaultPipeline->SetUniform("material.specular", props.specularColor);
-            m_defaultPipeline->SetUniform("material.shininess", props.shininess);
-        } else {
-            // Default material values
-            m_defaultPipeline->SetUniform("material.ambient", JzVec3(0.1f, 0.1f, 0.1f));
-            m_defaultPipeline->SetUniform("material.diffuse", JzVec3(0.8f, 0.8f, 0.8f));
-            m_defaultPipeline->SetUniform("material.specular", JzVec3(0.5f, 0.5f, 0.5f));
-            m_defaultPipeline->SetUniform("material.shininess", defaultShininess);
-        }
+        // Set material uniforms directly from component data
+        m_defaultPipeline->SetUniform("material.ambient", matComp.ambientColor);
+        m_defaultPipeline->SetUniform("material.diffuse", matComp.diffuseColor);
+        m_defaultPipeline->SetUniform("material.specular", matComp.specularColor);
+        m_defaultPipeline->SetUniform("material.shininess", matComp.shininess);
 
         // Bind vertex array and draw
-        device.BindVertexArray(vertexArray);
+        device.BindVertexArray(meshComp.vertexArray);
 
         JzDrawIndexedParams drawParams;
         drawParams.primitiveType = JzEPrimitiveType::Triangles;
-        drawParams.indexCount    = mesh->GetIndexCount();
+        drawParams.indexCount    = meshComp.indexCount;
         drawParams.instanceCount = 1;
         drawParams.firstIndex    = 0;
         drawParams.vertexOffset  = 0;

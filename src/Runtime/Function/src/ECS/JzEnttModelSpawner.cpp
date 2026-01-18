@@ -56,13 +56,28 @@ JzEnttEntity JzEnttModelSpawner::SpawnMesh(JzEnttWorld                &world,
     auto &transformComp = world.AddComponent<JzTransformComponent>(entity);
     transformComp       = transform;
 
-    // Add mesh component
+    // Add mesh component - copy GPU resources from JzMesh
     auto &meshComp = world.AddComponent<JzMeshComponent>(entity);
-    meshComp.mesh  = mesh;
+    if (mesh) {
+        meshComp.vertexArray   = mesh->GetVertexArray();
+        meshComp.indexCount    = mesh->GetIndexCount();
+        meshComp.materialIndex = mesh->GetMaterialIndex();
+        meshComp.isGPUReady    = (meshComp.vertexArray != nullptr);
+    }
 
-    // Add material component
-    auto    &matComp = world.AddComponent<JzMaterialComponent>(entity);
-    matComp.material = material;
+    // Add material component - copy properties from JzMaterial
+    auto &matComp = world.AddComponent<JzMaterialComponent>(entity);
+    if (material) {
+        const auto &props     = material->GetProperties();
+        matComp.ambientColor  = props.ambientColor;
+        matComp.diffuseColor  = props.diffuseColor;
+        matComp.specularColor = props.specularColor;
+        matComp.shininess     = props.shininess;
+        matComp.opacity       = props.opacity;
+        matComp.baseColor     = JzVec4(props.diffuseColor.x, props.diffuseColor.y,
+                                       props.diffuseColor.z, props.opacity);
+        matComp.transparent   = props.opacity < 1.0f;
+    }
 
     // Add renderable tag (empty struct, use emplace directly)
     world.GetRegistry().emplace<JzRenderableTag>(entity);

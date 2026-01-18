@@ -6,18 +6,197 @@
 #pragma once
 
 #include <memory>
+#include <vector>
 #include "JzRE/Runtime/Core/JzVector.h"
-#include "JzRE/Runtime/Resource/JzResource.h"
+#include "JzRE/Runtime/Core/JzMatrix.h"
+#include "JzRE/Runtime/Core/JzVertex.h"
+#include "JzRE/Runtime/Platform/JzGPUBufferObject.h"
+#include "JzRE/Runtime/Platform/JzGPUVertexArrayObject.h"
+#include "JzRE/Runtime/Platform/JzGPUTextureObject.h"
 
 namespace JzRE {
 
+// ==================== Mesh Component ====================
+
 /**
- * @brief Component for position, rotation, and scale.
+ * @brief Component that holds mesh geometry data and GPU resources.
+ *
+ * This component stores direct references to GPU resources for efficient rendering.
+ * It follows EnTT's data-driven design by holding actual render data rather than
+ * abstract resource handles.
+ */
+struct JzMeshComponent {
+    // CPU-side geometry data (optional, can be cleared after GPU upload)
+    std::vector<JzVertex> vertices;
+    std::vector<U32>      indices;
+
+    // GPU resources
+    std::shared_ptr<JzGPUBufferObject>      vertexBuffer;
+    std::shared_ptr<JzGPUBufferObject>      indexBuffer;
+    std::shared_ptr<JzGPUVertexArrayObject> vertexArray;
+
+    // Mesh metadata
+    U32  indexCount{0};
+    I32  materialIndex{-1};
+    Bool isGPUReady{false};
+
+    JzMeshComponent() = default;
+
+    JzMeshComponent(std::vector<JzVertex> verts, std::vector<U32> inds, I32 matIdx = -1) :
+        vertices(std::move(verts)),
+        indices(std::move(inds)),
+        indexCount(static_cast<U32>(indices.size())),
+        materialIndex(matIdx) { }
+
+    /**
+     * @brief Check if the mesh has valid GPU resources
+     */
+    Bool HasGPUResources() const
+    {
+        return vertexArray != nullptr && isGPUReady;
+    }
+
+    /**
+     * @brief Clear CPU-side data after GPU upload to save memory
+     */
+    void ClearCPUData()
+    {
+        vertices.clear();
+        vertices.shrink_to_fit();
+        indices.clear();
+        indices.shrink_to_fit();
+    }
+};
+
+// ==================== Transform Component ====================
+
+/**
+ * @brief Component for position, rotation, and scale with cached world matrix.
+ *
+ * This component stores transform data directly in a cache-friendly layout.
+ * The world matrix is cached and updated lazily when dirty flag is set.
  */
 struct JzTransformComponent {
+    // Local transform data
     JzVec3 position{0.0f, 0.0f, 0.0f};
-    JzVec3 rotation{0.0f, 0.0f, 0.0f};
+    JzVec3 rotation{0.0f, 0.0f, 0.0f}; // Euler angles in radians
     JzVec3 scale{1.0f, 1.0f, 1.0f};
+
+    // Cached matrices
+    JzMat4 localMatrix{JzMat4::Identity()};
+    JzMat4 worldMatrix{JzMat4::Identity()};
+
+    // Dirty flag for lazy matrix update
+    Bool isDirty{true};
+
+    JzTransformComponent() = default;
+
+    JzTransformComponent(const JzVec3 &pos) :
+        position(pos), isDirty(true) { }
+
+    JzTransformComponent(const JzVec3 &pos, const JzVec3 &rot, const JzVec3 &scl) :
+        position(pos), rotation(rot), scale(scl), isDirty(true) { }
+
+    /**
+     * @brief Mark transform as dirty (needs matrix recalculation)
+     */
+    void SetDirty()
+    {
+        isDirty = true;
+    }
+
+    /**
+     * @brief Update local matrix from position, rotation, scale
+     */
+    void UpdateLocalMatrix()
+    {
+        if (!isDirty) return;
+
+        // Compute TRS matrix: Translation * RotationZ * RotationY * RotationX * Scale
+        JzMat4 T = JzMat4::Translate(position);
+        JzMat4 R = JzMat4::RotateZ(rotation.z) * JzMat4::RotateY(rotation.y) * JzMat4::RotateX(rotation.x);
+        JzMat4 S = JzMat4::Scale(scale);
+
+        localMatrix = T * R * S;
+        worldMatrix = localMatrix; // No parent hierarchy for now
+        isDirty     = false;
+    }
+
+    /**
+     * @brief Get the world matrix, updating if dirty
+     */
+    const JzMat4 &GetWorldMatrix()
+    {
+        if (isDirty) {
+            UpdateLocalMatrix();
+        }
+        return worldMatrix;
+    }
+};
+
+// ==================== Material Component ====================
+
+/**
+ * @brief Component that holds material properties and textures for rendering.
+ *
+ * This component stores PBR material properties directly for cache-friendly access.
+ * Textures are stored as GPU texture object references.
+ */
+struct JzMaterialComponent {
+    // PBR base properties
+    JzVec4 baseColor{1.0f, 1.0f, 1.0f, 1.0f};
+    F32    roughness{0.5f};
+    F32    metallic{0.0f};
+    F32    ao{1.0f}; // Ambient occlusion
+
+    // Legacy Phong properties (for compatibility)
+    JzVec3 ambientColor{0.1f, 0.1f, 0.1f};
+    JzVec3 diffuseColor{0.8f, 0.8f, 0.8f};
+    JzVec3 specularColor{0.5f, 0.5f, 0.5f};
+    F32    shininess{32.0f};
+    F32    opacity{1.0f};
+
+    // Texture slots
+    std::shared_ptr<JzGPUTextureObject> albedoTexture;
+    std::shared_ptr<JzGPUTextureObject> normalTexture;
+    std::shared_ptr<JzGPUTextureObject> metallicRoughnessTexture;
+    std::shared_ptr<JzGPUTextureObject> aoTexture;
+    std::shared_ptr<JzGPUTextureObject> emissiveTexture;
+
+    // Texture tiling and offset
+    JzVec2 textureTiling{1.0f, 1.0f};
+    JzVec2 textureOffset{0.0f, 0.0f};
+
+    // Render state
+    Bool doubleSided{false};
+    Bool transparent{false};
+
+    JzMaterialComponent() = default;
+
+    /**
+     * @brief Create from legacy Phong properties
+     */
+    static JzMaterialComponent FromPhong(const JzVec3 &ambient, const JzVec3 &diffuse,
+                                         const JzVec3 &specular, F32 shine, F32 alpha = 1.0f)
+    {
+        JzMaterialComponent mat;
+        mat.ambientColor  = ambient;
+        mat.diffuseColor  = diffuse;
+        mat.specularColor = specular;
+        mat.shininess     = shine;
+        mat.opacity       = alpha;
+        mat.baseColor     = JzVec4(diffuse.x, diffuse.y, diffuse.z, alpha);
+        mat.transparent   = alpha < 1.0f;
+        return mat;
+    }
+
+    /**
+     * @brief Check if material has any textures
+     */
+    Bool HasTextures() const
+    {
+        return albedoTexture || normalTexture || metallicRoughnessTexture || aoTexture || emissiveTexture;
+    }
 };
 
 /**
@@ -49,20 +228,6 @@ struct JzBoundsComponent {
  */
 struct JzVelocityComponent {
     JzVec3 velocity{0.0f, 0.0f, 0.0f};
-};
-
-/**
- * @brief Component that holds a reference to a mesh resource.
- */
-struct JzMeshComponent {
-    std::shared_ptr<JzResource> mesh;
-};
-
-/**
- * @brief Component that holds a reference to a material resource.
- */
-struct JzMaterialComponent {
-    std::shared_ptr<JzResource> material;
 };
 
 /**
