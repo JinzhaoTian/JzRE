@@ -1,41 +1,68 @@
 #version 330 core
 
-in vec3 vNormal;
-in vec3 vWorldPos;
+in vec3 FragPos;
+in vec3 Normal;
+in vec2 TexCoords;
 
 out vec4 FragColor;
 
-// Material properties
-uniform vec3 uAmbientColor;
-uniform vec3 uDiffuseColor;
-uniform vec3 uSpecularColor;
-uniform float uShininess;
+// Material structure with color support (instead of textures)
+struct Material {
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+    float shininess;
+};
 
-// Light properties
-uniform vec3 uLightDir;
-uniform vec3 uLightColor;
+// Directional light structure (matching example shader)
+struct DirectionalLight {
+    vec3 direction;
+    vec3 color;
+};
 
-// Camera position for specular
-uniform vec3 uCameraPos;
+// Uniforms
+uniform vec3 viewPos;
+uniform Material material;
+uniform DirectionalLight directionalLight[1];
 
 void main()
 {
-    // Normalize the normal
-    vec3 normal = normalize(vNormal);
-
-    // Ambient
-    vec3 ambient = uAmbientColor * 0.3;
-
-    // Diffuse
-    float diff = max(dot(normal, uLightDir), 0.0);
-    vec3 diffuse = uDiffuseColor * diff * uLightColor;
-
-    // Specular (Blinn-Phong)
-    vec3 viewDir = normalize(uCameraPos - vWorldPos);
-    vec3 halfwayDir = normalize(uLightDir + viewDir);
-    float spec = pow(max(dot(normal, halfwayDir), 0.0), uShininess);
-    vec3 specular = uSpecularColor * spec * uLightColor * 0.5;
-
-    vec3 color = ambient + diffuse + specular;
-    FragColor = vec4(color, 1.0);
+    // Normalize the normal vector
+    vec3 norm = normalize(Normal);
+    
+    // Light direction (already normalized from CPU)
+    vec3 lightDir = normalize(directionalLight[0].direction);
+    
+    // ==================== Ambient ====================
+    // Base ambient lighting using material's diffuse color for better color representation
+    vec3 ambient = directionalLight[0].color * material.diffuse * 0.3;
+    
+    // ==================== Diffuse ====================
+    // Lambertian diffuse - calculate how directly the surface faces the light
+    float NdotL = dot(norm, lightDir);
+    
+    // Support both front and back faces for enclosed scenes (like Cornell Box)
+    float diff = max(NdotL, 0.0);
+    float backDiff = max(-NdotL, 0.0) * 0.2;  // Back faces get reduced lighting
+    float totalDiff = diff + backDiff;
+    
+    vec3 diffuse = directionalLight[0].color * material.diffuse * totalDiff;
+    
+    // ==================== Specular ====================
+    // Blinn-Phong specular - only calculate for front-facing surfaces
+    vec3 specular = vec3(0.0);
+    if (NdotL > 0.0) {
+        vec3 viewDir = normalize(viewPos - FragPos);
+        vec3 halfwayDir = normalize(lightDir + viewDir);
+        float spec = pow(max(dot(norm, halfwayDir), 0.0), material.shininess);
+        specular = directionalLight[0].color * material.specular * spec * 0.5;
+    }
+    
+    // ==================== Final Color ====================
+    vec3 result = ambient + diffuse + specular;
+    
+    // Clamp to valid color range
+    result = clamp(result, 0.0, 1.0);
+    
+    FragColor = vec4(result, 1.0);
 }

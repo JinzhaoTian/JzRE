@@ -53,6 +53,7 @@ const JzRE::String &JzRE::JzOpenGLPipeline::GetLinkLog() const
 
 void JzRE::JzOpenGLPipeline::SetUniform(const JzRE::String &name, JzRE::I32 value)
 {
+    glUseProgram(m_program);
     GLint location = GetUniformLocation(name);
     if (location != -1) {
         glUniform1i(location, value);
@@ -61,6 +62,7 @@ void JzRE::JzOpenGLPipeline::SetUniform(const JzRE::String &name, JzRE::I32 valu
 
 void JzRE::JzOpenGLPipeline::SetUniform(const JzRE::String &name, JzRE::F32 value)
 {
+    glUseProgram(m_program);
     GLint location = GetUniformLocation(name);
     if (location != -1) {
         glUniform1f(location, value);
@@ -69,6 +71,7 @@ void JzRE::JzOpenGLPipeline::SetUniform(const JzRE::String &name, JzRE::F32 valu
 
 void JzRE::JzOpenGLPipeline::SetUniform(const JzRE::String &name, const JzRE::JzVec2 &value)
 {
+    glUseProgram(m_program);
     GLint location = GetUniformLocation(name);
     if (location != -1) {
         glUniform2fv(location, 1, value.Data());
@@ -77,6 +80,7 @@ void JzRE::JzOpenGLPipeline::SetUniform(const JzRE::String &name, const JzRE::Jz
 
 void JzRE::JzOpenGLPipeline::SetUniform(const JzRE::String &name, const JzRE::JzVec3 &value)
 {
+    glUseProgram(m_program);
     GLint location = GetUniformLocation(name);
     if (location != -1) {
         glUniform3fv(location, 1, value.Data());
@@ -85,6 +89,7 @@ void JzRE::JzOpenGLPipeline::SetUniform(const JzRE::String &name, const JzRE::Jz
 
 void JzRE::JzOpenGLPipeline::SetUniform(const JzRE::String &name, const JzRE::JzVec4 &value)
 {
+    glUseProgram(m_program);
     GLint location = GetUniformLocation(name);
     if (location != -1) {
         glUniform4fv(location, 1, value.Data());
@@ -93,6 +98,7 @@ void JzRE::JzOpenGLPipeline::SetUniform(const JzRE::String &name, const JzRE::Jz
 
 void JzRE::JzOpenGLPipeline::SetUniform(const JzRE::String &name, const JzRE::JzMat3 &value)
 {
+    glUseProgram(m_program);
     GLint location = GetUniformLocation(name);
     if (location != -1) {
         // GL_TRUE to transpose: JzMat uses row-major storage, OpenGL expects column-major
@@ -102,6 +108,7 @@ void JzRE::JzOpenGLPipeline::SetUniform(const JzRE::String &name, const JzRE::Jz
 
 void JzRE::JzOpenGLPipeline::SetUniform(const JzRE::String &name, const JzRE::JzMat4 &value)
 {
+    glUseProgram(m_program);
     GLint location = GetUniformLocation(name);
     if (location != -1) {
         // GL_TRUE to transpose: JzMat4x4 uses row-major storage, OpenGL expects column-major

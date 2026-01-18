@@ -242,20 +242,21 @@ void JzEnttRenderSystem::RenderEntities(JzEnttWorld &world)
         lightColor = m_lightSystem->GetPrimaryLightColor();
     }
 
-    // Set common uniforms
+    // Set common uniforms for example shader
     JzMat4 modelMatrix = JzMat4x4::Identity();
     m_defaultPipeline->SetUniform("model", modelMatrix);
     m_defaultPipeline->SetUniform("view", viewMatrix);
     m_defaultPipeline->SetUniform("projection", projectionMatrix);
-    m_defaultPipeline->SetUniform("uCameraPos", cameraPos);
-    m_defaultPipeline->SetUniform("uLightDir", lightDir.Normalized());
-    m_defaultPipeline->SetUniform("uLightColor", lightColor);
 
-    // Default material colors
-    JzVec3 defaultAmbient(0.2f, 0.2f, 0.2f);
-    JzVec3 defaultDiffuse(0.8f, 0.8f, 0.8f);
-    JzVec3 defaultSpecular(0.5f, 0.5f, 0.5f);
-    F32    defaultShininess = 32.0f;
+    // Camera position (example shader uses "viewPos")
+    m_defaultPipeline->SetUniform("viewPos", cameraPos);
+
+    // Directional light (standard shader uses struct array)
+    m_defaultPipeline->SetUniform("directionalLight[0].direction", lightDir.Normalized());
+    m_defaultPipeline->SetUniform("directionalLight[0].color", lightColor);
+
+    // Default material shininess for fallback
+    F32 defaultShininess = 32.0f;
 
     // Render all entities with Transform + Mesh + Material
     auto view = world.View<JzTransformComponent, JzMeshComponent, JzMaterialComponent>();
@@ -288,18 +289,19 @@ void JzEnttRenderSystem::RenderEntities(JzEnttWorld &world)
         entityModelMatrix(2, 3) = transform.position.z;
         m_defaultPipeline->SetUniform("model", entityModelMatrix);
 
-        // Set material uniforms
+        // Set material uniforms (standard shader uses material struct with ambient, diffuse, specular, shininess)
         if (material && material->GetState() == JzEResourceState::Loaded) {
             const auto &props = material->GetProperties();
-            m_defaultPipeline->SetUniform("uAmbientColor", props.ambientColor);
-            m_defaultPipeline->SetUniform("uDiffuseColor", props.diffuseColor);
-            m_defaultPipeline->SetUniform("uSpecularColor", props.specularColor);
-            m_defaultPipeline->SetUniform("uShininess", props.shininess);
+            m_defaultPipeline->SetUniform("material.ambient", props.ambientColor);
+            m_defaultPipeline->SetUniform("material.diffuse", props.diffuseColor);
+            m_defaultPipeline->SetUniform("material.specular", props.specularColor);
+            m_defaultPipeline->SetUniform("material.shininess", props.shininess);
         } else {
-            m_defaultPipeline->SetUniform("uAmbientColor", defaultAmbient);
-            m_defaultPipeline->SetUniform("uDiffuseColor", defaultDiffuse);
-            m_defaultPipeline->SetUniform("uSpecularColor", defaultSpecular);
-            m_defaultPipeline->SetUniform("uShininess", defaultShininess);
+            // Default material values
+            m_defaultPipeline->SetUniform("material.ambient", JzVec3(0.1f, 0.1f, 0.1f));
+            m_defaultPipeline->SetUniform("material.diffuse", JzVec3(0.8f, 0.8f, 0.8f));
+            m_defaultPipeline->SetUniform("material.specular", JzVec3(0.5f, 0.5f, 0.5f));
+            m_defaultPipeline->SetUniform("material.shininess", defaultShininess);
         }
 
         // Bind vertex array and draw

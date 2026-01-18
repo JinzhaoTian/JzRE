@@ -131,11 +131,11 @@ protected:
                 auto *orbit = GetWorld().TryGetComponent<JzRE::JzEnttOrbitControllerComponent>(mainCamera);
                 if (orbit) {
                     // Cornell Box approximate center: X=[-3, 2.5], Y=[-0.16, 5.3], Z=[-5.8, -0.24]
-                    // Center ≈ (-0.25, 2.5, -3.0)
+                    // Camera positioned at +Z looking toward -Z (into the box opening)
                     orbit->target   = JzRE::JzVec3(-0.25f, 2.5f, -3.0f);
-                    orbit->distance = 8.0f;
-                    orbit->pitch    = 0.2f;
-                    orbit->yaw      = 0.0f;
+                    orbit->distance = 10.0f;
+                    orbit->pitch    = 0.0f;        // Look horizontally
+                    orbit->yaw      = 3.14159265f; // Face -Z direction (PI radians)
                 }
             }
         } else {
@@ -166,8 +166,8 @@ protected:
     }
 
 private:
-    std::string                       m_modelPath;
-    std::vector<JzRE::JzEnttEntity>   m_modelEntities;
+    std::string                     m_modelPath;
+    std::vector<JzRE::JzEnttEntity> m_modelEntities;
 };
 
 /**
