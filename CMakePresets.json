@@ -65,7 +65,7 @@
             "name": "windows-msvc-static",
             "displayName": "windows-msvc-static",
             "description": "Windows using MSVC compiler with static linking",
-            "generator": "Visual Studio 17 2022",
+            "generator": "Visual Studio 18 2026",
             "architecture": "x64",
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
@@ -86,7 +86,7 @@
             "name": "windows-msvc-dynamic",
             "displayName": "windows-msvc-dynamic",
             "description": "Windows using MSVC compiler with dynamic linking",
-            "generator": "Visual Studio 17 2022",
+            "generator": "Visual Studio 18 2026",
             "architecture": "x64",
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
