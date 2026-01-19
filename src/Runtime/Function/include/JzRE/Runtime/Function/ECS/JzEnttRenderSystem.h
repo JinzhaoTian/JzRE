@@ -19,10 +19,9 @@ namespace JzRE {
 
 // Forward declarations
 class JzEnttCameraSystem;
-class JzEnttLightSystem;
 
 /**
- * @brief Enhanced render system that integrates with camera and light systems.
+ * @brief Enhanced render system that integrates with camera system.
  *
  * This system manages:
  * - Framebuffer, color texture, and depth texture
@@ -49,17 +48,12 @@ public:
         return JzSystemPhase::Render;
     }
 
-    // ==================== Camera and Light System References ====================
+    // ==================== Camera System Reference ====================
 
     /**
      * @brief Set the camera system reference.
      */
     void SetCameraSystem(std::shared_ptr<JzEnttCameraSystem> cameraSystem);
-
-    /**
-     * @brief Set the light system reference.
-     */
-    void SetLightSystem(std::shared_ptr<JzEnttLightSystem> lightSystem);
 
     // ==================== Framebuffer Management ====================
 
@@ -148,7 +142,6 @@ private:
 
     // System references
     std::shared_ptr<JzEnttCameraSystem> m_cameraSystem;
-    std::shared_ptr<JzEnttLightSystem>  m_lightSystem;
 
     // GPU resources
     std::shared_ptr<JzGPUFramebufferObject> m_framebuffer;

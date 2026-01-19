@@ -166,6 +166,8 @@ std::shared_ptr<JzRE::JzMaterial> JzRE::JzModel::ProcessMaterial(aiMaterial *mat
     float opacity = 1.0f;
     if (mat->Get(AI_MATKEY_OPACITY, opacity) == AI_SUCCESS) {
         props.opacity = opacity;
+    } else {
+        props.opacity = 1.0f;
     }
 
     // Create material with properties

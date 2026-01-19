@@ -218,7 +218,7 @@ Bool JzShaderManager::LoadShaderProgram(const String                &name,
     // Set default render state
     JzRenderState renderState;
     renderState.depthTest = true;
-    renderState.cullMode  = JzECullMode::None; // Disabled for debugging Cornell Box
+    renderState.cullMode  = JzECullMode::Back;
     program->SetRenderState(renderState);
 
     RegisterShaderProgram(name, program);

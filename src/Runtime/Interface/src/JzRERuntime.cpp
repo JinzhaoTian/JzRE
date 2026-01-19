@@ -111,7 +111,6 @@ void JzRE::JzRERuntime::InitializeECS()
 
     // Wire up system dependencies
     m_renderSystem->SetCameraSystem(m_cameraSystem);
-    m_renderSystem->SetLightSystem(m_lightSystem);
 
     // Create default entities
     CreateDefaultCameraEntity();

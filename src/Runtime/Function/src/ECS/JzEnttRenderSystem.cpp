@@ -7,7 +7,6 @@
 
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
 #include "JzRE/Runtime/Function/ECS/JzEnttCameraSystem.h"
-#include "JzRE/Runtime/Function/ECS/JzEnttLightSystem.h"
 #include "JzRE/Runtime/Function/ECS/JzEnttComponents.h"
 #include "JzRE/Runtime/Platform/JzDevice.h"
 #include "JzRE/Runtime/Resource/JzShaderManager.h"
@@ -54,11 +53,6 @@ void JzEnttRenderSystem::OnShutdown(JzEnttWorld &world)
 void JzEnttRenderSystem::SetCameraSystem(std::shared_ptr<JzEnttCameraSystem> cameraSystem)
 {
     m_cameraSystem = std::move(cameraSystem);
-}
-
-void JzEnttRenderSystem::SetLightSystem(std::shared_ptr<JzEnttLightSystem> lightSystem)
-{
-    m_lightSystem = std::move(lightSystem);
 }
 
 void JzEnttRenderSystem::SetFrameSize(JzIVec2 size)
@@ -223,21 +217,10 @@ void JzEnttRenderSystem::RenderEntities(JzEnttWorld &world)
     // Get camera matrices
     JzMat4 viewMatrix       = JzMat4x4::Identity();
     JzMat4 projectionMatrix = JzMat4x4::Identity();
-    JzVec3 cameraPos(0.0f, 0.0f, 10.0f);
 
     if (m_cameraSystem) {
         viewMatrix       = m_cameraSystem->GetViewMatrix();
         projectionMatrix = m_cameraSystem->GetProjectionMatrix();
-        cameraPos        = m_cameraSystem->GetCameraPosition();
-    }
-
-    // Get light data
-    JzVec3 lightDir(0.3f, 1.0f, 0.5f);
-    JzVec3 lightColor(1.0f, 1.0f, 1.0f);
-
-    if (m_lightSystem) {
-        lightDir   = m_lightSystem->GetPrimaryLightDirection();
-        lightColor = m_lightSystem->GetPrimaryLightColor();
     }
 
     // Set common uniforms for example shader
@@ -245,13 +228,6 @@ void JzEnttRenderSystem::RenderEntities(JzEnttWorld &world)
     m_defaultPipeline->SetUniform("model", modelMatrix);
     m_defaultPipeline->SetUniform("view", viewMatrix);
     m_defaultPipeline->SetUniform("projection", projectionMatrix);
-
-    // Camera position (example shader uses "viewPos")
-    m_defaultPipeline->SetUniform("viewPos", cameraPos);
-
-    // Directional light (standard shader uses struct array)
-    m_defaultPipeline->SetUniform("directionalLight[0].direction", lightDir.Normalized());
-    m_defaultPipeline->SetUniform("directionalLight[0].color", lightColor);
 
     // Render all entities with Transform + Mesh + Material
     auto view = world.View<JzTransformComponent, JzMeshComponent, JzMaterialComponent>();

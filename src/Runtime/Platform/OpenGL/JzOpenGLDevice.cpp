@@ -210,6 +210,7 @@ void JzRE::JzOpenGLDevice::BindPipeline(std::shared_ptr<JzRE::JzRHIPipeline> pip
     auto glPipeline = std::static_pointer_cast<JzOpenGLPipeline>(pipeline);
     if (glPipeline && glPipeline->IsLinked()) {
         glUseProgram(glPipeline->GetProgram());
+        ApplyRenderState(pipeline->GetRenderState());
         m_currentPipeline = glPipeline;
     }
 }
