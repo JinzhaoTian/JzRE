@@ -187,11 +187,10 @@ void JzEnttCameraSystem::UpdateCameraFromOrbit(JzEnttCameraComponent          &c
     camera.position.z = orbit.target.z + orbit.distance * cosPitch * cosYaw;
 
     // Set camera rotation to look at target
-    // Camera position uses: x = sin(yaw), z = cos(yaw)
-    // So at yaw=0, camera is at +Z looking toward target at origin
-    // Add PI to yaw so the forward vector points toward target
+    // Use negative yaw to ensure the camera looks back at the target (origin-centric)
+    // correctly aligning with the position calculated from spherical coordinates.
     camera.rotation.x = -orbit.pitch;
-    camera.rotation.y = orbit.yaw + 3.14159265358979323846f;
+    camera.rotation.y = -orbit.yaw;
     camera.rotation.z = 0.0f;
     camera.rotation.w = 0.0f;
 }
