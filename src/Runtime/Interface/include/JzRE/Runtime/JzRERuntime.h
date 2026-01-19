@@ -60,8 +60,7 @@ public:
      * @param windowTitle Title of the window
      * @param windowSize Initial size of the window
      */
-    JzRERuntime(JzERHIType rhiType, const String &windowTitle = "JzRE Runtime",
-                const JzIVec2 &windowSize = {1280, 720});
+    JzRERuntime(JzERHIType rhiType, const String &windowTitle = "JzRE Runtime", const JzIVec2 &windowSize = {1280, 720});
 
     /**
      * @brief Virtual destructor

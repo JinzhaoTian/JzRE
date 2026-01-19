@@ -5,7 +5,6 @@
 
 #include "JzRE/Runtime/JzRERuntime.h"
 #include "JzRE/Runtime/Function/ECS/JzEnttModelSpawner.h"
-#include "JzRE/Runtime/Function/ECS/JzEnttRenderComponents.h"
 #include "JzRE/Runtime/Resource/JzModel.h"
 
 #include <iostream>
@@ -97,18 +96,15 @@ bool ParseCommandLine(int argc, char *argv[], CommandLineArgs &args)
  * a model file specified via command line arguments using the ECS-based
  * rendering pipeline.
  */
-class ModelViewer : public JzRE::JzRERuntime {
+class RuntimeExample : public JzRE::JzRERuntime {
 public:
     /**
      * @brief Constructor
      *
      * @param args Parsed command line arguments
      */
-    explicit ModelViewer(const CommandLineArgs &args) :
-        JzRERuntime(args.graphicApi, "JzRE Model Viewer", {1280, 720}),
-        m_modelPath(args.inputModel)
-    {
-    }
+    explicit RuntimeExample(const CommandLineArgs &args) :
+        JzRERuntime(args.graphicApi, "JzRE Example", {1280, 720}), m_modelPath(args.inputModel) { }
 
 protected:
     /**
@@ -123,21 +119,6 @@ protected:
             // Spawn model as ECS entities
             m_modelEntities = JzRE::JzEnttModelSpawner::SpawnModel(GetWorld(), model);
             std::cout << "Model loaded successfully (" << m_modelEntities.size() << " entities)\n";
-
-            // Configure orbit camera for viewing the model
-            // Get the main camera entity and modify its orbit controller
-            auto mainCamera = GetMainCameraEntity();
-            if (JzRE::IsValidEntity(mainCamera)) {
-                auto *orbit = GetWorld().TryGetComponent<JzRE::JzEnttOrbitControllerComponent>(mainCamera);
-                if (orbit) {
-                    // Cornell Box approximate center: X=[-3, 2.5], Y=[-0.16, 5.3], Z=[-5.8, -0.24]
-                    // Camera positioned at +Z looking toward -Z (into the box opening)
-                    orbit->target   = JzRE::JzVec3(-0.25f, 2.5f, -3.0f);
-                    orbit->distance = 10.0f;
-                    orbit->pitch    = 0.0f;        // Look horizontally
-                    orbit->yaw      = 3.14159265f; // Face -Z direction (PI radians)
-                }
-            }
         } else {
             std::cerr << "Error: Failed to load model: " << m_modelPath << "\n";
         }
@@ -189,7 +170,7 @@ int main(int argc, char *argv[])
               << "  Model: " << args.inputModel << "\n"
               << "  Graphics API: " << (args.graphicApi == JzRE::JzERHIType::OpenGL ? "OpenGL" : "Vulkan") << "\n";
 
-    ModelViewer app(args);
+    RuntimeExample app(args);
     app.Run();
 
     return 0;

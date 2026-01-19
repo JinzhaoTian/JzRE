@@ -183,11 +183,6 @@ void JzShaderManager::RegisterBuiltInShaders()
     } else {
         JzRE_LOG_ERROR("Failed to load built-in standard shader");
     }
-
-    // ==================== Unlit Shader ====================
-    if (!LoadShaderProgram("unlit", shaderDir / "unlit.vert", shaderDir / "unlit.frag")) {
-        JzRE_LOG_ERROR("Failed to load built-in unlit shader");
-    }
 }
 
 Bool JzShaderManager::LoadShaderProgram(const String                &name,
