@@ -87,22 +87,38 @@ private:
 
     /**
      * @brief Handle orbit controller input and update camera position/rotation.
+     *
+     * @param camera Camera component to update
+     * @param orbit Orbit controller component with orbit parameters
+     * @param input Camera input component with processed input state
      */
-    void HandleOrbitController(JzEnttCameraComponent          &camera,
-                               JzEnttOrbitControllerComponent &orbit);
+    void HandleOrbitController(JzEnttCameraComponent            &camera,
+                               JzEnttOrbitControllerComponent   &orbit,
+                               const JzEnttCameraInputComponent &input);
 
     /**
      * @brief Handle orbit rotation from mouse movement.
+     *
+     * @param orbit Orbit controller component
+     * @param deltaX Horizontal mouse delta
+     * @param deltaY Vertical mouse delta
      */
     void HandleOrbitRotation(JzEnttOrbitControllerComponent &orbit, F32 deltaX, F32 deltaY);
 
     /**
      * @brief Handle camera panning from mouse movement.
+     *
+     * @param orbit Orbit controller component
+     * @param deltaX Horizontal mouse delta
+     * @param deltaY Vertical mouse delta
      */
     void HandlePanning(JzEnttOrbitControllerComponent &orbit, F32 deltaX, F32 deltaY);
 
     /**
      * @brief Handle zoom from scroll wheel.
+     *
+     * @param orbit Orbit controller component
+     * @param scrollY Scroll wheel delta
      */
     void HandleZoom(JzEnttOrbitControllerComponent &orbit, F32 scrollY);
 
@@ -112,6 +128,7 @@ private:
     void UpdateCameraFromOrbit(JzEnttCameraComponent          &camera,
                                JzEnttOrbitControllerComponent &orbit);
 
+private:
     // Cached main camera data
     JzMat4 m_viewMatrix       = JzMat4x4::Identity();
     JzMat4 m_projectionMatrix = JzMat4x4::Identity();

@@ -14,6 +14,7 @@
 #include "JzRE/Runtime/Core/JzRETypes.h"
 #include "JzRE/Runtime/Function/ECS/JzEnttEntity.h"
 #include "JzRE/Runtime/Function/ECS/JzEnttWorld.h"
+#include "JzRE/Runtime/Function/ECS/JzEnttInputSystem.h"
 #include "JzRE/Runtime/Function/ECS/JzEnttCameraSystem.h"
 #include "JzRE/Runtime/Function/ECS/JzEnttLightSystem.h"
 #include "JzRE/Runtime/Function/ECS/JzEnttRenderSystem.h"
@@ -45,9 +46,10 @@ struct JzRuntimeFrameData {
  * 2. Editor integration: Override OnRender to inject UI rendering after 3D scene
  *
  * ECS Systems (updated in order):
- * 1. JzEnttCameraSystem - Camera matrix updates, orbit control
- * 2. JzEnttLightSystem - Light data collection
- * 3. JzEnttRenderSystem - Renders all entities with Transform + Mesh + Material
+ * 1. JzEnttInputSystem - Input processing and component updates
+ * 2. JzEnttCameraSystem - Camera matrix updates, orbit control
+ * 3. JzEnttLightSystem - Light data collection
+ * 4. JzEnttRenderSystem - Renders all entities with Transform + Mesh + Material
  */
 class JzRERuntime {
 public:
@@ -287,6 +289,7 @@ protected:
 
     // ECS world and systems
     std::unique_ptr<JzEnttWorld>        m_world;
+    std::shared_ptr<JzEnttInputSystem>  m_inputSystem;
     std::shared_ptr<JzEnttCameraSystem> m_cameraSystem;
     std::shared_ptr<JzEnttLightSystem>  m_lightSystem;
     std::shared_ptr<JzEnttRenderSystem> m_renderSystem;

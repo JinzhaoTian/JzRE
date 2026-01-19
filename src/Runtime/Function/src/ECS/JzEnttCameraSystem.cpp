@@ -8,9 +8,6 @@
 #include <algorithm>
 #include <cmath>
 
-#include "JzRE/Runtime/Core/JzServiceContainer.h"
-#include "JzRE/Runtime/Function/Input/JzInputManager.h"
-
 namespace JzRE {
 
 void JzEnttCameraSystem::OnInit(JzEnttWorld &world)
@@ -32,7 +29,11 @@ void JzEnttCameraSystem::Update(JzEnttWorld &world, F32 delta)
         // Handle orbit controller if present
         auto *orbit = world.TryGetComponent<JzEnttOrbitControllerComponent>(entity);
         if (orbit) {
-            HandleOrbitController(camera, *orbit);
+            // Try to get camera input component for input-driven orbit control
+            auto *cameraInput = world.TryGetComponent<JzEnttCameraInputComponent>(entity);
+            if (cameraInput) {
+                HandleOrbitController(camera, *orbit, *cameraInput);
+            }
         }
 
         // Update matrices
@@ -77,69 +78,51 @@ void JzEnttCameraSystem::UpdateCameraMatrices(JzEnttCameraComponent &camera)
         JzMat4x4::Perspective(fovRadians, camera.aspect, camera.nearPlane, camera.farPlane);
 }
 
-void JzEnttCameraSystem::HandleOrbitController(JzEnttCameraComponent          &camera,
-                                               JzEnttOrbitControllerComponent &orbit)
+void JzEnttCameraSystem::HandleOrbitController(JzEnttCameraComponent            &camera,
+                                               JzEnttOrbitControllerComponent   &orbit,
+                                               const JzEnttCameraInputComponent &input)
 {
-    // Get input manager from service container
-    JzInputManager *inputManagerPtr = nullptr;
-    try {
-        inputManagerPtr = &JzServiceContainer::Get<JzInputManager>();
-    } catch (...) {
-        return;
-    }
-
-    auto &inputManager = *inputManagerPtr;
-
-    // Get current mouse position
-    JzVec2 currentMousePos = inputManager.GetMousePosition();
-
-    // Calculate mouse delta
-    F32 deltaX = 0.0f;
-    F32 deltaY = 0.0f;
-    if (!orbit.firstMouse) {
-        deltaX = currentMousePos.x - orbit.lastMousePos.x;
-        deltaY = currentMousePos.y - orbit.lastMousePos.y;
-    }
-
-    // Track button states
-    Bool leftPressed =
-        inputManager.GetMouseButtonState(JzEInputMouseButton::MOUSE_BUTTON_LEFT) == JzEInputMouseButtonState::MOUSE_DOWN;
-    Bool rightPressed =
-        inputManager.GetMouseButtonState(JzEInputMouseButton::MOUSE_BUTTON_RIGHT) == JzEInputMouseButtonState::MOUSE_DOWN;
-
-    // Handle left mouse button - Orbit rotation
-    if (leftPressed) {
+    // Handle orbit rotation (left mouse button)
+    if (input.orbitActive) {
         if (!orbit.leftMousePressed) {
+            // Just pressed - initialize state
             orbit.leftMousePressed = true;
             orbit.firstMouse       = true;
-        } else if (!orbit.firstMouse) {
-            HandleOrbitRotation(orbit, deltaX, deltaY);
+        } else if (!orbit.firstMouse && (std::abs(input.mouseDelta.x) > 0.001f || std::abs(input.mouseDelta.y) > 0.001f)) {
+            // Actively dragging - apply rotation
+            HandleOrbitRotation(orbit, input.mouseDelta.x, input.mouseDelta.y);
         }
+        orbit.firstMouse = false;
     } else {
         orbit.leftMousePressed = false;
+        orbit.firstMouse       = true;
     }
 
-    // Handle right mouse button - Panning
-    if (rightPressed) {
+    // Handle panning (right mouse button)
+    if (input.panActive) {
         if (!orbit.rightMousePressed) {
+            // Just pressed - initialize state
             orbit.rightMousePressed = true;
-            orbit.firstMouse        = true;
-        } else if (!orbit.firstMouse) {
-            HandlePanning(orbit, deltaX, deltaY);
+        } else if (std::abs(input.mouseDelta.x) > 0.001f || std::abs(input.mouseDelta.y) > 0.001f) {
+            // Actively dragging - apply panning
+            HandlePanning(orbit, input.mouseDelta.x, input.mouseDelta.y);
         }
     } else {
         orbit.rightMousePressed = false;
     }
 
-    // Handle scroll wheel - Zoom
-    JzVec2 scroll = inputManager.GetMouseScroll();
-    if (std::abs(scroll.y) > 0.001f) {
-        HandleZoom(orbit, scroll.y);
+    // Handle zoom (scroll wheel)
+    if (std::abs(input.scrollDelta) > 0.001f) {
+        HandleZoom(orbit, input.scrollDelta);
     }
 
-    // Update last mouse position
-    orbit.lastMousePos = currentMousePos;
-    orbit.firstMouse   = false;
+    // Handle reset request
+    if (input.resetRequested) {
+        orbit.distance = 5.0f;
+        orbit.pitch    = 0.3f;
+        orbit.yaw      = 0.0f;
+        orbit.target   = JzVec3(0.0f, 0.0f, 0.0f);
+    }
 
     // Update camera from orbit parameters
     UpdateCameraFromOrbit(camera, orbit);

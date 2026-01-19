@@ -115,18 +115,19 @@ public:
 
 Systems are categorized into 8 phases for proper synchronization:
 
-| Phase Group   | Phase         | Enum                        | Purpose                                    |
-| ------------- | ------------- | --------------------------- | ------------------------------------------ |
-| **Logic**     | Input         | `JzSystemPhase::Input`      | Input processing, event handling           |
-|               | Physics       | `JzSystemPhase::Physics`    | Physics simulation, collision detection    |
-|               | Animation     | `JzSystemPhase::Animation`  | Skeletal animation, blend trees            |
-|               | Logic         | `JzSystemPhase::Logic`      | General game logic, AI, scripts            |
-| **PreRender** | PreRender     | `JzSystemPhase::PreRender`  | Camera matrices, light collection          |
-|               | Culling       | `JzSystemPhase::Culling`    | Frustum culling, occlusion, LOD selection  |
-| **Render**    | RenderPrep    | `JzSystemPhase::RenderPrep` | Batch building, instance data preparation  |
-|               | Render        | `JzSystemPhase::Render`     | Actual GPU draw calls                      |
+| Phase Group   | Phase      | Enum                        | Purpose                                   |
+| ------------- | ---------- | --------------------------- | ----------------------------------------- |
+| **Logic**     | Input      | `JzSystemPhase::Input`      | Input processing, event handling          |
+|               | Physics    | `JzSystemPhase::Physics`    | Physics simulation, collision detection   |
+|               | Animation  | `JzSystemPhase::Animation`  | Skeletal animation, blend trees           |
+|               | Logic      | `JzSystemPhase::Logic`      | General game logic, AI, scripts           |
+| **PreRender** | PreRender  | `JzSystemPhase::PreRender`  | Camera matrices, light collection         |
+|               | Culling    | `JzSystemPhase::Culling`    | Frustum culling, occlusion, LOD selection |
+| **Render**    | RenderPrep | `JzSystemPhase::RenderPrep` | Batch building, instance data preparation |
+|               | Render     | `JzSystemPhase::Render`     | Actual GPU draw calls                     |
 
 Helper functions are available to check phase groups:
+
 - `IsLogicPhase(phase)` - Returns true for Input, Physics, Animation, Logic
 - `IsPreRenderPhase(phase)` - Returns true for PreRender, Culling
 - `IsRenderPhase(phase)` - Returns true for RenderPrep, Render
@@ -174,6 +175,8 @@ The `JzRERuntime` class uses ECS as its primary rendering architecture with phas
 ```
 JzRERuntime
   └── JzEnttWorld (entity/component storage, system management)
+        ├── Input Systems        (JzSystemPhase::Input)
+        │     └── JzEnttInputSystem (processes raw input, updates input components)
         ├── Logic Systems        (JzSystemPhase::Logic)
         │     └── User-defined logic systems
         ├── PreRender Systems    (JzSystemPhase::PreRender)
@@ -187,9 +190,10 @@ JzRERuntime
 
 Systems are grouped by phase and executed in registration order within each phase:
 
-1. **Logic Phase** - Game logic, physics, AI, animations (user-defined systems)
-2. **PreRender Phase** - Camera, lights, culling (JzEnttCameraSystem, JzEnttLightSystem)
-3. **Render Phase** - GPU rendering (JzEnttRenderSystem)
+1. **Input Phase** - Input processing and component updates (JzEnttInputSystem)
+2. **Logic Phase** - Game logic, physics, AI, animations (user-defined systems)
+3. **PreRender Phase** - Camera, lights, culling (JzEnttCameraSystem, JzEnttLightSystem)
+4. **Render Phase** - GPU rendering (JzEnttRenderSystem)
 
 ### Main Loop Flow
 
@@ -243,13 +247,14 @@ void JzRERuntime::Run() {
 
 ## Available Systems
 
-| System               | Phase     | Description                                              |
-| -------------------- | --------- | -------------------------------------------------------- |
-| `JzEnttMoveSystem`   | Logic     | Updates position based on velocity                       |
-| `JzEnttSceneSystem`  | Logic     | Updates world transforms in hierarchy                    |
-| `JzEnttCameraSystem` | PreRender | Updates camera matrices, handles orbit controller input  |
-| `JzEnttLightSystem`  | PreRender | Collects light data for rendering                        |
-| `JzEnttRenderSystem` | Render    | Manages framebuffer, renders entities with mesh/material |
+| System               | Phase     | Description                                                       |
+| -------------------- | --------- | ----------------------------------------------------------------- |
+| `JzEnttInputSystem`  | Input     | Processes raw input from JzInputManager, updates input components |
+| `JzEnttMoveSystem`   | Logic     | Updates position based on velocity                                |
+| `JzEnttSceneSystem`  | Logic     | Updates world transforms in hierarchy                             |
+| `JzEnttCameraSystem` | PreRender | Updates camera matrices, reads input components for orbit control |
+| `JzEnttLightSystem`  | PreRender | Collects light data for rendering                                 |
+| `JzEnttRenderSystem` | Render    | Manages framebuffer, renders entities with mesh/material          |
 
 ---
 
@@ -273,6 +278,14 @@ void JzRERuntime::Run() {
 | `JzEnttDirectionalLightComponent` | Directional light (direction, color, intensity)                     |
 | `JzEnttPointLightComponent`       | Point light (color, intensity, range, attenuation)                  |
 | `JzEnttSpotLightComponent`        | Spot light (direction, color, intensity, cutoff angles)             |
+
+### Input Components
+
+| Component                      | Description                                                          |
+| ------------------------------ | -------------------------------------------------------------------- |
+| `JzEnttMouseInputComponent`    | Mouse position, delta, button states (updated by JzEnttInputSystem)  |
+| `JzEnttKeyboardInputComponent` | Common key states (WASD, arrow keys, modifiers, function keys)       |
+| `JzEnttCameraInputComponent`   | Processed camera input (orbit/pan active, mouse delta, scroll delta) |
 
 ### Tag Components
 
@@ -338,6 +351,128 @@ protected:
     }
 };
 ```
+
+---
+
+## Input Processing Architecture
+
+JzRE uses a **two-layer input architecture** that separates raw input collection from ECS-based processing:
+
+### Layer 1: Platform Layer (JzInputManager)
+
+The `JzInputManager` is a service-based component that:
+
+- Listens to window events (GLFW callbacks)
+- Tracks raw keyboard and mouse button states
+- Provides polling-based API for input queries
+- Lives in the Platform Layer (not ECS)
+
+```cpp
+// Access via service container
+auto& inputManager = JzServiceContainer::Get<JzInputManager>();
+
+// Query raw input state
+bool pressed = inputManager.IsKeyPressed(JzEInputKeyboardButton::KEY_W);
+JzVec2 mousePos = inputManager.GetMousePosition();
+```
+
+### Layer 2: Function Layer (JzEnttInputSystem)
+
+The `JzEnttInputSystem` bridges raw input to ECS components:
+
+- Runs in the **Input phase** (first logic phase)
+- Reads from JzInputManager
+- Updates input components on entities
+- Computes derived input state (deltas, press/release events)
+
+```cpp
+// Systems read from input components, not InputManager directly
+void MyCameraSystem::Update(JzEnttWorld& world, F32 delta) {
+    auto view = world.View<JzEnttCameraComponent, JzEnttCameraInputComponent>();
+
+    for (auto [entity, camera, input] : view.each()) {
+        if (input.orbitActive) {
+            // Process orbit input using component data
+            ApplyOrbit(camera, input.mouseDelta);
+        }
+    }
+}
+```
+
+### Input Flow Diagram
+
+```
+Hardware Input
+    ↓
+Window Events (GLFW)
+    ↓
+JzInputManager (Platform Layer)
+    ↓
+JzEnttInputSystem (Input Phase)
+    ↓
+Input Components (JzEnttMouseInputComponent, etc.)
+    ↓
+Game Systems (CameraSystem, PlayerSystem, etc.)
+```
+
+### Benefits of This Architecture
+
+1. **Separation of Concerns**: Platform abstraction (InputManager) vs game logic (ECS)
+2. **Testability**: Systems can be tested with mock input components
+3. **Data-Driven**: Input is just another component type
+4. **Extensibility**: Easy to add input mappings, action systems, etc.
+5. **Clear Dependencies**: Systems depend on components, not global services
+6. **ECS Philosophy**: All game state flows through components
+
+### Input Component Patterns
+
+#### Pattern 1: Direct Input Components
+
+For simple input queries:
+
+```cpp
+auto view = world.View<PlayerComponent, JzEnttKeyboardInputComponent>();
+for (auto [entity, player, input] : view.each()) {
+    if (input.w) player.position.z -= speed * delta;
+    if (input.s) player.position.z += speed * delta;
+}
+```
+
+#### Pattern 2: Processed Input Components
+
+For complex input behavior (like camera control):
+
+```cpp
+// JzEnttInputSystem processes raw input
+void JzEnttInputSystem::UpdateCameraInput(JzEnttWorld& world) {
+    auto view = world.View<JzEnttCameraInputComponent, JzEnttMouseInputComponent>();
+    for (auto [entity, cameraInput, mouseInput] : view.each()) {
+        cameraInput.orbitActive = mouseInput.leftButtonDown;
+        cameraInput.mouseDelta = mouseInput.positionDelta;
+    }
+}
+
+// CameraSystem reads processed input
+void JzEnttCameraSystem::Update(JzEnttWorld& world, F32 delta) {
+    auto view = world.View<JzEnttCameraComponent, JzEnttCameraInputComponent>();
+    for (auto [entity, camera, input] : view.each()) {
+        if (input.orbitActive) {
+            ApplyOrbit(camera, input.mouseDelta);
+        }
+    }
+}
+```
+
+### Future Extensions
+
+The input architecture supports future enhancements:
+
+- **Input Actions**: Map keys to abstract actions ("Jump", "Fire", etc.)
+- **Input Contexts**: Different input mappings per game state (menu, gameplay, etc.)
+- **Input Buffering**: Store input events for frame-perfect execution
+- **Input Replay**: Record and replay input for debugging/testing
+- **Dead Zones**: Configure analog input dead zones per-component
+- **Key Rebinding**: Remap keys at runtime by modifying input components
 
 ---
 

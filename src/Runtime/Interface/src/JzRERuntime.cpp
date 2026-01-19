@@ -102,7 +102,9 @@ void JzRE::JzRERuntime::InitializeECS()
 {
     m_world = std::make_unique<JzEnttWorld>();
 
-    // Register systems in update order
+    // Register systems in execution order by phase:
+    // Input phase -> Logic phases -> PreRender phases -> Render phases
+    m_inputSystem  = m_world->RegisterSystem<JzEnttInputSystem>();
     m_cameraSystem = m_world->RegisterSystem<JzEnttCameraSystem>();
     m_lightSystem  = m_world->RegisterSystem<JzEnttLightSystem>();
     m_renderSystem = m_world->RegisterSystem<JzEnttRenderSystem>();
@@ -133,6 +135,11 @@ void JzRE::JzRERuntime::CreateDefaultCameraEntity()
     orbit.pitch    = 0.3f;
     orbit.yaw      = 0.0f;
     orbit.target   = JzVec3(0.0f, 0.0f, 0.0f);
+
+    // Add input components for camera control
+    m_world->AddComponent<JzEnttMouseInputComponent>(m_mainCameraEntity);
+    m_world->AddComponent<JzEnttKeyboardInputComponent>(m_mainCameraEntity);
+    m_world->AddComponent<JzEnttCameraInputComponent>(m_mainCameraEntity);
 
     // Add main camera tag (empty struct, use emplace directly)
     m_world->GetRegistry().emplace<JzMainCameraTag>(m_mainCameraEntity);

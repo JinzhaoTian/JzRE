@@ -115,4 +115,63 @@ struct JzRenderableTag { };
  */
 struct JzMainCameraTag { };
 
+// ==================== Input Components ====================
+
+/**
+ * @brief Component for storing mouse input state.
+ *
+ * This component is updated by JzEnttInputSystem and read by other systems
+ * (like CameraSystem) to process mouse input.
+ */
+struct JzEnttMouseInputComponent {
+    JzVec2 position{0.0f, 0.0f};      ///< Current mouse position
+    JzVec2 positionDelta{0.0f, 0.0f}; ///< Mouse movement since last frame
+    JzVec2 scroll{0.0f, 0.0f};        ///< Scroll wheel delta this frame
+
+    Bool leftButtonDown{false};   ///< Left mouse button state
+    Bool rightButtonDown{false};  ///< Right mouse button state
+    Bool middleButtonDown{false}; ///< Middle mouse button state
+
+    Bool leftButtonPressed{false};   ///< Left button pressed this frame
+    Bool rightButtonPressed{false};  ///< Right button pressed this frame
+    Bool middleButtonPressed{false}; ///< Middle button pressed this frame
+
+    Bool leftButtonReleased{false};   ///< Left button released this frame
+    Bool rightButtonReleased{false};  ///< Right button released this frame
+    Bool middleButtonReleased{false}; ///< Middle button released this frame
+};
+
+/**
+ * @brief Component for storing keyboard input state.
+ *
+ * This component is updated by JzEnttInputSystem and provides
+ * high-level key state queries.
+ */
+struct JzEnttKeyboardInputComponent {
+    // Common key states for quick access
+    Bool w{false}, a{false}, s{false}, d{false};
+    Bool space{false}, shift{false}, ctrl{false}, alt{false};
+    Bool escape{false}, enter{false}, tab{false};
+
+    // Arrow keys
+    Bool up{false}, down{false}, left{false}, right{false};
+
+    // Function keys
+    Bool f1{false}, f2{false}, f3{false}, f4{false};
+};
+
+/**
+ * @brief Component for camera input control state.
+ *
+ * This component stores processed input state specifically for camera control.
+ * It acts as an intermediate layer between raw input and camera behavior.
+ */
+struct JzEnttCameraInputComponent {
+    Bool   orbitActive{false};     ///< Orbit mode is active (left mouse button held)
+    Bool   panActive{false};       ///< Pan mode is active (right mouse button held)
+    JzVec2 mouseDelta{0.0f, 0.0f}; ///< Mouse movement delta for this frame
+    F32    scrollDelta{0.0f};      ///< Scroll wheel delta for zoom
+    Bool   resetRequested{false};  ///< Request to reset camera to default
+};
+
 } // namespace JzRE
