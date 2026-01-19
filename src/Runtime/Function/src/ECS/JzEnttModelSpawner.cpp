@@ -6,7 +6,6 @@
 #include "JzRE/Runtime/Function/ECS/JzEnttModelSpawner.h"
 
 #include "JzRE/Runtime/Function/ECS/JzEnttComponents.h"
-#include "JzRE/Runtime/Function/ECS/JzEnttRenderComponents.h"
 
 namespace JzRE {
 

@@ -6,7 +6,7 @@
 #include "JzRE/Runtime/Function/ECS/JzEnttInputSystem.h"
 
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
-#include "JzRE/Runtime/Function/ECS/JzEnttRenderComponents.h"
+#include "JzRE/Runtime/Function/ECS/JzEnttComponents.h"
 #include "JzRE/Runtime/Function/Input/JzInputManager.h"
 
 namespace JzRE {
