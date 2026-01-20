@@ -66,6 +66,10 @@
             "displayName": "windows-msvc-static",
             "description": "Windows using MSVC compiler with static linking",
             "generator": "Ninja",
+            "architecture": {
+                "value": "x64",
+                "strategy": "external"
+            },
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
                 "CMAKE_C_COMPILER": "cl",
@@ -89,6 +93,10 @@
             "displayName": "windows-msvc-dynamic",
             "description": "Windows using MSVC compiler with dynamic linking",
             "generator": "Ninja",
+            "architecture": {
+                "value": "x64",
+                "strategy": "external"
+            },
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
                 "CMAKE_C_COMPILER": "cl",
