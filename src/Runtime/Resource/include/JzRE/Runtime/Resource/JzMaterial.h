@@ -24,6 +24,7 @@ struct JzMaterialProperties {
     JzVec3 specularColor = JzVec3(0.5f, 0.5f, 0.5f); ///< Ks - Specular color
     F32    shininess     = 32.0f;                    ///< Ns - Shininess
     F32    opacity       = 1.0f;                     ///< d - Opacity (1.0 = opaque)
+    String diffuseTexturePath;                       ///< map_Kd - Diffuse texture path
 };
 
 /**
@@ -84,6 +85,36 @@ public:
     }
 
     /**
+     * @brief Get the diffuse texture
+     *
+     * @return std::shared_ptr<JzGPUTextureObject>
+     */
+    std::shared_ptr<JzGPUTextureObject> GetDiffuseTexture() const
+    {
+        return m_diffuseTexture;
+    }
+
+    /**
+     * @brief Set the diffuse texture
+     *
+     * @param texture
+     */
+    void SetDiffuseTexture(std::shared_ptr<JzGPUTextureObject> texture)
+    {
+        m_diffuseTexture = texture;
+    }
+
+    /**
+     * @brief Check if material has a diffuse texture
+     *
+     * @return Bool
+     */
+    Bool HasDiffuseTexture() const
+    {
+        return m_diffuseTexture != nullptr;
+    }
+
+    /**
      * @brief Get the material properties
      *
      * @return const JzMaterialProperties&
@@ -107,6 +138,7 @@ protected:
     JzMaterialProperties                             m_properties;
     std::shared_ptr<JzRHIPipeline>                   m_pipeline;
     std::vector<std::shared_ptr<JzGPUTextureObject>> m_textures;
+    std::shared_ptr<JzGPUTextureObject>              m_diffuseTexture; ///< Diffuse texture (map_Kd)
 };
 
 } // namespace JzRE

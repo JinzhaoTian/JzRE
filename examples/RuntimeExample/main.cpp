@@ -280,6 +280,9 @@ private:
                         matComp.baseColor     = JzRE::JzVec4(props.diffuseColor.x, props.diffuseColor.y,
                                                              props.diffuseColor.z, props.opacity);
                         matComp.isReady       = true;
+
+                        // Set diffuse texture flag if material has one
+                        matComp.hasDiffuseTexture = material->HasDiffuseTexture();
                     }
                 }
             }

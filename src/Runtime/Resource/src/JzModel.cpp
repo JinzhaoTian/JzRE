@@ -4,6 +4,7 @@
  */
 
 #include "JzRE/Runtime/Resource/JzModel.h"
+#include "JzRE/Runtime/Resource/JzTexture.h"
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 
@@ -170,6 +171,25 @@ std::shared_ptr<JzRE::JzMaterial> JzRE::JzModel::ProcessMaterial(aiMaterial *mat
         props.opacity = 1.0f;
     }
 
+    // Get diffuse texture path (map_Kd in MTL)
+    aiString texturePath;
+    if (mat->GetTextureCount(aiTextureType_DIFFUSE) > 0) {
+        if (mat->GetTexture(aiTextureType_DIFFUSE, 0, &texturePath) == AI_SUCCESS) {
+            // Build full path relative to the model directory
+            props.diffuseTexturePath = m_directory + "/" + texturePath.C_Str();
+        }
+    }
+
     // Create material with properties
-    return std::make_shared<JzMaterial>(props);
+    auto material = std::make_shared<JzMaterial>(props);
+
+    // Load and set diffuse texture if available
+    if (!props.diffuseTexturePath.empty()) {
+        auto texture = std::make_shared<JzTexture>(props.diffuseTexturePath);
+        if (texture->Load()) {
+            material->SetDiffuseTexture(texture->GetRhiTexture());
+        }
+    }
+
+    return material;
 }

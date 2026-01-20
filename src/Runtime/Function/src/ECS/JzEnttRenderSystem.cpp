@@ -12,6 +12,7 @@
 #include "JzRE/Runtime/Resource/JzShaderManager.h"
 #include "JzRE/Runtime/Resource/JzAssetManager.h"
 #include "JzRE/Runtime/Resource/JzMesh.h"
+#include "JzRE/Runtime/Resource/JzMaterial.h"
 
 namespace JzRE {
 
@@ -264,6 +265,17 @@ void JzEnttRenderSystem::RenderEntities(JzEnttWorld &world)
         m_defaultPipeline->SetUniform("material.diffuse", matComp.diffuseColor);
         m_defaultPipeline->SetUniform("material.specular", matComp.specularColor);
         m_defaultPipeline->SetUniform("material.shininess", matComp.shininess);
+
+        // Bind diffuse texture if available
+        // Get texture directly from material (hasDiffuseTexture flag is set during model loading)
+        JzMaterial *mat = assetManager.Get(matComp.materialHandle);
+        bool hasDiffuseTexture = mat && mat->HasDiffuseTexture();
+        m_defaultPipeline->SetUniform("hasDiffuseTexture", hasDiffuseTexture);
+
+        if (hasDiffuseTexture) {
+            device.BindTexture(mat->GetDiffuseTexture(), 0);
+            m_defaultPipeline->SetUniform("diffuseTexture", 0);
+        }
 
         // Bind and Draw
         device.BindVertexArray(vertexArray);

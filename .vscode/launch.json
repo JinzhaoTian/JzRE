@@ -58,7 +58,7 @@
             "program": "${workspaceFolder}/build/JzRE/RuntimeExample.exe",
             "args": [
                 "--input",
-                "${workspaceFolder}/build/JzRE/models/cube.obj"
+                "${workspaceFolder}/build/JzRE/models/crate.obj"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build/JzRE",
@@ -73,7 +73,7 @@
             "program": "${workspaceFolder}/build/JzRE/RuntimeExample.exe",
             "args": [
                 "--input",
-                "${workspaceFolder}/build/JzRE/models/cube.obj"
+                "${workspaceFolder}/build/JzRE/models/crate.obj"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build/JzRE",
@@ -88,7 +88,7 @@
             "program": "${workspaceFolder}/build/JzRE/RuntimeExample",
             "args": [
                 "--input",
-                "${workspaceFolder}/build/JzRE/models/cube.obj"
+                "${workspaceFolder}/build/JzRE/models/crate.obj"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build/JzRE",
@@ -104,7 +104,7 @@
             "program": "${workspaceFolder}/build/JzRE/RuntimeExample",
             "args": [
                 "--input",
-                "${workspaceFolder}/build/JzRE/models/cube.obj"
+                "${workspaceFolder}/build/JzRE/models/crate.obj"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build/JzRE",

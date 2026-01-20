@@ -58,6 +58,7 @@ struct JzMeshAssetComponent {
  */
 struct JzMaterialAssetComponent {
     JzMaterialHandle materialHandle; ///< Handle to the material asset
+    JzTextureHandle  diffuseTextureHandle; ///< Handle to diffuse texture (map_Kd)
 
     // Cached material properties (populated by AssetLoadingSystem)
     JzVec4 baseColor{1.0f, 1.0f, 1.0f, 1.0f};
@@ -69,6 +70,7 @@ struct JzMaterialAssetComponent {
     F32    metallic  = 0.0f;
     F32    roughness = 0.5f;
     Bool   isReady   = false;
+    Bool   hasDiffuseTexture = false; ///< Whether a diffuse texture is bound
 
     JzMaterialAssetComponent() = default;
 
@@ -81,6 +83,14 @@ struct JzMaterialAssetComponent {
     [[nodiscard]] Bool HasMaterial() const
     {
         return materialHandle.IsValid();
+    }
+
+    /**
+     * @brief Check if the component has a valid diffuse texture
+     */
+    [[nodiscard]] Bool HasDiffuseTexture() const
+    {
+        return diffuseTextureHandle.IsValid() && hasDiffuseTexture;
     }
 };
 
