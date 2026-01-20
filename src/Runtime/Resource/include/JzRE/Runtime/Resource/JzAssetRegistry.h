@@ -8,7 +8,6 @@
 #pragma once
 
 #include <atomic>
-#include <chrono>
 #include <memory>
 #include <queue>
 #include <shared_mutex>
@@ -34,15 +33,15 @@ enum class JzEAssetLoadState : U8 {
 /**
  * @brief Convert load state to string for debugging
  */
-inline const char* ToString(JzEAssetLoadState state)
+inline const char *ToString(JzEAssetLoadState state)
 {
     switch (state) {
-    case JzEAssetLoadState::NotLoaded: return "NotLoaded";
-    case JzEAssetLoadState::Loading: return "Loading";
-    case JzEAssetLoadState::Loaded: return "Loaded";
-    case JzEAssetLoadState::Failed: return "Failed";
-    case JzEAssetLoadState::Unloading: return "Unloading";
-    default: return "Unknown";
+        case JzEAssetLoadState::NotLoaded: return "NotLoaded";
+        case JzEAssetLoadState::Loading: return "Loading";
+        case JzEAssetLoadState::Loaded: return "Loaded";
+        case JzEAssetLoadState::Failed: return "Failed";
+        case JzEAssetLoadState::Unloading: return "Unloading";
+        default: return "Unknown";
     }
 }
 
@@ -51,22 +50,22 @@ inline const char* ToString(JzEAssetLoadState state)
  *
  * @tparam T The asset type
  */
-template<typename T>
+template <typename T>
 struct JzAssetSlot {
-    std::shared_ptr<T> asset;                               ///< The actual asset data
-    String             path;                                ///< Asset path for lookup
-    U32                generation = 0;                      ///< Generation counter
+    std::shared_ptr<T> asset;          ///< The actual asset data
+    String             path;           ///< Asset path for lookup
+    U32                generation = 0; ///< Generation counter
     JzEAssetLoadState  loadState  = JzEAssetLoadState::NotLoaded;
-    std::atomic<U32>   refCount{0};                         ///< Reference count
-    U64                lastAccessTime = 0;                  ///< Last access timestamp (ms)
-    Size               memorySize     = 0;                  ///< Estimated memory usage (bytes)
-    String             errorMessage;                        ///< Error message if load failed
+    std::atomic<U32>   refCount{0};        ///< Reference count
+    U64                lastAccessTime = 0; ///< Last access timestamp (ms)
+    Size               memorySize     = 0; ///< Estimated memory usage (bytes)
+    String             errorMessage;       ///< Error message if load failed
 
     // Default constructor
     JzAssetSlot() = default;
 
     // Move constructor (std::atomic is not copyable, so we need explicit move)
-    JzAssetSlot(JzAssetSlot&& other) noexcept :
+    JzAssetSlot(JzAssetSlot &&other) noexcept :
         asset(std::move(other.asset)),
         path(std::move(other.path)),
         generation(other.generation),
@@ -78,13 +77,13 @@ struct JzAssetSlot {
     { }
 
     // Move assignment operator
-    JzAssetSlot& operator=(JzAssetSlot&& other) noexcept
+    JzAssetSlot &operator=(JzAssetSlot &&other) noexcept
     {
         if (this != &other) {
-            asset          = std::move(other.asset);
-            path           = std::move(other.path);
-            generation     = other.generation;
-            loadState      = other.loadState;
+            asset      = std::move(other.asset);
+            path       = std::move(other.path);
+            generation = other.generation;
+            loadState  = other.loadState;
             refCount.store(other.refCount.load());
             lastAccessTime = other.lastAccessTime;
             memorySize     = other.memorySize;
@@ -94,8 +93,8 @@ struct JzAssetSlot {
     }
 
     // Delete copy operations (std::atomic is not copyable)
-    JzAssetSlot(const JzAssetSlot&) = delete;
-    JzAssetSlot& operator=(const JzAssetSlot&) = delete;
+    JzAssetSlot(const JzAssetSlot &)            = delete;
+    JzAssetSlot &operator=(const JzAssetSlot &) = delete;
 };
 
 /**
@@ -112,7 +111,7 @@ struct JzAssetSlot {
  * @note Each asset type should have its own registry instance.
  *       The JzAssetManager manages multiple registries.
  */
-template<typename T>
+template <typename T>
 class JzAssetRegistry {
 public:
     /**
@@ -127,12 +126,12 @@ public:
     ~JzAssetRegistry();
 
     // Non-copyable
-    JzAssetRegistry(const JzAssetRegistry&)            = delete;
-    JzAssetRegistry& operator=(const JzAssetRegistry&) = delete;
+    JzAssetRegistry(const JzAssetRegistry &)            = delete;
+    JzAssetRegistry &operator=(const JzAssetRegistry &) = delete;
 
     // Move-only
-    JzAssetRegistry(JzAssetRegistry&&) noexcept            = default;
-    JzAssetRegistry& operator=(JzAssetRegistry&&) noexcept = default;
+    JzAssetRegistry(JzAssetRegistry &&) noexcept            = default;
+    JzAssetRegistry &operator=(JzAssetRegistry &&) noexcept = default;
 
     // ==================== Asset Operations ====================
 
@@ -144,7 +143,7 @@ public:
      *
      * @note This only allocates the slot. The asset data must be set separately.
      */
-    JzAssetHandle<T> Allocate(const String& path);
+    JzAssetHandle<T> Allocate(const String &path);
 
     /**
      * @brief Free an asset slot
@@ -173,12 +172,12 @@ public:
      *
      * @note Updates last access time for LRU tracking
      */
-    T* Get(JzAssetHandle<T> handle);
+    T *Get(JzAssetHandle<T> handle);
 
     /**
      * @brief Get const pointer to asset data
      */
-    const T* Get(JzAssetHandle<T> handle) const;
+    const T *Get(JzAssetHandle<T> handle) const;
 
     /**
      * @brief Get shared_ptr to asset (for compatibility with existing code)
@@ -204,7 +203,7 @@ public:
      * @param path Asset path to search for
      * @return Handle if found, invalid handle otherwise
      */
-    [[nodiscard]] JzAssetHandle<T> FindByPath(const String& path) const;
+    [[nodiscard]] JzAssetHandle<T> FindByPath(const String &path) const;
 
     /**
      * @brief Get the path for a handle
@@ -229,7 +228,7 @@ public:
     /**
      * @brief Set error message for failed loads
      */
-    void SetError(JzAssetHandle<T> handle, const String& message);
+    void SetError(JzAssetHandle<T> handle, const String &message);
 
     /**
      * @brief Get error message
@@ -310,10 +309,10 @@ private:
      */
     void GrowIfNeeded();
 
-    mutable std::shared_mutex                    m_mutex;        ///< Read-write lock
-    std::vector<JzAssetSlot<T>>                  m_slots;        ///< Slot storage
-    std::queue<U32>                              m_freeIndices;  ///< Free slot indices
-    std::unordered_map<String, JzAssetHandle<T>> m_pathToHandle; ///< Path lookup cache
+    mutable std::shared_mutex                    m_mutex;           ///< Read-write lock
+    std::vector<JzAssetSlot<T>>                  m_slots;           ///< Slot storage
+    std::queue<U32>                              m_freeIndices;     ///< Free slot indices
+    std::unordered_map<String, JzAssetHandle<T>> m_pathToHandle;    ///< Path lookup cache
     Size                                         m_activeCount = 0; ///< Number of active slots
 };
 

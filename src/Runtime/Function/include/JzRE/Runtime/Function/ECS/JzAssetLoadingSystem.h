@@ -66,7 +66,7 @@ public:
      *
      * @param world The ECS world
      */
-    void OnInit(JzEnttWorld& world) override;
+    void OnInit(JzEnttWorld &world) override;
 
     /**
      * @brief Update asset loading state
@@ -74,14 +74,14 @@ public:
      * @param world The ECS world
      * @param delta Delta time (unused but required by interface)
      */
-    void Update(JzEnttWorld& world, F32 delta) override;
+    void Update(JzEnttWorld &world, F32 delta) override;
 
     /**
      * @brief Cleanup when system is destroyed
      *
      * @param world The ECS world
      */
-    void OnShutdown(JzEnttWorld& world) override;
+    void OnShutdown(JzEnttWorld &world) override;
 
     /**
      * @brief Get system execution phase
@@ -100,22 +100,22 @@ private:
      * Checks load state and updates component cache for all
      * JzMeshAssetComponent instances.
      */
-    void ProcessMeshAssets(JzEnttWorld& world, JzAssetManager& assetManager);
+    void ProcessMeshAssets(JzEnttWorld &world, JzAssetManager &assetManager);
 
     /**
      * @brief Process material asset components
      */
-    void ProcessMaterialAssets(JzEnttWorld& world, JzAssetManager& assetManager);
+    void ProcessMaterialAssets(JzEnttWorld &world, JzAssetManager &assetManager);
 
     /**
      * @brief Update cached data in mesh component from loaded asset
      */
-    void UpdateMeshComponentCache(JzMeshAssetComponent& comp, JzMesh* mesh);
+    void UpdateMeshComponentCache(JzMeshAssetComponent &comp, JzMesh *mesh);
 
     /**
      * @brief Update cached data in material component from loaded asset
      */
-    void UpdateMaterialComponentCache(JzMaterialAssetComponent& comp, JzMaterial* material);
+    void UpdateMaterialComponentCache(JzMaterialAssetComponent &comp, JzMaterial *material);
 
     /**
      * @brief Update asset state tags for an entity
@@ -123,7 +123,7 @@ private:
      * Adds/removes JzAssetLoadingTag, JzAssetReadyTag, JzAssetLoadFailedTag
      * based on the load state of all asset components on the entity.
      */
-    void UpdateEntityAssetTags(JzEnttWorld& world, U32 entityId);
+    void UpdateEntityAssetTags(JzEnttWorld &world, U32 entityId);
 };
 
 } // namespace JzRE

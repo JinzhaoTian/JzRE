@@ -12,6 +12,16 @@
 #include "JzRE/Runtime/Function/Rendering/JzDeviceFactory.h"
 #include "JzRE/Runtime/JzContext.h"
 
+// Resource factories for JzAssetManager
+#include "JzRE/Runtime/Resource/JzModelFactory.h"
+#include "JzRE/Runtime/Resource/JzMeshFactory.h"
+#include "JzRE/Runtime/Resource/JzTextureFactory.h"
+#include "JzRE/Runtime/Resource/JzMaterialFactory.h"
+#include "JzRE/Runtime/Resource/JzShaderFactory.h"
+#include "JzRE/Runtime/Resource/JzFontFactory.h"
+
+#include <filesystem>
+
 JzRE::JzRERuntime::JzRERuntime(JzERHIType rhiType, const String &windowTitle,
                                const JzIVec2 &windowSize)
 {
@@ -24,6 +34,31 @@ JzRE::JzRERuntime::JzRERuntime(JzERHIType rhiType, const String &windowTitle,
     // Initialize engine context (registers factories and engine search paths)
     auto &context = JzContext::GetInstance();
     context.InitializeEngine(*m_resourceManager);
+
+    // Initialize asset manager (new ECS-friendly asset system)
+    JzAssetManagerConfig assetConfig;
+    assetConfig.maxCacheMemoryMB = 512;
+    assetConfig.asyncWorkerCount = 2;
+    m_assetManager = std::make_unique<JzAssetManager>(assetConfig);
+    m_assetManager->Initialize();
+
+    // Register resource factories with asset manager
+    m_assetManager->RegisterFactory<JzModel>(std::make_unique<JzModelFactory>());
+    m_assetManager->RegisterFactory<JzMesh>(std::make_unique<JzMeshFactory>());
+    m_assetManager->RegisterFactory<JzTexture>(std::make_unique<JzTextureFactory>());
+    m_assetManager->RegisterFactory<JzMaterial>(std::make_unique<JzMaterialFactory>());
+    m_assetManager->RegisterFactory<JzShader>(std::make_unique<JzShaderFactory>());
+    m_assetManager->RegisterFactory<JzFont>(std::make_unique<JzFontFactory>());
+
+    // Add search paths for asset manager
+    auto enginePath = std::filesystem::current_path();
+    m_assetManager->AddSearchPath(enginePath.string());
+    m_assetManager->AddSearchPath((enginePath / "resources").string());
+    m_assetManager->AddSearchPath((enginePath / "resources" / "models").string());
+    m_assetManager->AddSearchPath((enginePath / "resources" / "textures").string());
+    m_assetManager->AddSearchPath((enginePath / "resources" / "shaders").string());
+
+    JzServiceContainer::Provide<JzAssetManager>(*m_assetManager);
 
     // Create window
     JzWindowSettings windowSettings;
@@ -90,11 +125,18 @@ JzRE::JzRERuntime::~JzRERuntime()
     m_renderSystem.reset();
     m_lightSystem.reset();
     m_cameraSystem.reset();
+    m_assetLoadingSystem.reset();
     m_world.reset();
     m_inputManager.reset();
     m_shaderManager.reset();
     m_device.reset();
     m_window.reset();
+
+    // Shutdown asset manager before resource manager
+    if (m_assetManager) {
+        m_assetManager->Shutdown();
+        m_assetManager.reset();
+    }
     m_resourceManager.reset();
 }
 
@@ -104,10 +146,11 @@ void JzRE::JzRERuntime::InitializeECS()
 
     // Register systems in execution order by phase:
     // Input phase -> Logic phases -> PreRender phases -> Render phases
-    m_inputSystem  = m_world->RegisterSystem<JzEnttInputSystem>();
-    m_cameraSystem = m_world->RegisterSystem<JzEnttCameraSystem>();
-    m_lightSystem  = m_world->RegisterSystem<JzEnttLightSystem>();
-    m_renderSystem = m_world->RegisterSystem<JzEnttRenderSystem>();
+    m_inputSystem        = m_world->RegisterSystem<JzEnttInputSystem>();
+    m_assetLoadingSystem = m_world->RegisterSystem<JzAssetLoadingSystem>();
+    m_cameraSystem       = m_world->RegisterSystem<JzEnttCameraSystem>();
+    m_lightSystem        = m_world->RegisterSystem<JzEnttLightSystem>();
+    m_renderSystem       = m_world->RegisterSystem<JzEnttRenderSystem>();
 
     // Wire up system dependencies
     m_renderSystem->SetCameraSystem(m_cameraSystem);
@@ -373,6 +416,11 @@ JzRE::JzInputManager &JzRE::JzRERuntime::GetInputManager()
 JzRE::JzResourceManager &JzRE::JzRERuntime::GetResourceManager()
 {
     return *m_resourceManager;
+}
+
+JzRE::JzAssetManager &JzRE::JzRERuntime::GetAssetManager()
+{
+    return *m_assetManager;
 }
 
 JzRE::F32 JzRE::JzRERuntime::GetDeltaTime() const

@@ -57,7 +57,7 @@ struct JzAssetSystemVersion {
     static constexpr U32 Minor = 0;
     static constexpr U32 Patch = 0;
 
-    static constexpr const char* GetVersionString()
+    static constexpr const char *GetVersionString()
     {
         return "1.0.0";
     }

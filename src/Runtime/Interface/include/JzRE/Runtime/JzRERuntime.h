@@ -18,11 +18,13 @@
 #include "JzRE/Runtime/Function/ECS/JzEnttCameraSystem.h"
 #include "JzRE/Runtime/Function/ECS/JzEnttLightSystem.h"
 #include "JzRE/Runtime/Function/ECS/JzEnttRenderSystem.h"
+#include "JzRE/Runtime/Function/ECS/JzAssetLoadingSystem.h"
 #include "JzRE/Runtime/Function/Input/JzInputManager.h"
 #include "JzRE/Runtime/Function/Window/JzWindow.h"
 #include "JzRE/Runtime/Platform/JzDevice.h"
 #include "JzRE/Runtime/Resource/JzResourceManager.h"
 #include "JzRE/Runtime/Resource/JzShaderManager.h"
+#include "JzRE/Runtime/Resource/JzAssetManager.h"
 
 namespace JzRE {
 
@@ -134,6 +136,13 @@ public:
      * @return JzResourceManager& Reference to the resource manager
      */
     JzResourceManager &GetResourceManager();
+
+    /**
+     * @brief Get the asset manager instance
+     *
+     * @return JzAssetManager& Reference to the asset manager
+     */
+    JzAssetManager &GetAssetManager();
 
     /**
      * @brief Get current frame delta time
@@ -284,6 +293,7 @@ protected:
     std::unique_ptr<JzDevice>          m_device;
     std::unique_ptr<JzInputManager>    m_inputManager;
     std::unique_ptr<JzResourceManager> m_resourceManager;
+    std::unique_ptr<JzAssetManager>    m_assetManager;
     std::unique_ptr<JzShaderManager>   m_shaderManager;
 
     // ECS world and systems
@@ -291,7 +301,8 @@ protected:
     std::shared_ptr<JzEnttInputSystem>  m_inputSystem;
     std::shared_ptr<JzEnttCameraSystem> m_cameraSystem;
     std::shared_ptr<JzEnttLightSystem>  m_lightSystem;
-    std::shared_ptr<JzEnttRenderSystem> m_renderSystem;
+    std::shared_ptr<JzEnttRenderSystem>    m_renderSystem;
+    std::shared_ptr<JzAssetLoadingSystem>  m_assetLoadingSystem;
 
     // Main camera entity
     JzEnttEntity m_mainCameraEntity = INVALID_ENTT_ENTITY;

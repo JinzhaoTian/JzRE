@@ -7,9 +7,11 @@
 
 #pragma once
 
+#include "JzRE/Runtime/Resource/JzAssetRegistry.h"
+
 namespace JzRE {
 
-template<typename T>
+template <typename T>
 JzAssetRegistry<T>::JzAssetRegistry(Size initialCapacity)
 {
     m_slots.resize(initialCapacity);
@@ -20,19 +22,19 @@ JzAssetRegistry<T>::JzAssetRegistry(Size initialCapacity)
     }
 }
 
-template<typename T>
+template <typename T>
 JzAssetRegistry<T>::~JzAssetRegistry()
 {
     // Clear all assets
     std::unique_lock lock(m_mutex);
-    for (auto& slot : m_slots) {
+    for (auto &slot : m_slots) {
         slot.asset.reset();
     }
     m_pathToHandle.clear();
 }
 
-template<typename T>
-JzAssetHandle<T> JzAssetRegistry<T>::Allocate(const String& path)
+template <typename T>
+JzAssetHandle<T> JzAssetRegistry<T>::Allocate(const String &path)
 {
     std::unique_lock lock(m_mutex);
 
@@ -40,9 +42,9 @@ JzAssetHandle<T> JzAssetRegistry<T>::Allocate(const String& path)
     auto it = m_pathToHandle.find(path);
     if (it != m_pathToHandle.end()) {
         // Validate the existing handle
-        const auto& existingHandle = it->second;
+        const auto &existingHandle = it->second;
         if (existingHandle.GetId().index < m_slots.size()) {
-            const auto& slot = m_slots[existingHandle.GetId().index];
+            const auto &slot = m_slots[existingHandle.GetId().index];
             if (slot.generation == existingHandle.GetId().generation) {
                 return existingHandle; // Return existing handle
             }
@@ -63,18 +65,18 @@ JzAssetHandle<T> JzAssetRegistry<T>::Allocate(const String& path)
     m_freeIndices.pop();
 
     // Initialize slot
-    auto& slot       = m_slots[index];
-    slot.generation  = slot.generation + 1; // Increment generation
-    slot.path        = path;
-    slot.loadState   = JzEAssetLoadState::NotLoaded;
-    slot.refCount    = 0;
+    auto &slot          = m_slots[index];
+    slot.generation     = slot.generation + 1; // Increment generation
+    slot.path           = path;
+    slot.loadState      = JzEAssetLoadState::NotLoaded;
+    slot.refCount       = 0;
     slot.lastAccessTime = GetCurrentTimestamp();
-    slot.memorySize  = 0;
+    slot.memorySize     = 0;
     slot.errorMessage.clear();
     slot.asset.reset();
 
     // Create handle
-    JzAssetId   id{index, slot.generation};
+    JzAssetId        id{index, slot.generation};
     JzAssetHandle<T> handle(id);
 
     // Register path mapping
@@ -84,7 +86,7 @@ JzAssetHandle<T> JzAssetRegistry<T>::Allocate(const String& path)
     return handle;
 }
 
-template<typename T>
+template <typename T>
 void JzAssetRegistry<T>::Free(JzAssetHandle<T> handle)
 {
     if (!handle.IsValid()) {
@@ -98,7 +100,7 @@ void JzAssetRegistry<T>::Free(JzAssetHandle<T> handle)
         return;
     }
 
-    auto& slot = m_slots[id.index];
+    auto &slot = m_slots[id.index];
     if (slot.generation != id.generation) {
         return; // Handle is stale
     }
@@ -109,8 +111,8 @@ void JzAssetRegistry<T>::Free(JzAssetHandle<T> handle)
     // Clear slot data (generation is NOT incremented here - it's incremented on next Allocate)
     slot.asset.reset();
     slot.path.clear();
-    slot.loadState = JzEAssetLoadState::NotLoaded;
-    slot.refCount  = 0;
+    slot.loadState  = JzEAssetLoadState::NotLoaded;
+    slot.refCount   = 0;
     slot.memorySize = 0;
     slot.errorMessage.clear();
 
@@ -119,7 +121,7 @@ void JzAssetRegistry<T>::Free(JzAssetHandle<T> handle)
     --m_activeCount;
 }
 
-template<typename T>
+template <typename T>
 Bool JzAssetRegistry<T>::IsValid(JzAssetHandle<T> handle) const
 {
     if (!handle.IsValid()) {
@@ -136,8 +138,8 @@ Bool JzAssetRegistry<T>::IsValid(JzAssetHandle<T> handle) const
     return m_slots[id.index].generation == id.generation;
 }
 
-template<typename T>
-T* JzAssetRegistry<T>::Get(JzAssetHandle<T> handle)
+template <typename T>
+T *JzAssetRegistry<T>::Get(JzAssetHandle<T> handle)
 {
     if (!handle.IsValid()) {
         return nullptr;
@@ -150,7 +152,7 @@ T* JzAssetRegistry<T>::Get(JzAssetHandle<T> handle)
         return nullptr;
     }
 
-    auto& slot = m_slots[id.index];
+    auto &slot = m_slots[id.index];
     if (slot.generation != id.generation) {
         return nullptr;
     }
@@ -161,8 +163,8 @@ T* JzAssetRegistry<T>::Get(JzAssetHandle<T> handle)
     return slot.asset.get();
 }
 
-template<typename T>
-const T* JzAssetRegistry<T>::Get(JzAssetHandle<T> handle) const
+template <typename T>
+const T *JzAssetRegistry<T>::Get(JzAssetHandle<T> handle) const
 {
     if (!handle.IsValid()) {
         return nullptr;
@@ -175,7 +177,7 @@ const T* JzAssetRegistry<T>::Get(JzAssetHandle<T> handle) const
         return nullptr;
     }
 
-    const auto& slot = m_slots[id.index];
+    const auto &slot = m_slots[id.index];
     if (slot.generation != id.generation) {
         return nullptr;
     }
@@ -183,7 +185,7 @@ const T* JzAssetRegistry<T>::Get(JzAssetHandle<T> handle) const
     return slot.asset.get();
 }
 
-template<typename T>
+template <typename T>
 std::shared_ptr<T> JzAssetRegistry<T>::GetShared(JzAssetHandle<T> handle)
 {
     if (!handle.IsValid()) {
@@ -197,7 +199,7 @@ std::shared_ptr<T> JzAssetRegistry<T>::GetShared(JzAssetHandle<T> handle)
         return nullptr;
     }
 
-    auto& slot = m_slots[id.index];
+    auto &slot = m_slots[id.index];
     if (slot.generation != id.generation) {
         return nullptr;
     }
@@ -208,7 +210,7 @@ std::shared_ptr<T> JzAssetRegistry<T>::GetShared(JzAssetHandle<T> handle)
     return slot.asset;
 }
 
-template<typename T>
+template <typename T>
 void JzAssetRegistry<T>::Set(JzAssetHandle<T> handle, std::shared_ptr<T> asset)
 {
     if (!handle.IsValid()) {
@@ -222,7 +224,7 @@ void JzAssetRegistry<T>::Set(JzAssetHandle<T> handle, std::shared_ptr<T> asset)
         return;
     }
 
-    auto& slot = m_slots[id.index];
+    auto &slot = m_slots[id.index];
     if (slot.generation != id.generation) {
         return;
     }
@@ -231,15 +233,15 @@ void JzAssetRegistry<T>::Set(JzAssetHandle<T> handle, std::shared_ptr<T> asset)
     slot.lastAccessTime = GetCurrentTimestamp();
 }
 
-template<typename T>
-JzAssetHandle<T> JzAssetRegistry<T>::FindByPath(const String& path) const
+template <typename T>
+JzAssetHandle<T> JzAssetRegistry<T>::FindByPath(const String &path) const
 {
     std::shared_lock lock(m_mutex);
 
     auto it = m_pathToHandle.find(path);
     if (it != m_pathToHandle.end()) {
         // Validate the handle before returning
-        const auto& handle = it->second;
+        const auto &handle = it->second;
         const auto  id     = handle.GetId();
         if (id.index < m_slots.size() && m_slots[id.index].generation == id.generation) {
             return handle;
@@ -249,7 +251,7 @@ JzAssetHandle<T> JzAssetRegistry<T>::FindByPath(const String& path) const
     return JzAssetHandle<T>::Invalid();
 }
 
-template<typename T>
+template <typename T>
 String JzAssetRegistry<T>::GetPath(JzAssetHandle<T> handle) const
 {
     if (!handle.IsValid()) {
@@ -263,7 +265,7 @@ String JzAssetRegistry<T>::GetPath(JzAssetHandle<T> handle) const
         return "";
     }
 
-    const auto& slot = m_slots[id.index];
+    const auto &slot = m_slots[id.index];
     if (slot.generation != id.generation) {
         return "";
     }
@@ -271,7 +273,7 @@ String JzAssetRegistry<T>::GetPath(JzAssetHandle<T> handle) const
     return slot.path;
 }
 
-template<typename T>
+template <typename T>
 JzEAssetLoadState JzAssetRegistry<T>::GetLoadState(JzAssetHandle<T> handle) const
 {
     if (!handle.IsValid()) {
@@ -285,7 +287,7 @@ JzEAssetLoadState JzAssetRegistry<T>::GetLoadState(JzAssetHandle<T> handle) cons
         return JzEAssetLoadState::NotLoaded;
     }
 
-    const auto& slot = m_slots[id.index];
+    const auto &slot = m_slots[id.index];
     if (slot.generation != id.generation) {
         return JzEAssetLoadState::NotLoaded;
     }
@@ -293,7 +295,7 @@ JzEAssetLoadState JzAssetRegistry<T>::GetLoadState(JzAssetHandle<T> handle) cons
     return slot.loadState;
 }
 
-template<typename T>
+template <typename T>
 void JzAssetRegistry<T>::SetLoadState(JzAssetHandle<T> handle, JzEAssetLoadState state)
 {
     if (!handle.IsValid()) {
@@ -307,7 +309,7 @@ void JzAssetRegistry<T>::SetLoadState(JzAssetHandle<T> handle, JzEAssetLoadState
         return;
     }
 
-    auto& slot = m_slots[id.index];
+    auto &slot = m_slots[id.index];
     if (slot.generation != id.generation) {
         return;
     }
@@ -315,8 +317,8 @@ void JzAssetRegistry<T>::SetLoadState(JzAssetHandle<T> handle, JzEAssetLoadState
     slot.loadState = state;
 }
 
-template<typename T>
-void JzAssetRegistry<T>::SetError(JzAssetHandle<T> handle, const String& message)
+template <typename T>
+void JzAssetRegistry<T>::SetError(JzAssetHandle<T> handle, const String &message)
 {
     if (!handle.IsValid()) {
         return;
@@ -329,7 +331,7 @@ void JzAssetRegistry<T>::SetError(JzAssetHandle<T> handle, const String& message
         return;
     }
 
-    auto& slot = m_slots[id.index];
+    auto &slot = m_slots[id.index];
     if (slot.generation != id.generation) {
         return;
     }
@@ -338,7 +340,7 @@ void JzAssetRegistry<T>::SetError(JzAssetHandle<T> handle, const String& message
     slot.loadState    = JzEAssetLoadState::Failed;
 }
 
-template<typename T>
+template <typename T>
 String JzAssetRegistry<T>::GetError(JzAssetHandle<T> handle) const
 {
     if (!handle.IsValid()) {
@@ -352,7 +354,7 @@ String JzAssetRegistry<T>::GetError(JzAssetHandle<T> handle) const
         return "";
     }
 
-    const auto& slot = m_slots[id.index];
+    const auto &slot = m_slots[id.index];
     if (slot.generation != id.generation) {
         return "";
     }
@@ -360,7 +362,7 @@ String JzAssetRegistry<T>::GetError(JzAssetHandle<T> handle) const
     return slot.errorMessage;
 }
 
-template<typename T>
+template <typename T>
 void JzAssetRegistry<T>::AddRef(JzAssetHandle<T> handle)
 {
     if (!handle.IsValid()) {
@@ -374,7 +376,7 @@ void JzAssetRegistry<T>::AddRef(JzAssetHandle<T> handle)
         return;
     }
 
-    auto& slot = m_slots[id.index];
+    auto &slot = m_slots[id.index];
     if (slot.generation != id.generation) {
         return;
     }
@@ -382,7 +384,7 @@ void JzAssetRegistry<T>::AddRef(JzAssetHandle<T> handle)
     slot.refCount.fetch_add(1, std::memory_order_relaxed);
 }
 
-template<typename T>
+template <typename T>
 void JzAssetRegistry<T>::Release(JzAssetHandle<T> handle)
 {
     if (!handle.IsValid()) {
@@ -396,7 +398,7 @@ void JzAssetRegistry<T>::Release(JzAssetHandle<T> handle)
         return;
     }
 
-    auto& slot = m_slots[id.index];
+    auto &slot = m_slots[id.index];
     if (slot.generation != id.generation) {
         return;
     }
@@ -408,7 +410,7 @@ void JzAssetRegistry<T>::Release(JzAssetHandle<T> handle)
     }
 }
 
-template<typename T>
+template <typename T>
 U32 JzAssetRegistry<T>::GetRefCount(JzAssetHandle<T> handle) const
 {
     if (!handle.IsValid()) {
@@ -422,7 +424,7 @@ U32 JzAssetRegistry<T>::GetRefCount(JzAssetHandle<T> handle) const
         return 0;
     }
 
-    const auto& slot = m_slots[id.index];
+    const auto &slot = m_slots[id.index];
     if (slot.generation != id.generation) {
         return 0;
     }
@@ -430,7 +432,7 @@ U32 JzAssetRegistry<T>::GetRefCount(JzAssetHandle<T> handle) const
     return slot.refCount.load(std::memory_order_relaxed);
 }
 
-template<typename T>
+template <typename T>
 void JzAssetRegistry<T>::SetMemorySize(JzAssetHandle<T> handle, Size size)
 {
     if (!handle.IsValid()) {
@@ -444,7 +446,7 @@ void JzAssetRegistry<T>::SetMemorySize(JzAssetHandle<T> handle, Size size)
         return;
     }
 
-    auto& slot = m_slots[id.index];
+    auto &slot = m_slots[id.index];
     if (slot.generation != id.generation) {
         return;
     }
@@ -452,7 +454,7 @@ void JzAssetRegistry<T>::SetMemorySize(JzAssetHandle<T> handle, Size size)
     slot.memorySize = size;
 }
 
-template<typename T>
+template <typename T>
 Size JzAssetRegistry<T>::GetMemorySize(JzAssetHandle<T> handle) const
 {
     if (!handle.IsValid()) {
@@ -466,7 +468,7 @@ Size JzAssetRegistry<T>::GetMemorySize(JzAssetHandle<T> handle) const
         return 0;
     }
 
-    const auto& slot = m_slots[id.index];
+    const auto &slot = m_slots[id.index];
     if (slot.generation != id.generation) {
         return 0;
     }
@@ -474,7 +476,7 @@ Size JzAssetRegistry<T>::GetMemorySize(JzAssetHandle<T> handle) const
     return slot.memorySize;
 }
 
-template<typename T>
+template <typename T>
 U64 JzAssetRegistry<T>::GetLastAccessTime(JzAssetHandle<T> handle) const
 {
     if (!handle.IsValid()) {
@@ -488,7 +490,7 @@ U64 JzAssetRegistry<T>::GetLastAccessTime(JzAssetHandle<T> handle) const
         return 0;
     }
 
-    const auto& slot = m_slots[id.index];
+    const auto &slot = m_slots[id.index];
     if (slot.generation != id.generation) {
         return 0;
     }
@@ -496,27 +498,27 @@ U64 JzAssetRegistry<T>::GetLastAccessTime(JzAssetHandle<T> handle) const
     return slot.lastAccessTime;
 }
 
-template<typename T>
+template <typename T>
 Size JzAssetRegistry<T>::GetCapacity() const
 {
     std::shared_lock lock(m_mutex);
     return m_slots.size();
 }
 
-template<typename T>
+template <typename T>
 Size JzAssetRegistry<T>::GetActiveCount() const
 {
     std::shared_lock lock(m_mutex);
     return m_activeCount;
 }
 
-template<typename T>
+template <typename T>
 Size JzAssetRegistry<T>::GetLoadedCount() const
 {
     std::shared_lock lock(m_mutex);
 
     Size count = 0;
-    for (const auto& slot : m_slots) {
+    for (const auto &slot : m_slots) {
         if (slot.loadState == JzEAssetLoadState::Loaded) {
             ++count;
         }
@@ -524,13 +526,13 @@ Size JzAssetRegistry<T>::GetLoadedCount() const
     return count;
 }
 
-template<typename T>
+template <typename T>
 Size JzAssetRegistry<T>::GetTotalMemoryUsage() const
 {
     std::shared_lock lock(m_mutex);
 
     Size total = 0;
-    for (const auto& slot : m_slots) {
+    for (const auto &slot : m_slots) {
         if (slot.loadState == JzEAssetLoadState::Loaded) {
             total += slot.memorySize;
         }
@@ -538,7 +540,7 @@ Size JzAssetRegistry<T>::GetTotalMemoryUsage() const
     return total;
 }
 
-template<typename T>
+template <typename T>
 std::vector<JzAssetHandle<T>> JzAssetRegistry<T>::GetAllHandles() const
 {
     std::shared_lock lock(m_mutex);
@@ -546,7 +548,7 @@ std::vector<JzAssetHandle<T>> JzAssetRegistry<T>::GetAllHandles() const
     std::vector<JzAssetHandle<T>> handles;
     handles.reserve(m_activeCount);
 
-    for (const auto& [path, handle] : m_pathToHandle) {
+    for (const auto &[path, handle] : m_pathToHandle) {
         const auto id = handle.GetId();
         if (id.index < m_slots.size() && m_slots[id.index].generation == id.generation) {
             handles.push_back(handle);
@@ -556,14 +558,14 @@ std::vector<JzAssetHandle<T>> JzAssetRegistry<T>::GetAllHandles() const
     return handles;
 }
 
-template<typename T>
+template <typename T>
 U64 JzAssetRegistry<T>::GetCurrentTimestamp()
 {
     using namespace std::chrono;
     return static_cast<U64>(duration_cast<milliseconds>(steady_clock::now().time_since_epoch()).count());
 }
 
-template<typename T>
+template <typename T>
 void JzAssetRegistry<T>::GrowIfNeeded()
 {
     if (!m_freeIndices.empty()) {

@@ -25,7 +25,7 @@ struct JzLRUEntry {
     Size      memorySize;     ///< Memory usage in bytes
     U64       lastAccessTime; ///< Last access timestamp (ms)
 
-    Bool operator<(const JzLRUEntry& other) const
+    Bool operator<(const JzLRUEntry &other) const
     {
         return lastAccessTime < other.lastAccessTime;
     }
@@ -53,8 +53,8 @@ public:
     ~JzLRUCacheManager() = default;
 
     // Non-copyable
-    JzLRUCacheManager(const JzLRUCacheManager&)            = delete;
-    JzLRUCacheManager& operator=(const JzLRUCacheManager&) = delete;
+    JzLRUCacheManager(const JzLRUCacheManager &)            = delete;
+    JzLRUCacheManager &operator=(const JzLRUCacheManager &) = delete;
 
     /**
      * @brief Record an asset access (update timestamp and memory)
@@ -95,8 +95,8 @@ public:
      * @return Vector of asset IDs to evict, in LRU order (oldest first)
      */
     [[nodiscard]] std::vector<JzAssetId> GetEvictionCandidates(
-        Size                                              targetMemoryMB,
-        const std::unordered_set<JzAssetId, JzAssetId::Hash>& excludeIds = {}) const;
+        Size                                                  targetMemoryMB,
+        const std::unordered_set<JzAssetId, JzAssetId::Hash> &excludeIds = {}) const;
 
     /**
      * @brief Get assets that exceed memory budget
@@ -105,7 +105,7 @@ public:
      * @return Vector of asset IDs to evict to stay within budget
      */
     [[nodiscard]] std::vector<JzAssetId> GetOverBudgetEvictions(
-        const std::unordered_set<JzAssetId, JzAssetId::Hash>& excludeIds = {}) const;
+        const std::unordered_set<JzAssetId, JzAssetId::Hash> &excludeIds = {}) const;
 
     // ==================== Statistics ====================
 
@@ -167,7 +167,7 @@ private:
     Size m_currentMemoryBytes; ///< Current tracked memory
 
     std::unordered_map<JzAssetId, JzLRUEntry, JzAssetId::Hash> m_entries;
-    mutable std::mutex                                          m_mutex;
+    mutable std::mutex                                         m_mutex;
 };
 
 } // namespace JzRE

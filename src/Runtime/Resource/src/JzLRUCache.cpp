@@ -25,10 +25,10 @@ void JzLRUCacheManager::RecordAccess(JzAssetId id, Size memorySize)
     auto it = m_entries.find(id);
     if (it != m_entries.end()) {
         // Update existing entry
-        m_currentMemoryBytes -= it->second.memorySize;
-        it->second.memorySize     = memorySize;
-        it->second.lastAccessTime = GetCurrentTimestamp();
-        m_currentMemoryBytes += memorySize;
+        m_currentMemoryBytes      -= it->second.memorySize;
+        it->second.memorySize      = memorySize;
+        it->second.lastAccessTime  = GetCurrentTimestamp();
+        m_currentMemoryBytes      += memorySize;
     } else {
         // Add new entry
         JzLRUEntry entry;
@@ -36,7 +36,7 @@ void JzLRUCacheManager::RecordAccess(JzAssetId id, Size memorySize)
         entry.memorySize     = memorySize;
         entry.lastAccessTime = GetCurrentTimestamp();
 
-        m_entries[id] = entry;
+        m_entries[id]         = entry;
         m_currentMemoryBytes += memorySize;
     }
 }
@@ -47,9 +47,9 @@ void JzLRUCacheManager::UpdateMemorySize(JzAssetId id, Size memorySize)
 
     auto it = m_entries.find(id);
     if (it != m_entries.end()) {
-        m_currentMemoryBytes -= it->second.memorySize;
-        it->second.memorySize = memorySize;
-        m_currentMemoryBytes += memorySize;
+        m_currentMemoryBytes  -= it->second.memorySize;
+        it->second.memorySize  = memorySize;
+        m_currentMemoryBytes  += memorySize;
     }
 }
 
@@ -71,8 +71,8 @@ Bool JzLRUCacheManager::Contains(JzAssetId id) const
 }
 
 std::vector<JzAssetId> JzLRUCacheManager::GetEvictionCandidates(
-    Size                                              targetMemoryMB,
-    const std::unordered_set<JzAssetId, JzAssetId::Hash>& excludeIds) const
+    Size                                                  targetMemoryMB,
+    const std::unordered_set<JzAssetId, JzAssetId::Hash> &excludeIds) const
 {
     std::lock_guard lock(m_mutex);
 
@@ -86,7 +86,7 @@ std::vector<JzAssetId> JzLRUCacheManager::GetEvictionCandidates(
     std::vector<JzLRUEntry> sortedEntries;
     sortedEntries.reserve(m_entries.size());
 
-    for (const auto& [id, entry] : m_entries) {
+    for (const auto &[id, entry] : m_entries) {
         if (excludeIds.find(id) == excludeIds.end()) {
             sortedEntries.push_back(entry);
         }
@@ -96,10 +96,10 @@ std::vector<JzAssetId> JzLRUCacheManager::GetEvictionCandidates(
 
     // Collect candidates until we reach target
     std::vector<JzAssetId> candidates;
-    Size                   memoryToFree  = m_currentMemoryBytes - targetMemoryBytes;
-    Size                   memoryFreed   = 0;
+    Size                   memoryToFree = m_currentMemoryBytes - targetMemoryBytes;
+    Size                   memoryFreed  = 0;
 
-    for (const auto& entry : sortedEntries) {
+    for (const auto &entry : sortedEntries) {
         if (memoryFreed >= memoryToFree) {
             break;
         }
@@ -111,7 +111,7 @@ std::vector<JzAssetId> JzLRUCacheManager::GetEvictionCandidates(
 }
 
 std::vector<JzAssetId> JzLRUCacheManager::GetOverBudgetEvictions(
-    const std::unordered_set<JzAssetId, JzAssetId::Hash>& excludeIds) const
+    const std::unordered_set<JzAssetId, JzAssetId::Hash> &excludeIds) const
 {
     return GetEvictionCandidates(m_maxMemoryBytes / (1024 * 1024), excludeIds);
 }

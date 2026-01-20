@@ -21,15 +21,15 @@ JzAssetLoadingSystem::JzAssetLoadingSystem() = default;
 
 JzAssetLoadingSystem::~JzAssetLoadingSystem() = default;
 
-void JzAssetLoadingSystem::OnInit(JzEnttWorld& world)
+void JzAssetLoadingSystem::OnInit(JzEnttWorld &world)
 {
     JzRE_LOG_INFO("JzAssetLoadingSystem: Initialized");
 }
 
-void JzAssetLoadingSystem::Update(JzEnttWorld& world, F32 delta)
+void JzAssetLoadingSystem::Update(JzEnttWorld &world, F32 delta)
 {
     // Get asset manager from service container
-    JzAssetManager* assetManager = nullptr;
+    JzAssetManager *assetManager = nullptr;
     try {
         assetManager = &JzServiceContainer::Get<JzAssetManager>();
     } catch (...) {
@@ -49,20 +49,20 @@ void JzAssetLoadingSystem::Update(JzEnttWorld& world, F32 delta)
     ProcessMaterialAssets(world, *assetManager);
 }
 
-void JzAssetLoadingSystem::OnShutdown(JzEnttWorld& world)
+void JzAssetLoadingSystem::OnShutdown(JzEnttWorld &world)
 {
     JzRE_LOG_INFO("JzAssetLoadingSystem: Shutdown");
 }
 
-void JzAssetLoadingSystem::ProcessMeshAssets(JzEnttWorld& world, JzAssetManager& assetManager)
+void JzAssetLoadingSystem::ProcessMeshAssets(JzEnttWorld &world, JzAssetManager &assetManager)
 {
-    auto& registry = world.GetRegistry();
+    auto &registry = world.GetRegistry();
 
     // Query all entities with JzMeshAssetComponent
     auto view = registry.view<JzMeshAssetComponent>();
 
     for (auto entity : view) {
-        auto& meshComp = view.get<JzMeshAssetComponent>(entity);
+        auto &meshComp = view.get<JzMeshAssetComponent>(entity);
 
         // Skip if already ready
         if (meshComp.isReady) {
@@ -78,58 +78,59 @@ void JzAssetLoadingSystem::ProcessMeshAssets(JzEnttWorld& world, JzAssetManager&
         auto loadState = assetManager.GetLoadState(meshComp.meshHandle);
 
         switch (loadState) {
-        case JzEAssetLoadState::Loaded: {
-            // Asset is loaded - update cache and mark ready
-            JzMesh* mesh = assetManager.Get(meshComp.meshHandle);
-            if (mesh) {
-                UpdateMeshComponentCache(meshComp, mesh);
-                meshComp.isReady = true;
+            case JzEAssetLoadState::Loaded:
+            {
+                // Asset is loaded - update cache and mark ready
+                JzMesh *mesh = assetManager.Get(meshComp.meshHandle);
+                if (mesh) {
+                    UpdateMeshComponentCache(meshComp, mesh);
+                    meshComp.isReady = true;
 
-                // Update tags
+                    // Update tags
+                    registry.remove<JzAssetLoadingTag>(entity);
+                    registry.emplace_or_replace<JzAssetReadyTag>(entity);
+
+                    JzRE_LOG_DEBUG("JzAssetLoadingSystem: Mesh asset ready for entity {}",
+                                   static_cast<U32>(entity));
+                }
+                break;
+            }
+
+            case JzEAssetLoadState::Loading:
+                // Still loading - ensure loading tag is present
+                if (!registry.all_of<JzAssetLoadingTag>(entity)) {
+                    registry.emplace<JzAssetLoadingTag>(entity);
+                }
+                break;
+
+            case JzEAssetLoadState::Failed:
+                // Load failed - mark as failed
                 registry.remove<JzAssetLoadingTag>(entity);
-                registry.emplace_or_replace<JzAssetReadyTag>(entity);
+                registry.emplace_or_replace<JzAssetLoadFailedTag>(entity);
+                JzRE_LOG_WARN("JzAssetLoadingSystem: Mesh asset load failed for entity {}",
+                              static_cast<U32>(entity));
+                break;
 
-                JzRE_LOG_DEBUG("JzAssetLoadingSystem: Mesh asset ready for entity {}",
-                               static_cast<U32>(entity));
-            }
-            break;
-        }
+            case JzEAssetLoadState::NotLoaded:
+                // Asset not yet requested - this shouldn't happen normally
+                // The caller should have triggered the load
+                break;
 
-        case JzEAssetLoadState::Loading:
-            // Still loading - ensure loading tag is present
-            if (!registry.all_of<JzAssetLoadingTag>(entity)) {
-                registry.emplace<JzAssetLoadingTag>(entity);
-            }
-            break;
-
-        case JzEAssetLoadState::Failed:
-            // Load failed - mark as failed
-            registry.remove<JzAssetLoadingTag>(entity);
-            registry.emplace_or_replace<JzAssetLoadFailedTag>(entity);
-            JzRE_LOG_WARN("JzAssetLoadingSystem: Mesh asset load failed for entity {}",
-                          static_cast<U32>(entity));
-            break;
-
-        case JzEAssetLoadState::NotLoaded:
-            // Asset not yet requested - this shouldn't happen normally
-            // The caller should have triggered the load
-            break;
-
-        default:
-            break;
+            default:
+                break;
         }
     }
 }
 
-void JzAssetLoadingSystem::ProcessMaterialAssets(JzEnttWorld& world, JzAssetManager& assetManager)
+void JzAssetLoadingSystem::ProcessMaterialAssets(JzEnttWorld &world, JzAssetManager &assetManager)
 {
-    auto& registry = world.GetRegistry();
+    auto &registry = world.GetRegistry();
 
     // Query all entities with JzMaterialAssetComponent
     auto view = registry.view<JzMaterialAssetComponent>();
 
     for (auto entity : view) {
-        auto& matComp = view.get<JzMaterialAssetComponent>(entity);
+        auto &matComp = view.get<JzMaterialAssetComponent>(entity);
 
         // Skip if already ready
         if (matComp.isReady) {
@@ -145,36 +146,37 @@ void JzAssetLoadingSystem::ProcessMaterialAssets(JzEnttWorld& world, JzAssetMana
         auto loadState = assetManager.GetLoadState(matComp.materialHandle);
 
         switch (loadState) {
-        case JzEAssetLoadState::Loaded: {
-            // Asset is loaded - update cache and mark ready
-            JzMaterial* material = assetManager.Get(matComp.materialHandle);
-            if (material) {
-                UpdateMaterialComponentCache(matComp, material);
-                matComp.isReady = true;
+            case JzEAssetLoadState::Loaded:
+            {
+                // Asset is loaded - update cache and mark ready
+                JzMaterial *material = assetManager.Get(matComp.materialHandle);
+                if (material) {
+                    UpdateMaterialComponentCache(matComp, material);
+                    matComp.isReady = true;
 
-                JzRE_LOG_DEBUG("JzAssetLoadingSystem: Material asset ready for entity {}",
-                               static_cast<U32>(entity));
+                    JzRE_LOG_DEBUG("JzAssetLoadingSystem: Material asset ready for entity {}",
+                                   static_cast<U32>(entity));
+                }
+                break;
             }
-            break;
-        }
 
-        case JzEAssetLoadState::Loading:
-            // Still loading
-            break;
+            case JzEAssetLoadState::Loading:
+                // Still loading
+                break;
 
-        case JzEAssetLoadState::Failed:
-            // Load failed
-            JzRE_LOG_WARN("JzAssetLoadingSystem: Material asset load failed for entity {}",
-                          static_cast<U32>(entity));
-            break;
+            case JzEAssetLoadState::Failed:
+                // Load failed
+                JzRE_LOG_WARN("JzAssetLoadingSystem: Material asset load failed for entity {}",
+                              static_cast<U32>(entity));
+                break;
 
-        default:
-            break;
+            default:
+                break;
         }
     }
 }
 
-void JzAssetLoadingSystem::UpdateMeshComponentCache(JzMeshAssetComponent& comp, JzMesh* mesh)
+void JzAssetLoadingSystem::UpdateMeshComponentCache(JzMeshAssetComponent &comp, JzMesh *mesh)
 {
     if (!mesh) {
         return;
@@ -184,13 +186,13 @@ void JzAssetLoadingSystem::UpdateMeshComponentCache(JzMeshAssetComponent& comp, 
     comp.materialIndex = mesh->GetMaterialIndex();
 }
 
-void JzAssetLoadingSystem::UpdateMaterialComponentCache(JzMaterialAssetComponent& comp, JzMaterial* material)
+void JzAssetLoadingSystem::UpdateMaterialComponentCache(JzMaterialAssetComponent &comp, JzMaterial *material)
 {
     if (!material) {
         return;
     }
 
-    const auto& props = material->GetProperties();
+    const auto &props = material->GetProperties();
 
     comp.ambientColor  = props.ambientColor;
     comp.diffuseColor  = props.diffuseColor;
@@ -202,9 +204,9 @@ void JzAssetLoadingSystem::UpdateMaterialComponentCache(JzMaterialAssetComponent
     comp.baseColor = JzVec4(props.diffuseColor.x, props.diffuseColor.y, props.diffuseColor.z, props.opacity);
 }
 
-void JzAssetLoadingSystem::UpdateEntityAssetTags(JzEnttWorld& world, U32 entityId)
+void JzAssetLoadingSystem::UpdateEntityAssetTags(JzEnttWorld &world, U32 entityId)
 {
-    auto& registry = world.GetRegistry();
+    auto &registry = world.GetRegistry();
     auto  entity   = static_cast<entt::entity>(entityId);
 
     if (!registry.valid(entity)) {
@@ -216,7 +218,7 @@ void JzAssetLoadingSystem::UpdateEntityAssetTags(JzEnttWorld& world, U32 entityI
     Bool anyLoading = false;
 
     // Check mesh component
-    if (auto* meshComp = registry.try_get<JzMeshAssetComponent>(entity)) {
+    if (auto *meshComp = registry.try_get<JzMeshAssetComponent>(entity)) {
         if (meshComp->meshHandle.IsValid()) {
             if (!meshComp->isReady) {
                 allReady = false;
@@ -227,7 +229,7 @@ void JzAssetLoadingSystem::UpdateEntityAssetTags(JzEnttWorld& world, U32 entityI
     }
 
     // Check material component
-    if (auto* matComp = registry.try_get<JzMaterialAssetComponent>(entity)) {
+    if (auto *matComp = registry.try_get<JzMaterialAssetComponent>(entity)) {
         if (matComp->materialHandle.IsValid()) {
             if (!matComp->isReady) {
                 allReady   = false;
