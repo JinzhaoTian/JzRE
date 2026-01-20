@@ -133,7 +133,7 @@ void JzEnttCameraSystem::HandleOrbitRotation(JzEnttOrbitControllerComponent &orb
 {
     // Update yaw and pitch based on mouse movement (drag-object style)
     orbit.yaw   -= deltaX * orbit.orbitSensitivity;
-    orbit.pitch -= deltaY * orbit.orbitSensitivity;
+    orbit.pitch += deltaY * orbit.orbitSensitivity;
 
     // Clamp pitch to avoid gimbal lock (between -89 and 89 degrees)
     constexpr F32 maxPitch = 1.55f; // ~89 degrees in radians
