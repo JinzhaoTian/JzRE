@@ -67,8 +67,7 @@
             "description": "Windows using MSVC compiler with static linking",
             "generator": "Ninja",
             "architecture": {
-                "value": "x64",
-                "strategy": "external"
+                "value": "x64"
             },
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
@@ -94,8 +93,7 @@
             "description": "Windows using MSVC compiler with dynamic linking",
             "generator": "Ninja",
             "architecture": {
-                "value": "x64",
-                "strategy": "external"
+                "value": "x64"
             },
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {

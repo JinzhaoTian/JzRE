@@ -8,8 +8,11 @@
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
 #include "JzRE/Runtime/Function/ECS/JzEnttCameraSystem.h"
 #include "JzRE/Runtime/Function/ECS/JzEnttComponents.h"
+#include "JzRE/Runtime/Function/ECS/JzAssetComponents.h"
 #include "JzRE/Runtime/Platform/JzDevice.h"
 #include "JzRE/Runtime/Resource/JzShaderManager.h"
+#include "JzRE/Runtime/Resource/JzAssetManager.h"
+#include "JzRE/Runtime/Resource/JzMesh.h"
 
 namespace JzRE {
 
@@ -229,35 +232,40 @@ void JzEnttRenderSystem::RenderEntities(JzEnttWorld &world)
     m_defaultPipeline->SetUniform("view", viewMatrix);
     m_defaultPipeline->SetUniform("projection", projectionMatrix);
 
-    // Render all entities with Transform + Mesh + Material
-    auto view = world.View<JzTransformComponent, JzMeshComponent, JzMaterialComponent>();
+    // Render entities with Asset Components (JzMeshAssetComponent + JzMaterialAssetComponent)
+    // We only render entities that are marked as ready (JzAssetReadyTag)
+    auto &assetManager = JzServiceContainer::Get<JzAssetManager>();
+    auto  viewAsset    = world.View<JzTransformComponent, JzMeshAssetComponent, JzMaterialAssetComponent, JzAssetReadyTag>();
 
-    for (auto entity : view) {
+    for (auto entity : viewAsset) {
         auto &transform = world.GetComponent<JzTransformComponent>(entity);
-        auto &meshComp  = world.GetComponent<JzMeshComponent>(entity);
-        auto &matComp   = world.GetComponent<JzMaterialComponent>(entity);
+        auto &meshComp  = world.GetComponent<JzMeshAssetComponent>(entity);
+        auto &matComp   = world.GetComponent<JzMaterialAssetComponent>(entity);
 
-        // Validate mesh has GPU resources
-        if (!meshComp.HasGPUResources()) {
-            continue;
-        }
+        // Get Mesh Asset
+        JzMesh *mesh = assetManager.Get(meshComp.meshHandle);
+        if (!mesh) continue;
 
-        // Get world matrix from transform component (uses cached matrix with lazy update)
+        auto vertexArray = mesh->GetVertexArray();
+        if (!vertexArray) continue;
+
+        // Get world matrix
         const JzMat4 &entityModelMatrix = transform.GetWorldMatrix();
         m_defaultPipeline->SetUniform("model", entityModelMatrix);
 
-        // Set material uniforms directly from component data
+        // Set Material Uniforms
+        // Note: We use the cached values in the component which are updated by JzAssetLoadingSystem
         m_defaultPipeline->SetUniform("material.ambient", matComp.ambientColor);
         m_defaultPipeline->SetUniform("material.diffuse", matComp.diffuseColor);
         m_defaultPipeline->SetUniform("material.specular", matComp.specularColor);
         m_defaultPipeline->SetUniform("material.shininess", matComp.shininess);
 
-        // Bind vertex array and draw
-        device.BindVertexArray(meshComp.vertexArray);
+        // Bind and Draw
+        device.BindVertexArray(vertexArray);
 
         JzDrawIndexedParams drawParams;
         drawParams.primitiveType = JzEPrimitiveType::Triangles;
-        drawParams.indexCount    = meshComp.indexCount;
+        drawParams.indexCount    = mesh->GetIndexCount();
         drawParams.instanceCount = 1;
         drawParams.firstIndex    = 0;
         drawParams.vertexOffset  = 0;

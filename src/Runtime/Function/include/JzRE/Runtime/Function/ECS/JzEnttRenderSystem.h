@@ -140,6 +140,7 @@ private:
      */
     void CleanupResources();
 
+private:
     // System references
     std::shared_ptr<JzEnttCameraSystem> m_cameraSystem;
 
