@@ -162,111 +162,27 @@ classDiagram
 
 ---
 
-## Context-Based Initialization
-
-### JzContext (Initialization Coordinator)
-
-`JzContext` is a singleton class that coordinates engine and project resource initialization. It follows a two-phase initialization pattern:
-
-```cpp
-enum class JzEContextState {
-    Uninitialized,       // Context not initialized
-    EngineInitialized,   // Engine resources ready (factories registered, engine paths set)
-    ProjectInitialized,  // Project resources ready (Editor mode with project paths)
-    Error                // Initialization failed
-};
-
-class JzContext {
-public:
-    static JzContext& GetInstance();
-
-    // Phase 1: Engine initialization
-    Bool InitializeEngine(JzResourceManager& resourceManager);
-
-    // Phase 2: Project initialization (Editor only)
-    Bool InitializeProject(JzResourceManager& resourceManager,
-                          const std::filesystem::path& projectPath);
-
-    // State queries
-    Bool IsEngineInitialized() const;
-    Bool IsProjectInitialized() const;
-    JzEContextState GetState() const;
-
-    // Path getters
-    std::filesystem::path GetEnginePath() const;
-    std::filesystem::path GetProjectPath() const;
-};
-```
-
-### Initialization Flow
-
-```mermaid
-flowchart TD
-    A[JzRERuntime Constructor] --> B[Create JzResourceManager]
-    B --> C[JzContext::InitializeEngine]
-    C --> D[Register All Factories]
-    D --> E[Setup Engine Search Paths]
-    E --> F[Engine Ready]
-
-    G[JzREInstance Constructor] --> H[JzRERuntime Constructor]
-    H --> I[JzContext::InitializeProject]
-    I --> J[Setup Project Search Paths]
-    J --> K[Project Ready]
-```
-
-### Phase 1: Engine Initialization
-
-Called automatically by `JzRERuntime` constructor:
-
-```cpp
-// Internal: JzContext::InitializeEngine registers all factories
-resourceManager.RegisterFactory<JzTexture>(std::make_unique<JzTextureFactory>());
-resourceManager.RegisterFactory<JzMesh>(std::make_unique<JzMeshFactory>());
-resourceManager.RegisterFactory<JzMaterial>(std::make_unique<JzMaterialFactory>());
-resourceManager.RegisterFactory<JzShader>(std::make_unique<JzShaderFactory>());
-resourceManager.RegisterFactory<JzModel>(std::make_unique<JzModelFactory>());
-resourceManager.RegisterFactory<JzFont>(std::make_unique<JzFontFactory>());
-
-// Engine search paths
-resourceManager.AddSearchPath("./icons");
-resourceManager.AddSearchPath("./shaders");
-```
-
-### Phase 2: Project Initialization (Editor Only)
-
-Called by `JzREInstance` when opening a project:
-
-```cpp
-// Convention-based project paths (auto-detected if they exist)
-// - {projectPath}/
-// - {projectPath}/assets/
-// - {projectPath}/textures/
-// - {projectPath}/models/
-// - {projectPath}/shaders/
-// - {projectPath}/materials/
-// - {projectPath}/fonts/
-
-auto& context = JzContext::GetInstance();
-context.InitializeProject(resourceManager, projectPath);
-```
-
----
-
 ## Workflow
 
-### 1. Resource Registration (Automatic via JzContext)
+### 1. Resource Registration (Automatic via JzAssetManager)
 
-Factory registration is now handled automatically by `JzContext::InitializeEngine()`:
+Factory registration is handled automatically by `JzRERuntime` constructor with `JzAssetManager`:
 
 ```cpp
-// Automatic: JzRERuntime constructor calls JzContext::InitializeEngine()
-// which registers all factories and sets up engine search paths
+// JzRERuntime constructor registers all factories with JzAssetManager
+m_assetManager->RegisterFactory<JzModel>(std::make_unique<JzModelFactory>());
+m_assetManager->RegisterFactory<JzMesh>(std::make_unique<JzMeshFactory>());
+m_assetManager->RegisterFactory<JzTexture>(std::make_unique<JzTextureFactory>());
+m_assetManager->RegisterFactory<JzMaterial>(std::make_unique<JzMaterialFactory>());
+m_assetManager->RegisterFactory<JzShader>(std::make_unique<JzShaderFactory>());
+m_assetManager->RegisterFactory<JzFont>(std::make_unique<JzFontFactory>());
 
-// For custom scenarios, you can also manually check state:
-auto& context = JzContext::GetInstance();
-if (context.IsEngineInitialized()) {
-    // Engine resources are ready
-}
+// Search paths are also added
+m_assetManager->AddSearchPath(enginePath.string());
+m_assetManager->AddSearchPath((enginePath / "resources").string());
+m_assetManager->AddSearchPath((enginePath / "resources" / "models").string());
+m_assetManager->AddSearchPath((enginePath / "resources" / "textures").string());
+m_assetManager->AddSearchPath((enginePath / "resources" / "shaders").string());
 ```
 
 ### 2. Resource Loading

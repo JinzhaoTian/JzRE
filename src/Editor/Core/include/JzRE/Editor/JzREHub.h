@@ -10,7 +10,6 @@
 #include "JzRE/Runtime/Core/JzRETypes.h"
 #include "JzRE/Runtime/Function/Window/JzWindow.h"
 #include "JzRE/Runtime/Platform/JzDevice.h"
-#include "JzRE/Runtime/Resource/JzResourceManager.h"
 #include "JzRE/Editor/JzUIManager.h"
 #include "JzRE/Editor/JzCanvas.h"
 #include "JzRE/Editor/UI/JzPanelWindow.h"
@@ -44,13 +43,12 @@ public:
     std::optional<std::filesystem::path> Run();
 
 private:
-    std::unique_ptr<JzWindow>          m_window;
-    std::unique_ptr<JzResourceManager> m_resourceManager;
-    std::unique_ptr<JzDevice>          m_device;
-    std::unique_ptr<JzUIManager>       m_uiManager;
-    std::unique_ptr<JzCanvas>          m_canvas;
-    std::unique_ptr<JzREHubMenuBar>    m_menuBar;
-    std::unique_ptr<JzREHubPanel>      m_hubPanel;
+    std::unique_ptr<JzWindow>       m_window;
+    std::unique_ptr<JzDevice>       m_device;
+    std::unique_ptr<JzUIManager>    m_uiManager;
+    std::unique_ptr<JzCanvas>       m_canvas;
+    std::unique_ptr<JzREHubMenuBar> m_menuBar;
+    std::unique_ptr<JzREHubPanel>   m_hubPanel;
 };
 
 /**

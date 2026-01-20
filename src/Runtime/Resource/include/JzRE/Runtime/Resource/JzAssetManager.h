@@ -82,7 +82,6 @@ struct JzAssetLoadResult {
  * 2. Async loading support
  * 3. LRU cache with memory budget
  * 4. ECS-friendly interface
- * 5. Compatible with existing JzResourceManager factories
  *
  * @example
  * @code

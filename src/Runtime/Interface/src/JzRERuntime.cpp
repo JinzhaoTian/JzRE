@@ -10,7 +10,6 @@
 #include "JzRE/Runtime/Function/ECS/JzEnttComponents.h"
 
 #include "JzRE/Runtime/Function/Rendering/JzDeviceFactory.h"
-#include "JzRE/Runtime/JzContext.h"
 
 // Resource factories for JzAssetManager
 #include "JzRE/Runtime/Resource/JzModelFactory.h"
@@ -26,14 +25,6 @@ JzRE::JzRERuntime::JzRERuntime(JzERHIType rhiType, const String &windowTitle,
                                const JzIVec2 &windowSize)
 {
     JzServiceContainer::Init();
-
-    // Initialize resource manager
-    m_resourceManager = std::make_unique<JzResourceManager>();
-    JzServiceContainer::Provide<JzResourceManager>(*m_resourceManager);
-
-    // Initialize engine context (registers factories and engine search paths)
-    auto &context = JzContext::GetInstance();
-    context.InitializeEngine(*m_resourceManager);
 
     // Initialize asset manager (new ECS-friendly asset system)
     JzAssetManagerConfig assetConfig;
@@ -132,12 +123,11 @@ JzRE::JzRERuntime::~JzRERuntime()
     m_device.reset();
     m_window.reset();
 
-    // Shutdown asset manager before resource manager
+    // Shutdown asset manager
     if (m_assetManager) {
         m_assetManager->Shutdown();
         m_assetManager.reset();
     }
-    m_resourceManager.reset();
 }
 
 void JzRE::JzRERuntime::InitializeECS()
@@ -410,11 +400,6 @@ std::shared_ptr<JzRE::JzEnttRenderSystem> JzRE::JzRERuntime::GetRenderSystem()
 JzRE::JzInputManager &JzRE::JzRERuntime::GetInputManager()
 {
     return *m_inputManager;
-}
-
-JzRE::JzResourceManager &JzRE::JzRERuntime::GetResourceManager()
-{
-    return *m_resourceManager;
 }
 
 JzRE::JzAssetManager &JzRE::JzRERuntime::GetAssetManager()

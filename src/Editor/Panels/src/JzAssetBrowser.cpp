@@ -5,7 +5,6 @@
 
 #include "JzRE/Runtime/Core/JzLogger.h"
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
-#include "JzRE/Runtime/JzContext.h"
 #include "JzRE/Editor/Panels/JzAssetBrowser.h"
 #include "JzRE/Editor/UI/JzButton.h"
 #include "JzRE/Editor/UI/JzFileContextMenu.h"
@@ -13,13 +12,13 @@
 #include "JzRE/Editor/UI/JzIcon.h"
 #include "JzRE/Editor/UI/JzSeparator.h"
 #include "JzRE/Editor/UI/JzTextClickable.h"
-#include "JzRE/Runtime/Resource/JzResourceManager.h"
+#include "JzRE/Runtime/Resource/JzAssetManager.h"
 #include "JzRE/Runtime/Resource/JzTexture.h"
 
 JzRE::JzAssetBrowser::JzAssetBrowser(const JzRE::String &name, JzRE::Bool is_opened) :
     JzPanelWindow(name, is_opened)
 {
-    m_openDirectory = JzContext::GetInstance().GetProjectPath();
+    m_openDirectory = std::filesystem::current_path();
 
     auto &refreshButton             = CreateWidget<JzButton>("Refresh");
     refreshButton.buttonIdleColor   = "#e3c79f";
@@ -88,8 +87,9 @@ void JzRE::JzAssetBrowser::_AddDirectoryItem(JzRE::JzTreeNode *root, const std::
     const auto itemName = path.filename().string();
 
     /* Find the icon to apply to the item */
-    auto      &resourceManager = JzServiceContainer::Get<JzResourceManager>();
-    const auto iconTexture     = resourceManager.GetResource<JzTexture>("icons/folder-16.png");
+    auto      &assetManager = JzServiceContainer::Get<JzAssetManager>();
+    auto       iconHandle   = assetManager.GetOrLoad<JzTexture>("icons/folder-16.png");
+    auto       iconTexture  = assetManager.GetShared(iconHandle);
 
     auto &iconItem     = itemGroup.CreateWidget<JzIcon>(iconTexture->GetRhiTexture(), JzVec2{16, 16});
     iconItem.lineBreak = false;
@@ -123,8 +123,9 @@ void JzRE::JzAssetBrowser::_AddFileItem(JzRE::JzTreeNode *root, const std::files
     const auto itemName = path.filename().string();
 
     /* Find the icon to apply to the item */
-    auto      &resourceManager = JzServiceContainer::Get<JzResourceManager>();
-    const auto iconTexture     = resourceManager.GetResource<JzTexture>("icons/file-16.png");
+    auto      &assetManager = JzServiceContainer::Get<JzAssetManager>();
+    auto       iconHandle   = assetManager.GetOrLoad<JzTexture>("icons/file-16.png");
+    auto       iconTexture  = assetManager.GetShared(iconHandle);
 
     auto &iconItem     = itemGroup.CreateWidget<JzIcon>(iconTexture->GetRhiTexture(), JzVec2{16, 16});
     iconItem.lineBreak = false;

@@ -17,7 +17,6 @@
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
 #include "JzRE/Runtime/Core/JzLogger.h"
 #include "JzRE/Runtime/Resource/JzTexture.h"
-#include "JzRE/Runtime/Resource/JzTextureFactory.h"
 #include "JzRE/Editor/UI/JzIconButton.h"
 #include "JzRE/Editor/UI/JzGroup.h"
 #include "JzRE/Editor/UI/JzText.h"
@@ -32,11 +31,6 @@
 JzRE::JzREHub::JzREHub(JzERHIType rhiType)
 {
     JzServiceContainer::Init();
-
-    m_resourceManager = std::make_unique<JzResourceManager>();
-    m_resourceManager->RegisterFactory<JzTexture>(std::make_unique<JzTextureFactory>());
-    m_resourceManager->AddSearchPath("./icons");
-    JzServiceContainer::Provide<JzResourceManager>(*m_resourceManager);
 
     JzWindowSettings windowSettings;
     windowSettings.title       = "JzRE Hub";
@@ -91,10 +85,6 @@ JzRE::JzREHub::~JzREHub()
     if (m_window) {
         m_window.reset();
     }
-
-    if (m_resourceManager) {
-        m_resourceManager.reset();
-    }
 }
 
 std::optional<std::filesystem::path> JzRE::JzREHub::Run()
@@ -118,11 +108,12 @@ JzRE::JzREHubMenuBar::JzREHubMenuBar(JzRE::JzWindow &window) :
     m_backgroudColor("#2A2A2A"),
     m_isDragging(false)
 {
-    auto &resourceManager = JzServiceContainer::Get<JzResourceManager>();
+    const auto iconsDir = std::filesystem::current_path() / "icons";
 
     auto &actions = CreateWidget<JzGroup>(JzEHorizontalAlignment::RIGHT, JzVec2(80.f, 0.f), JzVec2(0.f, 0.f));
 
-    auto  minimizeIcon              = resourceManager.GetResource<JzTexture>("icons/minimize-64.png");
+    auto minimizeIcon = std::make_shared<JzTexture>((iconsDir / "minimize-64.png").string());
+    minimizeIcon->Load();
     auto &minimizeButton            = actions.CreateWidget<JzIconButton>(minimizeIcon->GetRhiTexture());
     minimizeButton.buttonSize       = m_buttonSize;
     minimizeButton.buttonIdleColor  = m_backgroudColor;
@@ -134,7 +125,8 @@ JzRE::JzREHubMenuBar::JzREHubMenuBar(JzRE::JzWindow &window) :
             m_window.Minimize();
     };
 
-    auto  maximizeIcon              = resourceManager.GetResource<JzTexture>("icons/maximize-64.png");
+    auto maximizeIcon = std::make_shared<JzTexture>((iconsDir / "maximize-64.png").string());
+    maximizeIcon->Load();
     auto &maximizeButton            = actions.CreateWidget<JzIconButton>(maximizeIcon->GetRhiTexture());
     maximizeButton.buttonSize       = m_buttonSize;
     maximizeButton.buttonIdleColor  = m_backgroudColor;
@@ -146,7 +138,8 @@ JzRE::JzREHubMenuBar::JzREHubMenuBar(JzRE::JzWindow &window) :
             m_window.SetFullscreen(true);
     };
 
-    auto  closeIcon                 = resourceManager.GetResource<JzTexture>("icons/close-64.png");
+    auto closeIcon = std::make_shared<JzTexture>((iconsDir / "close-64.png").string());
+    closeIcon->Load();
     auto &closeButton               = actions.CreateWidget<JzIconButton>(closeIcon->GetRhiTexture());
     closeButton.buttonSize          = m_buttonSize;
     closeButton.buttonIdleColor     = m_backgroudColor;
