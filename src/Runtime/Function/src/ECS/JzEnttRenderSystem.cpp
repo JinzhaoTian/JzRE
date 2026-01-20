@@ -6,7 +6,6 @@
 #include "JzRE/Runtime/Function/ECS/JzEnttRenderSystem.h"
 
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
-#include "JzRE/Runtime/Function/ECS/JzEnttCameraSystem.h"
 #include "JzRE/Runtime/Function/ECS/JzEnttComponents.h"
 #include "JzRE/Runtime/Function/ECS/JzAssetComponents.h"
 #include "JzRE/Runtime/Platform/JzDevice.h"
@@ -38,7 +37,7 @@ void JzEnttRenderSystem::Update(JzEnttWorld &world, F32 delta)
     }
 
     // Setup viewport and clear
-    SetupViewportAndClear();
+    SetupViewportAndClear(world);
 
     // Render all entities
     RenderEntities(world);
@@ -51,11 +50,6 @@ void JzEnttRenderSystem::Update(JzEnttWorld &world, F32 delta)
 void JzEnttRenderSystem::OnShutdown(JzEnttWorld &world)
 {
     CleanupResources();
-}
-
-void JzEnttRenderSystem::SetCameraSystem(std::shared_ptr<JzEnttCameraSystem> cameraSystem)
-{
-    m_cameraSystem = std::move(cameraSystem);
 }
 
 void JzEnttRenderSystem::SetFrameSize(JzIVec2 size)
@@ -173,7 +167,7 @@ Bool JzEnttRenderSystem::CreateDefaultPipeline()
     return m_defaultPipeline != nullptr;
 }
 
-void JzEnttRenderSystem::SetupViewportAndClear()
+void JzEnttRenderSystem::SetupViewportAndClear(JzEnttWorld &world)
 {
     auto &device = JzServiceContainer::Get<JzDevice>();
 
@@ -195,8 +189,14 @@ void JzEnttRenderSystem::SetupViewportAndClear()
 
     // Get clear color from camera system
     JzVec3 clearColor(0.1f, 0.1f, 0.1f);
-    if (m_cameraSystem) {
-        clearColor = m_cameraSystem->GetClearColor();
+
+    auto cameraView = world.View<JzEnttCameraComponent>();
+    for (auto entity : cameraView) {
+        const auto &camera = world.GetComponent<JzEnttCameraComponent>(entity);
+        if (camera.isMainCamera) {
+            clearColor = camera.clearColor;
+            break;
+        }
     }
 
     // Clear the screen
@@ -221,9 +221,14 @@ void JzEnttRenderSystem::RenderEntities(JzEnttWorld &world)
     JzMat4 viewMatrix       = JzMat4x4::Identity();
     JzMat4 projectionMatrix = JzMat4x4::Identity();
 
-    if (m_cameraSystem) {
-        viewMatrix       = m_cameraSystem->GetViewMatrix();
-        projectionMatrix = m_cameraSystem->GetProjectionMatrix();
+    auto cameraView = world.View<JzEnttCameraComponent>();
+    for (auto camEntity : cameraView) {
+        const auto &camera = world.GetComponent<JzEnttCameraComponent>(camEntity);
+        if (camera.isMainCamera) {
+            viewMatrix       = camera.viewMatrix;
+            projectionMatrix = camera.projectionMatrix;
+            break;
+        }
     }
 
     // Set common uniforms for example shader
@@ -235,9 +240,9 @@ void JzEnttRenderSystem::RenderEntities(JzEnttWorld &world)
     // Render entities with Asset Components (JzMeshAssetComponent + JzMaterialAssetComponent)
     // We only render entities that are marked as ready (JzAssetReadyTag)
     auto &assetManager = JzServiceContainer::Get<JzAssetManager>();
-    auto  viewAsset    = world.View<JzTransformComponent, JzMeshAssetComponent, JzMaterialAssetComponent, JzAssetReadyTag>();
+    auto  views        = world.View<JzTransformComponent, JzMeshAssetComponent, JzMaterialAssetComponent, JzAssetReadyTag>();
 
-    for (auto entity : viewAsset) {
+    for (auto entity : views) {
         auto &transform = world.GetComponent<JzTransformComponent>(entity);
         auto &meshComp  = world.GetComponent<JzMeshAssetComponent>(entity);
         auto &matComp   = world.GetComponent<JzMaterialAssetComponent>(entity);
