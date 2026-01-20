@@ -23,7 +23,8 @@ JzRE::JzShader::~JzShader()
 
 JzRE::Bool JzRE::JzShader::Load()
 {
-    if (m_state == JzEResourceState::Loaded) return true;
+    if (m_state == JzEResourceState::Loaded)
+        return true;
     m_state = JzEResourceState::Loading;
 
     std::ifstream file(m_path);

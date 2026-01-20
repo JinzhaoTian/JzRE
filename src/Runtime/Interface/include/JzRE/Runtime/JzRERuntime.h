@@ -102,33 +102,11 @@ public:
     JzEnttWorld &GetWorld();
 
     /**
-     * @brief Get the camera system
-     *
-     * @return std::shared_ptr<JzEnttCameraSystem> The camera system
-     */
-    std::shared_ptr<JzEnttCameraSystem> GetCameraSystem();
-
-    /**
-     * @brief Get the light system
-     *
-     * @return std::shared_ptr<JzEnttLightSystem> The light system
-     */
-    std::shared_ptr<JzEnttLightSystem> GetLightSystem();
-
-    /**
-     * @brief Get the render system
-     *
-     * @return std::shared_ptr<JzEnttRenderSystem> The render system
-     */
-    std::shared_ptr<JzEnttRenderSystem> GetRenderSystem();
-
-    /**
      * @brief Get the input manager instance
      *
      * @return JzInputManager& Reference to the input manager
      */
     JzInputManager &GetInputManager();
-
 
     /**
      * @brief Get the asset manager instance
@@ -282,19 +260,19 @@ private:
     void _FinishFrame(const JzRuntimeFrameData &frameData);
 
 protected:
-    std::unique_ptr<JzWindow>          m_window;
-    std::unique_ptr<JzDevice>          m_device;
-    std::unique_ptr<JzInputManager>    m_inputManager;
-    std::unique_ptr<JzAssetManager>    m_assetManager;
-    std::unique_ptr<JzShaderManager>   m_shaderManager;
+    std::unique_ptr<JzWindow>        m_window;
+    std::unique_ptr<JzDevice>        m_device;
+    std::unique_ptr<JzInputManager>  m_inputManager;
+    std::unique_ptr<JzAssetManager>  m_assetManager;
+    std::unique_ptr<JzShaderManager> m_shaderManager;
 
     // ECS world and systems
-    std::unique_ptr<JzEnttWorld>        m_world;
-    std::shared_ptr<JzEnttInputSystem>  m_inputSystem;
-    std::shared_ptr<JzEnttCameraSystem> m_cameraSystem;
-    std::shared_ptr<JzEnttLightSystem>  m_lightSystem;
-    std::shared_ptr<JzEnttRenderSystem>    m_renderSystem;
-    std::shared_ptr<JzAssetLoadingSystem>  m_assetLoadingSystem;
+    std::unique_ptr<JzEnttWorld>          m_world;
+    std::shared_ptr<JzEnttInputSystem>    m_inputSystem;
+    std::shared_ptr<JzEnttCameraSystem>   m_cameraSystem;
+    std::shared_ptr<JzEnttLightSystem>    m_lightSystem;
+    std::shared_ptr<JzEnttRenderSystem>   m_renderSystem;
+    std::shared_ptr<JzAssetLoadingSystem> m_assetLoadingSystem;
 
     // Main camera entity
     JzEnttEntity m_mainCameraEntity = INVALID_ENTT_ENTITY;

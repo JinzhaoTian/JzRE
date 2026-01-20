@@ -5,7 +5,6 @@
 
 #pragma once
 
-#include <filesystem>
 #include <memory>
 #include <mutex>
 #include <unordered_map>
@@ -55,18 +54,19 @@ public:
      * @brief Load and register a shader program from files.
      *
      * Loads vertex and fragment shader sources from files and registers
-     * the program with the given name.
+     * the program with the given name. Paths are resolved using JzAssetManager
+     * search paths.
      *
      * @param name Unique name for the program.
-     * @param vertexPath Path to vertex shader file (.vert).
-     * @param fragmentPath Path to fragment shader file (.frag).
-     * @param geometryPath Optional path to geometry shader file (.geom).
+     * @param vertexPath Relative path to vertex shader file (.vert).
+     * @param fragmentPath Relative path to fragment shader file (.frag).
+     * @param geometryPath Optional relative path to geometry shader file (.geom).
      * @return True if loading succeeded, false otherwise.
      */
-    Bool LoadShaderProgram(const String                &name,
-                           const std::filesystem::path &vertexPath,
-                           const std::filesystem::path &fragmentPath,
-                           const std::filesystem::path &geometryPath = {});
+    Bool LoadShaderProgram(const String &name,
+                           const String &vertexPath,
+                           const String &fragmentPath,
+                           const String &geometryPath = {});
 
     /**
      * @brief Get a registered shader program by name.
@@ -145,17 +145,11 @@ private:
     void RegisterBuiltInShaders();
 
     /**
-     * @brief Read file contents as string.
-     * @param path Path to file.
-     * @return File contents, empty string on failure.
+     * @brief Load shader source using JzAssetManager.
+     * @param relativePath Relative path to shader file (resolved by asset manager search paths).
+     * @return Shader source code, empty string on failure.
      */
-    String ReadShaderFile(const std::filesystem::path &path);
-
-    /**
-     * @brief Get the shader directory path.
-     * @return Path to shaders directory relative to engine path.
-     */
-    std::filesystem::path GetShaderDirectory() const;
+    String LoadShaderSource(const String &relativePath);
 
 private:
     std::unordered_map<String, std::shared_ptr<JzShaderProgram>> m_programs;

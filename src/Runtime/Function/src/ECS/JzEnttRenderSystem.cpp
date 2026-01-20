@@ -9,7 +9,7 @@
 #include "JzRE/Runtime/Function/ECS/JzEnttComponents.h"
 #include "JzRE/Runtime/Function/ECS/JzAssetComponents.h"
 #include "JzRE/Runtime/Platform/JzDevice.h"
-#include "JzRE/Runtime/Resource/JzShaderManager.h"
+#include "JzRE/Runtime/Resource/JzShader.h"
 #include "JzRE/Runtime/Resource/JzAssetManager.h"
 #include "JzRE/Runtime/Resource/JzMesh.h"
 #include "JzRE/Runtime/Resource/JzMaterial.h"
@@ -155,16 +155,54 @@ Bool JzEnttRenderSystem::CreateFramebuffer()
 
 Bool JzEnttRenderSystem::CreateDefaultPipeline()
 {
-    auto &shaderManager = JzServiceContainer::Get<JzShaderManager>();
+    auto &device       = JzServiceContainer::Get<JzDevice>();
+    auto &assetManager = JzServiceContainer::Get<JzAssetManager>();
 
-    // Get default standard shader variant from ShaderManager
-    auto variant = shaderManager.GetStandardShader();
+    // Load standard shaders
+    // Note: Assuming the AssetManager's shader factory can deduce shader type from file extension
+    auto vertHandle = assetManager.LoadSync<JzShader>("./shaders/standard.vert");
+    auto fragHandle = assetManager.LoadSync<JzShader>("./shaders/standard.frag");
 
-    if (!variant || !variant->IsValid()) {
+    JzShader *vertShader = assetManager.Get(vertHandle);
+    JzShader *fragShader = assetManager.Get(fragHandle);
+
+    if (!vertShader || !fragShader) {
         return false;
     }
 
-    m_defaultPipeline = variant->GetPipeline();
+    // Create Pipeline Description
+    JzPipelineDesc pipelineDesc;
+    pipelineDesc.debugName = "DefaultForwardPipeline";
+
+    // Setup Render State
+    pipelineDesc.renderState.depthTest  = true;
+    pipelineDesc.renderState.depthWrite = true;
+    pipelineDesc.renderState.cullMode   = JzECullMode::Back;
+
+    // Get shader programs from resources and add to pipeline desc
+    if (auto rhiVert = vertShader->GetRhiShader()) {
+        JzShaderProgramDesc desc;
+        desc.type       = rhiVert->GetType();
+        desc.source     = rhiVert->GetSource();
+        desc.entryPoint = rhiVert->GetEntryPoint();
+        desc.debugName  = "StandardVert";
+        pipelineDesc.shaders.push_back(desc);
+    } else {
+        return false;
+    }
+
+    if (auto rhiFrag = fragShader->GetRhiShader()) {
+        JzShaderProgramDesc desc;
+        desc.type       = rhiFrag->GetType();
+        desc.source     = rhiFrag->GetSource();
+        desc.entryPoint = rhiFrag->GetEntryPoint();
+        desc.debugName  = "StandardFrag";
+        pipelineDesc.shaders.push_back(desc);
+    } else {
+        return false;
+    }
+
+    m_defaultPipeline = device.CreatePipeline(pipelineDesc);
     return m_defaultPipeline != nullptr;
 }
 
@@ -268,8 +306,8 @@ void JzEnttRenderSystem::RenderEntities(JzEnttWorld &world)
 
         // Bind diffuse texture if available
         // Get texture directly from material (hasDiffuseTexture flag is set during model loading)
-        JzMaterial *mat = assetManager.Get(matComp.materialHandle);
-        bool hasDiffuseTexture = mat && mat->HasDiffuseTexture();
+        JzMaterial *mat               = assetManager.Get(matComp.materialHandle);
+        bool        hasDiffuseTexture = mat && mat->HasDiffuseTexture();
         m_defaultPipeline->SetUniform("hasDiffuseTexture", hasDiffuseTexture);
 
         if (hasDiffuseTexture) {

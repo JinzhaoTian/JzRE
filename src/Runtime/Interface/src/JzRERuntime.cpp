@@ -17,6 +17,7 @@
 #include "JzRE/Runtime/Resource/JzTextureFactory.h"
 #include "JzRE/Runtime/Resource/JzMaterialFactory.h"
 #include "JzRE/Runtime/Resource/JzShaderFactory.h"
+#include "JzRE/Runtime/Resource/JzShaderSourceFactory.h"
 #include "JzRE/Runtime/Resource/JzFontFactory.h"
 
 #include <filesystem>
@@ -30,7 +31,7 @@ JzRE::JzRERuntime::JzRERuntime(JzERHIType rhiType, const String &windowTitle,
     JzAssetManagerConfig assetConfig;
     assetConfig.maxCacheMemoryMB = 512;
     assetConfig.asyncWorkerCount = 2;
-    m_assetManager = std::make_unique<JzAssetManager>(assetConfig);
+    m_assetManager               = std::make_unique<JzAssetManager>(assetConfig);
     m_assetManager->Initialize();
 
     // Register resource factories with asset manager
@@ -39,6 +40,7 @@ JzRE::JzRERuntime::JzRERuntime(JzERHIType rhiType, const String &windowTitle,
     m_assetManager->RegisterFactory<JzTexture>(std::make_unique<JzTextureFactory>());
     m_assetManager->RegisterFactory<JzMaterial>(std::make_unique<JzMaterialFactory>());
     m_assetManager->RegisterFactory<JzShader>(std::make_unique<JzShaderFactory>());
+    m_assetManager->RegisterFactory<JzShaderSource>(std::make_unique<JzShaderSourceFactory>());
     m_assetManager->RegisterFactory<JzFont>(std::make_unique<JzFontFactory>());
 
     // Add search paths for asset manager
@@ -65,22 +67,25 @@ JzRE::JzRERuntime::JzRERuntime(JzERHIType rhiType, const String &windowTitle,
     m_device = JzDeviceFactory::CreateDevice(rhiType);
     JzServiceContainer::Provide<JzDevice>(*m_device);
 
-    // Initialize shader manager (requires device to be ready)
-    m_shaderManager = std::make_unique<JzShaderManager>();
-    m_shaderManager->Initialize();
-    JzServiceContainer::Provide<JzShaderManager>(*m_shaderManager);
-
     // Create input manager
     m_inputManager = std::make_unique<JzInputManager>(*m_window);
     JzServiceContainer::Provide<JzInputManager>(*m_inputManager);
 
     // Initialize ECS world and systems
+    m_world = std::make_unique<JzEnttWorld>();
+
+    // Register systems in execution order by phase:
+    // Input phase -> Logic phases -> PreRender phases -> Render phases
+    m_inputSystem        = m_world->RegisterSystem<JzEnttInputSystem>();
+    m_assetLoadingSystem = m_world->RegisterSystem<JzAssetLoadingSystem>();
+    m_cameraSystem       = m_world->RegisterSystem<JzEnttCameraSystem>();
+    m_lightSystem        = m_world->RegisterSystem<JzEnttLightSystem>();
+    m_renderSystem       = m_world->RegisterSystem<JzEnttRenderSystem>();
+
     InitializeECS();
 
     // Provide ECS services for Editor access
     JzServiceContainer::Provide<JzEnttWorld>(*m_world);
-    JzServiceContainer::Provide<JzEnttCameraSystem>(*m_cameraSystem);
-    JzServiceContainer::Provide<JzEnttRenderSystem>(*m_renderSystem);
 
     // Initialize frame data with framebuffer size (for Retina/HiDPI displays)
     m_frameData.frameSize = m_window->GetFramebufferSize();
@@ -132,18 +137,6 @@ JzRE::JzRERuntime::~JzRERuntime()
 
 void JzRE::JzRERuntime::InitializeECS()
 {
-    m_world = std::make_unique<JzEnttWorld>();
-
-    // Register systems in execution order by phase:
-    // Input phase -> Logic phases -> PreRender phases -> Render phases
-    m_inputSystem        = m_world->RegisterSystem<JzEnttInputSystem>();
-    m_assetLoadingSystem = m_world->RegisterSystem<JzAssetLoadingSystem>();
-    m_cameraSystem       = m_world->RegisterSystem<JzEnttCameraSystem>();
-    m_lightSystem        = m_world->RegisterSystem<JzEnttLightSystem>();
-    m_renderSystem       = m_world->RegisterSystem<JzEnttRenderSystem>();
-
-
-
     // Create default entities
     CreateDefaultCameraEntity();
     CreateDefaultLightEntity();
@@ -380,21 +373,6 @@ JzRE::JzDevice &JzRE::JzRERuntime::GetDevice()
 JzRE::JzEnttWorld &JzRE::JzRERuntime::GetWorld()
 {
     return *m_world;
-}
-
-std::shared_ptr<JzRE::JzEnttCameraSystem> JzRE::JzRERuntime::GetCameraSystem()
-{
-    return m_cameraSystem;
-}
-
-std::shared_ptr<JzRE::JzEnttLightSystem> JzRE::JzRERuntime::GetLightSystem()
-{
-    return m_lightSystem;
-}
-
-std::shared_ptr<JzRE::JzEnttRenderSystem> JzRE::JzRERuntime::GetRenderSystem()
-{
-    return m_renderSystem;
 }
 
 JzRE::JzInputManager &JzRE::JzRERuntime::GetInputManager()

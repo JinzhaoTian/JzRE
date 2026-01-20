@@ -7,8 +7,8 @@
 #include "JzRE/Runtime/Core/JzLogger.h"
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
 #include "JzRE/Runtime/Platform/JzDevice.h"
-#include <fstream>
-#include <sstream>
+#include "JzRE/Runtime/Resource/JzAssetManager.h"
+#include "JzRE/Runtime/Resource/JzShaderSource.h"
 
 namespace JzRE {
 
@@ -170,10 +170,9 @@ String JzShaderManager::MakeVariantCacheKey(const String &programName, const JzS
 
 void JzShaderManager::RegisterBuiltInShaders()
 {
-    auto shaderDir = GetShaderDirectory();
-
+    // Use relative paths - JzAssetManager's search paths include "resources/shaders"
     // ==================== Standard Shader ====================
-    if (LoadShaderProgram("standard", shaderDir / "standard.vert", shaderDir / "standard.frag")) {
+    if (LoadShaderProgram("standard", "standard.vert", "standard.frag")) {
         auto program = GetShaderProgram("standard");
         if (program) {
             program->AddKeyword({"SKINNED", 0, false});
@@ -185,20 +184,20 @@ void JzShaderManager::RegisterBuiltInShaders()
     }
 }
 
-Bool JzShaderManager::LoadShaderProgram(const String                &name,
-                                        const std::filesystem::path &vertexPath,
-                                        const std::filesystem::path &fragmentPath,
-                                        const std::filesystem::path &geometryPath)
+Bool JzShaderManager::LoadShaderProgram(const String &name,
+                                        const String &vertexPath,
+                                        const String &fragmentPath,
+                                        const String &geometryPath)
 {
-    String vertexSource = ReadShaderFile(vertexPath);
+    String vertexSource = LoadShaderSource(vertexPath);
     if (vertexSource.empty()) {
-        JzRE_LOG_ERROR("Failed to load vertex shader: {}", vertexPath.string());
+        JzRE_LOG_ERROR("Failed to load vertex shader: {}", vertexPath);
         return false;
     }
 
-    String fragmentSource = ReadShaderFile(fragmentPath);
+    String fragmentSource = LoadShaderSource(fragmentPath);
     if (fragmentSource.empty()) {
-        JzRE_LOG_ERROR("Failed to load fragment shader: {}", fragmentPath.string());
+        JzRE_LOG_ERROR("Failed to load fragment shader: {}", fragmentPath);
         return false;
     }
 
@@ -207,9 +206,9 @@ Bool JzShaderManager::LoadShaderProgram(const String                &name,
     program->SetFragmentSource(fragmentSource);
 
     if (!geometryPath.empty()) {
-        String geometrySource = ReadShaderFile(geometryPath);
+        String geometrySource = LoadShaderSource(geometryPath);
         if (geometrySource.empty()) {
-            JzRE_LOG_ERROR("Failed to load geometry shader: {}", geometryPath.string());
+            JzRE_LOG_ERROR("Failed to load geometry shader: {}", geometryPath);
             return false;
         }
         program->SetGeometrySource(geometrySource);
@@ -226,27 +225,23 @@ Bool JzShaderManager::LoadShaderProgram(const String                &name,
     return true;
 }
 
-String JzShaderManager::ReadShaderFile(const std::filesystem::path &path)
+String JzShaderManager::LoadShaderSource(const String &relativePath)
 {
-    if (!std::filesystem::exists(path)) {
-        JzRE_LOG_ERROR("Shader file not found: {}", path.string());
+    auto &assetManager = JzServiceContainer::Get<JzAssetManager>();
+
+    auto handle = assetManager.LoadSync<JzShaderSource>(relativePath);
+    if (!handle.IsValid()) {
+        JzRE_LOG_ERROR("Failed to load shader source: {}", relativePath);
         return {};
     }
 
-    std::ifstream file(path);
-    if (!file.is_open()) {
-        JzRE_LOG_ERROR("Failed to open shader file: {}", path.string());
+    JzShaderSource *source = assetManager.Get(handle);
+    if (!source) {
+        JzRE_LOG_ERROR("Failed to get shader source: {}", relativePath);
         return {};
     }
 
-    std::stringstream buffer;
-    buffer << file.rdbuf();
-    return buffer.str();
-}
-
-std::filesystem::path JzShaderManager::GetShaderDirectory() const
-{
-    return std::filesystem::current_path() / "shaders";
+    return source->GetSource();
 }
 
 } // namespace JzRE
