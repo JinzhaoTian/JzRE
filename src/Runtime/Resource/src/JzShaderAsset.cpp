@@ -383,7 +383,7 @@ Bool JzShaderAsset::CompileProgram()
     // Set default render state
     JzRenderState renderState;
     renderState.depthTest = true;
-    renderState.cullMode  = JzECullMode::Back;
+    renderState.cullMode  = JzECullMode::Front;
     pipeDesc.renderState  = renderState;
     m_program->SetRenderState(renderState);
 
