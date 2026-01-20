@@ -12,15 +12,11 @@
 #include "JzRE/Runtime/Function/Rendering/JzDeviceFactory.h"
 
 // Resource factories for JzAssetManager
+#include "JzRE/Runtime/Resource/JzShaderAssetFactory.h"
 #include "JzRE/Runtime/Resource/JzModelFactory.h"
 #include "JzRE/Runtime/Resource/JzMeshFactory.h"
 #include "JzRE/Runtime/Resource/JzTextureFactory.h"
 #include "JzRE/Runtime/Resource/JzMaterialFactory.h"
-#include "JzRE/Runtime/Resource/JzShaderFactory.h"
-#include "JzRE/Runtime/Resource/JzShaderSourceFactory.h"
-#include "JzRE/Runtime/Resource/JzFontFactory.h"
-
-#include <filesystem>
 
 JzRE::JzRERuntime::JzRERuntime(JzERHIType rhiType, const String &windowTitle,
                                const JzIVec2 &windowSize)
@@ -35,13 +31,11 @@ JzRE::JzRERuntime::JzRERuntime(JzERHIType rhiType, const String &windowTitle,
     m_assetManager->Initialize();
 
     // Register resource factories with asset manager
+    m_assetManager->RegisterFactory<JzShaderAsset>(std::make_unique<JzShaderAssetFactory>());
     m_assetManager->RegisterFactory<JzModel>(std::make_unique<JzModelFactory>());
     m_assetManager->RegisterFactory<JzMesh>(std::make_unique<JzMeshFactory>());
     m_assetManager->RegisterFactory<JzTexture>(std::make_unique<JzTextureFactory>());
     m_assetManager->RegisterFactory<JzMaterial>(std::make_unique<JzMaterialFactory>());
-    m_assetManager->RegisterFactory<JzShader>(std::make_unique<JzShaderFactory>());
-    m_assetManager->RegisterFactory<JzShaderSource>(std::make_unique<JzShaderSourceFactory>());
-    m_assetManager->RegisterFactory<JzFont>(std::make_unique<JzFontFactory>());
 
     // Add search paths for asset manager
     auto enginePath = std::filesystem::current_path();
@@ -113,10 +107,6 @@ JzRE::JzRERuntime::~JzRERuntime()
         m_workerThread.join();
     }
 
-    if (m_shaderManager) {
-        m_shaderManager->Shutdown();
-    }
-
     // Clean up in reverse order of creation
     m_renderSystem.reset();
     m_lightSystem.reset();
@@ -124,7 +114,6 @@ JzRE::JzRERuntime::~JzRERuntime()
     m_assetLoadingSystem.reset();
     m_world.reset();
     m_inputManager.reset();
-    m_shaderManager.reset();
     m_device.reset();
     m_window.reset();
 

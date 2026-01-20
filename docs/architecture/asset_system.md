@@ -298,6 +298,86 @@ The LRU cache enforces memory budgets:
 
 Both systems can coexist during migration.
 
+## Shader Asset Integration
+
+The asset system includes built-in support for shader assets through `JzShaderAsset` and `JzShaderAssetFactory`.
+
+### JzShaderAsset
+
+A shader asset represents a complete shader program with vertex, fragment, and optional geometry shaders:
+
+```cpp
+class JzShaderAsset : public JzResource {
+public:
+    // Load from separate vertex and fragment files
+    JzShaderAsset(const String &vertexPath, const String &fragmentPath);
+
+    // Load from base name (expects .vert and .frag extensions)
+    explicit JzShaderAsset(const String &baseName);
+
+    // Get the compiled shader variant
+    std::shared_ptr<JzShaderVariant> GetMainVariant() const;
+
+    // Get a variant with specific defines
+    std::shared_ptr<JzShaderVariant> GetVariant(
+        const std::unordered_map<String, String> &defines);
+};
+```
+
+### Shader Loading
+
+```cpp
+// Load shader via asset manager
+auto shaderHandle = assetManager.LoadSync<JzShaderAsset>("shaders/standard");
+
+// Get the shader asset
+JzShaderAsset* shader = assetManager.Get(shaderHandle);
+if (shader && shader->IsCompiled()) {
+    auto variant = shader->GetMainVariant();
+    // Use variant->GetPipeline() for rendering
+}
+```
+
+### Shader Variants
+
+Shader variants allow different preprocessor configurations:
+
+```cpp
+// Get variant with specific defines
+std::unordered_map<String, String> defines = {
+    {"USE_NORMAL_MAP", "1"},
+    {"USE_SHADOWS", "1"}
+};
+auto shadowVariant = shader->GetVariant(defines);
+```
+
+### Hot Reload Support
+
+`JzShaderAsset` supports hot reloading for development:
+
+```cpp
+// Check if shader files have been modified
+if (shader->NeedsReload()) {
+    shader->Reload();  // Recompiles all variants
+}
+```
+
+### Factory Registration
+
+The `JzShaderAssetFactory` is automatically registered during `JzAssetManager::Initialize()`:
+
+```cpp
+// Supports multiple path formats:
+// 1. Base name (looks for .vert and .frag)
+assetManager.LoadSync<JzShaderAsset>("shaders/standard");
+
+// 2. Pipe-separated paths
+assetManager.LoadSync<JzShaderAsset>("shaders/custom.vert|shaders/custom.frag");
+
+// 3. Single file (finds matching counterpart)
+assetManager.LoadSync<JzShaderAsset>("shaders/custom.vert");
+```
+
 ## Files
 
 ```
@@ -309,11 +389,14 @@ src/Runtime/Resource/include/JzRE/Runtime/Resource/
 ├── JzAssetManager.h      # Central manager
 ├── JzAssetManager.inl    # Template implementation
 ├── JzLRUCache.h          # Memory management
-└── JzAssetSystem.h       # Unified header
+├── JzAssetSystem.h       # Unified header
+├── JzShaderAsset.h       # Shader asset with variant support
+└── JzShaderAssetFactory.h # Factory for shader loading
 
 src/Runtime/Resource/src/
 ├── JzAssetManager.cpp
-└── JzLRUCache.cpp
+├── JzLRUCache.cpp
+└── JzShaderAsset.cpp
 
 src/Runtime/Function/include/JzRE/Runtime/Function/ECS/
 ├── JzAssetComponents.h       # ECS components
@@ -322,3 +405,4 @@ src/Runtime/Function/include/JzRE/Runtime/Function/ECS/
 src/Runtime/Function/src/ECS/
 └── JzAssetLoadingSystem.cpp
 ```
+

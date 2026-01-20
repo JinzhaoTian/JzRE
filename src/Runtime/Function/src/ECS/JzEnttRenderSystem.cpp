@@ -9,7 +9,7 @@
 #include "JzRE/Runtime/Function/ECS/JzEnttComponents.h"
 #include "JzRE/Runtime/Function/ECS/JzAssetComponents.h"
 #include "JzRE/Runtime/Platform/JzDevice.h"
-#include "JzRE/Runtime/Resource/JzShader.h"
+#include "JzRE/Runtime/Resource/JzShaderAsset.h"
 #include "JzRE/Runtime/Resource/JzAssetManager.h"
 #include "JzRE/Runtime/Resource/JzMesh.h"
 #include "JzRE/Runtime/Resource/JzMaterial.h"
@@ -155,54 +155,30 @@ Bool JzEnttRenderSystem::CreateFramebuffer()
 
 Bool JzEnttRenderSystem::CreateDefaultPipeline()
 {
-    auto &device       = JzServiceContainer::Get<JzDevice>();
     auto &assetManager = JzServiceContainer::Get<JzAssetManager>();
 
-    // Load standard shaders
-    // Note: Assuming the AssetManager's shader factory can deduce shader type from file extension
-    auto vertHandle = assetManager.LoadSync<JzShader>("./shaders/standard.vert");
-    auto fragHandle = assetManager.LoadSync<JzShader>("./shaders/standard.frag");
+    // Load standard shader using JzShaderAsset
+    // JzShaderAsset handles both vertex and fragment shaders, compilation, and variant management
+    auto handle = assetManager.LoadSync<JzShaderAsset>("shaders/standard");
 
-    JzShader *vertShader = assetManager.Get(vertHandle);
-    JzShader *fragShader = assetManager.Get(fragHandle);
-
-    if (!vertShader || !fragShader) {
+    JzShaderAsset *shaderAsset = assetManager.Get(handle);
+    if (!shaderAsset) {
         return false;
     }
 
-    // Create Pipeline Description
-    JzPipelineDesc pipelineDesc;
-    pipelineDesc.debugName = "DefaultForwardPipeline";
-
-    // Setup Render State
-    pipelineDesc.renderState.depthTest  = true;
-    pipelineDesc.renderState.depthWrite = true;
-    pipelineDesc.renderState.cullMode   = JzECullMode::Back;
-
-    // Get shader programs from resources and add to pipeline desc
-    if (auto rhiVert = vertShader->GetRhiShader()) {
-        JzShaderProgramDesc desc;
-        desc.type       = rhiVert->GetType();
-        desc.source     = rhiVert->GetSource();
-        desc.entryPoint = rhiVert->GetEntryPoint();
-        desc.debugName  = "StandardVert";
-        pipelineDesc.shaders.push_back(desc);
-    } else {
+    // Check if shader compiled successfully
+    if (!shaderAsset->IsCompiled()) {
+        // Log compile error
         return false;
     }
 
-    if (auto rhiFrag = fragShader->GetRhiShader()) {
-        JzShaderProgramDesc desc;
-        desc.type       = rhiFrag->GetType();
-        desc.source     = rhiFrag->GetSource();
-        desc.entryPoint = rhiFrag->GetEntryPoint();
-        desc.debugName  = "StandardFrag";
-        pipelineDesc.shaders.push_back(desc);
-    } else {
+    // Get the main variant's pipeline directly
+    auto mainVariant = shaderAsset->GetMainVariant();
+    if (!mainVariant || !mainVariant->IsValid()) {
         return false;
     }
 
-    m_defaultPipeline = device.CreatePipeline(pipelineDesc);
+    m_defaultPipeline = mainVariant->GetPipeline();
     return m_defaultPipeline != nullptr;
 }
 

@@ -22,7 +22,6 @@
 #include "JzRE/Runtime/Function/Input/JzInputManager.h"
 #include "JzRE/Runtime/Function/Window/JzWindow.h"
 #include "JzRE/Runtime/Platform/JzDevice.h"
-#include "JzRE/Runtime/Resource/JzShaderManager.h"
 #include "JzRE/Runtime/Resource/JzAssetManager.h"
 
 namespace JzRE {
@@ -260,11 +259,10 @@ private:
     void _FinishFrame(const JzRuntimeFrameData &frameData);
 
 protected:
-    std::unique_ptr<JzWindow>        m_window;
-    std::unique_ptr<JzDevice>        m_device;
-    std::unique_ptr<JzInputManager>  m_inputManager;
-    std::unique_ptr<JzAssetManager>  m_assetManager;
-    std::unique_ptr<JzShaderManager> m_shaderManager;
+    std::unique_ptr<JzWindow>       m_window;
+    std::unique_ptr<JzDevice>       m_device;
+    std::unique_ptr<JzInputManager> m_inputManager;
+    std::unique_ptr<JzAssetManager> m_assetManager;
 
     // ECS world and systems
     std::unique_ptr<JzEnttWorld>          m_world;
