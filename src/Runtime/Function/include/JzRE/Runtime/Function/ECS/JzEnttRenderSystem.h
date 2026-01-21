@@ -48,13 +48,6 @@ public:
     // ==================== Framebuffer Management ====================
 
     /**
-     * @brief Set the frame size for the framebuffer.
-     *
-     * @param size The width and height of the frame.
-     */
-    void SetFrameSize(JzIVec2 size);
-
-    /**
      * @brief Get the current frame size.
      */
     JzIVec2 GetCurrentFrameSize() const;

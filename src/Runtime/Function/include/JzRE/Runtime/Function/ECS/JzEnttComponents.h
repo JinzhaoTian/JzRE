@@ -290,6 +290,21 @@ struct JzGizmoComponent {
     // ViewType visibleIn  = ViewType::Scene;
 };
 
+// ==================== Global Configuration Components ====================
+
+/**
+ * @brief Component containing global window/frame configuration.
+ *
+ * This component is updated by the Runtime and read by systems (Camera, Render)
+ * to adapt to window resize events and frame updates.
+ * Usually attached to a singleton entity or the world entity.
+ */
+struct JzEnttWindowComponent {
+    JzIVec2 frameSize{1280, 720};
+    F32     aspectRatio  = 16.0f / 9.0f;
+    Bool    blitToScreen = true;
+};
+
 // ==================== EnTT-Specific Components ====================
 
 /**

@@ -39,9 +39,3 @@ void JzRE::JzREInstance::OnStop()
 {
     // Editor-specific cleanup can be added here
 }
-
-JzRE::Bool JzRE::JzREInstance::ShouldBlitToScreen() const
-{
-    // Editor uses ImGui to display the rendered framebuffer, so don't blit
-    return false;
-}

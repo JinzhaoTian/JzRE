@@ -76,14 +76,13 @@ JzRE::JzRERuntime::JzRERuntime(JzERHIType rhiType, const String &windowTitle,
     m_lightSystem        = m_world->RegisterSystem<JzEnttLightSystem>();
     m_renderSystem       = m_world->RegisterSystem<JzEnttRenderSystem>();
 
-    InitializeECS();
+    // Create default entities
+    CreateGlobalConfigEntity();
+    CreateDefaultCameraEntity();
+    CreateDefaultLightEntity();
 
     // Provide ECS services for Editor access
     JzServiceContainer::Provide<JzEnttWorld>(*m_world);
-
-    // Initialize frame data with framebuffer size (for Retina/HiDPI displays)
-    m_frameData.frameSize = m_window->GetFramebufferSize();
-    m_renderSystem->SetFrameSize(m_frameData.frameSize);
 }
 
 JzRE::JzRERuntime::~JzRERuntime()
@@ -105,11 +104,17 @@ JzRE::JzRERuntime::~JzRERuntime()
     }
 }
 
-void JzRE::JzRERuntime::InitializeECS()
+void JzRE::JzRERuntime::CreateGlobalConfigEntity()
 {
-    // Create default entities
-    CreateDefaultCameraEntity();
-    CreateDefaultLightEntity();
+    // Create Global Config Entity
+    m_globalConfigEntity = m_world->CreateEntity();
+
+    auto &config        = m_world->AddComponent<JzEnttWindowComponent>(m_globalConfigEntity);
+    config.blitToScreen = true;
+    config.frameSize    = m_window->GetFramebufferSize();
+    if (config.frameSize.y > 0) {
+        config.aspectRatio = static_cast<F32>(config.frameSize.x) / static_cast<F32>(config.frameSize.y);
+    }
 }
 
 void JzRE::JzRERuntime::CreateDefaultCameraEntity()
@@ -160,96 +165,46 @@ void JzRE::JzRERuntime::Run()
     JzRE::JzClock clock;
 
     while (IsRunning()) {
-        // ========== Phase 1: Frame Start - Input and Window Events ==========
         m_window->PollEvents();
 
-        // Prepare frame data (use framebuffer size for Retina/HiDPI)
-        JzRuntimeFrameData frameData;
-        frameData.deltaTime = clock.GetDeltaTime();
-        frameData.frameSize = m_window->GetFramebufferSize();
-
-        // ========== Phase 2: ECS Logic Update ==========
-        _UpdateECSLogic(frameData);
+        auto deltaTime = clock.GetDeltaTime();
 
         // Call user update logic (after logic systems, before render prep)
-        OnUpdate(frameData.deltaTime);
+        OnUpdate(deltaTime);
 
-        // ========== Phase 3: ECS Pre-Render Update (camera, lights, culling) ==========
-        _UpdateECSPreRender(frameData);
+        // Update all Logic phase systems (movement, physics, AI, animations)
+        m_world->UpdateLogic(deltaTime);
 
-        // ========== Phase 4: ECS Render Update ==========
-        _UpdateECSRender(frameData);
+        // Update global window component
+        if (m_world->IsValid(m_globalConfigEntity)) {
+            auto &config     = m_world->GetComponent<JzEnttWindowComponent>(m_globalConfigEntity);
+            config.frameSize = m_window->GetFramebufferSize();
+            if (config.frameSize.y > 0) {
+                config.aspectRatio = static_cast<F32>(config.frameSize.x) / static_cast<F32>(config.frameSize.y);
+            }
+        }
 
-        // ========== Phase 5: Execute Rendering ==========
-        _ExecuteRendering(frameData);
+        // Update all PreRender phase systems (camera matrices, light collection, culling)
+        m_world->UpdatePreRender(deltaTime);
+
+        // Update all Render phase systems (actual rendering)
+        m_world->UpdateRender(deltaTime);
+
+        // Call render hook for additional rendering (e.g., ImGui UI)
+        OnRender(deltaTime);
 
         // ========== Phase 6: Frame End ==========
-        _FinishFrame(frameData);
+        // Swap buffers
+        m_window->SwapBuffers();
+
+        // Clear input events for next frame
+        m_inputManager->ClearEvents();
 
         // Update clock for next frame
         clock.Update();
     }
 
     OnStop();
-}
-
-void JzRE::JzRERuntime::_UpdateECSLogic(const JzRuntimeFrameData &frameData)
-{
-    // Update all Logic phase systems (movement, physics, AI, animations)
-    m_world->UpdateLogic(frameData.deltaTime);
-}
-
-void JzRE::JzRERuntime::_UpdateECSPreRender(const JzRuntimeFrameData &frameData)
-{
-    // Update camera system aspect ratio
-    if (frameData.frameSize.x > 0 && frameData.frameSize.y > 0) {
-        F32 aspect = static_cast<F32>(frameData.frameSize.x) / static_cast<F32>(frameData.frameSize.y);
-        m_cameraSystem->SetAspectRatio(aspect);
-    }
-
-    // Update renderer frame size if changed
-    if (frameData.frameSize != m_renderSystem->GetCurrentFrameSize()) {
-        m_renderSystem->SetFrameSize(frameData.frameSize);
-    }
-
-    // Update all PreRender phase systems (camera matrices, light collection, culling)
-    m_world->UpdatePreRender(frameData.deltaTime);
-}
-
-void JzRE::JzRERuntime::_UpdateECSRender(const JzRuntimeFrameData &frameData)
-{
-    // Update all Render phase systems (actual rendering)
-    m_world->UpdateRender(frameData.deltaTime);
-}
-
-void JzRE::JzRERuntime::_ExecuteRendering(const JzRuntimeFrameData &frameData)
-{
-    // Begin frame rendering
-    m_renderSystem->BeginFrame();
-
-    // The render system's Update() is called in _UpdateECSRender,
-    // which performs the actual entity rendering
-
-    // End scene rendering
-    m_renderSystem->EndFrame();
-
-    // Blit to screen for standalone runtime (if not using ImGui)
-    if (ShouldBlitToScreen()) {
-        m_renderSystem->BlitToScreen(static_cast<U32>(frameData.frameSize.x),
-                                     static_cast<U32>(frameData.frameSize.y));
-    }
-
-    // Call render hook for additional rendering (e.g., ImGui UI)
-    OnRender(frameData.deltaTime);
-}
-
-void JzRE::JzRERuntime::_FinishFrame([[maybe_unused]] const JzRuntimeFrameData &frameData)
-{
-    // Swap buffers
-    m_window->SwapBuffers();
-
-    // Clear input events for next frame
-    m_inputManager->ClearEvents();
 }
 
 JzRE::Bool JzRE::JzRERuntime::IsRunning() const
@@ -277,11 +232,6 @@ JzRE::JzAssetManager &JzRE::JzRERuntime::GetAssetManager()
     return *m_assetManager;
 }
 
-JzRE::F32 JzRE::JzRERuntime::GetDeltaTime() const
-{
-    return m_frameData.deltaTime;
-}
-
 void JzRE::JzRERuntime::OnStart()
 {
     // Default implementation does nothing
@@ -304,11 +254,4 @@ void JzRE::JzRERuntime::OnStop()
 {
     // Default implementation does nothing
     // Override in subclass for custom cleanup
-}
-
-JzRE::Bool JzRE::JzRERuntime::ShouldBlitToScreen() const
-{
-    // Default: blit to screen for standalone runtime
-    // Override and return false in Editor to use ImGui for display
-    return true;
 }

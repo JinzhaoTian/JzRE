@@ -25,6 +25,19 @@ void JzEnttRenderSystem::OnInit(JzEnttWorld &world)
 
 void JzEnttRenderSystem::Update(JzEnttWorld &world, F32 delta)
 {
+    // Update frame logic and blitting
+    auto windowView = world.View<JzEnttWindowComponent>();
+    Bool shouldBlit = false;
+
+    if (!windowView.empty()) {
+        const auto &windowConfig = world.GetComponent<JzEnttWindowComponent>(windowView.front());
+        if (m_frameSize != windowConfig.frameSize) {
+            m_frameSize        = windowConfig.frameSize;
+            m_frameSizeChanged = true;
+        }
+        shouldBlit = windowConfig.blitToScreen;
+    }
+
     // Create/recreate framebuffer if size changed
     if (m_frameSizeChanged) {
         CreateFramebuffer();
@@ -46,6 +59,11 @@ void JzEnttRenderSystem::Update(JzEnttWorld &world, F32 delta)
     // Unbind framebuffer
     auto &device = JzServiceContainer::Get<JzDevice>();
     device.BindFramebuffer(nullptr);
+
+    // Blit to screen if requested
+    if (shouldBlit) {
+        BlitToScreen(static_cast<U32>(m_frameSize.x), static_cast<U32>(m_frameSize.y));
+    }
 }
 
 void JzEnttRenderSystem::OnShutdown(JzEnttWorld &world)
@@ -53,13 +71,7 @@ void JzEnttRenderSystem::OnShutdown(JzEnttWorld &world)
     CleanupResources();
 }
 
-void JzEnttRenderSystem::SetFrameSize(JzIVec2 size)
-{
-    if (m_frameSize != size) {
-        m_frameSize        = size;
-        m_frameSizeChanged = true;
-    }
-}
+
 
 JzIVec2 JzEnttRenderSystem::GetCurrentFrameSize() const
 {

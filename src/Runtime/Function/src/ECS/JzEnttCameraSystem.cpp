@@ -23,8 +23,12 @@ void JzEnttCameraSystem::Update(JzEnttWorld &world, F32 delta)
     for (auto entity : view) {
         auto &camera = world.GetComponent<JzEnttCameraComponent>(entity);
 
-        // Update aspect ratio
-        camera.aspect = m_aspectRatio;
+        // Update aspect ratio from window component
+        auto windowView = world.View<JzEnttWindowComponent>();
+        if (!windowView.empty()) {
+            const auto &windowConfig = world.GetComponent<JzEnttWindowComponent>(windowView.front());
+            camera.aspect = windowConfig.aspectRatio;
+        }
 
         // Handle orbit controller if present
         auto *orbit = world.TryGetComponent<JzEnttOrbitControllerComponent>(entity);

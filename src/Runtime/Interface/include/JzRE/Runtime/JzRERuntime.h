@@ -23,14 +23,6 @@
 namespace JzRE {
 
 /**
- * @brief Frame data for runtime thread synchronization
- */
-struct JzRuntimeFrameData {
-    F32     deltaTime = 0.0f;
-    JzIVec2 frameSize = {0, 0};
-};
-
-/**
  * @brief JzRE Runtime Application
  *
  * This class provides core rendering functionality using an ECS-based architecture.
@@ -40,11 +32,6 @@ struct JzRuntimeFrameData {
  * 1. Standalone runtime: Override OnStart/OnUpdate/OnStop for custom logic
  * 2. Editor integration: Override OnRender to inject UI rendering after 3D scene
  *
- * ECS Systems (updated in order):
- * 1. JzEnttInputSystem - Input processing and component updates
- * 2. JzEnttCameraSystem - Camera matrix updates, orbit control
- * 3. JzEnttLightSystem - Light data collection
- * 4. JzEnttRenderSystem - Renders all entities with Transform + Mesh + Material
  */
 class JzRERuntime {
 public:
@@ -102,13 +89,6 @@ public:
      */
     JzAssetManager &GetAssetManager();
 
-    /**
-     * @brief Get current frame delta time
-     *
-     * @return F32 Delta time in seconds
-     */
-    F32 GetDeltaTime() const;
-
 protected:
     /**
      * @brief Called before the main loop starts
@@ -143,22 +123,11 @@ protected:
      */
     virtual void OnStop();
 
-    /**
-     * @brief Should the renderer blit the framebuffer content to the screen
-     *
-     * Override this method and return false if you handle rendering display
-     * yourself (e.g., in Editor with ImGui). Default returns true for
-     * standalone runtime applications.
-     *
-     * @return Bool True to blit framebuffer to screen, false otherwise
-     */
-    virtual Bool ShouldBlitToScreen() const;
-
 private:
     /**
-     * @brief Initialize the ECS world and systems
+     * @brief Create the global config entity
      */
-    void InitializeECS();
+    void CreateGlobalConfigEntity();
 
     /**
      * @brief Create the default camera entity with orbit controller
@@ -169,51 +138,6 @@ private:
      * @brief Create the default directional light entity
      */
     void CreateDefaultLightEntity();
-
-    // ==================== Frame Phase Methods ====================
-
-    /**
-     * @brief Update ECS logic systems (movement, physics, AI, animations)
-     *
-     * This phase can run in parallel with GPU work from the previous frame.
-     *
-     * @param frameData Current frame data
-     */
-    void _UpdateECSLogic(const JzRuntimeFrameData &frameData);
-
-    /**
-     * @brief Update ECS pre-render systems (camera, lights, culling)
-     *
-     * Prepares data for rendering after logic updates are complete.
-     *
-     * @param frameData Current frame data
-     */
-    void _UpdateECSPreRender(const JzRuntimeFrameData &frameData);
-
-    /**
-     * @brief Update ECS render systems and execute rendering
-     *
-     * Performs actual GPU rendering operations.
-     *
-     * @param frameData Current frame data
-     */
-    void _UpdateECSRender(const JzRuntimeFrameData &frameData);
-
-    /**
-     * @brief Execute the rendering pipeline
-     *
-     * Handles BeginFrame, EndFrame, and BlitToScreen operations.
-     *
-     * @param frameData Current frame data
-     */
-    void _ExecuteRendering(const JzRuntimeFrameData &frameData);
-
-    /**
-     * @brief Finish the frame (swap buffers, clear input, update clock)
-     *
-     * @param frameData Current frame data
-     */
-    void _FinishFrame(const JzRuntimeFrameData &frameData);
 
 protected:
     std::unique_ptr<JzWindow>       m_window;
@@ -229,11 +153,8 @@ protected:
     std::shared_ptr<JzEnttRenderSystem>   m_renderSystem;
     std::shared_ptr<JzAssetLoadingSystem> m_assetLoadingSystem;
 
-    // Main camera entity
-    JzEnttEntity m_mainCameraEntity = INVALID_ENTT_ENTITY;
-
-private:
-    JzRuntimeFrameData m_frameData;
+    JzEnttEntity m_mainCameraEntity   = INVALID_ENTT_ENTITY;
+    JzEnttEntity m_globalConfigEntity = INVALID_ENTT_ENTITY;
 };
 
 } // namespace JzRE

@@ -69,15 +69,7 @@ public:
         return m_clearColor;
     }
 
-    /**
-     * @brief Set the aspect ratio for all cameras.
-     *
-     * @param aspect The width/height aspect ratio.
-     */
-    void SetAspectRatio(F32 aspect)
-    {
-        m_aspectRatio = aspect;
-    }
+
 
 private:
     /**
@@ -134,7 +126,6 @@ private:
     JzMat4 m_projectionMatrix = JzMat4x4::Identity();
     JzVec3 m_cameraPosition{0.0f, 0.0f, 10.0f};
     JzVec3 m_clearColor{0.1f, 0.1f, 0.1f};
-    F32    m_aspectRatio = 16.0f / 9.0f;
 };
 
 } // namespace JzRE

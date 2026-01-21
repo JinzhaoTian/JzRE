@@ -27,10 +27,7 @@ void JzRE::JzView::Render()
     if (winSize.x > 0 && winSize.y > 0) {
         auto &renderSystem = JzServiceContainer::Get<JzEnttRenderSystem>();
 
-        // Update frame size if necessary
-        if (winSize.x != renderSystem.GetCurrentFrameSize().x || winSize.y != renderSystem.GetCurrentFrameSize().y) {
-            renderSystem.SetFrameSize(winSize);
-        }
+        // TODO
 
         if (m_frame) {
             m_frame->frameSize = JzVec2(static_cast<F32>(winSize.x), static_cast<F32>(winSize.y));
