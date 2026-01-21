@@ -5,11 +5,7 @@
 
 #pragma once
 
-#include <atomic>
-#include <condition_variable>
 #include <memory>
-#include <mutex>
-#include <thread>
 
 #include "JzRE/Runtime/Core/JzRETypes.h"
 #include "JzRE/Runtime/Function/ECS/JzEnttEntity.h"
@@ -38,8 +34,7 @@ struct JzRuntimeFrameData {
  * @brief JzRE Runtime Application
  *
  * This class provides core rendering functionality using an ECS-based architecture.
- * It manages the rendering pipeline through EnTT systems, input handling,
- * and background worker thread for non-GPU tasks.
+ * It manages the rendering pipeline through EnTT systems and input handling.
  *
  * Usage patterns:
  * 1. Standalone runtime: Override OnStart/OnUpdate/OnStop for custom logic
@@ -101,13 +96,6 @@ public:
     JzEnttWorld &GetWorld();
 
     /**
-     * @brief Get the input manager instance
-     *
-     * @return JzInputManager& Reference to the input manager
-     */
-    JzInputManager &GetInputManager();
-
-    /**
      * @brief Get the asset manager instance
      *
      * @return JzAssetManager& Reference to the asset manager
@@ -120,13 +108,6 @@ public:
      * @return F32 Delta time in seconds
      */
     F32 GetDeltaTime() const;
-
-    /**
-     * @brief Get the main camera entity
-     *
-     * @return JzEnttEntity The main camera entity
-     */
-    JzEnttEntity GetMainCameraEntity() const;
 
 protected:
     /**
@@ -173,13 +154,6 @@ protected:
      */
     virtual Bool ShouldBlitToScreen() const;
 
-    /**
-     * @brief Access the current frame data
-     *
-     * @return const JzRuntimeFrameData& Current frame data
-     */
-    const JzRuntimeFrameData &GetFrameData() const;
-
 private:
     /**
      * @brief Initialize the ECS world and systems
@@ -195,23 +169,6 @@ private:
      * @brief Create the default directional light entity
      */
     void CreateDefaultLightEntity();
-
-    /**
-     * @brief Worker thread main function for background processing
-     */
-    void _WorkerThread();
-
-    /**
-     * @brief Signal the worker thread to process a new frame
-     *
-     * @param frameData Frame data for the current frame
-     */
-    void _SignalWorkerFrame(const JzRuntimeFrameData &frameData);
-
-    /**
-     * @brief Wait for the worker thread to complete processing
-     */
-    void _WaitForWorkerComplete();
 
     // ==================== Frame Phase Methods ====================
 
@@ -276,15 +233,7 @@ protected:
     JzEnttEntity m_mainCameraEntity = INVALID_ENTT_ENTITY;
 
 private:
-    // Worker thread for non-GPU tasks
-    std::thread             m_workerThread;
-    std::atomic<Bool>       m_workerThreadRunning{false};
-    std::mutex              m_workerMutex;
-    std::condition_variable m_workerCondition;
-    std::condition_variable m_workerCompleteCondition;
-    std::atomic<Bool>       m_frameReady{false};
-    std::atomic<Bool>       m_workerComplete{true};
-    JzRuntimeFrameData      m_frameData;
+    JzRuntimeFrameData m_frameData;
 };
 
 } // namespace JzRE

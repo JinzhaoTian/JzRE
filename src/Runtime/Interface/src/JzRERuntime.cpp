@@ -84,29 +84,10 @@ JzRE::JzRERuntime::JzRERuntime(JzERHIType rhiType, const String &windowTitle,
     // Initialize frame data with framebuffer size (for Retina/HiDPI displays)
     m_frameData.frameSize = m_window->GetFramebufferSize();
     m_renderSystem->SetFrameSize(m_frameData.frameSize);
-
-    // Start background worker thread for non-GPU tasks
-    m_workerThreadRunning = true;
-    m_workerThread        = std::thread(&JzRERuntime::_WorkerThread, this);
 }
 
 JzRE::JzRERuntime::~JzRERuntime()
 {
-    // Signal worker thread to stop
-    m_workerThreadRunning = false;
-
-    // Wake up the worker thread if it's waiting
-    {
-        std::lock_guard<std::mutex> lock(m_workerMutex);
-        m_frameReady = true;
-    }
-    m_workerCondition.notify_all();
-
-    // Wait for worker thread to finish
-    if (m_workerThread.joinable()) {
-        m_workerThread.join();
-    }
-
     // Clean up in reverse order of creation
     m_renderSystem.reset();
     m_lightSystem.reset();
@@ -187,28 +168,22 @@ void JzRE::JzRERuntime::Run()
         frameData.deltaTime = clock.GetDeltaTime();
         frameData.frameSize = m_window->GetFramebufferSize();
 
-        // ========== Phase 2: Async Processing - Start Background Tasks ==========
-        _SignalWorkerFrame(frameData);
-
-        // ========== Phase 3: ECS Logic Update (can run parallel with GPU) ==========
+        // ========== Phase 2: ECS Logic Update ==========
         _UpdateECSLogic(frameData);
 
         // Call user update logic (after logic systems, before render prep)
         OnUpdate(frameData.deltaTime);
 
-        // ========== Phase 4: Sync Point - Wait for Background Tasks ==========
-        _WaitForWorkerComplete();
-
-        // ========== Phase 5: ECS Pre-Render Update (camera, lights, culling) ==========
+        // ========== Phase 3: ECS Pre-Render Update (camera, lights, culling) ==========
         _UpdateECSPreRender(frameData);
 
-        // ========== Phase 6: ECS Render Update ==========
+        // ========== Phase 4: ECS Render Update ==========
         _UpdateECSRender(frameData);
 
-        // ========== Phase 7: Execute Rendering ==========
+        // ========== Phase 5: Execute Rendering ==========
         _ExecuteRendering(frameData);
 
-        // ========== Phase 8: Frame End ==========
+        // ========== Phase 6: Frame End ==========
         _FinishFrame(frameData);
 
         // Update clock for next frame
@@ -277,73 +252,6 @@ void JzRE::JzRERuntime::_FinishFrame([[maybe_unused]] const JzRuntimeFrameData &
     m_inputManager->ClearEvents();
 }
 
-void JzRE::JzRERuntime::_WorkerThread()
-{
-    // This thread handles non-GPU tasks:
-    // - Scene culling
-    // - Animation updates
-    // - Physics simulation
-    // - Asset loading preparation
-    //
-    // Actual OpenGL rendering stays on the main thread
-
-    JzRE::JzClock workerClock;
-
-    while (m_workerThreadRunning) {
-        // Wait for main thread to signal a new frame
-        {
-            std::unique_lock<std::mutex> lock(m_workerMutex);
-            m_workerCondition.wait(lock, [this] {
-                return m_frameReady || !m_workerThreadRunning;
-            });
-
-            if (!m_workerThreadRunning) {
-                break;
-            }
-
-            m_frameReady = false;
-        }
-
-        // Get frame data safely
-        JzRuntimeFrameData currentFrameData;
-        {
-            std::lock_guard<std::mutex> lock(m_workerMutex);
-            currentFrameData = m_frameData;
-        }
-
-        // Perform background processing (non-GPU tasks)
-        // TODO: Add scene culling, animation updates, etc.
-
-        // Signal main thread that background processing is complete
-        {
-            std::lock_guard<std::mutex> lock(m_workerMutex);
-            m_workerComplete = true;
-        }
-        m_workerCompleteCondition.notify_one();
-
-        workerClock.Update();
-    }
-}
-
-void JzRE::JzRERuntime::_SignalWorkerFrame(const JzRuntimeFrameData &frameData)
-{
-    {
-        std::lock_guard<std::mutex> lock(m_workerMutex);
-        m_frameData      = frameData;
-        m_frameReady     = true;
-        m_workerComplete = false;
-    }
-    m_workerCondition.notify_one();
-}
-
-void JzRE::JzRERuntime::_WaitForWorkerComplete()
-{
-    std::unique_lock<std::mutex> lock(m_workerMutex);
-    m_workerCompleteCondition.wait(lock, [this] {
-        return m_workerComplete.load();
-    });
-}
-
 JzRE::Bool JzRE::JzRERuntime::IsRunning() const
 {
     return !m_window->ShouldClose();
@@ -364,11 +272,6 @@ JzRE::JzEnttWorld &JzRE::JzRERuntime::GetWorld()
     return *m_world;
 }
 
-JzRE::JzInputManager &JzRE::JzRERuntime::GetInputManager()
-{
-    return *m_inputManager;
-}
-
 JzRE::JzAssetManager &JzRE::JzRERuntime::GetAssetManager()
 {
     return *m_assetManager;
@@ -377,16 +280,6 @@ JzRE::JzAssetManager &JzRE::JzRERuntime::GetAssetManager()
 JzRE::F32 JzRE::JzRERuntime::GetDeltaTime() const
 {
     return m_frameData.deltaTime;
-}
-
-JzRE::JzEnttEntity JzRE::JzRERuntime::GetMainCameraEntity() const
-{
-    return m_mainCameraEntity;
-}
-
-const JzRE::JzRuntimeFrameData &JzRE::JzRERuntime::GetFrameData() const
-{
-    return m_frameData;
 }
 
 void JzRE::JzRERuntime::OnStart()
