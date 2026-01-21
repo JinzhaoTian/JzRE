@@ -22,6 +22,12 @@
 
 namespace JzRE {
 
+struct JzRERuntimeSettings {
+    String     windowTitle = "JzRE Runtime";
+    JzIVec2    windowSize  = {1280, 720};
+    JzERHIType rhiType     = JzERHIType::OpenGL;
+};
+
 /**
  * @brief JzRE Runtime Application
  *
@@ -42,7 +48,7 @@ public:
      * @param windowTitle Title of the window
      * @param windowSize Initial size of the window
      */
-    JzRERuntime(JzERHIType rhiType, const String &windowTitle = "JzRE Runtime", const JzIVec2 &windowSize = {1280, 720});
+    JzRERuntime(const JzRERuntimeSettings &settings = {});
 
     /**
      * @brief Virtual destructor
@@ -124,6 +130,34 @@ protected:
     virtual void OnStop();
 
 private:
+    void Startup();
+
+    void CreateSubsystems();
+
+    void RegisterComponents();
+
+    void RegisterSystems();
+
+    void InitializeSubsystems();
+
+    void PreloadAssets();
+
+    void OnFrameBegin();
+
+    void UpdateSystems(F32 deltaTime);
+
+    void SynchronizeSystems();
+
+    void OnFrameEnd();
+
+    void Shutdown();
+
+    void SaveGameState();
+
+    void ShutdownSubsystems();
+
+    void CleanupGlobals();
+
     /**
      * @brief Create the global config entity
      */
@@ -140,6 +174,8 @@ private:
     void CreateDefaultLightEntity();
 
 protected:
+    JzRERuntimeSettings m_settings;
+
     std::unique_ptr<JzWindow>       m_window;
     std::unique_ptr<JzDevice>       m_device;
     std::unique_ptr<JzInputManager> m_inputManager;

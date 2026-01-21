@@ -18,16 +18,126 @@
 #include "JzRE/Runtime/Resource/JzTextureFactory.h"
 #include "JzRE/Runtime/Resource/JzMaterialFactory.h"
 
-JzRE::JzRERuntime::JzRERuntime(JzERHIType rhiType, const String &windowTitle,
-                               const JzIVec2 &windowSize)
+JzRE::JzRERuntime::JzRERuntime(const JzRERuntimeSettings &settings) :
+    m_settings(settings)
+{
+    Startup();
+}
+
+JzRE::JzRERuntime::~JzRERuntime()
+{
+    Shutdown();
+}
+
+void JzRE::JzRERuntime::Startup()
 {
     JzServiceContainer::Init();
+
+    // coordinator.Initialize();
+
+    CreateSubsystems();
+    RegisterComponents();
+    RegisterSystems();
+
+    InitializeSubsystems();
+
+    PreloadAssets();
+}
+
+void JzRE::JzRERuntime::Shutdown()
+{
+    // isRunning = false;
+
+    // Event shutdownEvent(EventType::EngineShutdown);
+    // eventSystem.Dispatch(shutdownEvent);
+
+    // systemManager.StopAllSystems();
+
+    SaveGameState();
+
+    ShutdownSubsystems();
+
+    // coordinator.DestroyAllEntities();
+    // coordinator.Shutdown();
+
+    CleanupGlobals();
+}
+
+void JzRE::JzRERuntime::CreateSubsystems()
+{
+    // In order of initialization
+    // windowSystem  = CreateWindowSystem();
+    // inputSystem   = CreateInputSystem();
+    // assetSystem   = CreateAssetSystem();
+    // renderSystem  = CreateRenderSystem();
+    // physicsSystem = CreatePhysicsSystem();
+    // audioSystem   = CreateAudioSystem();
+    // scriptSystem  = CreateScriptSystem();
+    // aiSystem      = CreateAISystem();
+    // uiSystem      = CreateUISystem();
 
     // Initialize asset manager (new ECS-friendly asset system)
     JzAssetManagerConfig assetConfig;
     assetConfig.maxCacheMemoryMB = 512;
     assetConfig.asyncWorkerCount = 2;
     m_assetManager               = std::make_unique<JzAssetManager>(assetConfig);
+    JzServiceContainer::Provide<JzAssetManager>(*m_assetManager);
+
+    // Create window
+    JzWindowSettings windowSettings;
+    windowSettings.title = m_settings.windowTitle;
+    windowSettings.size  = m_settings.windowSize;
+    m_window             = std::make_unique<JzWindow>(m_settings.rhiType, windowSettings);
+    m_window->MakeCurrentContext();
+    m_window->SetAlignCentered();
+    JzServiceContainer::Provide<JzWindow>(*m_window);
+
+    // Create device
+    m_device = JzDeviceFactory::CreateDevice(m_settings.rhiType);
+    JzServiceContainer::Provide<JzDevice>(*m_device);
+
+    // Create input manager
+    m_inputManager = std::make_unique<JzInputManager>(*m_window);
+    JzServiceContainer::Provide<JzInputManager>(*m_inputManager);
+
+    // Initialize ECS world and systems
+    m_world = std::make_unique<JzEnttWorld>();
+    JzServiceContainer::Provide<JzEnttWorld>(*m_world);
+}
+
+void JzRE::JzRERuntime::RegisterComponents()
+{
+    // coordinator.RegisterComponent<Transform>();
+    // coordinator.RegisterComponent<MeshRenderer>();
+    // coordinator.RegisterComponent<RigidBody>();
+    // coordinator.RegisterComponent<Health>();
+    // coordinator.RegisterComponent<Animation>();
+}
+
+void JzRE::JzRERuntime::RegisterSystems()
+{
+    // 定义系统签名（组件依赖）
+    // Signature transformSig;
+    // transformSig.set(coordinator.GetComponentType<Transform>());
+
+    // // 注册系统并设置组件依赖
+    // coordinator.RegisterSystem<TransformSystem>();
+    // coordinator.SetSystemSignature<TransformSystem>(transformSig);
+
+    // // 设置系统间的依赖关系
+    // systemManager.AddDependency<PhysicsSystem, TransformSystem>();
+    // systemManager.AddDependency<RenderSystem, TransformSystem>();
+
+    // Register systems in execution order by phase:
+    m_inputSystem        = m_world->RegisterSystem<JzEnttInputSystem>();
+    m_assetLoadingSystem = m_world->RegisterSystem<JzAssetLoadingSystem>();
+    m_cameraSystem       = m_world->RegisterSystem<JzEnttCameraSystem>();
+    m_lightSystem        = m_world->RegisterSystem<JzEnttLightSystem>();
+    m_renderSystem       = m_world->RegisterSystem<JzEnttRenderSystem>();
+}
+
+void JzRE::JzRERuntime::InitializeSubsystems()
+{
     m_assetManager->Initialize();
 
     // Register resource factories with asset manager
@@ -44,50 +154,72 @@ JzRE::JzRERuntime::JzRERuntime(JzERHIType rhiType, const String &windowTitle,
     m_assetManager->AddSearchPath((enginePath / "resources" / "models").string());
     m_assetManager->AddSearchPath((enginePath / "resources" / "textures").string());
     m_assetManager->AddSearchPath((enginePath / "resources" / "shaders").string());
+}
 
-    JzServiceContainer::Provide<JzAssetManager>(*m_assetManager);
-
-    // Create window
-    JzWindowSettings windowSettings;
-    windowSettings.title = windowTitle;
-    windowSettings.size  = windowSize;
-
-    m_window = std::make_unique<JzWindow>(rhiType, windowSettings);
-    m_window->MakeCurrentContext();
-    m_window->SetAlignCentered();
-    JzServiceContainer::Provide<JzWindow>(*m_window);
-
-    // Create device
-    m_device = JzDeviceFactory::CreateDevice(rhiType);
-    JzServiceContainer::Provide<JzDevice>(*m_device);
-
-    // Create input manager
-    m_inputManager = std::make_unique<JzInputManager>(*m_window);
-    JzServiceContainer::Provide<JzInputManager>(*m_inputManager);
-
-    // Initialize ECS world and systems
-    m_world = std::make_unique<JzEnttWorld>();
-
-    // Register systems in execution order by phase:
-    // Input phase -> Logic phases -> PreRender phases -> Render phases
-    m_inputSystem        = m_world->RegisterSystem<JzEnttInputSystem>();
-    m_assetLoadingSystem = m_world->RegisterSystem<JzAssetLoadingSystem>();
-    m_cameraSystem       = m_world->RegisterSystem<JzEnttCameraSystem>();
-    m_lightSystem        = m_world->RegisterSystem<JzEnttLightSystem>();
-    m_renderSystem       = m_world->RegisterSystem<JzEnttRenderSystem>();
-
+void JzRE::JzRERuntime::PreloadAssets()
+{
     // Create default entities
     CreateGlobalConfigEntity();
     CreateDefaultCameraEntity();
     CreateDefaultLightEntity();
-
-    // Provide ECS services for Editor access
-    JzServiceContainer::Provide<JzEnttWorld>(*m_world);
 }
 
-JzRE::JzRERuntime::~JzRERuntime()
+void JzRE::JzRERuntime::OnFrameBegin()
 {
-    // Clean up in reverse order of creation
+    // TODO: Called at the beginning of each frame
+}
+
+void JzRE::JzRERuntime::UpdateSystems(F32 deltaTime)
+{
+    // plan A
+    // UpdateInput();
+    // UpdateScripts();
+    // UpdateAI();
+    // UpdatePhysics();
+    // UpdateAnimations();
+    // UpdateAudio();
+    // UpdateRender();
+
+    // plan B
+    // systemManager.ExecuteSystems(deltaTime);
+
+    // Update all Logic phase systems (movement, physics, AI, animations)
+    m_world->UpdateLogic(deltaTime);
+
+    // Update global window component
+    if (m_world->IsValid(m_globalConfigEntity)) {
+        auto &config     = m_world->GetComponent<JzEnttWindowComponent>(m_globalConfigEntity);
+        config.frameSize = m_window->GetFramebufferSize();
+        if (config.frameSize.y > 0) {
+            config.aspectRatio = static_cast<F32>(config.frameSize.x) / static_cast<F32>(config.frameSize.y);
+        }
+    }
+
+    // Update all PreRender phase systems (camera matrices, light collection, culling)
+    m_world->UpdatePreRender(deltaTime);
+
+    // Update all Render phase systems (actual rendering)
+    m_world->UpdateRender(deltaTime);
+}
+
+void JzRE::JzRERuntime::SynchronizeSystems()
+{
+    // Synchronize ECS systems (e.g., physics, animation) with the main thread
+}
+
+void JzRE::JzRERuntime::OnFrameEnd()
+{
+    // Called at the end of each frame
+}
+
+void JzRE::JzRERuntime::SaveGameState()
+{
+    // TODO: Save current game state to disk
+}
+
+void JzRE::JzRERuntime::ShutdownSubsystems()
+{
+    // Shutdown all subsystems in reverse order of initialization
     m_renderSystem.reset();
     m_lightSystem.reset();
     m_cameraSystem.reset();
@@ -102,6 +234,11 @@ JzRE::JzRERuntime::~JzRERuntime()
         m_assetManager->Shutdown();
         m_assetManager.reset();
     }
+}
+
+void JzRE::JzRERuntime::CleanupGlobals()
+{
+    // TODO: Cleanup global entities and components
 }
 
 void JzRE::JzRERuntime::CreateGlobalConfigEntity()
@@ -165,40 +302,29 @@ void JzRE::JzRERuntime::Run()
     JzRE::JzClock clock;
 
     while (IsRunning()) {
-        m_window->PollEvents();
-
         auto deltaTime = clock.GetDeltaTime();
 
-        // Call user update logic (after logic systems, before render prep)
+        m_window->PollEvents();
+
+        OnFrameBegin();
+
+        UpdateSystems(deltaTime);
+
+        // Call user update logic
         OnUpdate(deltaTime);
 
-        // Update all Logic phase systems (movement, physics, AI, animations)
-        m_world->UpdateLogic(deltaTime);
-
-        // Update global window component
-        if (m_world->IsValid(m_globalConfigEntity)) {
-            auto &config     = m_world->GetComponent<JzEnttWindowComponent>(m_globalConfigEntity);
-            config.frameSize = m_window->GetFramebufferSize();
-            if (config.frameSize.y > 0) {
-                config.aspectRatio = static_cast<F32>(config.frameSize.x) / static_cast<F32>(config.frameSize.y);
-            }
-        }
-
-        // Update all PreRender phase systems (camera matrices, light collection, culling)
-        m_world->UpdatePreRender(deltaTime);
-
-        // Update all Render phase systems (actual rendering)
-        m_world->UpdateRender(deltaTime);
+        SynchronizeSystems();
 
         // Call render hook for additional rendering (e.g., ImGui UI)
         OnRender(deltaTime);
 
-        // ========== Phase 6: Frame End ==========
-        // Swap buffers
-        m_window->SwapBuffers();
+        OnFrameEnd();
 
         // Clear input events for next frame
         m_inputManager->ClearEvents();
+
+        // Swap buffers
+        m_window->SwapBuffers();
 
         // Update clock for next frame
         clock.Update();

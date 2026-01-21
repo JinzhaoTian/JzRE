@@ -110,7 +110,7 @@ public:
      * @param args Parsed command line arguments
      */
     explicit RuntimeExample(const CommandLineArgs &args) :
-        JzRERuntime(args.graphicApi, "JzRE Example", {1280, 720}),
+        JzRERuntime(JzRE::JzRERuntimeSettings{"JzRE Example", {1280, 720}, args.graphicApi}),
         m_modelPath(args.inputModel) { }
 
 protected:

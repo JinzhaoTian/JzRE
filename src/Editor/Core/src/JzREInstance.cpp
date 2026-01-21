@@ -6,7 +6,7 @@
 #include "JzRE/Editor/JzREInstance.h"
 
 JzRE::JzREInstance::JzREInstance(JzERHIType rhiType, std::filesystem::path &openDirectory) :
-    JzRERuntime(rhiType, "JzRE", {1280, 720}),
+    JzRERuntime(JzRERuntimeSettings{"JzRE", {1280, 720}, rhiType}),
     m_openDirectory(openDirectory)
 {
     // Create editor with runtime reference
