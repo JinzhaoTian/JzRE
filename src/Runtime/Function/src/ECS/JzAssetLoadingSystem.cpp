@@ -14,6 +14,7 @@
 #include "JzRE/Runtime/Resource/JzAssetManager.h"
 #include "JzRE/Runtime/Resource/JzMaterial.h"
 #include "JzRE/Runtime/Resource/JzMesh.h"
+#include "JzRE/Runtime/Resource/JzShaderAsset.h"
 
 namespace JzRE {
 
@@ -47,6 +48,7 @@ void JzAssetLoadingSystem::Update(JzEnttWorld &world, F32 delta)
     // Process asset components
     ProcessMeshAssets(world, *assetManager);
     ProcessMaterialAssets(world, *assetManager);
+    ProcessShaderAssets(world, *assetManager);
 }
 
 void JzAssetLoadingSystem::OnShutdown(JzEnttWorld &world)
@@ -204,6 +206,85 @@ void JzAssetLoadingSystem::UpdateMaterialComponentCache(JzMaterialAssetComponent
     comp.baseColor = JzVec4(props.diffuseColor.x, props.diffuseColor.y, props.diffuseColor.z, props.opacity);
 }
 
+void JzAssetLoadingSystem::ProcessShaderAssets(JzEnttWorld &world, JzAssetManager &assetManager)
+{
+    auto &registry = world.GetRegistry();
+
+    // Query all entities with JzShaderAssetComponent
+    auto view = registry.view<JzShaderAssetComponent>();
+
+    for (auto entity : view) {
+        auto &shaderComp = view.get<JzShaderAssetComponent>(entity);
+
+        // Skip if already ready
+        if (shaderComp.isReady) {
+            continue;
+        }
+
+        // Skip if no valid handle
+        if (!shaderComp.shaderHandle.IsValid()) {
+            continue;
+        }
+
+        // Check load state
+        auto loadState = assetManager.GetLoadState(shaderComp.shaderHandle);
+
+        switch (loadState) {
+            case JzEAssetLoadState::Loaded:
+            {
+                // Asset is loaded - update cache and mark ready
+                JzShaderAsset *shader = assetManager.Get(shaderComp.shaderHandle);
+                if (shader && shader->IsCompiled()) {
+                    UpdateShaderComponentCache(shaderComp, shader);
+                    shaderComp.isReady = true;
+
+                    JzRE_LOG_DEBUG("JzAssetLoadingSystem: Shader asset ready for entity {}",
+                                   static_cast<U32>(entity));
+                }
+                break;
+            }
+
+            case JzEAssetLoadState::Loading:
+                // Still loading - ensure loading tag is present
+                if (!registry.all_of<JzAssetLoadingTag>(entity)) {
+                    registry.emplace<JzAssetLoadingTag>(entity);
+                }
+                break;
+
+            case JzEAssetLoadState::Failed:
+                // Load failed - mark as failed
+                registry.remove<JzAssetLoadingTag>(entity);
+                registry.emplace_or_replace<JzAssetLoadFailedTag>(entity);
+                JzRE_LOG_WARN("JzAssetLoadingSystem: Shader asset load failed for entity {}",
+                              static_cast<U32>(entity));
+                break;
+
+            case JzEAssetLoadState::NotLoaded:
+                // Asset not yet requested
+                break;
+
+            default:
+                break;
+        }
+    }
+}
+
+void JzAssetLoadingSystem::UpdateShaderComponentCache(JzShaderAssetComponent &comp, JzShaderAsset *shader)
+{
+    if (!shader) {
+        return;
+    }
+
+    // Get the variant based on component's defines
+    if (comp.shaderDefines.empty()) {
+        // Use main variant if no defines specified
+        comp.cachedVariant = shader->GetMainVariant();
+    } else {
+        // Get or compile variant with specified defines
+        comp.cachedVariant = shader->GetVariant(comp.shaderDefines);
+    }
+}
+
 void JzAssetLoadingSystem::UpdateEntityAssetTags(JzEnttWorld &world, U32 entityId)
 {
     auto &registry = world.GetRegistry();
@@ -232,6 +313,16 @@ void JzAssetLoadingSystem::UpdateEntityAssetTags(JzEnttWorld &world, U32 entityI
     if (auto *matComp = registry.try_get<JzMaterialAssetComponent>(entity)) {
         if (matComp->materialHandle.IsValid()) {
             if (!matComp->isReady) {
+                allReady   = false;
+                anyLoading = true;
+            }
+        }
+    }
+
+    // Check shader component
+    if (auto *shaderComp = registry.try_get<JzShaderAssetComponent>(entity)) {
+        if (shaderComp->shaderHandle.IsValid()) {
+            if (!shaderComp->isReady) {
                 allReady   = false;
                 anyLoading = true;
             }

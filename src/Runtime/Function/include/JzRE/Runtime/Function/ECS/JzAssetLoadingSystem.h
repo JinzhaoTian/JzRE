@@ -16,8 +16,10 @@ class JzEnttWorld;
 class JzAssetManager;
 class JzMesh;
 class JzMaterial;
+class JzShaderAsset;
 struct JzMeshAssetComponent;
 struct JzMaterialAssetComponent;
+struct JzShaderAssetComponent;
 
 /**
  * @brief System for coordinating asset loading with ECS
@@ -116,6 +118,19 @@ private:
      * @brief Update cached data in material component from loaded asset
      */
     void UpdateMaterialComponentCache(JzMaterialAssetComponent &comp, JzMaterial *material);
+
+    /**
+     * @brief Process shader asset components
+     *
+     * Checks load state and updates component cache for all
+     * JzShaderAssetComponent instances.
+     */
+    void ProcessShaderAssets(JzEnttWorld &world, JzAssetManager &assetManager);
+
+    /**
+     * @brief Update cached data in shader component from loaded asset
+     */
+    void UpdateShaderComponentCache(JzShaderAssetComponent &comp, JzShaderAsset *shader);
 
     /**
      * @brief Update asset state tags for an entity

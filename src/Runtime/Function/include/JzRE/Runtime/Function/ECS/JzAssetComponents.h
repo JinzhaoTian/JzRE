@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <memory>
+#include <unordered_map>
 #include <vector>
 
 #include "JzRE/Runtime/Core/JzRETypes.h"
@@ -15,6 +17,9 @@
 #include "JzRE/Runtime/Resource/JzAssetId.h"
 
 namespace JzRE {
+
+// Forward declarations
+class JzShaderVariant;
 
 // ==================== Asset Reference Components ====================
 
@@ -55,10 +60,27 @@ struct JzMeshAssetComponent {
  *
  * References a material asset via handle. Caches frequently-accessed
  * material properties for efficient rendering.
+ *
+ * Enhanced to support shader integration with automatic variant selection
+ * based on material features.
  */
 struct JzMaterialAssetComponent {
-    JzMaterialHandle materialHandle; ///< Handle to the material asset
-    JzTextureHandle  diffuseTextureHandle; ///< Handle to diffuse texture (map_Kd)
+    JzMaterialHandle    materialHandle;       ///< Handle to the material asset
+    JzShaderAssetHandle shaderHandle;         ///< Handle to associated shader (optional)
+    JzTextureHandle     diffuseTextureHandle; ///< Handle to diffuse texture (map_Kd)
+    JzTextureHandle     normalTextureHandle;  ///< Handle to normal map
+    JzTextureHandle     specularTextureHandle; ///< Handle to specular map
+
+    /// Shader variant defines based on material features
+    std::unordered_map<String, String> shaderDefines = {
+        {"USE_DIFFUSE_MAP", "0"},
+        {"USE_NORMAL_MAP", "0"},
+        {"USE_SPECULAR_MAP", "0"},
+        {"USE_PBR", "1"}
+    };
+
+    /// Cached shader variant (populated by AssetLoadingSystem)
+    std::shared_ptr<JzShaderVariant> cachedShaderVariant;
 
     // Cached material properties (populated by AssetLoadingSystem)
     JzVec4 baseColor{1.0f, 1.0f, 1.0f, 1.0f};
@@ -70,12 +92,17 @@ struct JzMaterialAssetComponent {
     F32    metallic  = 0.0f;
     F32    roughness = 0.5f;
     Bool   isReady   = false;
-    Bool   hasDiffuseTexture = false; ///< Whether a diffuse texture is bound
+    Bool   hasDiffuseTexture  = false; ///< Whether a diffuse texture is bound
+    Bool   hasNormalTexture   = false; ///< Whether a normal map is bound
+    Bool   hasSpecularTexture = false; ///< Whether a specular map is bound
 
     JzMaterialAssetComponent() = default;
 
     explicit JzMaterialAssetComponent(JzMaterialHandle handle) :
         materialHandle(handle) { }
+
+    JzMaterialAssetComponent(JzMaterialHandle matHandle, JzShaderAssetHandle shaderHdl) :
+        materialHandle(matHandle), shaderHandle(shaderHdl) { }
 
     /**
      * @brief Check if the component has a valid material reference
@@ -86,11 +113,32 @@ struct JzMaterialAssetComponent {
     }
 
     /**
+     * @brief Check if the component has a valid shader reference
+     */
+    [[nodiscard]] Bool HasShader() const
+    {
+        return shaderHandle.IsValid();
+    }
+
+    /**
      * @brief Check if the component has a valid diffuse texture
      */
     [[nodiscard]] Bool HasDiffuseTexture() const
     {
         return diffuseTextureHandle.IsValid() && hasDiffuseTexture;
+    }
+
+    /**
+     * @brief Update shader defines based on current material features
+     *
+     * Call this after changing texture bindings to ensure the correct
+     * shader variant is used.
+     */
+    void UpdateShaderDefines()
+    {
+        shaderDefines["USE_DIFFUSE_MAP"]  = hasDiffuseTexture ? "1" : "0";
+        shaderDefines["USE_NORMAL_MAP"]   = hasNormalTexture ? "1" : "0";
+        shaderDefines["USE_SPECULAR_MAP"] = hasSpecularTexture ? "1" : "0";
     }
 };
 
@@ -127,15 +175,46 @@ struct JzModelAssetComponent {
 
 /**
  * @brief Shader asset reference component
+ *
+ * Enhanced component supporting shader variants based on defines.
+ * The AssetLoadingSystem will automatically compile and cache the
+ * appropriate variant based on shaderDefines.
  */
 struct JzShaderAssetComponent {
-    JzShaderHandle shaderHandle;
-    Bool           isReady = false;
+    JzShaderAssetHandle shaderHandle;
+
+    /// Shader variant defines (e.g., {"USE_NORMAL_MAP", "1"})
+    std::unordered_map<String, String> shaderDefines;
+
+    /// Cached compiled variant (populated by AssetLoadingSystem)
+    std::shared_ptr<JzShaderVariant> cachedVariant;
+
+    Bool isReady = false;
 
     JzShaderAssetComponent() = default;
 
-    explicit JzShaderAssetComponent(JzShaderHandle handle) :
+    explicit JzShaderAssetComponent(JzShaderAssetHandle handle) :
         shaderHandle(handle) { }
+
+    JzShaderAssetComponent(JzShaderAssetHandle handle,
+                           const std::unordered_map<String, String> &defines) :
+        shaderHandle(handle), shaderDefines(defines) { }
+
+    /**
+     * @brief Check if the component has a valid shader reference
+     */
+    [[nodiscard]] Bool HasShader() const
+    {
+        return shaderHandle.IsValid();
+    }
+
+    /**
+     * @brief Check if the cached variant is valid and ready to use
+     */
+    [[nodiscard]] Bool HasValidVariant() const
+    {
+        return cachedVariant != nullptr && isReady;
+    }
 };
 
 // ==================== Asset State Tags ====================
