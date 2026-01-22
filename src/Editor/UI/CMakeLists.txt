@@ -34,5 +34,5 @@ target_link_libraries(
     JzEditorUI
     PUBLIC
     imgui::imgui
-    JzRERuntime
+    JzEditorCore
 )

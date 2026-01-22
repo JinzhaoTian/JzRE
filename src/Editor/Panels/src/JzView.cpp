@@ -24,21 +24,8 @@ void JzRE::JzView::Update(JzRE::F32 deltaTime)
 void JzRE::JzView::Render()
 {
     auto winSize = GetSafeSize();
-    if (winSize.x > 0 && winSize.y > 0) {
-        auto &renderSystem = JzServiceContainer::Get<JzEnttRenderSystem>();
 
-        // TODO
-
-        if (m_frame) {
-            m_frame->frameSize = JzVec2(static_cast<F32>(winSize.x), static_cast<F32>(winSize.y));
-
-            // Get the render texture from the render system
-            auto texture = renderSystem.GetColorTexture();
-            if (texture) {
-                m_frame->frameTextureId = texture->GetTextureID();
-            }
-        }
-    }
+    // TODO
 }
 
 void JzRE::JzView::_Draw_Impl()

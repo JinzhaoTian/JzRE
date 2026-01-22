@@ -7,7 +7,7 @@
 
 #include <memory>
 #include "JzRE/Runtime/Core/JzRETypes.h"
-#include "JzRE/Runtime/Core/JzEvent.h"
+#include "JzRE/Editor/Core/JzEvent.h"
 #include "JzRE/Runtime/Core/JzVector.h"
 #include "JzRE/Runtime/Platform/JzGPUTextureObject.h"
 #include "JzRE/Editor/UI/JzWidget.h"

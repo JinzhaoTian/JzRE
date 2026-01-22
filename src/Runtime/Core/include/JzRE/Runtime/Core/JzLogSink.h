@@ -8,7 +8,7 @@
 #include "spdlog/common.h"
 #include "spdlog/details/log_msg.h"
 #include "spdlog/sinks/base_sink.h"
-#include "JzEvent.h"
+#include "JzDelegate.h"
 #include "JzELog.h"
 
 namespace JzRE {
@@ -26,15 +26,15 @@ public:
      *
      * @param event
      */
-    explicit JzLogSink(JzEvent<const JzLogMessage &> &event) :
+    explicit JzLogSink(JzDelegate<const JzLogMessage &> &event) :
         m_event(event) { }
 
     /**
      * @brief Get the Event object
      *
-     * @return JzEvent<const JzLogMessage &>&
+     * @return JzDelegate<const JzLogMessage &>&
      */
-    JzEvent<const JzLogMessage &> &GetEvent()
+    JzDelegate<const JzLogMessage &> &GetEvent()
     {
         return m_event;
     }
@@ -72,7 +72,7 @@ protected:
             }
         }();
 
-        m_event.Invoke(logMsg);
+        m_event.Broadcast(logMsg);
     }
 
     void flush_() override
@@ -82,7 +82,7 @@ protected:
     }
 
 private:
-    JzEvent<const JzLogMessage &> &m_event;
+    JzDelegate<const JzLogMessage &> &m_event;
 };
 
 } // namespace JzRE

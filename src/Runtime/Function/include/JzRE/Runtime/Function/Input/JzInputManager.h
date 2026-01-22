@@ -6,7 +6,7 @@
 #pragma once
 
 #include "JzRE/Runtime/Core/JzRETypes.h"
-#include "JzRE/Runtime/Core/JzEvent.h"
+#include "JzRE/Runtime/Core/JzDelegate.h"
 #include "JzRE/Runtime/Core/JzVector.h"
 #include "JzRE/Runtime/Function/Window/JzWindow.h"
 
@@ -264,13 +264,13 @@ public:
 
 private:
     JzWindow                                                               &m_window;
-    ListenerID                                                              m_keyboardButtonPressedListenerID;
-    ListenerID                                                              m_keyboardButtonReleasedListenerID;
+    DelegateHandle                                                              m_keyboardButtonPressedListenerID;
+    DelegateHandle                                                              m_keyboardButtonReleasedListenerID;
     std::unordered_map<JzEInputKeyboardButton, JzEInputKeyboardButtonState> m_keyboardButtonStates;
-    ListenerID                                                              m_mouseButtonPressedListenerID;
-    ListenerID                                                              m_mouseButtonReleasedListenerID;
+    DelegateHandle                                                              m_mouseButtonPressedListenerID;
+    DelegateHandle                                                              m_mouseButtonReleasedListenerID;
     std::unordered_map<JzEInputMouseButton, JzEInputMouseButtonState>       m_mouseButtonStates;
-    ListenerID                                                              m_mouseScrollListenerID;
+    DelegateHandle                                                              m_mouseScrollListenerID;
     JzVec2                                                                  m_mouseScroll;
 };
 

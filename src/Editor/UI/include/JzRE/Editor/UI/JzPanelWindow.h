@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "JzRE/Runtime/Core/JzEvent.h"
+#include "JzRE/Editor/Core/JzEvent.h"
 #include "JzRE/Runtime/Core/JzVector.h"
 #include "JzRE/Editor/UI/JzEAlignment.h"
 #include "JzRE/Editor/UI/JzPanel.h"

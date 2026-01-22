@@ -12,7 +12,7 @@
 #endif
 #include <GLFW/glfw3.h>
 #include "JzRE/Runtime/Core/JzRETypes.h"
-#include "JzRE/Runtime/Core/JzEvent.h"
+#include "JzRE/Runtime/Core/JzDelegate.h"
 #include "JzRE/Runtime/Core/JzVector.h"
 #include "JzRE/Runtime/Platform/JzDevice.h"
 #include "JzRE/Runtime/Function/Window/JzWindowSettings.h"
@@ -284,23 +284,23 @@ private:
 
 public:
     /* Inputs events */
-    JzEvent<I32>     KeyboardButtonPressedEvent;
-    JzEvent<I32>     KeyboardButtonReleasedEvent;
-    JzEvent<I32>     MouseButtonPressedEvent;
-    JzEvent<I32>     MouseButtonReleasedEvent;
-    JzEvent<JzIVec2> MouseMovedEvent;
-    JzEvent<JzVec2>  MouseScrolledEvent;
+    JzDelegate<I32>     KeyboardButtonPressedEvent;
+    JzDelegate<I32>     KeyboardButtonReleasedEvent;
+    JzDelegate<I32>     MouseButtonPressedEvent;
+    JzDelegate<I32>     MouseButtonReleasedEvent;
+    JzDelegate<JzIVec2> MouseMovedEvent;
+    JzDelegate<JzVec2>  MouseScrolledEvent;
 
     /* Window events */
-    JzEvent<JzIVec2> WindowResizedEvent;
-    JzEvent<JzIVec2> WindowFrameBufferResizedEvent;
-    JzEvent<JzIVec2> WindowMoveEvent;
-    JzEvent<JzIVec2> WindowCursorMoveEvent;
-    JzEvent<>        WindowMinimizedEvent;
-    JzEvent<>        WindowMaximizedEvent;
-    JzEvent<>        WindowFocusGainEvent;
-    JzEvent<>        WindowFocusLostEvent;
-    JzEvent<>        WindowClosedEvent;
+    JzDelegate<JzIVec2> WindowResizedEvent;
+    JzDelegate<JzIVec2> WindowFrameBufferResizedEvent;
+    JzDelegate<JzIVec2> WindowMoveEvent;
+    JzDelegate<JzIVec2> WindowCursorMoveEvent;
+    JzDelegate<>        WindowMinimizedEvent;
+    JzDelegate<>        WindowMaximizedEvent;
+    JzDelegate<>        WindowFocusGainEvent;
+    JzDelegate<>        WindowFocusLostEvent;
+    JzDelegate<>        WindowClosedEvent;
 
 private:
     static std::unordered_map<GLFWwindow *, JzWindow *> __WINDOWS_MAP;

@@ -4,7 +4,7 @@
  */
 
 #include "JzRE/Runtime/Function/Window/JzWindow.h"
-#include "JzRE/Runtime/Core/JzEvent.h"
+#include "JzRE/Runtime/Core/JzDelegate.h"
 #include <stdexcept>
 #if defined(_WIN32)
 #define GLFW_EXPOSE_NATIVE_WIN32
@@ -42,9 +42,9 @@ JzRE::JzWindow::JzWindow(JzRE::JzERHIType rhiType, const JzRE::JzWindowSettings 
     BindMoveCallback();
     BindFocusCallback();
 
-    WindowResizedEvent.AddListener(std::bind(&JzWindow::OnResize, this, std::placeholders::_1));
+    WindowResizedEvent.Add(std::bind(&JzWindow::OnResize, this, std::placeholders::_1));
 
-    WindowMoveEvent.AddListener(std::bind(&JzWindow::OnMove, this, std::placeholders::_1));
+    WindowMoveEvent.Add(std::bind(&JzWindow::OnMove, this, std::placeholders::_1));
 }
 
 JzRE::JzWindow::~JzWindow()
@@ -379,10 +379,10 @@ void JzRE::JzWindow::BindKeyCallback() const
 
         if (windowInstance) {
             if (p_action == GLFW_PRESS)
-                windowInstance->KeyboardButtonPressedEvent.Invoke(p_key);
+                windowInstance->KeyboardButtonPressedEvent.Broadcast(p_key);
 
             if (p_action == GLFW_RELEASE)
-                windowInstance->KeyboardButtonReleasedEvent.Invoke(p_key);
+                windowInstance->KeyboardButtonReleasedEvent.Broadcast(p_key);
         }
     };
 
@@ -396,10 +396,10 @@ void JzRE::JzWindow::BindMouseCallback() const
 
         if (windowInstance) {
             if (p_action == GLFW_PRESS)
-                windowInstance->MouseButtonPressedEvent.Invoke(p_button);
+                windowInstance->MouseButtonPressedEvent.Broadcast(p_button);
 
             if (p_action == GLFW_RELEASE)
-                windowInstance->MouseButtonReleasedEvent.Invoke(p_button);
+                windowInstance->MouseButtonReleasedEvent.Broadcast(p_button);
         }
     };
 
@@ -412,7 +412,7 @@ void JzRE::JzWindow::BindScrollCallback() const
         JzWindow *windowInstance = FindInstance(p_window);
 
         if (windowInstance) {
-            windowInstance->MouseScrolledEvent.Invoke({static_cast<F32>(p_xOffset), static_cast<F32>(p_yOffset)});
+            windowInstance->MouseScrolledEvent.Broadcast({static_cast<F32>(p_xOffset), static_cast<F32>(p_yOffset)});
         }
     };
 
@@ -425,7 +425,7 @@ void JzRE::JzWindow::BindResizeCallback() const
         JzWindow *windowInstance = FindInstance(p_window);
 
         if (windowInstance) {
-            windowInstance->WindowResizedEvent.Invoke({p_width, p_height});
+            windowInstance->WindowResizedEvent.Broadcast({p_width, p_height});
         }
     };
 
@@ -438,7 +438,7 @@ void JzRE::JzWindow::BindFramebufferResizeCallback() const
         JzWindow *windowInstance = FindInstance(p_window);
 
         if (windowInstance) {
-            windowInstance->WindowFrameBufferResizedEvent.Invoke({p_width, p_height});
+            windowInstance->WindowFrameBufferResizedEvent.Broadcast({p_width, p_height});
         }
     };
 
@@ -451,7 +451,7 @@ void JzRE::JzWindow::BindCursorMoveCallback() const
         JzWindow *windowInstance = FindInstance(p_window);
 
         if (windowInstance) {
-            windowInstance->WindowCursorMoveEvent.Invoke({static_cast<I32>(p_x), static_cast<I32>(p_y)});
+            windowInstance->WindowCursorMoveEvent.Broadcast({static_cast<I32>(p_x), static_cast<I32>(p_y)});
         }
     };
 
@@ -464,7 +464,7 @@ void JzRE::JzWindow::BindMoveCallback() const
         JzWindow *windowInstance = FindInstance(p_window);
 
         if (windowInstance) {
-            windowInstance->WindowMoveEvent.Invoke({p_x, p_y});
+            windowInstance->WindowMoveEvent.Broadcast({p_x, p_y});
         }
     };
 
@@ -478,10 +478,10 @@ void JzRE::JzWindow::BindIconifyCallback() const
 
         if (windowInstance) {
             if (p_iconified == GLFW_TRUE)
-                windowInstance->WindowMinimizedEvent.Invoke();
+                windowInstance->WindowMinimizedEvent.Broadcast();
 
             if (p_iconified == GLFW_FALSE)
-                windowInstance->WindowMaximizedEvent.Invoke();
+                windowInstance->WindowMaximizedEvent.Broadcast();
         }
     };
 
@@ -495,10 +495,10 @@ void JzRE::JzWindow::BindFocusCallback() const
 
         if (windowInstance) {
             if (p_focused == GLFW_TRUE)
-                windowInstance->WindowFocusGainEvent.Invoke();
+                windowInstance->WindowFocusGainEvent.Broadcast();
 
             if (p_focused == GLFW_FALSE)
-                windowInstance->WindowFocusLostEvent.Invoke();
+                windowInstance->WindowFocusLostEvent.Broadcast();
         }
     };
 
@@ -511,7 +511,7 @@ void JzRE::JzWindow::BindCloseCallback() const
         JzWindow *windowInstance = FindInstance(p_window);
 
         if (windowInstance) {
-            windowInstance->WindowClosedEvent.Invoke();
+            windowInstance->WindowClosedEvent.Broadcast();
         }
     };
 

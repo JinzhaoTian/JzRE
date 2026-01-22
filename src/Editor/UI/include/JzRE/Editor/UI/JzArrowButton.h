@@ -6,7 +6,7 @@
 #pragma once
 
 #include "JzRE/Runtime/Core/JzRETypes.h"
-#include "JzRE/Runtime/Core/JzEvent.h"
+#include "JzRE/Editor/Core/JzEvent.h"
 #include "JzRE/Editor/UI/JzWidget.h"
 
 namespace JzRE {

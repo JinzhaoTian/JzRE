@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "JzEvent.h"
+#include "JzRE/Editor/Core/JzEvent.h"
 
 namespace JzRE {
 

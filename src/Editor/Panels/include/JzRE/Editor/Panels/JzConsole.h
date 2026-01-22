@@ -7,6 +7,7 @@
 
 #include "JzRE/Runtime/Core/JzRETypes.h"
 #include "JzRE/Runtime/Core/JzELog.h"
+#include "JzRE/Runtime/Core/JzDelegate.h"
 #include "JzRE/Editor/UI/JzPanelWindow.h"
 #include "JzRE/Editor/UI/JzGroup.h"
 #include "JzRE/Editor/UI/JzText.h"
@@ -24,6 +25,13 @@ public:
      * @param is_opened
      */
     JzConsole(const String &name, Bool is_opened);
+
+    /**
+     * @brief Destructor
+     *
+     * Unsubscribes from the logger to prevent callbacks to destroyed object.
+     */
+    ~JzConsole();
 
     /**
      * @brief Clear Content
@@ -51,6 +59,7 @@ private:
 private:
     JzGroup                                  *m_logGroup;
     std::unordered_map<JzText *, JzELogLevel> m_logTextWidgets;
+    DelegateHandle                            m_logMessageHandle{0};
     Bool                                      m_clearOnPlay    = true;
     Bool                                      m_showDefaultLog = true;
     Bool                                      m_showInfoLog    = true;

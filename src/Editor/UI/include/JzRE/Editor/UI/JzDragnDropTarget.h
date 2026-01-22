@@ -7,7 +7,7 @@
 
 #include <imgui.h>
 #include <imgui_internal.h>
-#include "JzRE/Runtime/Core/JzEvent.h"
+#include "JzRE/Editor/Core/JzEvent.h"
 #include "JzRE/Editor/UI/JzPlugin.h"
 
 namespace JzRE {

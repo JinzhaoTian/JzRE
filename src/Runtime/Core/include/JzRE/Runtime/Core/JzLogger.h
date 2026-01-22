@@ -7,7 +7,7 @@
 
 #include <spdlog/logger.h>
 #include "JzRE/Runtime/Core/JzRETypes.h"
-#include "JzEvent.h"
+#include "JzDelegate.h"
 #include "JzELog.h"
 
 namespace JzRE {
@@ -93,7 +93,7 @@ private:
     JzLogger &operator=(const JzLogger &) = delete;
 
 public:
-    JzEvent<const JzLogMessage &> OnLogMessage;
+    JzDelegate<const JzLogMessage &> OnLogMessage;
 
 private:
     std::shared_ptr<spdlog::logger> m_logger;

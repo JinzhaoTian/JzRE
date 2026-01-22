@@ -84,4 +84,4 @@ private:
 
 } // namespace JzRE
 
-#include "JzRE/Runtime/Core/JzEvent.inl" // IWYU pragma: keep
+#include "JzRE/Editor/Core/JzEvent.inl" // IWYU pragma: keep
