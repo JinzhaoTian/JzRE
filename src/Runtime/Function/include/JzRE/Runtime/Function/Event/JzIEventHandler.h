@@ -14,7 +14,7 @@ namespace JzRE {
  */
 class JzIEventHandler {
 public:
-    virtual ~JzIEventHandler() = default;
+    virtual ~JzIEventHandler()                            = default;
     virtual void HandleEvent(const JzEventWrapper &event) = 0;
     virtual U32  GetEventType() const                     = 0;
     virtual I32  GetPriority() const
@@ -31,8 +31,9 @@ class JzEventHandler : public JzIEventHandler {
 public:
     using HandlerFunc = std::function<void(const T &)>;
 
-    JzEventHandler(HandlerFunc func, I32 priority = 0) : m_handler(std::move(func)), m_priority(priority)
-    {}
+    JzEventHandler(HandlerFunc func, I32 priority = 0) :
+        m_handler(std::move(func)),
+        m_priority(priority) { }
 
     void HandleEvent(const JzEventWrapper &event) override
     {
@@ -43,7 +44,7 @@ public:
 
     U32 GetEventType() const override
     {
-        return JzEventType<T>::Id();
+        return JzREEventType<T>::Id();
     }
 
     I32 GetPriority() const override

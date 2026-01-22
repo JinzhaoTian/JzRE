@@ -20,7 +20,7 @@ public:
     template <typename T>
     void Push(T &&event)
     {
-        static_assert(std::is_base_of_v<JzBaseEvent, T>, "T must inherit from JzBaseEvent");
+        static_assert(std::is_base_of_v<JzREEvent, T>, "T must inherit from JzREEvent");
         std::lock_guard<std::mutex> lock(m_mutex);
         m_queue.emplace(std::forward<T>(event));
     }
@@ -48,7 +48,7 @@ public:
     size_t PopBatch(std::vector<JzEventWrapper> &outEvents, size_t maxCount)
     {
         std::lock_guard<std::mutex> lock(m_mutex);
-        size_t count = 0;
+        size_t                      count = 0;
         while (!m_queue.empty() && count < maxCount) {
             outEvents.emplace_back(std::move(m_queue.front()));
             m_queue.pop();
@@ -60,7 +60,7 @@ public:
     void Clear()
     {
         std::lock_guard<std::mutex> lock(m_mutex);
-        std::queue<JzEventWrapper> empty;
+        std::queue<JzEventWrapper>  empty;
         std::swap(m_queue, empty);
     }
 
