@@ -15,7 +15,7 @@ Layer 1: Platform Layer
   └── JzInputManager (Service)
         ↓
 Layer 2: Function Layer (ECS)
-  └── JzEnttInputSystem (System in Input Phase)
+  └── JzInputSystem (System in Input Phase)
         ↓
         Updates Input Components
         ↓
@@ -27,7 +27,7 @@ Layer 2: Function Layer (ECS)
 ### 1. Separation of Concerns
 
 - **JzInputManager**: Hardware abstraction, event handling, platform-specific code
-- **JzEnttInputSystem**: Game logic, input processing, component updates
+- **JzInputSystem**: Game logic, input processing, component updates
 
 ### 2. ECS Purity
 
@@ -58,19 +58,19 @@ Layer 2: Function Layer (ECS)
 ### Phase Execution Order
 
 ```
-1. Input Phase       → JzEnttInputSystem
+1. Input Phase       → JzInputSystem
 2. Physics Phase     → (user systems)
 3. Animation Phase   → (user systems)
 4. Logic Phase       → (user systems)
-5. PreRender Phase   → JzEnttCameraSystem, JzEnttLightSystem
+5. PreRender Phase   → JzCameraSystem, JzLightSystem
 6. Culling Phase     → (user systems)
 7. RenderPrep Phase  → (user systems)
-8. Render Phase      → JzEnttRenderSystem
+8. Render Phase      → JzRenderSystem
 ```
 
 ### Input Components
 
-#### JzEnttMouseInputComponent
+#### JzMouseInputComponent
 
 Stores complete mouse state updated each frame:
 
@@ -79,7 +79,7 @@ Stores complete mouse state updated each frame:
 - Press/release events (this frame only)
 - Scroll delta
 
-#### JzEnttKeyboardInputComponent
+#### JzKeyboardInputComponent
 
 Common key states for quick access:
 
@@ -89,7 +89,7 @@ Common key states for quick access:
 - Arrow keys
 - Function keys (F1-F4)
 
-#### JzEnttCameraInputComponent
+#### JzCameraInputComponent
 
 Processed input specifically for camera control:
 
@@ -107,17 +107,17 @@ Processed input specifically for camera control:
    ↓ GLFW callbacks fire
    ↓ JzInputManager updates internal state
 
-2. JzEnttInputSystem::Update()
+2. JzInputSystem::Update()
    ↓ Reads JzInputManager
-   ↓ Updates JzEnttMouseInputComponent
-   ↓ Updates JzEnttCameraInputComponent
+   ↓ Updates JzMouseInputComponent
+   ↓ Updates JzCameraInputComponent
 
-3. JzEnttCameraSystem::Update()
-   ↓ Reads JzEnttCameraInputComponent
+3. JzCameraSystem::Update()
+   ↓ Reads JzCameraInputComponent
    ↓ Applies orbit/pan/zoom logic
-   ↓ Updates JzEnttCameraComponent matrices
+   ↓ Updates JzCameraComponent matrices
 
-4. JzEnttRenderSystem::Update()
+4. JzRenderSystem::Update()
    ↓ Uses camera matrices for rendering
 
 5. m_inputManager->ClearEvents()
@@ -179,12 +179,12 @@ void CameraSystem::Update() {
 ```
 src/Runtime/Function/
 ├── include/JzRE/Runtime/Function/ECS/
-│   └── JzEnttInputSystem.h              # Input system header
+│   └── JzInputSystem.h              # Input system header
 └── src/ECS/
-    └── JzEnttInputSystem.cpp            # Input system implementation
+    └── JzInputSystem.cpp            # Input system implementation
 
 src/Runtime/Function/include/JzRE/Runtime/Function/ECS/
-└── JzEnttRenderComponents.h            # Added input components
+└── JzRenderComponents.h            # Added input components
 
 src/Runtime/Interface/
 ├── include/JzRE/Runtime/JzRERuntime.h  # Added m_inputSystem member
@@ -195,7 +195,7 @@ src/Runtime/Interface/
 
 ```
 src/Runtime/Function/src/ECS/
-└── JzEnttCameraSystem.cpp               # Uses input components instead of InputManager
+└── JzCameraSystem.cpp               # Uses input components instead of InputManager
 
 docs/architecture/
 └── ecs.md                               # Updated with input architecture docs
@@ -269,7 +269,7 @@ The result is a scalable, testable, and maintainable input system that serves as
 
 ## References
 
-- [JzEnttInputSystem.h](../../src/Runtime/Function/include/JzRE/Runtime/Function/ECS/JzEnttInputSystem.h)
-- [JzEnttRenderComponents.h](../../src/Runtime/Function/include/JzRE/Runtime/Function/ECS/JzEnttRenderComponents.h)
+- [JzInputSystem.h](../../src/Runtime/Function/include/JzRE/Runtime/Function/ECS/JzInputSystem.h)
+- [JzRenderComponents.h](../../src/Runtime/Function/include/JzRE/Runtime/Function/ECS/JzRenderComponents.h)
 - [ECS Architecture](./ecs.md)
 - [System Phases](./rendering_pipeline.md)

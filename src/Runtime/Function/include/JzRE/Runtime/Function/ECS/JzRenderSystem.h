@@ -9,8 +9,8 @@
 
 #include "JzRE/Runtime/Core/JzRETypes.h"
 #include "JzRE/Runtime/Core/JzVector.h"
-#include "JzRE/Runtime/Function/ECS/JzEnttSystem.h"
-#include "JzRE/Runtime/Function/ECS/JzEnttWorld.h"
+#include "JzRE/Runtime/Function/ECS/JzSystem.h"
+#include "JzRE/Runtime/Function/ECS/JzWorld.h"
 #include "JzRE/Runtime/Platform/JzGPUFramebufferObject.h"
 #include "JzRE/Runtime/Platform/JzGPUTextureObject.h"
 #include "JzRE/Runtime/Platform/JzRHIPipeline.h"
@@ -26,16 +26,16 @@ namespace JzRE {
  * - Rendering all entities with Transform + Mesh + Material components
  * - Blitting to screen for standalone runtime
  */
-class JzEnttRenderSystem : public JzEnttSystem {
+class JzRenderSystem : public JzSystem {
 public:
     /**
      * @brief Constructs the render system.
      */
-    JzEnttRenderSystem();
+    JzRenderSystem();
 
-    void OnInit(JzEnttWorld &world) override;
-    void Update(JzEnttWorld &world, F32 delta) override;
-    void OnShutdown(JzEnttWorld &world) override;
+    void OnInit(JzWorld &world) override;
+    void Update(JzWorld &world, F32 delta) override;
+    void OnShutdown(JzWorld &world) override;
 
     /**
      * @brief Render system runs in Render phase.
@@ -111,12 +111,12 @@ private:
     /**
      * @brief Setup viewport and clear the framebuffer.
      */
-    void SetupViewportAndClear(JzEnttWorld &world);
+    void SetupViewportAndClear(JzWorld &world);
 
     /**
      * @brief Render all entities with Transform + Mesh + Material.
      */
-    void RenderEntities(JzEnttWorld &world);
+    void RenderEntities(JzWorld &world);
 
     /**
      * @brief Clean up all GPU resources.

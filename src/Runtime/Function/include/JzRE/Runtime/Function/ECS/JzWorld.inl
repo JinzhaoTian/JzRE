@@ -5,50 +5,50 @@
 
 #pragma once
 
-#include "JzRE/Runtime/Function/ECS/JzEnttWorld.h"
+#include "JzRE/Runtime/Function/ECS/JzWorld.h"
 
 namespace JzRE {
 
 // ==================== Component Management ====================
 
 template <typename T, typename... Args>
-T &JzEnttWorld::AddComponent(JzEnttEntity entity, Args &&...args)
+T &JzWorld::AddComponent(JzEntity entity, Args &&...args)
 {
     return m_registry.emplace<T>(entity, std::forward<Args>(args)...);
 }
 
 template <typename T>
-void JzEnttWorld::RemoveComponent(JzEnttEntity entity)
+void JzWorld::RemoveComponent(JzEntity entity)
 {
     m_registry.remove<T>(entity);
 }
 
 template <typename T>
-T &JzEnttWorld::GetComponent(JzEnttEntity entity)
+T &JzWorld::GetComponent(JzEntity entity)
 {
     return m_registry.get<T>(entity);
 }
 
 template <typename T>
-const T &JzEnttWorld::GetComponent(JzEnttEntity entity) const
+const T &JzWorld::GetComponent(JzEntity entity) const
 {
     return m_registry.get<T>(entity);
 }
 
 template <typename T>
-T *JzEnttWorld::TryGetComponent(JzEnttEntity entity)
+T *JzWorld::TryGetComponent(JzEntity entity)
 {
     return m_registry.try_get<T>(entity);
 }
 
 template <typename T>
-const T *JzEnttWorld::TryGetComponent(JzEnttEntity entity) const
+const T *JzWorld::TryGetComponent(JzEntity entity) const
 {
     return m_registry.try_get<T>(entity);
 }
 
 template <typename T>
-Bool JzEnttWorld::HasComponent(JzEnttEntity entity) const
+Bool JzWorld::HasComponent(JzEntity entity) const
 {
     return m_registry.all_of<T>(entity);
 }
@@ -56,13 +56,13 @@ Bool JzEnttWorld::HasComponent(JzEnttEntity entity) const
 // ==================== View/Query ====================
 
 template <typename... Components>
-auto JzEnttWorld::View()
+auto JzWorld::View()
 {
     return m_registry.view<Components...>();
 }
 
 template <typename... Components>
-auto JzEnttWorld::View() const
+auto JzWorld::View() const
 {
     return m_registry.view<Components...>();
 }
@@ -70,9 +70,9 @@ auto JzEnttWorld::View() const
 // ==================== System Management ====================
 
 template <typename T, typename... Args>
-std::shared_ptr<T> JzEnttWorld::RegisterSystem(Args &&...args)
+std::shared_ptr<T> JzWorld::RegisterSystem(Args &&...args)
 {
-    static_assert(std::is_base_of_v<JzEnttSystem, T>, "T must derive from JzEnttSystem");
+    static_assert(std::is_base_of_v<JzSystem, T>, "T must derive from JzSystem");
     auto system = std::make_shared<T>(std::forward<Args>(args)...);
     m_systems.push_back(system);
     return system;

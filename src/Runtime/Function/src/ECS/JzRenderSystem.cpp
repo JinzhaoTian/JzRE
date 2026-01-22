@@ -3,10 +3,10 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzRE/Runtime/Function/ECS/JzEnttRenderSystem.h"
+#include "JzRE/Runtime/Function/ECS/JzRenderSystem.h"
 
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
-#include "JzRE/Runtime/Function/ECS/JzEnttComponents.h"
+#include "JzRE/Runtime/Function/ECS/JzComponents.h"
 #include "JzRE/Runtime/Function/ECS/JzAssetComponents.h"
 #include "JzRE/Runtime/Platform/JzDevice.h"
 #include "JzRE/Runtime/Resource/JzShaderAsset.h"
@@ -16,21 +16,21 @@
 
 namespace JzRE {
 
-JzEnttRenderSystem::JzEnttRenderSystem() { }
+JzRenderSystem::JzRenderSystem() { }
 
-void JzEnttRenderSystem::OnInit(JzEnttWorld &world)
+void JzRenderSystem::OnInit(JzWorld &world)
 {
     // Resources will be created lazily in Update
 }
 
-void JzEnttRenderSystem::Update(JzEnttWorld &world, F32 delta)
+void JzRenderSystem::Update(JzWorld &world, F32 delta)
 {
     // Update frame logic and blitting
-    auto windowView = world.View<JzEnttWindowComponent>();
+    auto windowView = world.View<JzWindowComponent>();
     Bool shouldBlit = false;
 
     if (!windowView.empty()) {
-        const auto &windowConfig = world.GetComponent<JzEnttWindowComponent>(windowView.front());
+        const auto &windowConfig = world.GetComponent<JzWindowComponent>(windowView.front());
         if (m_frameSize != windowConfig.frameSize) {
             m_frameSize        = windowConfig.frameSize;
             m_frameSizeChanged = true;
@@ -66,51 +66,51 @@ void JzEnttRenderSystem::Update(JzEnttWorld &world, F32 delta)
     }
 }
 
-void JzEnttRenderSystem::OnShutdown(JzEnttWorld &world)
+void JzRenderSystem::OnShutdown(JzWorld &world)
 {
     CleanupResources();
 }
 
 
 
-JzIVec2 JzEnttRenderSystem::GetCurrentFrameSize() const
+JzIVec2 JzRenderSystem::GetCurrentFrameSize() const
 {
     return m_frameSize;
 }
 
-std::shared_ptr<JzGPUFramebufferObject> JzEnttRenderSystem::GetFramebuffer() const
+std::shared_ptr<JzGPUFramebufferObject> JzRenderSystem::GetFramebuffer() const
 {
     return m_framebuffer;
 }
 
-std::shared_ptr<JzGPUTextureObject> JzEnttRenderSystem::GetColorTexture() const
+std::shared_ptr<JzGPUTextureObject> JzRenderSystem::GetColorTexture() const
 {
     return m_colorTexture;
 }
 
-std::shared_ptr<JzGPUTextureObject> JzEnttRenderSystem::GetDepthTexture() const
+std::shared_ptr<JzGPUTextureObject> JzRenderSystem::GetDepthTexture() const
 {
     return m_depthTexture;
 }
 
-std::shared_ptr<JzRHIPipeline> JzEnttRenderSystem::GetDefaultPipeline() const
+std::shared_ptr<JzRHIPipeline> JzRenderSystem::GetDefaultPipeline() const
 {
     return m_defaultPipeline;
 }
 
-void JzEnttRenderSystem::BeginFrame()
+void JzRenderSystem::BeginFrame()
 {
     auto &device = JzServiceContainer::Get<JzDevice>();
     device.BeginFrame();
 }
 
-void JzEnttRenderSystem::EndFrame()
+void JzRenderSystem::EndFrame()
 {
     auto &device = JzServiceContainer::Get<JzDevice>();
     device.EndFrame();
 }
 
-void JzEnttRenderSystem::BlitToScreen(U32 screenWidth, U32 screenHeight)
+void JzRenderSystem::BlitToScreen(U32 screenWidth, U32 screenHeight)
 {
     if (!m_framebuffer) {
         return;
@@ -121,12 +121,12 @@ void JzEnttRenderSystem::BlitToScreen(U32 screenWidth, U32 screenHeight)
                                    static_cast<U32>(m_frameSize.y), screenWidth, screenHeight);
 }
 
-Bool JzEnttRenderSystem::IsInitialized() const
+Bool JzRenderSystem::IsInitialized() const
 {
     return m_isInitialized;
 }
 
-Bool JzEnttRenderSystem::CreateFramebuffer()
+Bool JzRenderSystem::CreateFramebuffer()
 {
     auto &device = JzServiceContainer::Get<JzDevice>();
 
@@ -165,7 +165,7 @@ Bool JzEnttRenderSystem::CreateFramebuffer()
     return true;
 }
 
-Bool JzEnttRenderSystem::CreateDefaultPipeline()
+Bool JzRenderSystem::CreateDefaultPipeline()
 {
     auto &assetManager = JzServiceContainer::Get<JzAssetManager>();
 
@@ -194,7 +194,7 @@ Bool JzEnttRenderSystem::CreateDefaultPipeline()
     return m_defaultPipeline != nullptr;
 }
 
-void JzEnttRenderSystem::SetupViewportAndClear(JzEnttWorld &world)
+void JzRenderSystem::SetupViewportAndClear(JzWorld &world)
 {
     auto &device = JzServiceContainer::Get<JzDevice>();
 
@@ -217,9 +217,9 @@ void JzEnttRenderSystem::SetupViewportAndClear(JzEnttWorld &world)
     // Get clear color from camera system
     JzVec3 clearColor(0.1f, 0.1f, 0.1f);
 
-    auto cameraView = world.View<JzEnttCameraComponent>();
+    auto cameraView = world.View<JzCameraComponent>();
     for (auto entity : cameraView) {
-        const auto &camera = world.GetComponent<JzEnttCameraComponent>(entity);
+        const auto &camera = world.GetComponent<JzCameraComponent>(entity);
         if (camera.isMainCamera) {
             clearColor = camera.clearColor;
             break;
@@ -240,7 +240,7 @@ void JzEnttRenderSystem::SetupViewportAndClear(JzEnttWorld &world)
     device.Clear(clearParams);
 }
 
-void JzEnttRenderSystem::RenderEntities(JzEnttWorld &world)
+void JzRenderSystem::RenderEntities(JzWorld &world)
 {
     auto &device = JzServiceContainer::Get<JzDevice>();
 
@@ -248,9 +248,9 @@ void JzEnttRenderSystem::RenderEntities(JzEnttWorld &world)
     JzMat4 viewMatrix       = JzMat4x4::Identity();
     JzMat4 projectionMatrix = JzMat4x4::Identity();
 
-    auto cameraView = world.View<JzEnttCameraComponent>();
+    auto cameraView = world.View<JzCameraComponent>();
     for (auto camEntity : cameraView) {
-        const auto &camera = world.GetComponent<JzEnttCameraComponent>(camEntity);
+        const auto &camera = world.GetComponent<JzCameraComponent>(camEntity);
         if (camera.isMainCamera) {
             viewMatrix       = camera.viewMatrix;
             projectionMatrix = camera.projectionMatrix;
@@ -318,7 +318,7 @@ void JzEnttRenderSystem::RenderEntities(JzEnttWorld &world)
     }
 }
 
-void JzEnttRenderSystem::CleanupResources()
+void JzRenderSystem::CleanupResources()
 {
     m_defaultPipeline.reset();
     m_depthTexture.reset();

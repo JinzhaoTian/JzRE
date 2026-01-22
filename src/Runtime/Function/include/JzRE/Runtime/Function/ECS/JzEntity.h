@@ -17,21 +17,21 @@ namespace JzRE {
  * Unlike the original JzEntity (U32), this uses entt's entity type which includes
  * version information for entity recycling.
  */
-using JzEnttEntity = entt::entity;
+using JzEntity = entt::entity;
 
 /**
  * @brief Invalid entity constant for the EnTT-based ECS.
  */
-constexpr JzEnttEntity INVALID_ENTT_ENTITY = entt::null;
+constexpr JzEntity INVALID_ENTT_ENTITY = entt::null;
 
 /**
- * @brief Converts a JzEnttEntity to its underlying integer representation.
+ * @brief Converts a JzEntity to its underlying integer representation.
  *
  * @param entity The entity to convert.
  *
  * @return The underlying integer value.
  */
-inline U32 ToEntityId(JzEnttEntity entity)
+inline U32 ToEntityId(JzEntity entity)
 {
     return static_cast<U32>(entt::to_integral(entity));
 }
@@ -43,7 +43,7 @@ inline U32 ToEntityId(JzEnttEntity entity)
  *
  * @return True if the entity is valid, false otherwise.
  */
-inline Bool IsValidEntity(JzEnttEntity entity)
+inline Bool IsValidEntity(JzEntity entity)
 {
     return entity != entt::null;
 }

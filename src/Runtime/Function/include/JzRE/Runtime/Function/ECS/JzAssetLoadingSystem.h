@@ -7,12 +7,12 @@
 
 #pragma once
 
-#include "JzRE/Runtime/Function/ECS/JzEnttSystem.h"
+#include "JzRE/Runtime/Function/ECS/JzSystem.h"
 
 namespace JzRE {
 
 // Forward declarations
-class JzEnttWorld;
+class JzWorld;
 class JzAssetManager;
 class JzMesh;
 class JzMaterial;
@@ -49,7 +49,7 @@ struct JzShaderAssetComponent;
  * // Render systems can filter by JzAssetReadyTag for efficiency
  * @endcode
  */
-class JzAssetLoadingSystem : public JzEnttSystem {
+class JzAssetLoadingSystem : public JzSystem {
 public:
     /**
      * @brief Default constructor
@@ -68,7 +68,7 @@ public:
      *
      * @param world The ECS world
      */
-    void OnInit(JzEnttWorld &world) override;
+    void OnInit(JzWorld &world) override;
 
     /**
      * @brief Update asset loading state
@@ -76,14 +76,14 @@ public:
      * @param world The ECS world
      * @param delta Delta time (unused but required by interface)
      */
-    void Update(JzEnttWorld &world, F32 delta) override;
+    void Update(JzWorld &world, F32 delta) override;
 
     /**
      * @brief Cleanup when system is destroyed
      *
      * @param world The ECS world
      */
-    void OnShutdown(JzEnttWorld &world) override;
+    void OnShutdown(JzWorld &world) override;
 
     /**
      * @brief Get system execution phase
@@ -102,12 +102,12 @@ private:
      * Checks load state and updates component cache for all
      * JzMeshAssetComponent instances.
      */
-    void ProcessMeshAssets(JzEnttWorld &world, JzAssetManager &assetManager);
+    void ProcessMeshAssets(JzWorld &world, JzAssetManager &assetManager);
 
     /**
      * @brief Process material asset components
      */
-    void ProcessMaterialAssets(JzEnttWorld &world, JzAssetManager &assetManager);
+    void ProcessMaterialAssets(JzWorld &world, JzAssetManager &assetManager);
 
     /**
      * @brief Update cached data in mesh component from loaded asset
@@ -125,7 +125,7 @@ private:
      * Checks load state and updates component cache for all
      * JzShaderAssetComponent instances.
      */
-    void ProcessShaderAssets(JzEnttWorld &world, JzAssetManager &assetManager);
+    void ProcessShaderAssets(JzWorld &world, JzAssetManager &assetManager);
 
     /**
      * @brief Update cached data in shader component from loaded asset
@@ -138,7 +138,7 @@ private:
      * Adds/removes JzAssetLoadingTag, JzAssetReadyTag, JzAssetLoadFailedTag
      * based on the load state of all asset components on the entity.
      */
-    void UpdateEntityAssetTags(JzEnttWorld &world, U32 entityId);
+    void UpdateEntityAssetTags(JzWorld &world, U32 entityId);
 };
 
 } // namespace JzRE

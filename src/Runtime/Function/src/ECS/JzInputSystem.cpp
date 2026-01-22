@@ -3,22 +3,22 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzRE/Runtime/Function/ECS/JzEnttInputSystem.h"
+#include "JzRE/Runtime/Function/ECS/JzInputSystem.h"
 
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
-#include "JzRE/Runtime/Function/ECS/JzEnttComponents.h"
+#include "JzRE/Runtime/Function/ECS/JzComponents.h"
 #include "JzRE/Runtime/Function/Input/JzInputManager.h"
 
 namespace JzRE {
 
-void JzEnttInputSystem::OnInit(JzEnttWorld &world)
+void JzInputSystem::OnInit(JzWorld &world)
 {
     // Initialize by ensuring at least one entity has input components
     // In a real game, you'd create input components for the player entity, UI, etc.
     // For now, we'll create them on-demand in Update
 }
 
-void JzEnttInputSystem::Update(JzEnttWorld &world, F32 delta)
+void JzInputSystem::Update(JzWorld &world, F32 delta)
 {
     // Update input components from the raw input manager
     UpdateMouseInput(world);
@@ -26,7 +26,7 @@ void JzEnttInputSystem::Update(JzEnttWorld &world, F32 delta)
     UpdateCameraInput(world);
 }
 
-void JzEnttInputSystem::UpdateMouseInput(JzEnttWorld &world)
+void JzInputSystem::UpdateMouseInput(JzWorld &world)
 {
     // Get input manager from service container
     JzInputManager *inputManagerPtr = nullptr;
@@ -54,9 +54,9 @@ void JzEnttInputSystem::UpdateMouseInput(JzEnttWorld &world)
     Bool middleDown = inputManager.GetMouseButtonState(JzEInputMouseButton::MOUSE_BUTTON_MIDDLE) == JzEInputMouseButtonState::MOUSE_DOWN;
 
     // Update all entities with mouse input component
-    auto view = world.View<JzEnttMouseInputComponent>();
+    auto view = world.View<JzMouseInputComponent>();
     for (auto entity : view) {
-        auto &mouseInput = world.GetComponent<JzEnttMouseInputComponent>(entity);
+        auto &mouseInput = world.GetComponent<JzMouseInputComponent>(entity);
 
         // Store previous button states to detect press/release
         Bool prevLeftDown   = mouseInput.leftButtonDown;
@@ -87,7 +87,7 @@ void JzEnttInputSystem::UpdateMouseInput(JzEnttWorld &world)
     m_firstFrame            = false;
 }
 
-void JzEnttInputSystem::UpdateKeyboardInput(JzEnttWorld &world)
+void JzInputSystem::UpdateKeyboardInput(JzWorld &world)
 {
     // Get input manager from service container
     JzInputManager *inputManagerPtr = nullptr;
@@ -100,9 +100,9 @@ void JzEnttInputSystem::UpdateKeyboardInput(JzEnttWorld &world)
     auto &inputManager = *inputManagerPtr;
 
     // Update all entities with keyboard input component
-    auto view = world.View<JzEnttKeyboardInputComponent>();
+    auto view = world.View<JzKeyboardInputComponent>();
     for (auto entity : view) {
-        auto &keyInput = world.GetComponent<JzEnttKeyboardInputComponent>(entity);
+        auto &keyInput = world.GetComponent<JzKeyboardInputComponent>(entity);
 
         // Update common keys (WASD)
         keyInput.w = inputManager.GetKeyState(JzEInputKeyboardButton::KEY_W) == JzEInputKeyboardButtonState::KEY_DOWN;
@@ -135,14 +135,14 @@ void JzEnttInputSystem::UpdateKeyboardInput(JzEnttWorld &world)
     }
 }
 
-void JzEnttInputSystem::UpdateCameraInput(JzEnttWorld &world)
+void JzInputSystem::UpdateCameraInput(JzWorld &world)
 {
     // Find entities with camera input component and mouse input component
-    auto view = world.View<JzEnttCameraInputComponent, JzEnttMouseInputComponent>();
+    auto view = world.View<JzCameraInputComponent, JzMouseInputComponent>();
 
     for (auto entity : view) {
-        auto &cameraInput = world.GetComponent<JzEnttCameraInputComponent>(entity);
-        auto &mouseInput  = world.GetComponent<JzEnttMouseInputComponent>(entity);
+        auto &cameraInput = world.GetComponent<JzCameraInputComponent>(entity);
+        auto &mouseInput  = world.GetComponent<JzMouseInputComponent>(entity);
 
         // Update orbit/pan active states based on mouse buttons
         cameraInput.orbitActive = mouseInput.leftButtonDown;

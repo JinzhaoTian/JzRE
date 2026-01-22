@@ -7,13 +7,13 @@
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
 #include "JzRE/Editor/Panels/JzSceneView.h"
 #include "JzRE/Runtime/Function/Input/JzInputManager.h"
-#include "JzRE/Runtime/Function/ECS/JzEnttWorld.h"
-#include "JzRE/Runtime/Function/ECS/JzEnttComponents.h"
+#include "JzRE/Runtime/Function/ECS/JzWorld.h"
+#include "JzRE/Runtime/Function/ECS/JzComponents.h"
 
 JzRE::JzSceneView::JzSceneView(const JzRE::String &name, JzRE::Bool is_opened) :
     JzRE::JzView(name, is_opened)
 {
-    // Note: Camera initialization is done on first Update() since JzEnttWorld
+    // Note: Camera initialization is done on first Update() since JzWorld
     // is not yet registered in JzServiceContainer at construction time.
 }
 
@@ -21,7 +21,7 @@ void JzRE::JzSceneView::Update(JzRE::F32 deltaTime)
 {
     JzView::Update(deltaTime);
 
-    // Initialize camera on first update when JzEnttWorld is available
+    // Initialize camera on first update when JzWorld is available
     if (!m_cameraInitialized) {
         SyncOrbitFromCamera();
         m_cameraInitialized = true;
@@ -180,14 +180,14 @@ void JzRE::JzSceneView::HandleZoom(JzRE::F32 scrollY)
 void JzRE::JzSceneView::SyncOrbitFromCamera()
 {
     // Sync orbit parameters from the camera's OrbitControllerComponent
-    auto &world = JzServiceContainer::Get<JzEnttWorld>();
+    auto &world = JzServiceContainer::Get<JzWorld>();
 
     // Find the main camera entity with OrbitControllerComponent
-    auto view = world.View<JzEnttCameraComponent, JzEnttOrbitControllerComponent>();
+    auto view = world.View<JzCameraComponent, JzOrbitControllerComponent>();
     for (auto entity : view) {
-        auto &camera = world.GetComponent<JzEnttCameraComponent>(entity);
+        auto &camera = world.GetComponent<JzCameraComponent>(entity);
         if (camera.isMainCamera) {
-            auto &orbit     = world.GetComponent<JzEnttOrbitControllerComponent>(entity);
+            auto &orbit     = world.GetComponent<JzOrbitControllerComponent>(entity);
             m_orbitTarget   = orbit.target;
             m_orbitYaw      = orbit.yaw;
             m_orbitPitch    = orbit.pitch;
@@ -214,12 +214,12 @@ void JzRE::JzSceneView::UpdateCameraFromOrbit()
     cameraPos.z = m_orbitTarget.z + m_orbitDistance * cosPitch * cosYaw;
 
     // Get the ECS world and update camera components
-    auto &world = JzServiceContainer::Get<JzEnttWorld>();
+    auto &world = JzServiceContainer::Get<JzWorld>();
 
     // Find the main camera entity and update its components
-    auto view = world.View<JzEnttCameraComponent, JzEnttOrbitControllerComponent>();
+    auto view = world.View<JzCameraComponent, JzOrbitControllerComponent>();
     for (auto entity : view) {
-        auto &camera = world.GetComponent<JzEnttCameraComponent>(entity);
+        auto &camera = world.GetComponent<JzCameraComponent>(entity);
         if (camera.isMainCamera) {
             // Update camera position and rotation
             camera.position   = cameraPos;
@@ -229,7 +229,7 @@ void JzRE::JzSceneView::UpdateCameraFromOrbit()
             camera.rotation.w = 0.0f;          // Unused
 
             // Update orbit controller component to stay in sync
-            auto &orbit    = world.GetComponent<JzEnttOrbitControllerComponent>(entity);
+            auto &orbit    = world.GetComponent<JzOrbitControllerComponent>(entity);
             orbit.target   = m_orbitTarget;
             orbit.yaw      = m_orbitYaw;
             orbit.pitch    = m_orbitPitch;

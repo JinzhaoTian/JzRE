@@ -161,12 +161,12 @@ struct JzAssetLoadFailedTag {}; // Load failed
 Coordinates loading state with ECS:
 
 ```cpp
-class JzAssetLoadingSystem : public JzEnttSystem {
+class JzAssetLoadingSystem : public JzSystem {
     JzSystemPhase GetPhase() const override {
         return JzSystemPhase::Logic;
     }
 
-    void Update(JzEnttWorld& world, F32 delta) override {
+    void Update(JzWorld& world, F32 delta) override {
         // 1. Check asset load states
         // 2. Update component caches when loaded
         // 3. Manage state tags
@@ -209,7 +209,7 @@ world.AddComponent<JzTransformComponent>(entity);
 
 // Register systems
 world.RegisterSystem<JzAssetLoadingSystem>();
-world.RegisterSystem<JzEnttRenderSystem>();
+world.RegisterSystem<JzRenderSystem>();
 
 // Render system can filter efficiently
 auto view = registry.view<JzMeshAssetComponent,

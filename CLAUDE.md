@@ -45,7 +45,7 @@ App (JzRE executable)
 | `JzRuntimeCore` | Math (JzVector, JzMatrix), types (JzRETypes), threading (JzThreadPool), logging (JzLogger) |
 | `JzRuntimePlatform` | RHI command pattern (`JzRHICommandList`, `JzDevice`), GPU objects, platform file dialogs |
 | `JzRuntimeResource` | `JzResourceManager`, factories for Texture/Mesh/Model/Shader/Material/Font |
-| `JzRuntimeFunction` | ECS systems (`JzEnttRenderSystem`, `JzEnttCameraSystem`, `JzEnttLightSystem`), `JzInputManager`, `JzWindow` |
+| `JzRuntimeFunction` | ECS systems (`JzRenderSystem`, `JzCameraSystem`, `JzLightSystem`), `JzInputManager`, `JzWindow` |
 | `JzREInterface` | Runtime application base class (`JzRERuntime`) with virtual `OnStart/OnUpdate/OnStop` hooks |
 | `JzEditor` | ImGui-based editor panels, UI widget wrappers |
 
@@ -104,7 +104,7 @@ glfw3, glad, imgui (with docking), assimp, stb, gtest, nlohmann-json, spdlog, fm
 Architecture changes that require documentation updates include:
 - Adding/removing/modifying ECS systems or components
 - Changing the rendering pipeline or system execution order
-- Modifying core abstractions (JzRERuntime, JzEnttWorld, etc.)
+- Modifying core abstractions (JzRERuntime, JzWorld, etc.)
 - Adding new subsystems to any layer
 - Changing layer dependencies or module structure
 - Modifying RHI commands or resource loading patterns

@@ -9,8 +9,8 @@
 
 #include "JzRE/Runtime/Core/JzRETypes.h"
 #include "JzRE/Runtime/Core/JzVector.h"
-#include "JzRE/Runtime/Function/ECS/JzEnttSystem.h"
-#include "JzRE/Runtime/Function/ECS/JzEnttWorld.h"
+#include "JzRE/Runtime/Function/ECS/JzSystem.h"
+#include "JzRE/Runtime/Function/ECS/JzWorld.h"
 
 namespace JzRE {
 
@@ -43,12 +43,12 @@ struct JzLightData {
  * This system gathers all light entities and their properties into a format
  * that can be easily consumed by the render system.
  */
-class JzEnttLightSystem : public JzEnttSystem {
+class JzLightSystem : public JzSystem {
 public:
-    JzEnttLightSystem() = default;
+    JzLightSystem() = default;
 
-    void OnInit(JzEnttWorld &world) override;
-    void Update(JzEnttWorld &world, F32 delta) override;
+    void OnInit(JzWorld &world) override;
+    void Update(JzWorld &world, F32 delta) override;
 
     /**
      * @brief Light system runs in PreRender phase.

@@ -252,14 +252,6 @@ struct JzSpatialComponent {
 };
 
 /**
- * @brief Component for camera properties.
- */
-struct JzCameraComponent {
-    JzVec3 target{0.0f, 0.0f, 0.0f};
-    F32    fov{45.0f};
-};
-
-/**
  * @brief Component for skybox
  */
 struct JzSkyboxComponent { };
@@ -299,7 +291,7 @@ struct JzGizmoComponent {
  * to adapt to window resize events and frame updates.
  * Usually attached to a singleton entity or the world entity.
  */
-struct JzEnttWindowComponent {
+struct JzWindowComponent {
     JzIVec2 frameSize{1280, 720};
     F32     aspectRatio  = 16.0f / 9.0f;
     Bool    blitToScreen = true;
@@ -359,9 +351,9 @@ struct JzUUIDComponent {
  * @brief Extended camera component with full camera state.
  *
  * Contains position, rotation, projection parameters, and computed matrices.
- * The viewMatrix and projectionMatrix are updated by JzEnttCameraSystem.
+ * The viewMatrix and projectionMatrix are updated by JzCameraSystem.
  */
-struct JzEnttCameraComponent {
+struct JzCameraComponent {
     JzVec3 position{0.0f, 0.0f, 10.0f};
     JzVec4 rotation{0.0f, 0.0f, 0.0f, 0.0f}; ///< pitch, yaw, roll, unused
 
@@ -384,7 +376,7 @@ struct JzEnttCameraComponent {
  * Provides orbit camera behavior: rotate around a target point,
  * pan the target, and zoom in/out.
  */
-struct JzEnttOrbitControllerComponent {
+struct JzOrbitControllerComponent {
     JzVec3 target{0.0f, 0.0f, 0.0f}; ///< Point the camera orbits around
     F32    yaw      = 0.0f;          ///< Horizontal orbit angle in radians
     F32    pitch    = 0.3f;          ///< Vertical orbit angle in radians
@@ -410,7 +402,7 @@ struct JzEnttOrbitControllerComponent {
  *
  * Represents a light source with parallel rays (like the sun).
  */
-struct JzEnttDirectionalLightComponent {
+struct JzDirectionalLightComponent {
     JzVec3 direction{0.3f, -1.0f, -0.5f};
     JzVec3 color{1.0f, 1.0f, 1.0f};
     F32    intensity  = 1.0f;
@@ -422,7 +414,7 @@ struct JzEnttDirectionalLightComponent {
  *
  * Represents a light source that emits light in all directions from a point.
  */
-struct JzEnttPointLightComponent {
+struct JzPointLightComponent {
     JzVec3 color{1.0f, 1.0f, 1.0f};
     F32    intensity = 1.0f;
     F32    range     = 10.0f;
@@ -436,7 +428,7 @@ struct JzEnttPointLightComponent {
  *
  * Represents a light source that emits light in a cone shape.
  */
-struct JzEnttSpotLightComponent {
+struct JzSpotLightComponent {
     JzVec3 direction{0.0f, -1.0f, 0.0f};
     JzVec3 color{1.0f, 1.0f, 1.0f};
     F32    intensity   = 1.0f;
@@ -462,10 +454,10 @@ struct JzMainCameraTag { };
 /**
  * @brief Component for storing mouse input state.
  *
- * This component is updated by JzEnttInputSystem and read by other systems
+ * This component is updated by JzInputSystem and read by other systems
  * (like CameraSystem) to process mouse input.
  */
-struct JzEnttMouseInputComponent {
+struct JzMouseInputComponent {
     JzVec2 position{0.0f, 0.0f};      ///< Current mouse position
     JzVec2 positionDelta{0.0f, 0.0f}; ///< Mouse movement since last frame
     JzVec2 scroll{0.0f, 0.0f};        ///< Scroll wheel delta this frame
@@ -486,10 +478,10 @@ struct JzEnttMouseInputComponent {
 /**
  * @brief Component for storing keyboard input state.
  *
- * This component is updated by JzEnttInputSystem and provides
+ * This component is updated by JzInputSystem and provides
  * high-level key state queries.
  */
-struct JzEnttKeyboardInputComponent {
+struct JzKeyboardInputComponent {
     // Common key states for quick access
     Bool w{false}, a{false}, s{false}, d{false};
     Bool space{false}, shift{false}, ctrl{false}, alt{false};
@@ -508,7 +500,7 @@ struct JzEnttKeyboardInputComponent {
  * This component stores processed input state specifically for camera control.
  * It acts as an intermediate layer between raw input and camera behavior.
  */
-struct JzEnttCameraInputComponent {
+struct JzCameraInputComponent {
     Bool   orbitActive{false};     ///< Orbit mode is active (left mouse button held)
     Bool   panActive{false};       ///< Pan mode is active (right mouse button held)
     JzVec2 mouseDelta{0.0f, 0.0f}; ///< Mouse movement delta for this frame

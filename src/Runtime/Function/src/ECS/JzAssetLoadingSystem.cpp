@@ -10,7 +10,7 @@
 #include "JzRE/Runtime/Core/JzLogger.h"
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
 #include "JzRE/Runtime/Function/ECS/JzAssetComponents.h"
-#include "JzRE/Runtime/Function/ECS/JzEnttWorld.h"
+#include "JzRE/Runtime/Function/ECS/JzWorld.h"
 #include "JzRE/Runtime/Resource/JzAssetManager.h"
 #include "JzRE/Runtime/Resource/JzMaterial.h"
 #include "JzRE/Runtime/Resource/JzMesh.h"
@@ -22,12 +22,12 @@ JzAssetLoadingSystem::JzAssetLoadingSystem() = default;
 
 JzAssetLoadingSystem::~JzAssetLoadingSystem() = default;
 
-void JzAssetLoadingSystem::OnInit(JzEnttWorld &world)
+void JzAssetLoadingSystem::OnInit(JzWorld &world)
 {
     JzRE_LOG_INFO("JzAssetLoadingSystem: Initialized");
 }
 
-void JzAssetLoadingSystem::Update(JzEnttWorld &world, F32 delta)
+void JzAssetLoadingSystem::Update(JzWorld &world, F32 delta)
 {
     // Get asset manager from service container
     JzAssetManager *assetManager = nullptr;
@@ -51,12 +51,12 @@ void JzAssetLoadingSystem::Update(JzEnttWorld &world, F32 delta)
     ProcessShaderAssets(world, *assetManager);
 }
 
-void JzAssetLoadingSystem::OnShutdown(JzEnttWorld &world)
+void JzAssetLoadingSystem::OnShutdown(JzWorld &world)
 {
     JzRE_LOG_INFO("JzAssetLoadingSystem: Shutdown");
 }
 
-void JzAssetLoadingSystem::ProcessMeshAssets(JzEnttWorld &world, JzAssetManager &assetManager)
+void JzAssetLoadingSystem::ProcessMeshAssets(JzWorld &world, JzAssetManager &assetManager)
 {
     auto &registry = world.GetRegistry();
 
@@ -124,7 +124,7 @@ void JzAssetLoadingSystem::ProcessMeshAssets(JzEnttWorld &world, JzAssetManager 
     }
 }
 
-void JzAssetLoadingSystem::ProcessMaterialAssets(JzEnttWorld &world, JzAssetManager &assetManager)
+void JzAssetLoadingSystem::ProcessMaterialAssets(JzWorld &world, JzAssetManager &assetManager)
 {
     auto &registry = world.GetRegistry();
 
@@ -206,7 +206,7 @@ void JzAssetLoadingSystem::UpdateMaterialComponentCache(JzMaterialAssetComponent
     comp.baseColor = JzVec4(props.diffuseColor.x, props.diffuseColor.y, props.diffuseColor.z, props.opacity);
 }
 
-void JzAssetLoadingSystem::ProcessShaderAssets(JzEnttWorld &world, JzAssetManager &assetManager)
+void JzAssetLoadingSystem::ProcessShaderAssets(JzWorld &world, JzAssetManager &assetManager)
 {
     auto &registry = world.GetRegistry();
 
@@ -285,7 +285,7 @@ void JzAssetLoadingSystem::UpdateShaderComponentCache(JzShaderAssetComponent &co
     }
 }
 
-void JzAssetLoadingSystem::UpdateEntityAssetTags(JzEnttWorld &world, U32 entityId)
+void JzAssetLoadingSystem::UpdateEntityAssetTags(JzWorld &world, U32 entityId)
 {
     auto &registry = world.GetRegistry();
     auto  entity   = static_cast<entt::entity>(entityId);

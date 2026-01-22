@@ -8,12 +8,12 @@
 #include <memory>
 
 #include "JzRE/Runtime/Core/JzRETypes.h"
-#include "JzRE/Runtime/Function/ECS/JzEnttEntity.h"
-#include "JzRE/Runtime/Function/ECS/JzEnttWorld.h"
-#include "JzRE/Runtime/Function/ECS/JzEnttInputSystem.h"
-#include "JzRE/Runtime/Function/ECS/JzEnttCameraSystem.h"
-#include "JzRE/Runtime/Function/ECS/JzEnttLightSystem.h"
-#include "JzRE/Runtime/Function/ECS/JzEnttRenderSystem.h"
+#include "JzRE/Runtime/Function/ECS/JzEntity.h"
+#include "JzRE/Runtime/Function/ECS/JzWorld.h"
+#include "JzRE/Runtime/Function/ECS/JzInputSystem.h"
+#include "JzRE/Runtime/Function/ECS/JzCameraSystem.h"
+#include "JzRE/Runtime/Function/ECS/JzLightSystem.h"
+#include "JzRE/Runtime/Function/ECS/JzRenderSystem.h"
 #include "JzRE/Runtime/Function/ECS/JzAssetLoadingSystem.h"
 #include "JzRE/Runtime/Function/Input/JzInputManager.h"
 #include "JzRE/Runtime/Function/Window/JzWindow.h"
@@ -84,9 +84,9 @@ public:
     /**
      * @brief Get the ECS world
      *
-     * @return JzEnttWorld& Reference to the ECS world
+     * @return JzWorld& Reference to the ECS world
      */
-    JzEnttWorld &GetWorld();
+    JzWorld &GetWorld();
 
     /**
      * @brief Get the asset manager instance
@@ -182,15 +182,15 @@ protected:
     std::unique_ptr<JzAssetManager> m_assetManager;
 
     // ECS world and systems
-    std::unique_ptr<JzEnttWorld>          m_world;
-    std::shared_ptr<JzEnttInputSystem>    m_inputSystem;
-    std::shared_ptr<JzEnttCameraSystem>   m_cameraSystem;
-    std::shared_ptr<JzEnttLightSystem>    m_lightSystem;
-    std::shared_ptr<JzEnttRenderSystem>   m_renderSystem;
+    std::unique_ptr<JzWorld>          m_world;
+    std::shared_ptr<JzInputSystem>    m_inputSystem;
+    std::shared_ptr<JzCameraSystem>   m_cameraSystem;
+    std::shared_ptr<JzLightSystem>    m_lightSystem;
+    std::shared_ptr<JzRenderSystem>   m_renderSystem;
     std::shared_ptr<JzAssetLoadingSystem> m_assetLoadingSystem;
 
-    JzEnttEntity m_mainCameraEntity   = INVALID_ENTT_ENTITY;
-    JzEnttEntity m_globalConfigEntity = INVALID_ENTT_ENTITY;
+    JzEntity m_mainCameraEntity   = INVALID_ENTT_ENTITY;
+    JzEntity m_globalConfigEntity = INVALID_ENTT_ENTITY;
 };
 
 } // namespace JzRE

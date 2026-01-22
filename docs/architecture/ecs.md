@@ -9,13 +9,13 @@ JzRE uses EnTT as its primary ECS implementation. The ECS is now the core archit
 ### Include Header
 
 ```cpp
-#include "JzRE/Runtime/Function/ECS/EnTT/JzEnttECS.h"
+#include "JzRE/Runtime/Function/ECS/EnTT/JzECS.h"
 ```
 
 ### Create a World
 
 ```cpp
-JzRE::JzEnttWorld world;
+JzRE::JzWorld world;
 ```
 
 ### Entity Management
@@ -86,13 +86,13 @@ for (auto entity : view) {
 Systems can specify their execution phase via `GetPhase()`:
 
 ```cpp
-class MySystem : public JzRE::JzEnttSystem {
+class MySystem : public JzRE::JzSystem {
 public:
-    void OnInit(JzEnttWorld& world) override {
+    void OnInit(JzWorld& world) override {
         // Called when system is registered
     }
 
-    void Update(JzEnttWorld& world, F32 delta) override {
+    void Update(JzWorld& world, F32 delta) override {
         auto view = world.View<JzTransformComponent, JzVelocityComponent>();
 
         for (auto [entity, transform, velocity] : view.each()) {
@@ -100,7 +100,7 @@ public:
         }
     }
 
-    void OnShutdown(JzEnttWorld& world) override {
+    void OnShutdown(JzWorld& world) override {
         // Called when system is destroyed
     }
 
@@ -135,7 +135,7 @@ Helper functions are available to check phase groups:
 ### Registering Systems
 
 ```cpp
-JzRE::JzEnttWorld world;
+JzRE::JzWorld world;
 
 // Register systems in execution order
 // Logic phases (can run parallel with GPU)
@@ -145,14 +145,14 @@ world.RegisterSystem<AnimationSystem>();   // Animation
 world.RegisterSystem<AISystem>();          // Logic
 
 // PreRender phases (after sync point)
-auto cameraSystem = world.RegisterSystem<JzEnttCameraSystem>();  // PreRender
-auto lightSystem = world.RegisterSystem<JzEnttLightSystem>();    // PreRender
+auto cameraSystem = world.RegisterSystem<JzCameraSystem>();  // PreRender
+auto lightSystem = world.RegisterSystem<JzLightSystem>();    // PreRender
 world.RegisterSystem<CullingSystem>();     // Culling
 
 // Render phases
 world.RegisterSystem<BatchBuildingSystem>();   // RenderPrep
 world.RegisterSystem<InstanceDataSystem>();    // RenderPrep
-auto renderSystem = world.RegisterSystem<JzEnttRenderSystem>();  // Render
+auto renderSystem = world.RegisterSystem<JzRenderSystem>();  // Render
 
 // Update all systems (in registration order)
 world.Update(deltaTime);
@@ -174,26 +174,26 @@ The `JzRERuntime` class uses ECS as its primary rendering architecture with phas
 
 ```
 JzRERuntime
-  └── JzEnttWorld (entity/component storage, system management)
+  └── JzWorld (entity/component storage, system management)
         ├── Input Systems        (JzSystemPhase::Input)
-        │     └── JzEnttInputSystem (processes raw input, updates input components)
+        │     └── JzInputSystem (processes raw input, updates input components)
         ├── Logic Systems        (JzSystemPhase::Logic)
         │     └── User-defined logic systems
         ├── PreRender Systems    (JzSystemPhase::PreRender)
-        │     ├── JzEnttCameraSystem (camera matrix updates, orbit control)
-        │     └── JzEnttLightSystem (light data collection)
+        │     ├── JzCameraSystem (camera matrix updates, orbit control)
+        │     └── JzLightSystem (light data collection)
         └── Render Systems       (JzSystemPhase::Render)
-              └── JzEnttRenderSystem (framebuffer, pipeline, entity rendering)
+              └── JzRenderSystem (framebuffer, pipeline, entity rendering)
 ```
 
 ### System Update Order
 
 Systems are grouped by phase and executed in registration order within each phase:
 
-1. **Input Phase** - Input processing and component updates (JzEnttInputSystem)
+1. **Input Phase** - Input processing and component updates (JzInputSystem)
 2. **Logic Phase** - Game logic, physics, AI, animations (user-defined systems)
-3. **PreRender Phase** - Camera, lights, culling (JzEnttCameraSystem, JzEnttLightSystem)
-4. **Render Phase** - GPU rendering (JzEnttRenderSystem)
+3. **PreRender Phase** - Camera, lights, culling (JzCameraSystem, JzLightSystem)
+4. **Render Phase** - GPU rendering (JzRenderSystem)
 
 ### Main Loop Flow
 
@@ -249,12 +249,12 @@ void JzRERuntime::Run() {
 
 | System               | Phase     | Description                                                       |
 | -------------------- | --------- | ----------------------------------------------------------------- |
-| `JzEnttInputSystem`  | Input     | Processes raw input from JzInputManager, updates input components |
-| `JzEnttMoveSystem`   | Logic     | Updates position based on velocity                                |
-| `JzEnttSceneSystem`  | Logic     | Updates world transforms in hierarchy                             |
-| `JzEnttCameraSystem` | PreRender | Updates camera matrices, reads input components for orbit control |
-| `JzEnttLightSystem`  | PreRender | Collects light data for rendering                                 |
-| `JzEnttRenderSystem` | Render    | Manages framebuffer, renders entities with mesh/material          |
+| `JzInputSystem`  | Input     | Processes raw input from JzInputManager, updates input components |
+| `JzMoveSystem`   | Logic     | Updates position based on velocity                                |
+| `JzSceneSystem`  | Logic     | Updates world transforms in hierarchy                             |
+| `JzCameraSystem` | PreRender | Updates camera matrices, reads input components for orbit control |
+| `JzLightSystem`  | PreRender | Collects light data for rendering                                 |
+| `JzRenderSystem` | Render    | Manages framebuffer, renders entities with mesh/material          |
 
 ---
 
@@ -273,19 +273,19 @@ void JzRERuntime::Run() {
 
 | Component                         | Description                                                         |
 | --------------------------------- | ------------------------------------------------------------------- |
-| `JzEnttCameraComponent`           | Full camera state (position, rotation, fov, near/far, matrices)     |
-| `JzEnttOrbitControllerComponent`  | Orbit camera controller (target, yaw, pitch, distance, sensitivity) |
-| `JzEnttDirectionalLightComponent` | Directional light (direction, color, intensity)                     |
-| `JzEnttPointLightComponent`       | Point light (color, intensity, range, attenuation)                  |
-| `JzEnttSpotLightComponent`        | Spot light (direction, color, intensity, cutoff angles)             |
+| `JzCameraComponent`           | Full camera state (position, rotation, fov, near/far, matrices)     |
+| `JzOrbitControllerComponent`  | Orbit camera controller (target, yaw, pitch, distance, sensitivity) |
+| `JzDirectionalLightComponent` | Directional light (direction, color, intensity)                     |
+| `JzPointLightComponent`       | Point light (color, intensity, range, attenuation)                  |
+| `JzSpotLightComponent`        | Spot light (direction, color, intensity, cutoff angles)             |
 
 ### Input Components
 
 | Component                      | Description                                                          |
 | ------------------------------ | -------------------------------------------------------------------- |
-| `JzEnttMouseInputComponent`    | Mouse position, delta, button states (updated by JzEnttInputSystem)  |
-| `JzEnttKeyboardInputComponent` | Common key states (WASD, arrow keys, modifiers, function keys)       |
-| `JzEnttCameraInputComponent`   | Processed camera input (orbit/pan active, mouse delta, scroll delta) |
+| `JzMouseInputComponent`    | Mouse position, delta, button states (updated by JzInputSystem)  |
+| `JzKeyboardInputComponent` | Common key states (WASD, arrow keys, modifiers, function keys)       |
+| `JzCameraInputComponent`   | Processed camera input (orbit/pan active, mouse delta, scroll delta) |
 
 ### Tag Components
 
@@ -304,7 +304,7 @@ void JzRERuntime::Run() {
 
 ## Model Spawning
 
-Use `JzEnttModelSpawner` to convert model resources into ECS entities:
+Use `JzModelSpawner` to convert model resources into ECS entities:
 
 ```cpp
 // Load a model
@@ -312,7 +312,7 @@ auto model = std::make_shared<JzModel>("path/to/model.obj");
 model->Load();
 
 // Spawn as ECS entities (one per mesh)
-auto entities = JzEnttModelSpawner::SpawnModel(world, model);
+auto entities = JzModelSpawner::SpawnModel(world, model);
 
 // Each entity has:
 // - JzTransformComponent
@@ -321,7 +321,7 @@ auto entities = JzEnttModelSpawner::SpawnModel(world, model);
 // - JzRenderableTag
 
 // Clean up when done
-JzEnttModelSpawner::DestroyEntities(world, entities);
+JzModelSpawner::DestroyEntities(world, entities);
 ```
 
 ---
@@ -376,9 +376,9 @@ bool pressed = inputManager.IsKeyPressed(JzEInputKeyboardButton::KEY_W);
 JzVec2 mousePos = inputManager.GetMousePosition();
 ```
 
-### Layer 2: Function Layer (JzEnttInputSystem)
+### Layer 2: Function Layer (JzInputSystem)
 
-The `JzEnttInputSystem` bridges raw input to ECS components:
+The `JzInputSystem` bridges raw input to ECS components:
 
 - Runs in the **Input phase** (first logic phase)
 - Reads from JzInputManager
@@ -387,8 +387,8 @@ The `JzEnttInputSystem` bridges raw input to ECS components:
 
 ```cpp
 // Systems read from input components, not InputManager directly
-void MyCameraSystem::Update(JzEnttWorld& world, F32 delta) {
-    auto view = world.View<JzEnttCameraComponent, JzEnttCameraInputComponent>();
+void MyCameraSystem::Update(JzWorld& world, F32 delta) {
+    auto view = world.View<JzCameraComponent, JzCameraInputComponent>();
 
     for (auto [entity, camera, input] : view.each()) {
         if (input.orbitActive) {
@@ -408,9 +408,9 @@ Window Events (GLFW)
     ↓
 JzInputManager (Platform Layer)
     ↓
-JzEnttInputSystem (Input Phase)
+JzInputSystem (Input Phase)
     ↓
-Input Components (JzEnttMouseInputComponent, etc.)
+Input Components (JzMouseInputComponent, etc.)
     ↓
 Game Systems (CameraSystem, PlayerSystem, etc.)
 ```
@@ -431,7 +431,7 @@ Game Systems (CameraSystem, PlayerSystem, etc.)
 For simple input queries:
 
 ```cpp
-auto view = world.View<PlayerComponent, JzEnttKeyboardInputComponent>();
+auto view = world.View<PlayerComponent, JzKeyboardInputComponent>();
 for (auto [entity, player, input] : view.each()) {
     if (input.w) player.position.z -= speed * delta;
     if (input.s) player.position.z += speed * delta;
@@ -443,9 +443,9 @@ for (auto [entity, player, input] : view.each()) {
 For complex input behavior (like camera control):
 
 ```cpp
-// JzEnttInputSystem processes raw input
-void JzEnttInputSystem::UpdateCameraInput(JzEnttWorld& world) {
-    auto view = world.View<JzEnttCameraInputComponent, JzEnttMouseInputComponent>();
+// JzInputSystem processes raw input
+void JzInputSystem::UpdateCameraInput(JzWorld& world) {
+    auto view = world.View<JzCameraInputComponent, JzMouseInputComponent>();
     for (auto [entity, cameraInput, mouseInput] : view.each()) {
         cameraInput.orbitActive = mouseInput.leftButtonDown;
         cameraInput.mouseDelta = mouseInput.positionDelta;
@@ -453,8 +453,8 @@ void JzEnttInputSystem::UpdateCameraInput(JzEnttWorld& world) {
 }
 
 // CameraSystem reads processed input
-void JzEnttCameraSystem::Update(JzEnttWorld& world, F32 delta) {
-    auto view = world.View<JzEnttCameraComponent, JzEnttCameraInputComponent>();
+void JzCameraSystem::Update(JzWorld& world, F32 delta) {
+    auto view = world.View<JzCameraComponent, JzCameraInputComponent>();
     for (auto [entity, camera, input] : view.each()) {
         if (input.orbitActive) {
             ApplyOrbit(camera, input.mouseDelta);
@@ -522,25 +522,25 @@ src/Runtime/Function/
 ├── include/JzRE/Runtime/Function/ECS/
 │   ├── JzComponent.h               # Shared component definitions
 │   ├── JzEntity.h                  # Entity type
-│   ├── JzEnttECS.h                 # Convenience header
-│   ├── JzEnttEntity.h              # Entity type definitions
-│   ├── JzEnttWorld.h               # Core world class
-│   ├── JzEnttWorld.inl             # Template implementations
-│   ├── JzEnttSystem.h              # System base class
-│   ├── JzEnttComponents.h          # Component re-exports + tags
-│   ├── JzEnttRenderComponents.h    # Camera, light, rendering components
-│   ├── JzEnttModelSpawner.h        # Model to entity conversion
-│   ├── JzEnttCameraSystem.h
-│   ├── JzEnttLightSystem.h
-│   ├── JzEnttRenderSystem.h
-│   ├── JzEnttMoveSystem.h
-│   └── JzEnttSceneSystem.h
+│   ├── JzECS.h                 # Convenience header
+│   ├── JzEntity.h              # Entity type definitions
+│   ├── JzWorld.h               # Core world class
+│   ├── JzWorld.inl             # Template implementations
+│   ├── JzSystem.h              # System base class
+│   ├── JzComponents.h          # Component re-exports + tags
+│   ├── JzRenderComponents.h    # Camera, light, rendering components
+│   ├── JzModelSpawner.h        # Model to entity conversion
+│   ├── JzCameraSystem.h
+│   ├── JzLightSystem.h
+│   ├── JzRenderSystem.h
+│   ├── JzMoveSystem.h
+│   └── JzSceneSystem.h
 └── src/ECS/EnTT/
-    ├── JzEnttWorld.cpp
-    ├── JzEnttModelSpawner.cpp
-    ├── JzEnttCameraSystem.cpp
-    ├── JzEnttLightSystem.cpp
-    └── JzEnttRenderSystem.cpp
+    ├── JzWorld.cpp
+    ├── JzModelSpawner.cpp
+    ├── JzCameraSystem.cpp
+    ├── JzLightSystem.cpp
+    └── JzRenderSystem.cpp
 ```
 
 ---

@@ -9,13 +9,13 @@
 
 #include <unordered_set>
 
-#include "JzRE/Runtime/Function/ECS/JzEnttSystem.h"
+#include "JzRE/Runtime/Function/ECS/JzSystem.h"
 #include "JzRE/Runtime/Resource/JzAssetHandle.h"
 
 namespace JzRE {
 
 // Forward declarations
-class JzEnttWorld;
+class JzWorld;
 class JzAssetManager;
 class JzShaderRegistry;
 class JzShaderVariantManager;
@@ -42,7 +42,7 @@ class JzShaderVariantManager;
  * hotReloadSystem.SetCheckInterval(1.0f); // Check every second
  * @endcode
  */
-class JzShaderHotReloadSystem : public JzEnttSystem {
+class JzShaderHotReloadSystem : public JzSystem {
 public:
     /**
      * @brief Default constructor
@@ -59,7 +59,7 @@ public:
      *
      * @param world The ECS world
      */
-    void OnInit(JzEnttWorld &world) override;
+    void OnInit(JzWorld &world) override;
 
     /**
      * @brief Check for shader updates and reload if necessary
@@ -67,14 +67,14 @@ public:
      * @param world The ECS world
      * @param delta Delta time since last frame
      */
-    void Update(JzEnttWorld &world, F32 delta) override;
+    void Update(JzWorld &world, F32 delta) override;
 
     /**
      * @brief Cleanup when system is destroyed
      *
      * @param world The ECS world
      */
-    void OnShutdown(JzEnttWorld &world) override;
+    void OnShutdown(JzWorld &world) override;
 
     /**
      * @brief Get system execution phase
@@ -139,7 +139,7 @@ private:
      *
      * @param world The ECS world
      */
-    void CheckForUpdates(JzEnttWorld &world);
+    void CheckForUpdates(JzWorld &world);
 
     /**
      * @brief Notify all materials using a shader that it was reloaded
@@ -147,7 +147,7 @@ private:
      * @param shaderHandle Handle to the reloaded shader
      * @param world The ECS world
      */
-    void NotifyShaderReloaded(JzShaderAssetHandle shaderHandle, JzEnttWorld &world);
+    void NotifyShaderReloaded(JzShaderAssetHandle shaderHandle, JzWorld &world);
 
     /**
      * @brief Collect all shader handles currently in use
@@ -156,7 +156,7 @@ private:
      * @return Set of shader handles
      */
     std::unordered_set<JzShaderAssetHandle, JzAssetHandle<JzShaderAsset>::Hash>
-    CollectUsedShaders(JzEnttWorld &world);
+    CollectUsedShaders(JzWorld &world);
 
     F32  m_checkInterval       = 1.0f;  ///< Interval between checks (seconds)
     F32  m_timeSinceLastCheck  = 0.0f;  ///< Time since last check

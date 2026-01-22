@@ -7,8 +7,8 @@
 
 #include "JzRE/Runtime/Core/JzRETypes.h"
 #include "JzRE/Runtime/Core/JzVector.h"
-#include "JzRE/Runtime/Function/ECS/JzEnttSystem.h"
-#include "JzRE/Runtime/Function/ECS/JzEnttWorld.h"
+#include "JzRE/Runtime/Function/ECS/JzSystem.h"
+#include "JzRE/Runtime/Function/ECS/JzWorld.h"
 
 namespace JzRE {
 
@@ -20,20 +20,20 @@ namespace JzRE {
  *
  * Responsibilities:
  * - Read raw input state from JzInputManager
- * - Update JzEnttMouseInputComponent with mouse state and deltas
- * - Update JzEnttKeyboardInputComponent with keyboard state
- * - Update camera-specific input components (JzEnttCameraInputComponent)
+ * - Update JzMouseInputComponent with mouse state and deltas
+ * - Update JzKeyboardInputComponent with keyboard state
+ * - Update camera-specific input components (JzCameraInputComponent)
  * - Process input mappings and dead zones (future enhancement)
  *
  * This system runs in the Input phase (first Logic phase) to ensure
  * all other systems have fresh input data available.
  */
-class JzEnttInputSystem : public JzEnttSystem {
+class JzInputSystem : public JzSystem {
 public:
-    JzEnttInputSystem() = default;
+    JzInputSystem() = default;
 
-    void OnInit(JzEnttWorld &world) override;
-    void Update(JzEnttWorld &world, F32 delta) override;
+    void OnInit(JzWorld &world) override;
+    void Update(JzWorld &world, F32 delta) override;
 
     /**
      * @brief Input system runs in the Input phase (first logic phase).
@@ -47,12 +47,12 @@ private:
     /**
      * @brief Update mouse input components from raw input manager.
      */
-    void UpdateMouseInput(JzEnttWorld &world);
+    void UpdateMouseInput(JzWorld &world);
 
     /**
      * @brief Update keyboard input components from raw input manager.
      */
-    void UpdateKeyboardInput(JzEnttWorld &world);
+    void UpdateKeyboardInput(JzWorld &world);
 
     /**
      * @brief Update camera-specific input components.
@@ -60,7 +60,7 @@ private:
      * Processes raw mouse/keyboard input and translates it into
      * camera control signals (orbit, pan, zoom).
      */
-    void UpdateCameraInput(JzEnttWorld &world);
+    void UpdateCameraInput(JzWorld &world);
 
 private:
     // Cached previous mouse position for delta calculation

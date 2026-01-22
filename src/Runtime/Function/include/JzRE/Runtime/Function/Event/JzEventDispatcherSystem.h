@@ -10,21 +10,21 @@
 #include <vector>
 #include <unordered_map>
 #include <memory>
-#include "JzRE/Runtime/Function/ECS/JzEnttSystem.h"
+#include "JzRE/Runtime/Function/ECS/JzSystem.h"
 #include "JzRE/Runtime/Function/Event/JzEventQueue.h"
 #include "JzRE/Runtime/Function/Event/JzIEventHandler.h"
 #include "JzRE/Runtime/Core/JzLogger.h"
 
 namespace JzRE {
 
-class JzEventDispatcherSystem : public JzEnttSystem {
+class JzEventDispatcherSystem : public JzSystem {
 public:
-    void OnInit(JzEnttWorld &world) override
+    void OnInit(JzWorld &world) override
     {
         // Initialization if needed
     }
 
-    void Update(JzEnttWorld &world, F32 delta) override
+    void Update(JzWorld &world, F32 delta) override
     {
         // Process delayed events
         ProcessDelayedEvents();
@@ -68,7 +68,7 @@ public:
 
     // Send to Entity
     template <typename T>
-    void SendToEntity(JzEnttEntity entity, T &&event)
+    void SendToEntity(JzEntity entity, T &&event)
     {
         event.target = entity;
         Send(std::forward<T>(event));

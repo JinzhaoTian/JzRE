@@ -10,7 +10,7 @@
 namespace JzRE {
 
 // Forward declaration
-class JzEnttWorld;
+class JzWorld;
 
 /**
  * @brief System execution phase for separating logic and rendering updates.
@@ -79,23 +79,23 @@ inline Bool IsRenderPhase(JzSystemPhase phase)
  * combinations. Each system should override the Update method to implement
  * its logic.
  */
-class JzEnttSystem {
+class JzSystem {
 public:
     /**
      * @brief Default constructor.
      */
-    JzEnttSystem() = default;
+    JzSystem() = default;
 
     /**
      * @brief Virtual destructor.
      */
-    virtual ~JzEnttSystem() = default;
+    virtual ~JzSystem() = default;
 
     // Systems are non-copyable but movable
-    JzEnttSystem(const JzEnttSystem &)            = delete;
-    JzEnttSystem &operator=(const JzEnttSystem &) = delete;
-    JzEnttSystem(JzEnttSystem &&)                 = default;
-    JzEnttSystem &operator=(JzEnttSystem &&)      = default;
+    JzSystem(const JzSystem &)            = delete;
+    JzSystem &operator=(const JzSystem &) = delete;
+    JzSystem(JzSystem &&)                 = default;
+    JzSystem &operator=(JzSystem &&)      = default;
 
     /**
      * @brief The update method called every frame.
@@ -103,14 +103,14 @@ public:
      * @param world The EnTT world containing entities and components.
      * @param delta The delta time since the last frame.
      */
-    virtual void Update(JzEnttWorld &world, F32 delta) = 0;
+    virtual void Update(JzWorld &world, F32 delta) = 0;
 
     /**
      * @brief Optional initialization method called when the system is registered.
      *
      * @param world The EnTT world containing entities and components.
      */
-    virtual void OnInit(JzEnttWorld &world)
+    virtual void OnInit(JzWorld &world)
     {
         // Default implementation does nothing
     }
@@ -120,7 +120,7 @@ public:
      *
      * @param world The EnTT world containing entities and components.
      */
-    virtual void OnShutdown(JzEnttWorld &world)
+    virtual void OnShutdown(JzWorld &world)
     {
         // Default implementation does nothing
     }

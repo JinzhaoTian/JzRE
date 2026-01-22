@@ -10,7 +10,7 @@
 #include "JzRE/Runtime/Core/JzLogger.h"
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
 #include "JzRE/Runtime/Function/ECS/JzAssetComponents.h"
-#include "JzRE/Runtime/Function/ECS/JzEnttWorld.h"
+#include "JzRE/Runtime/Function/ECS/JzWorld.h"
 #include "JzRE/Runtime/Resource/JzAssetManager.h"
 #include "JzRE/Runtime/Resource/JzShaderAsset.h"
 
@@ -20,12 +20,12 @@ JzShaderHotReloadSystem::JzShaderHotReloadSystem() = default;
 
 JzShaderHotReloadSystem::~JzShaderHotReloadSystem() = default;
 
-void JzShaderHotReloadSystem::OnInit(JzEnttWorld &world)
+void JzShaderHotReloadSystem::OnInit(JzWorld &world)
 {
     JzRE_LOG_INFO("JzShaderHotReloadSystem: Initialized with check interval {}s", m_checkInterval);
 }
 
-void JzShaderHotReloadSystem::Update(JzEnttWorld &world, F32 delta)
+void JzShaderHotReloadSystem::Update(JzWorld &world, F32 delta)
 {
     if (!IsEnabled()) {
         return;
@@ -41,7 +41,7 @@ void JzShaderHotReloadSystem::Update(JzEnttWorld &world, F32 delta)
     }
 }
 
-void JzShaderHotReloadSystem::OnShutdown(JzEnttWorld &world)
+void JzShaderHotReloadSystem::OnShutdown(JzWorld &world)
 {
     JzRE_LOG_INFO("JzShaderHotReloadSystem: Shutdown, reloaded {} shaders total", m_reloadCount);
 }
@@ -83,7 +83,7 @@ Bool JzShaderHotReloadSystem::ReloadShader(JzShaderAssetHandle shaderHandle)
     return success;
 }
 
-void JzShaderHotReloadSystem::CheckForUpdates(JzEnttWorld &world)
+void JzShaderHotReloadSystem::CheckForUpdates(JzWorld &world)
 {
     // Get asset manager from service container
     JzAssetManager *assetManager = nullptr;
@@ -125,7 +125,7 @@ void JzShaderHotReloadSystem::CheckForUpdates(JzEnttWorld &world)
 }
 
 void JzShaderHotReloadSystem::NotifyShaderReloaded(JzShaderAssetHandle shaderHandle,
-                                                   JzEnttWorld        &world)
+                                                   JzWorld        &world)
 {
     auto &registry = world.GetRegistry();
 
@@ -164,7 +164,7 @@ void JzShaderHotReloadSystem::NotifyShaderReloaded(JzShaderAssetHandle shaderHan
 }
 
 std::unordered_set<JzShaderAssetHandle, JzAssetHandle<JzShaderAsset>::Hash>
-JzShaderHotReloadSystem::CollectUsedShaders(JzEnttWorld &world)
+JzShaderHotReloadSystem::CollectUsedShaders(JzWorld &world)
 {
     std::unordered_set<JzShaderAssetHandle, JzAssetHandle<JzShaderAsset>::Hash> usedShaders;
 

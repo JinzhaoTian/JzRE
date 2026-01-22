@@ -3,38 +3,38 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzRE/Runtime/Function/ECS/JzEnttCameraSystem.h"
+#include "JzRE/Runtime/Function/ECS/JzCameraSystem.h"
 
 #include <algorithm>
 #include <cmath>
 
 namespace JzRE {
 
-void JzEnttCameraSystem::OnInit(JzEnttWorld &world)
+void JzCameraSystem::OnInit(JzWorld &world)
 {
     // Nothing to initialize
 }
 
-void JzEnttCameraSystem::Update(JzEnttWorld &world, F32 delta)
+void JzCameraSystem::Update(JzWorld &world, F32 delta)
 {
     // Process all cameras
-    auto view = world.View<JzEnttCameraComponent>();
+    auto view = world.View<JzCameraComponent>();
 
     for (auto entity : view) {
-        auto &camera = world.GetComponent<JzEnttCameraComponent>(entity);
+        auto &camera = world.GetComponent<JzCameraComponent>(entity);
 
         // Update aspect ratio from window component
-        auto windowView = world.View<JzEnttWindowComponent>();
+        auto windowView = world.View<JzWindowComponent>();
         if (!windowView.empty()) {
-            const auto &windowConfig = world.GetComponent<JzEnttWindowComponent>(windowView.front());
+            const auto &windowConfig = world.GetComponent<JzWindowComponent>(windowView.front());
             camera.aspect = windowConfig.aspectRatio;
         }
 
         // Handle orbit controller if present
-        auto *orbit = world.TryGetComponent<JzEnttOrbitControllerComponent>(entity);
+        auto *orbit = world.TryGetComponent<JzOrbitControllerComponent>(entity);
         if (orbit) {
             // Try to get camera input component for input-driven orbit control
-            auto *cameraInput = world.TryGetComponent<JzEnttCameraInputComponent>(entity);
+            auto *cameraInput = world.TryGetComponent<JzCameraInputComponent>(entity);
             if (cameraInput) {
                 HandleOrbitController(camera, *orbit, *cameraInput);
             }
@@ -53,7 +53,7 @@ void JzEnttCameraSystem::Update(JzEnttWorld &world, F32 delta)
     }
 }
 
-void JzEnttCameraSystem::UpdateCameraMatrices(JzEnttCameraComponent &camera)
+void JzCameraSystem::UpdateCameraMatrices(JzCameraComponent &camera)
 {
     // Get rotation (stored as pitch, yaw, roll, unused in x, y, z, w)
     F32 pitch = camera.rotation.x;
@@ -82,9 +82,9 @@ void JzEnttCameraSystem::UpdateCameraMatrices(JzEnttCameraComponent &camera)
         JzMat4x4::Perspective(fovRadians, camera.aspect, camera.nearPlane, camera.farPlane);
 }
 
-void JzEnttCameraSystem::HandleOrbitController(JzEnttCameraComponent            &camera,
-                                               JzEnttOrbitControllerComponent   &orbit,
-                                               const JzEnttCameraInputComponent &input)
+void JzCameraSystem::HandleOrbitController(JzCameraComponent            &camera,
+                                               JzOrbitControllerComponent   &orbit,
+                                               const JzCameraInputComponent &input)
 {
     // Handle orbit rotation (left mouse button)
     if (input.orbitActive) {
@@ -132,7 +132,7 @@ void JzEnttCameraSystem::HandleOrbitController(JzEnttCameraComponent            
     UpdateCameraFromOrbit(camera, orbit);
 }
 
-void JzEnttCameraSystem::HandleOrbitRotation(JzEnttOrbitControllerComponent &orbit, F32 deltaX,
+void JzCameraSystem::HandleOrbitRotation(JzOrbitControllerComponent &orbit, F32 deltaX,
                                              F32 deltaY)
 {
     // Update yaw and pitch based on mouse movement (drag-object style)
@@ -144,7 +144,7 @@ void JzEnttCameraSystem::HandleOrbitRotation(JzEnttOrbitControllerComponent &orb
     orbit.pitch            = std::clamp(orbit.pitch, -maxPitch, maxPitch);
 }
 
-void JzEnttCameraSystem::HandlePanning(JzEnttOrbitControllerComponent &orbit, F32 deltaX,
+void JzCameraSystem::HandlePanning(JzOrbitControllerComponent &orbit, F32 deltaX,
                                        F32 deltaY)
 {
     // Calculate the right and up vectors in world space based on current orientation
@@ -168,7 +168,7 @@ void JzEnttCameraSystem::HandlePanning(JzEnttOrbitControllerComponent &orbit, F3
     orbit.target.z -= right.z * deltaX * panScale + up.z * deltaY * panScale;
 }
 
-void JzEnttCameraSystem::HandleZoom(JzEnttOrbitControllerComponent &orbit, F32 scrollY)
+void JzCameraSystem::HandleZoom(JzOrbitControllerComponent &orbit, F32 scrollY)
 {
     // Adjust orbit distance based on scroll
     orbit.distance -= scrollY * orbit.zoomSensitivity;
@@ -177,8 +177,8 @@ void JzEnttCameraSystem::HandleZoom(JzEnttOrbitControllerComponent &orbit, F32 s
     orbit.distance = std::clamp(orbit.distance, orbit.minDistance, orbit.maxDistance);
 }
 
-void JzEnttCameraSystem::UpdateCameraFromOrbit(JzEnttCameraComponent          &camera,
-                                               JzEnttOrbitControllerComponent &orbit)
+void JzCameraSystem::UpdateCameraFromOrbit(JzCameraComponent          &camera,
+                                               JzOrbitControllerComponent &orbit)
 {
     // Calculate camera position using spherical coordinates
     F32 cosPitch = std::cos(orbit.pitch);

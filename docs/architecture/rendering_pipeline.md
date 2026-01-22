@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document describes the ECS-based rendering pipeline in JzRE. The rendering is handled by three cooperating systems within `JzEnttWorld`, organized into distinct execution phases for proper synchronization between logic and rendering.
+This document describes the ECS-based rendering pipeline in JzRE. The rendering is handled by three cooperating systems within `JzWorld`, organized into distinct execution phases for proper synchronization between logic and rendering.
 
 ---
 
@@ -10,14 +10,14 @@ This document describes the ECS-based rendering pipeline in JzRE. The rendering 
 
 ```
 JzRERuntime
-  └── JzEnttWorld
+  └── JzWorld
         ├── Logic Systems        (JzSystemPhase::Logic)
         │     └── User logic systems (movement, physics, AI, animations)
         ├── PreRender Systems    (JzSystemPhase::PreRender)
-        │     ├── JzEnttCameraSystem - Camera matrices, orbit control
-        │     └── JzEnttLightSystem  - Light data collection
+        │     ├── JzCameraSystem - Camera matrices, orbit control
+        │     └── JzLightSystem  - Light data collection
         └── Render Systems       (JzSystemPhase::Render)
-              └── JzEnttRenderSystem - Framebuffer, pipeline, rendering
+              └── JzRenderSystem - Framebuffer, pipeline, rendering
 ```
 
 ### System Phases
@@ -30,18 +30,18 @@ Systems execute in 8 phases grouped into 3 categories:
 |               | Physics    | Physics simulation, collision detection    | PhysicsSystem                         |
 |               | Animation  | Skeletal animation, blend trees            | AnimationSystem                       |
 |               | Logic      | General game logic, AI, scripts            | AISystem, ScriptSystem                |
-| **PreRender** | PreRender  | Camera matrices, light collection          | JzEnttCameraSystem, JzEnttLightSystem |
+| **PreRender** | PreRender  | Camera matrices, light collection          | JzCameraSystem, JzLightSystem |
 |               | Culling    | Frustum culling, occlusion, LOD selection  | CullingSystem                         |
 | **Render**    | RenderPrep | Batch building, instance data preparation  | BatchBuildingSystem, InstanceSystem   |
-|               | Render     | Actual GPU draw calls                      | JzEnttRenderSystem                    |
+|               | Render     | Actual GPU draw calls                      | JzRenderSystem                    |
 
 ### System Responsibilities
 
 | System                 | Phase     | Responsibilities                                                 |
 | ---------------------- | --------- | ---------------------------------------------------------------- |
-| **JzEnttCameraSystem** | PreRender | Process orbit controller input, compute view/projection matrices |
-| **JzEnttLightSystem**  | PreRender | Collect light entities, provide primary light direction/color    |
-| **JzEnttRenderSystem** | Render    | Manage framebuffer/textures, create pipeline, render entities    |
+| **JzCameraSystem** | PreRender | Process orbit controller input, compute view/projection matrices |
+| **JzLightSystem**  | PreRender | Collect light entities, provide primary light direction/color    |
+| **JzRenderSystem** | Render    | Manage framebuffer/textures, create pipeline, render entities    |
 
 ---
 
@@ -77,13 +77,13 @@ The main loop in `JzRERuntime::Run()` executes in 8 distinct phases:
      ├── Update aspect ratio
      ├── Update frame size
      └── m_world->UpdatePreRender(deltaTime)
-         ├── JzEnttCameraSystem::Update
+         ├── JzCameraSystem::Update
          │     ├── Process orbit controller (mouse input)
          │     ├── Update camera position/rotation
          │     ├── Compute view matrix (LookAt)
          │     ├── Compute projection matrix (Perspective)
          │     └── Cache main camera data
-         └── JzEnttLightSystem::Update
+         └── JzLightSystem::Update
                ├── Query DirectionalLight entities
                ├── Query PointLight entities
                ├── Query SpotLight entities
@@ -93,7 +93,7 @@ The main loop in `JzRERuntime::Run()` executes in 8 distinct phases:
 [Phase 6: ECS Render Update]
    _UpdateECSRender(frameData)
      └── m_world->UpdateRender(deltaTime)
-         └── JzEnttRenderSystem::Update
+         └── JzRenderSystem::Update
                ├── Create/resize framebuffer if needed
                ├── Bind framebuffer
                ├── Set viewport
@@ -141,7 +141,7 @@ The main loop in `JzRERuntime::Run()` executes in 8 distinct phases:
 
 ```cpp
 // Full camera state
-struct JzEnttCameraComponent {
+struct JzCameraComponent {
     JzVec3 position;
     JzVec4 rotation;        // pitch, yaw, roll, unused
     F32    fov, nearPlane, farPlane, aspect;
@@ -152,7 +152,7 @@ struct JzEnttCameraComponent {
 };
 
 // Orbit controller for camera
-struct JzEnttOrbitControllerComponent {
+struct JzOrbitControllerComponent {
     JzVec3 target;
     F32    yaw, pitch, distance;
     F32    orbitSensitivity, panSensitivity, zoomSensitivity;
@@ -164,19 +164,19 @@ struct JzEnttOrbitControllerComponent {
 ### Light Components
 
 ```cpp
-struct JzEnttDirectionalLightComponent {
+struct JzDirectionalLightComponent {
     JzVec3 direction;
     JzVec3 color;
     F32    intensity;
 };
 
-struct JzEnttPointLightComponent {
+struct JzPointLightComponent {
     JzVec3 color;
     F32    intensity, range;
     F32    constant, linear, quadratic;  // Attenuation
 };
 
-struct JzEnttSpotLightComponent {
+struct JzSpotLightComponent {
     JzVec3 direction, color;
     F32    intensity, range;
     F32    innerCutoff, outerCutoff;  // Cone angles
@@ -197,10 +197,10 @@ An entity is rendered if it has these components:
 
 ## Code Example
 
-### Rendering Flow in JzEnttRenderSystem
+### Rendering Flow in JzRenderSystem
 
 ```cpp
-void JzEnttRenderSystem::Update(JzEnttWorld &world, F32 delta) {
+void JzRenderSystem::Update(JzWorld &world, F32 delta) {
     // Create/recreate framebuffer if size changed
     if (m_frameSizeChanged) {
         CreateFramebuffer();
@@ -265,7 +265,7 @@ void JzEnttRenderSystem::Update(JzEnttWorld &world, F32 delta) {
 
 ## Model Spawning
 
-Use `JzEnttModelSpawner` to create entities from model files:
+Use `JzModelSpawner` to create entities from model files:
 
 ```cpp
 // Load model
@@ -273,7 +273,7 @@ auto model = std::make_shared<JzModel>("models/scene.obj");
 model->Load();
 
 // Spawn entities (one per mesh)
-auto entities = JzEnttModelSpawner::SpawnModel(world, model);
+auto entities = JzModelSpawner::SpawnModel(world, model);
 
 // Each entity has:
 // - JzTransformComponent
@@ -286,7 +286,7 @@ auto entities = JzEnttModelSpawner::SpawnModel(world, model);
 
 ## Editor Integration
 
-The Editor accesses the rendered frame via `JzEnttRenderSystem`:
+The Editor accesses the rendered frame via `JzRenderSystem`:
 
 ```cpp
 // In Editor: get rendered texture
@@ -309,10 +309,10 @@ The Editor overrides `ShouldBlitToScreen()` to return `false`, preventing automa
 sequenceDiagram
     participant App as JzRERuntime
     participant Worker as WorkerThread
-    participant World as JzEnttWorld
-    participant Camera as JzEnttCameraSystem
-    participant Light as JzEnttLightSystem
-    participant Render as JzEnttRenderSystem
+    participant World as JzWorld
+    participant Camera as JzCameraSystem
+    participant Light as JzLightSystem
+    participant Render as JzRenderSystem
     participant GPU as GPU/RHI
 
     Note over App: Phase 1: Frame Start
@@ -379,14 +379,14 @@ sequenceDiagram
 | ----------------------- | ------------ | --------------------------------------------- |
 | `JzMeshComponent`       | `JzMesh`     | `JzGPUVertexArrayObject`, `JzGPUBufferObject` |
 | `JzMaterialComponent`   | `JzMaterial` | `JzRHIPipeline`, `JzGPUTextureObject`         |
-| `JzEnttCameraComponent` | -            | Uniform data                                  |
-| `JzEntt*LightComponent` | -            | Uniform data                                  |
+| `JzCameraComponent` | -            | Uniform data                                  |
+| `Jz*LightComponent` | -            | Uniform data                                  |
 
 ---
 
 ## Default Shaders
 
-The `JzEnttRenderSystem` creates a default pipeline with Blinn-Phong shading:
+The `JzRenderSystem` creates a default pipeline with Blinn-Phong shading:
 
 **Vertex Shader:**
 

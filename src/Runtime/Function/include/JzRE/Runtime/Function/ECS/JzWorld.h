@@ -9,8 +9,8 @@
 #include <vector>
 #include <entt/entt.hpp>
 #include "JzRE/Runtime/Core/JzRETypes.h"
-#include "JzRE/Runtime/Function/ECS/JzEnttEntity.h"
-#include "JzRE/Runtime/Function/ECS/JzEnttSystem.h"
+#include "JzRE/Runtime/Function/ECS/JzEntity.h"
+#include "JzRE/Runtime/Function/ECS/JzSystem.h"
 
 namespace JzRE {
 
@@ -21,23 +21,23 @@ namespace JzRE {
  * for entity and component management. It serves as the central hub for all
  * ECS operations in the EnTT-based implementation.
  */
-class JzEnttWorld {
+class JzWorld {
 public:
     /**
      * @brief Default constructor.
      */
-    JzEnttWorld() = default;
+    JzWorld() = default;
 
     /**
      * @brief Destructor.
      */
-    ~JzEnttWorld() = default;
+    ~JzWorld() = default;
 
     // Non-copyable, movable
-    JzEnttWorld(const JzEnttWorld &)            = delete;
-    JzEnttWorld &operator=(const JzEnttWorld &) = delete;
-    JzEnttWorld(JzEnttWorld &&)                 = default;
-    JzEnttWorld &operator=(JzEnttWorld &&)      = default;
+    JzWorld(const JzWorld &)            = delete;
+    JzWorld &operator=(const JzWorld &) = delete;
+    JzWorld(JzWorld &&)                 = default;
+    JzWorld &operator=(JzWorld &&)      = default;
 
     // ==================== Entity Management ====================
 
@@ -46,14 +46,14 @@ public:
      *
      * @return The newly created entity.
      */
-    JzEnttEntity CreateEntity();
+    JzEntity CreateEntity();
 
     /**
      * @brief Destroys an entity and all its associated components.
      *
      * @param entity The entity to destroy.
      */
-    void DestroyEntity(JzEnttEntity entity);
+    void DestroyEntity(JzEntity entity);
 
     /**
      * @brief Checks if an entity is still valid (not destroyed).
@@ -62,7 +62,7 @@ public:
      *
      * @return True if the entity is valid, false otherwise.
      */
-    Bool IsValid(JzEnttEntity entity) const;
+    Bool IsValid(JzEntity entity) const;
 
     /**
      * @brief Gets the number of currently alive entities.
@@ -85,7 +85,7 @@ public:
      * @return A reference to the newly added component.
      */
     template <typename T, typename... Args>
-    T &AddComponent(JzEnttEntity entity, Args &&...args);
+    T &AddComponent(JzEntity entity, Args &&...args);
 
     /**
      * @brief Removes a component from an entity.
@@ -95,7 +95,7 @@ public:
      * @param entity The entity to remove the component from.
      */
     template <typename T>
-    void RemoveComponent(JzEnttEntity entity);
+    void RemoveComponent(JzEntity entity);
 
     /**
      * @brief Gets a component from an entity.
@@ -107,7 +107,7 @@ public:
      * @return A reference to the component.
      */
     template <typename T>
-    T &GetComponent(JzEnttEntity entity);
+    T &GetComponent(JzEntity entity);
 
     /**
      * @brief Gets a component from an entity (const version).
@@ -119,7 +119,7 @@ public:
      * @return A const reference to the component.
      */
     template <typename T>
-    const T &GetComponent(JzEnttEntity entity) const;
+    const T &GetComponent(JzEntity entity) const;
 
     /**
      * @brief Tries to get a component from an entity.
@@ -131,7 +131,7 @@ public:
      * @return A pointer to the component, or nullptr if not found.
      */
     template <typename T>
-    T *TryGetComponent(JzEnttEntity entity);
+    T *TryGetComponent(JzEntity entity);
 
     /**
      * @brief Tries to get a component from an entity (const version).
@@ -143,7 +143,7 @@ public:
      * @return A const pointer to the component, or nullptr if not found.
      */
     template <typename T>
-    const T *TryGetComponent(JzEnttEntity entity) const;
+    const T *TryGetComponent(JzEntity entity) const;
 
     /**
      * @brief Checks if an entity has a specific component.
@@ -155,7 +155,7 @@ public:
      * @return True if the entity has the component, false otherwise.
      */
     template <typename T>
-    Bool HasComponent(JzEnttEntity entity) const;
+    Bool HasComponent(JzEntity entity) const;
 
     // ==================== View/Query ====================
 
@@ -194,7 +194,7 @@ public:
     /**
      * @brief Registers a new system.
      *
-     * @tparam T The system type (must derive from JzEnttSystem).
+     * @tparam T The system type (must derive from JzSystem).
      * @tparam Args The argument types for the system constructor.
      *
      * @param args The arguments to forward to the system constructor.
@@ -277,9 +277,9 @@ public:
 
 private:
     entt::registry                             m_registry; ///< The EnTT registry holding all entities and components.
-    std::vector<std::shared_ptr<JzEnttSystem>> m_systems;  ///< Registered systems.
+    std::vector<std::shared_ptr<JzSystem>> m_systems;  ///< Registered systems.
 };
 
 } // namespace JzRE
 
-#include "JzEnttWorld.inl" // IWYU pragma: keep
+#include "JzWorld.inl" // IWYU pragma: keep

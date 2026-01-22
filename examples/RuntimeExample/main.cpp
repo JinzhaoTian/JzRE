@@ -5,7 +5,7 @@
 
 #include "JzRE/Runtime/JzRERuntime.h"
 #include "JzRE/Runtime/Function/ECS/JzAssetComponents.h"
-#include "JzRE/Runtime/Function/ECS/JzEnttComponents.h"
+#include "JzRE/Runtime/Function/ECS/JzComponents.h"
 #include "JzRE/Runtime/Resource/JzModel.h"
 
 #include <iostream>
@@ -296,7 +296,7 @@ private:
     JzRE::JzModelHandle                 m_modelHandle;
     std::vector<JzRE::JzMeshHandle>     m_meshHandles;
     std::vector<JzRE::JzMaterialHandle> m_materialHandles;
-    std::vector<JzRE::JzEnttEntity>     m_modelEntities;
+    std::vector<JzRE::JzEntity>     m_modelEntities;
 };
 
 /**

@@ -7,7 +7,7 @@
 
 #include "JzRE/Runtime/Core/JzClock.h"
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
-#include "JzRE/Runtime/Function/ECS/JzEnttComponents.h"
+#include "JzRE/Runtime/Function/ECS/JzComponents.h"
 
 #include "JzRE/Runtime/Function/Rendering/JzDeviceFactory.h"
 
@@ -101,8 +101,8 @@ void JzRE::JzRERuntime::CreateSubsystems()
     JzServiceContainer::Provide<JzInputManager>(*m_inputManager);
 
     // Initialize ECS world and systems
-    m_world = std::make_unique<JzEnttWorld>();
-    JzServiceContainer::Provide<JzEnttWorld>(*m_world);
+    m_world = std::make_unique<JzWorld>();
+    JzServiceContainer::Provide<JzWorld>(*m_world);
 }
 
 void JzRE::JzRERuntime::RegisterComponents()
@@ -129,11 +129,11 @@ void JzRE::JzRERuntime::RegisterSystems()
     // systemManager.AddDependency<RenderSystem, TransformSystem>();
 
     // Register systems in execution order by phase:
-    m_inputSystem        = m_world->RegisterSystem<JzEnttInputSystem>();
+    m_inputSystem        = m_world->RegisterSystem<JzInputSystem>();
     m_assetLoadingSystem = m_world->RegisterSystem<JzAssetLoadingSystem>();
-    m_cameraSystem       = m_world->RegisterSystem<JzEnttCameraSystem>();
-    m_lightSystem        = m_world->RegisterSystem<JzEnttLightSystem>();
-    m_renderSystem       = m_world->RegisterSystem<JzEnttRenderSystem>();
+    m_cameraSystem       = m_world->RegisterSystem<JzCameraSystem>();
+    m_lightSystem        = m_world->RegisterSystem<JzLightSystem>();
+    m_renderSystem       = m_world->RegisterSystem<JzRenderSystem>();
 }
 
 void JzRE::JzRERuntime::InitializeSubsystems()
@@ -188,7 +188,7 @@ void JzRE::JzRERuntime::UpdateSystems(F32 deltaTime)
 
     // Update global window component
     if (m_world->IsValid(m_globalConfigEntity)) {
-        auto &config     = m_world->GetComponent<JzEnttWindowComponent>(m_globalConfigEntity);
+        auto &config     = m_world->GetComponent<JzWindowComponent>(m_globalConfigEntity);
         config.frameSize = m_window->GetFramebufferSize();
         if (config.frameSize.y > 0) {
             config.aspectRatio = static_cast<F32>(config.frameSize.x) / static_cast<F32>(config.frameSize.y);
@@ -246,7 +246,7 @@ void JzRE::JzRERuntime::CreateGlobalConfigEntity()
     // Create Global Config Entity
     m_globalConfigEntity = m_world->CreateEntity();
 
-    auto &config        = m_world->AddComponent<JzEnttWindowComponent>(m_globalConfigEntity);
+    auto &config        = m_world->AddComponent<JzWindowComponent>(m_globalConfigEntity);
     config.blitToScreen = true;
     config.frameSize    = m_window->GetFramebufferSize();
     if (config.frameSize.y > 0) {
@@ -259,23 +259,23 @@ void JzRE::JzRERuntime::CreateDefaultCameraEntity()
     m_mainCameraEntity = m_world->CreateEntity();
 
     // Add camera component
-    auto &camera        = m_world->AddComponent<JzEnttCameraComponent>(m_mainCameraEntity);
+    auto &camera        = m_world->AddComponent<JzCameraComponent>(m_mainCameraEntity);
     camera.isMainCamera = true;
     camera.fov          = 60.0f;
     camera.nearPlane    = 0.1f;
     camera.farPlane     = 100.0f;
 
     // Add orbit controller component
-    auto &orbit    = m_world->AddComponent<JzEnttOrbitControllerComponent>(m_mainCameraEntity);
+    auto &orbit    = m_world->AddComponent<JzOrbitControllerComponent>(m_mainCameraEntity);
     orbit.distance = 5.0f;
     orbit.pitch    = 0.3f;
     orbit.yaw      = 0.0f;
     orbit.target   = JzVec3(0.0f, 0.0f, 0.0f);
 
     // Add input components for camera control
-    m_world->AddComponent<JzEnttMouseInputComponent>(m_mainCameraEntity);
-    m_world->AddComponent<JzEnttKeyboardInputComponent>(m_mainCameraEntity);
-    m_world->AddComponent<JzEnttCameraInputComponent>(m_mainCameraEntity);
+    m_world->AddComponent<JzMouseInputComponent>(m_mainCameraEntity);
+    m_world->AddComponent<JzKeyboardInputComponent>(m_mainCameraEntity);
+    m_world->AddComponent<JzCameraInputComponent>(m_mainCameraEntity);
 
     // Add main camera tag (empty struct, use emplace directly)
     m_world->GetRegistry().emplace<JzMainCameraTag>(m_mainCameraEntity);
@@ -283,13 +283,13 @@ void JzRE::JzRERuntime::CreateDefaultCameraEntity()
 
 void JzRE::JzRERuntime::CreateDefaultLightEntity()
 {
-    JzEnttEntity lightEntity = m_world->CreateEntity();
+    JzEntity lightEntity = m_world->CreateEntity();
 
     // Add transform component (not strictly needed for directional light but for consistency)
     m_world->AddComponent<JzTransformComponent>(lightEntity);
 
     // Add directional light component
-    auto &light     = m_world->AddComponent<JzEnttDirectionalLightComponent>(lightEntity);
+    auto &light     = m_world->AddComponent<JzDirectionalLightComponent>(lightEntity);
     light.direction = JzVec3(0.3f, -1.0f, -0.5f);
     light.color     = JzVec3(1.0f, 1.0f, 1.0f);
     light.intensity = 1.0f;
@@ -348,7 +348,7 @@ JzRE::JzDevice &JzRE::JzRERuntime::GetDevice()
     return *m_device;
 }
 
-JzRE::JzEnttWorld &JzRE::JzRERuntime::GetWorld()
+JzRE::JzWorld &JzRE::JzRERuntime::GetWorld()
 {
     return *m_world;
 }

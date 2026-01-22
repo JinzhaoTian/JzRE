@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "JzRE/Runtime/Core/JzRETypes.h"
-#include "JzRE/Runtime/Function/ECS/JzEnttEntity.h"
-#include "JzRE/Runtime/Function/ECS/JzEnttWorld.h"
-#include "JzRE/Runtime/Function/ECS/JzEnttComponents.h"
+#include "JzRE/Runtime/Function/ECS/JzEntity.h"
+#include "JzRE/Runtime/Function/ECS/JzWorld.h"
+#include "JzRE/Runtime/Function/ECS/JzComponents.h"
 #include "JzRE/Runtime/Resource/JzMaterial.h"
 #include "JzRE/Runtime/Resource/JzMesh.h"
 #include "JzRE/Runtime/Resource/JzModel.h"
@@ -24,7 +24,7 @@ namespace JzRE {
  * This class provides static methods to convert model resources into
  * ECS entities with appropriate components for rendering.
  */
-class JzEnttModelSpawner {
+class JzModelSpawner {
 public:
     /**
      * @brief Spawn entities for all meshes in a model.
@@ -40,7 +40,7 @@ public:
      * @param rootTransform Transform to apply to all entities.
      * @return Vector of created entities.
      */
-    static std::vector<JzEnttEntity> SpawnModel(JzEnttWorld                &world,
+    static std::vector<JzEntity> SpawnModel(JzWorld                &world,
                                                 std::shared_ptr<JzModel>    model,
                                                 const JzTransformComponent &rootTransform = {});
 
@@ -54,7 +54,7 @@ public:
      * @param name Optional name for the entity.
      * @return The created entity.
      */
-    static JzEnttEntity SpawnMesh(JzEnttWorld                &world,
+    static JzEntity SpawnMesh(JzWorld                &world,
                                   std::shared_ptr<JzMesh>     mesh,
                                   std::shared_ptr<JzMaterial> material,
                                   const JzTransformComponent &transform = {},
@@ -66,7 +66,7 @@ public:
      * @param world The ECS world.
      * @param entities The entities to destroy.
      */
-    static void DestroyEntities(JzEnttWorld &world, const std::vector<JzEnttEntity> &entities);
+    static void DestroyEntities(JzWorld &world, const std::vector<JzEntity> &entities);
 };
 
 } // namespace JzRE

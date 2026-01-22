@@ -5,9 +5,9 @@
 
 #pragma once
 
-#include "JzRE/Runtime/Function/ECS/JzEnttSystem.h"
-#include "JzRE/Runtime/Function/ECS/JzEnttWorld.h"
-#include "JzRE/Runtime/Function/ECS/JzEnttComponents.h"
+#include "JzRE/Runtime/Function/ECS/JzSystem.h"
+#include "JzRE/Runtime/Function/ECS/JzWorld.h"
+#include "JzRE/Runtime/Function/ECS/JzComponents.h"
 
 namespace JzRE {
 
@@ -17,7 +17,7 @@ namespace JzRE {
  * This is an EnTT-based reimplementation of the original JzSceneSystem.
  * It demonstrates hierarchical transform updates using EnTT's component access.
  */
-class JzEnttSceneSystem : public JzEnttSystem {
+class JzSceneSystem : public JzSystem {
 public:
     /**
      * @brief Updates world transforms for all scene nodes.
@@ -25,7 +25,7 @@ public:
      * @param world The EnTT world containing entities and components.
      * @param delta The delta time since the last frame.
      */
-    void Update(JzEnttWorld &world, F32 delta) override
+    void Update(JzWorld &world, F32 delta) override
     {
         // Find root nodes (nodes without a parent or with invalid parent)
         auto view = world.View<JzSceneNodeComponent>();
@@ -47,7 +47,7 @@ private:
      * @param world The EnTT world containing entities and components.
      * @param entity The entity to update.
      */
-    void UpdateWorldTransform(JzEnttWorld &world, JzEnttEntity entity)
+    void UpdateWorldTransform(JzWorld &world, JzEntity entity)
     {
         auto *node = world.TryGetComponent<JzSceneNodeComponent>(entity);
         if (!node) {
@@ -70,7 +70,7 @@ private:
         for (auto childId : node->children) {
             // Convert old entity ID to entt entity if needed
             // Note: This assumes children are stored as entt entities
-            JzEnttEntity child = static_cast<JzEnttEntity>(childId);
+            JzEntity child = static_cast<JzEntity>(childId);
             if (world.IsValid(child)) {
                 UpdateWorldTransform(world, child);
             }

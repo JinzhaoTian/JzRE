@@ -3,18 +3,18 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzRE/Runtime/Function/ECS/JzEnttLightSystem.h"
+#include "JzRE/Runtime/Function/ECS/JzLightSystem.h"
 
-#include "JzRE/Runtime/Function/ECS/JzEnttComponents.h"
+#include "JzRE/Runtime/Function/ECS/JzComponents.h"
 
 namespace JzRE {
 
-void JzEnttLightSystem::OnInit(JzEnttWorld &world)
+void JzLightSystem::OnInit(JzWorld &world)
 {
     // Nothing to initialize
 }
 
-void JzEnttLightSystem::Update(JzEnttWorld &world, F32 delta)
+void JzLightSystem::Update(JzWorld &world, F32 delta)
 {
     // Clear previous frame's light data
     m_lights.clear();
@@ -23,9 +23,9 @@ void JzEnttLightSystem::Update(JzEnttWorld &world, F32 delta)
 
     // Collect directional lights
     {
-        auto view = world.View<JzTransformComponent, JzEnttDirectionalLightComponent>();
+        auto view = world.View<JzTransformComponent, JzDirectionalLightComponent>();
         for (auto entity : view) {
-            auto &lightComp = world.GetComponent<JzEnttDirectionalLightComponent>(entity);
+            auto &lightComp = world.GetComponent<JzDirectionalLightComponent>(entity);
 
             JzLightData data;
             data.position    = JzVec3(0.0f, 0.0f, 0.0f); // Directional lights have no position
@@ -51,10 +51,10 @@ void JzEnttLightSystem::Update(JzEnttWorld &world, F32 delta)
 
     // Collect point lights
     {
-        auto view = world.View<JzTransformComponent, JzEnttPointLightComponent>();
+        auto view = world.View<JzTransformComponent, JzPointLightComponent>();
         for (auto entity : view) {
             auto &transform = world.GetComponent<JzTransformComponent>(entity);
-            auto &lightComp = world.GetComponent<JzEnttPointLightComponent>(entity);
+            auto &lightComp = world.GetComponent<JzPointLightComponent>(entity);
 
             JzLightData data;
             data.position    = transform.position;
@@ -72,10 +72,10 @@ void JzEnttLightSystem::Update(JzEnttWorld &world, F32 delta)
 
     // Collect spot lights
     {
-        auto view = world.View<JzTransformComponent, JzEnttSpotLightComponent>();
+        auto view = world.View<JzTransformComponent, JzSpotLightComponent>();
         for (auto entity : view) {
             auto &transform = world.GetComponent<JzTransformComponent>(entity);
-            auto &lightComp = world.GetComponent<JzEnttSpotLightComponent>(entity);
+            auto &lightComp = world.GetComponent<JzSpotLightComponent>(entity);
 
             JzLightData data;
             data.position    = transform.position;

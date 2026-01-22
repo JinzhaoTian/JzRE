@@ -10,7 +10,7 @@
 #include <utility>
 
 #include "JzRE/Runtime/Core/JzRETypes.h"
-#include "JzRE/Runtime/Function/ECS/JzEnttEntity.h"
+#include "JzRE/Runtime/Function/ECS/JzEntity.h"
 
 namespace JzRE {
 
@@ -20,8 +20,8 @@ namespace JzRE {
 struct JzREEvent {
     virtual ~JzREEvent() = default;
     U64          timestamp;                    // Event timestamp
-    JzEnttEntity source = INVALID_ENTT_ENTITY; // Event source entity
-    JzEnttEntity target = INVALID_ENTT_ENTITY; // Event target entity
+    JzEntity source = INVALID_ENTT_ENTITY; // Event source entity
+    JzEntity target = INVALID_ENTT_ENTITY; // Event target entity
 };
 
 /**

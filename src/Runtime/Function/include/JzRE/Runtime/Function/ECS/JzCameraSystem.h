@@ -8,9 +8,9 @@
 #include "JzRE/Runtime/Core/JzMatrix.h"
 #include "JzRE/Runtime/Core/JzRETypes.h"
 #include "JzRE/Runtime/Core/JzVector.h"
-#include "JzRE/Runtime/Function/ECS/JzEnttComponents.h"
-#include "JzRE/Runtime/Function/ECS/JzEnttSystem.h"
-#include "JzRE/Runtime/Function/ECS/JzEnttWorld.h"
+#include "JzRE/Runtime/Function/ECS/JzComponents.h"
+#include "JzRE/Runtime/Function/ECS/JzSystem.h"
+#include "JzRE/Runtime/Function/ECS/JzWorld.h"
 
 namespace JzRE {
 
@@ -22,12 +22,12 @@ namespace JzRE {
  * - Processing orbit camera controller input
  * - Caching main camera data for use by other systems
  */
-class JzEnttCameraSystem : public JzEnttSystem {
+class JzCameraSystem : public JzSystem {
 public:
-    JzEnttCameraSystem() = default;
+    JzCameraSystem() = default;
 
-    void OnInit(JzEnttWorld &world) override;
-    void Update(JzEnttWorld &world, F32 delta) override;
+    void OnInit(JzWorld &world) override;
+    void Update(JzWorld &world, F32 delta) override;
 
     /**
      * @brief Camera system runs in PreRender phase.
@@ -75,7 +75,7 @@ private:
     /**
      * @brief Update camera matrices from its parameters.
      */
-    void UpdateCameraMatrices(JzEnttCameraComponent &camera);
+    void UpdateCameraMatrices(JzCameraComponent &camera);
 
     /**
      * @brief Handle orbit controller input and update camera position/rotation.
@@ -84,9 +84,9 @@ private:
      * @param orbit Orbit controller component with orbit parameters
      * @param input Camera input component with processed input state
      */
-    void HandleOrbitController(JzEnttCameraComponent            &camera,
-                               JzEnttOrbitControllerComponent   &orbit,
-                               const JzEnttCameraInputComponent &input);
+    void HandleOrbitController(JzCameraComponent            &camera,
+                               JzOrbitControllerComponent   &orbit,
+                               const JzCameraInputComponent &input);
 
     /**
      * @brief Handle orbit rotation from mouse movement.
@@ -95,7 +95,7 @@ private:
      * @param deltaX Horizontal mouse delta
      * @param deltaY Vertical mouse delta
      */
-    void HandleOrbitRotation(JzEnttOrbitControllerComponent &orbit, F32 deltaX, F32 deltaY);
+    void HandleOrbitRotation(JzOrbitControllerComponent &orbit, F32 deltaX, F32 deltaY);
 
     /**
      * @brief Handle camera panning from mouse movement.
@@ -104,7 +104,7 @@ private:
      * @param deltaX Horizontal mouse delta
      * @param deltaY Vertical mouse delta
      */
-    void HandlePanning(JzEnttOrbitControllerComponent &orbit, F32 deltaX, F32 deltaY);
+    void HandlePanning(JzOrbitControllerComponent &orbit, F32 deltaX, F32 deltaY);
 
     /**
      * @brief Handle zoom from scroll wheel.
@@ -112,13 +112,13 @@ private:
      * @param orbit Orbit controller component
      * @param scrollY Scroll wheel delta
      */
-    void HandleZoom(JzEnttOrbitControllerComponent &orbit, F32 scrollY);
+    void HandleZoom(JzOrbitControllerComponent &orbit, F32 scrollY);
 
     /**
      * @brief Update camera position and rotation from orbit parameters.
      */
-    void UpdateCameraFromOrbit(JzEnttCameraComponent          &camera,
-                               JzEnttOrbitControllerComponent &orbit);
+    void UpdateCameraFromOrbit(JzCameraComponent          &camera,
+                               JzOrbitControllerComponent &orbit);
 
 private:
     // Cached main camera data

@@ -3,17 +3,17 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzRE/Runtime/Function/ECS/JzEnttModelSpawner.h"
+#include "JzRE/Runtime/Function/ECS/JzModelSpawner.h"
 
-#include "JzRE/Runtime/Function/ECS/JzEnttComponents.h"
+#include "JzRE/Runtime/Function/ECS/JzComponents.h"
 
 namespace JzRE {
 
-std::vector<JzEnttEntity> JzEnttModelSpawner::SpawnModel(JzEnttWorld                &world,
+std::vector<JzEntity> JzModelSpawner::SpawnModel(JzWorld                &world,
                                                          std::shared_ptr<JzModel>    model,
                                                          const JzTransformComponent &rootTransform)
 {
-    std::vector<JzEnttEntity> entities;
+    std::vector<JzEntity> entities;
 
     if (!model) {
         return entities;
@@ -36,20 +36,20 @@ std::vector<JzEnttEntity> JzEnttModelSpawner::SpawnModel(JzEnttWorld            
         }
 
         // Create entity
-        JzEnttEntity entity = SpawnMesh(world, mesh, material, rootTransform);
+        JzEntity entity = SpawnMesh(world, mesh, material, rootTransform);
         entities.push_back(entity);
     }
 
     return entities;
 }
 
-JzEnttEntity JzEnttModelSpawner::SpawnMesh(JzEnttWorld                &world,
+JzEntity JzModelSpawner::SpawnMesh(JzWorld                &world,
                                            std::shared_ptr<JzMesh>     mesh,
                                            std::shared_ptr<JzMaterial> material,
                                            const JzTransformComponent &transform,
                                            const String               &name)
 {
-    JzEnttEntity entity = world.CreateEntity();
+    JzEntity entity = world.CreateEntity();
 
     // Add transform component
     auto &transformComp = world.AddComponent<JzTransformComponent>(entity);
@@ -89,8 +89,8 @@ JzEnttEntity JzEnttModelSpawner::SpawnMesh(JzEnttWorld                &world,
     return entity;
 }
 
-void JzEnttModelSpawner::DestroyEntities(JzEnttWorld                     &world,
-                                         const std::vector<JzEnttEntity> &entities)
+void JzModelSpawner::DestroyEntities(JzWorld                     &world,
+                                         const std::vector<JzEntity> &entities)
 {
     for (auto entity : entities) {
         if (world.IsValid(entity)) {
