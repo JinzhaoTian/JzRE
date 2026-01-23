@@ -182,15 +182,15 @@ protected:
     std::unique_ptr<JzAssetManager> m_assetManager;
 
     // ECS world and systems
-    std::unique_ptr<JzWorld>          m_world;
-    std::shared_ptr<JzInputSystem>    m_inputSystem;
-    std::shared_ptr<JzCameraSystem>   m_cameraSystem;
-    std::shared_ptr<JzLightSystem>    m_lightSystem;
-    std::shared_ptr<JzRenderSystem>   m_renderSystem;
+    std::unique_ptr<JzWorld>              m_world;
+    std::shared_ptr<JzInputSystem>        m_inputSystem;
+    std::shared_ptr<JzCameraSystem>       m_cameraSystem;
+    std::shared_ptr<JzLightSystem>        m_lightSystem;
+    std::shared_ptr<JzRenderSystem>       m_renderSystem;
     std::shared_ptr<JzAssetLoadingSystem> m_assetLoadingSystem;
 
-    JzEntity m_mainCameraEntity   = INVALID_ENTT_ENTITY;
-    JzEntity m_globalConfigEntity = INVALID_ENTT_ENTITY;
+    JzEntity m_mainCameraEntity   = INVALID_ENTITY;
+    JzEntity m_globalConfigEntity = INVALID_ENTITY;
 };
 
 } // namespace JzRE

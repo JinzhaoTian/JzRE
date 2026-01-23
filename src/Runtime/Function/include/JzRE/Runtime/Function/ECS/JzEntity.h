@@ -22,7 +22,7 @@ using JzEntity = entt::entity;
 /**
  * @brief Invalid entity constant for the EnTT-based ECS.
  */
-constexpr JzEntity INVALID_ENTT_ENTITY = entt::null;
+constexpr JzEntity INVALID_ENTITY = entt::null;
 
 /**
  * @brief Converts a JzEntity to its underlying integer representation.

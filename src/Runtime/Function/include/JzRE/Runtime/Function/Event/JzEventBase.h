@@ -19,9 +19,9 @@ namespace JzRE {
  */
 struct JzREEvent {
     virtual ~JzREEvent() = default;
-    U64          timestamp;                    // Event timestamp
-    JzEntity source = INVALID_ENTT_ENTITY; // Event source entity
-    JzEntity target = INVALID_ENTT_ENTITY; // Event target entity
+    U64      timestamp;               // Event timestamp
+    JzEntity source = INVALID_ENTITY; // Event source entity
+    JzEntity target = INVALID_ENTITY; // Event target entity
 };
 
 /**

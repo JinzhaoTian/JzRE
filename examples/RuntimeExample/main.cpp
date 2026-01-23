@@ -288,7 +288,7 @@ private:
             }
 
             // Mark entity as ready (all assets already loaded)
-            world.GetRegistry().emplace<JzRE::JzAssetReadyTag>(entity);
+            world.AddComponent<JzRE::JzAssetReadyTag>(entity);
         }
     }
 
@@ -296,7 +296,7 @@ private:
     JzRE::JzModelHandle                 m_modelHandle;
     std::vector<JzRE::JzMeshHandle>     m_meshHandles;
     std::vector<JzRE::JzMaterialHandle> m_materialHandles;
-    std::vector<JzRE::JzEntity>     m_modelEntities;
+    std::vector<JzRE::JzEntity>         m_modelEntities;
 };
 
 /**

@@ -12,9 +12,25 @@ namespace JzRE {
 // ==================== Component Management ====================
 
 template <typename T, typename... Args>
-T &JzWorld::AddComponent(JzEntity entity, Args &&...args)
+decltype(auto) JzWorld::AddComponent(JzEntity entity, Args &&...args)
 {
-    return m_registry.emplace<T>(entity, std::forward<Args>(args)...);
+    if constexpr (std::is_same_v<decltype(m_registry.emplace<T>(entity, std::forward<Args>(args)...)), void>) {
+        m_registry.emplace<T>(entity, std::forward<Args>(args)...);
+        return m_registry.get<T>(entity);
+    } else {
+        return m_registry.emplace<T>(entity, std::forward<Args>(args)...);
+    }
+}
+
+template <typename T, typename... Args>
+decltype(auto) JzWorld::AddOrReplaceComponent(JzEntity entity, Args &&...args)
+{
+    if constexpr (std::is_same_v<decltype(m_registry.emplace<T>(entity, std::forward<Args>(args)...)), void>) {
+        m_registry.emplace_or_replace<T>(entity, std::forward<Args>(args)...);
+        return m_registry.get<T>(entity);
+    } else {
+        return m_registry.emplace_or_replace<T>(entity, std::forward<Args>(args)...);
+    }
 }
 
 template <typename T>

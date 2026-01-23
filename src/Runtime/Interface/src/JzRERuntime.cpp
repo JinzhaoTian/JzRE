@@ -278,7 +278,7 @@ void JzRE::JzRERuntime::CreateDefaultCameraEntity()
     m_world->AddComponent<JzCameraInputComponent>(m_mainCameraEntity);
 
     // Add main camera tag (empty struct, use emplace directly)
-    m_world->GetRegistry().emplace<JzMainCameraTag>(m_mainCameraEntity);
+    m_world->AddComponent<JzMainCameraTag>(m_mainCameraEntity);
 }
 
 void JzRE::JzRERuntime::CreateDefaultLightEntity()

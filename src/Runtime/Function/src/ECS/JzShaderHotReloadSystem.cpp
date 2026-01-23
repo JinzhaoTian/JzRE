@@ -125,12 +125,10 @@ void JzShaderHotReloadSystem::CheckForUpdates(JzWorld &world)
 }
 
 void JzShaderHotReloadSystem::NotifyShaderReloaded(JzShaderAssetHandle shaderHandle,
-                                                   JzWorld        &world)
+                                                   JzWorld            &world)
 {
-    auto &registry = world.GetRegistry();
-
     // Mark all entities with this shader as dirty
-    auto shaderView = registry.view<JzShaderAssetComponent>();
+    auto shaderView = world.View<JzShaderAssetComponent>();
     for (auto entity : shaderView) {
         auto &shaderComp = shaderView.get<JzShaderAssetComponent>(entity);
         if (shaderComp.shaderHandle == shaderHandle) {
@@ -139,7 +137,7 @@ void JzShaderHotReloadSystem::NotifyShaderReloaded(JzShaderAssetHandle shaderHan
             shaderComp.cachedVariant = nullptr;
 
             // Add dirty tag for render systems
-            registry.emplace_or_replace<JzShaderDirtyTag>(entity);
+            world.AddOrReplaceComponent<JzShaderDirtyTag>(entity);
 
             JzRE_LOG_DEBUG("JzShaderHotReloadSystem: Marked entity {} for shader update",
                            static_cast<U32>(entity));
@@ -147,7 +145,7 @@ void JzShaderHotReloadSystem::NotifyShaderReloaded(JzShaderAssetHandle shaderHan
     }
 
     // Also check material components that reference this shader
-    auto materialView = registry.view<JzMaterialAssetComponent>();
+    auto materialView = world.View<JzMaterialAssetComponent>();
     for (auto entity : materialView) {
         auto &matComp = materialView.get<JzMaterialAssetComponent>(entity);
         if (matComp.shaderHandle == shaderHandle) {
@@ -155,7 +153,7 @@ void JzShaderHotReloadSystem::NotifyShaderReloaded(JzShaderAssetHandle shaderHan
             matComp.cachedShaderVariant = nullptr;
 
             // Add dirty tag
-            registry.emplace_or_replace<JzShaderDirtyTag>(entity);
+            world.AddOrReplaceComponent<JzShaderDirtyTag>(entity);
 
             JzRE_LOG_DEBUG("JzShaderHotReloadSystem: Marked material entity {} for shader update",
                            static_cast<U32>(entity));
@@ -168,10 +166,8 @@ JzShaderHotReloadSystem::CollectUsedShaders(JzWorld &world)
 {
     std::unordered_set<JzShaderAssetHandle, JzAssetHandle<JzShaderAsset>::Hash> usedShaders;
 
-    auto &registry = world.GetRegistry();
-
     // Collect from shader components
-    auto shaderView = registry.view<JzShaderAssetComponent>();
+    auto shaderView = world.View<JzShaderAssetComponent>();
     for (auto entity : shaderView) {
         auto &shaderComp = shaderView.get<JzShaderAssetComponent>(entity);
         if (shaderComp.shaderHandle.IsValid()) {
@@ -180,7 +176,7 @@ JzShaderHotReloadSystem::CollectUsedShaders(JzWorld &world)
     }
 
     // Collect from material components
-    auto materialView = registry.view<JzMaterialAssetComponent>();
+    auto materialView = world.View<JzMaterialAssetComponent>();
     for (auto entity : materialView) {
         auto &matComp = materialView.get<JzMaterialAssetComponent>(entity);
         if (matComp.shaderHandle.IsValid()) {

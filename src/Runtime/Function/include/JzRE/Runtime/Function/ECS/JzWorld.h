@@ -85,7 +85,24 @@ public:
      * @return A reference to the newly added component.
      */
     template <typename T, typename... Args>
-    T &AddComponent(JzEntity entity, Args &&...args);
+    decltype(auto) AddComponent(JzEntity entity, Args &&...args);
+
+    /**
+     * @brief Adds or updates a component on an entity.
+     *
+     * If the entity already has the component, it will be replaced with the new one.
+     * Otherwise, a new component will be added.
+     *
+     * @tparam T The component type.
+     * @tparam Args The argument types for the component constructor.
+     *
+     * @param entity The entity to add or update the component on.
+     * @param args The arguments to forward to the component constructor.
+     *
+     * @return A reference to the added or updated component.
+     */
+    template <typename T, typename... Args>
+    decltype(auto) AddOrReplaceComponent(JzEntity entity, Args &&...args);
 
     /**
      * @brief Removes a component from an entity.
@@ -251,35 +268,11 @@ public:
      */
     void UpdatePhase(JzSystemPhase phase, F32 delta);
 
-    // ==================== Direct Registry Access ====================
-
-    /**
-     * @brief Gets direct access to the underlying entt::registry.
-     *
-     * @return A reference to the registry.
-     *
-     * @note Use this for advanced EnTT features not exposed through this wrapper.
-     */
-    entt::registry &GetRegistry()
-    {
-        return m_registry;
-    }
-
-    /**
-     * @brief Gets direct access to the underlying entt::registry (const version).
-     *
-     * @return A const reference to the registry.
-     */
-    const entt::registry &GetRegistry() const
-    {
-        return m_registry;
-    }
-
 private:
-    entt::registry                             m_registry; ///< The EnTT registry holding all entities and components.
+    entt::registry                         m_registry; ///< The EnTT registry holding all entities and components.
     std::vector<std::shared_ptr<JzSystem>> m_systems;  ///< Registered systems.
 };
 
 } // namespace JzRE
 
-#include "JzWorld.inl" // IWYU pragma: keep
+#include "JzRE/Runtime/Function/ECS/JzWorld.inl" // IWYU pragma: keep

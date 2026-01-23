@@ -10,6 +10,7 @@
 #include "JzRE/Runtime/Core/JzLogger.h"
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
 #include "JzRE/Runtime/Function/ECS/JzAssetComponents.h"
+#include "JzRE/Runtime/Function/ECS/JzEntity.h"
 #include "JzRE/Runtime/Function/ECS/JzWorld.h"
 #include "JzRE/Runtime/Resource/JzAssetManager.h"
 #include "JzRE/Runtime/Resource/JzMaterial.h"
@@ -58,10 +59,8 @@ void JzAssetLoadingSystem::OnShutdown(JzWorld &world)
 
 void JzAssetLoadingSystem::ProcessMeshAssets(JzWorld &world, JzAssetManager &assetManager)
 {
-    auto &registry = world.GetRegistry();
-
     // Query all entities with JzMeshAssetComponent
-    auto view = registry.view<JzMeshAssetComponent>();
+    auto view = world.View<JzMeshAssetComponent>();
 
     for (auto entity : view) {
         auto &meshComp = view.get<JzMeshAssetComponent>(entity);
@@ -89,8 +88,8 @@ void JzAssetLoadingSystem::ProcessMeshAssets(JzWorld &world, JzAssetManager &ass
                     meshComp.isReady = true;
 
                     // Update tags
-                    registry.remove<JzAssetLoadingTag>(entity);
-                    registry.emplace_or_replace<JzAssetReadyTag>(entity);
+                    world.RemoveComponent<JzAssetLoadingTag>(entity);
+                    world.AddOrReplaceComponent<JzAssetReadyTag>(entity);
 
                     JzRE_LOG_DEBUG("JzAssetLoadingSystem: Mesh asset ready for entity {}",
                                    static_cast<U32>(entity));
@@ -100,15 +99,15 @@ void JzAssetLoadingSystem::ProcessMeshAssets(JzWorld &world, JzAssetManager &ass
 
             case JzEAssetLoadState::Loading:
                 // Still loading - ensure loading tag is present
-                if (!registry.all_of<JzAssetLoadingTag>(entity)) {
-                    registry.emplace<JzAssetLoadingTag>(entity);
+                if (!world.HasComponent<JzAssetLoadingTag>(entity)) {
+                    world.AddComponent<JzAssetLoadingTag>(entity);
                 }
                 break;
 
             case JzEAssetLoadState::Failed:
                 // Load failed - mark as failed
-                registry.remove<JzAssetLoadingTag>(entity);
-                registry.emplace_or_replace<JzAssetLoadFailedTag>(entity);
+                world.RemoveComponent<JzAssetLoadingTag>(entity);
+                world.AddOrReplaceComponent<JzAssetLoadFailedTag>(entity);
                 JzRE_LOG_WARN("JzAssetLoadingSystem: Mesh asset load failed for entity {}",
                               static_cast<U32>(entity));
                 break;
@@ -126,10 +125,8 @@ void JzAssetLoadingSystem::ProcessMeshAssets(JzWorld &world, JzAssetManager &ass
 
 void JzAssetLoadingSystem::ProcessMaterialAssets(JzWorld &world, JzAssetManager &assetManager)
 {
-    auto &registry = world.GetRegistry();
-
     // Query all entities with JzMaterialAssetComponent
-    auto view = registry.view<JzMaterialAssetComponent>();
+    auto view = world.View<JzMaterialAssetComponent>();
 
     for (auto entity : view) {
         auto &matComp = view.get<JzMaterialAssetComponent>(entity);
@@ -208,10 +205,8 @@ void JzAssetLoadingSystem::UpdateMaterialComponentCache(JzMaterialAssetComponent
 
 void JzAssetLoadingSystem::ProcessShaderAssets(JzWorld &world, JzAssetManager &assetManager)
 {
-    auto &registry = world.GetRegistry();
-
     // Query all entities with JzShaderAssetComponent
-    auto view = registry.view<JzShaderAssetComponent>();
+    auto view = world.View<JzShaderAssetComponent>();
 
     for (auto entity : view) {
         auto &shaderComp = view.get<JzShaderAssetComponent>(entity);
@@ -246,15 +241,15 @@ void JzAssetLoadingSystem::ProcessShaderAssets(JzWorld &world, JzAssetManager &a
 
             case JzEAssetLoadState::Loading:
                 // Still loading - ensure loading tag is present
-                if (!registry.all_of<JzAssetLoadingTag>(entity)) {
-                    registry.emplace<JzAssetLoadingTag>(entity);
+                if (!world.HasComponent<JzAssetLoadingTag>(entity)) {
+                    world.AddComponent<JzAssetLoadingTag>(entity);
                 }
                 break;
 
             case JzEAssetLoadState::Failed:
                 // Load failed - mark as failed
-                registry.remove<JzAssetLoadingTag>(entity);
-                registry.emplace_or_replace<JzAssetLoadFailedTag>(entity);
+                world.RemoveComponent<JzAssetLoadingTag>(entity);
+                world.AddOrReplaceComponent<JzAssetLoadFailedTag>(entity);
                 JzRE_LOG_WARN("JzAssetLoadingSystem: Shader asset load failed for entity {}",
                               static_cast<U32>(entity));
                 break;
@@ -287,10 +282,9 @@ void JzAssetLoadingSystem::UpdateShaderComponentCache(JzShaderAssetComponent &co
 
 void JzAssetLoadingSystem::UpdateEntityAssetTags(JzWorld &world, U32 entityId)
 {
-    auto &registry = world.GetRegistry();
-    auto  entity   = static_cast<entt::entity>(entityId);
+    auto entity = static_cast<JzEntity>(entityId);
 
-    if (!registry.valid(entity)) {
+    if (!world.IsValid(entity)) {
         return;
     }
 
@@ -299,7 +293,7 @@ void JzAssetLoadingSystem::UpdateEntityAssetTags(JzWorld &world, U32 entityId)
     Bool anyLoading = false;
 
     // Check mesh component
-    if (auto *meshComp = registry.try_get<JzMeshAssetComponent>(entity)) {
+    if (auto *meshComp = world.TryGetComponent<JzMeshAssetComponent>(entity)) {
         if (meshComp->meshHandle.IsValid()) {
             if (!meshComp->isReady) {
                 allReady = false;
@@ -310,7 +304,7 @@ void JzAssetLoadingSystem::UpdateEntityAssetTags(JzWorld &world, U32 entityId)
     }
 
     // Check material component
-    if (auto *matComp = registry.try_get<JzMaterialAssetComponent>(entity)) {
+    if (auto *matComp = world.TryGetComponent<JzMaterialAssetComponent>(entity)) {
         if (matComp->materialHandle.IsValid()) {
             if (!matComp->isReady) {
                 allReady   = false;
@@ -320,7 +314,7 @@ void JzAssetLoadingSystem::UpdateEntityAssetTags(JzWorld &world, U32 entityId)
     }
 
     // Check shader component
-    if (auto *shaderComp = registry.try_get<JzShaderAssetComponent>(entity)) {
+    if (auto *shaderComp = world.TryGetComponent<JzShaderAssetComponent>(entity)) {
         if (shaderComp->shaderHandle.IsValid()) {
             if (!shaderComp->isReady) {
                 allReady   = false;
@@ -331,17 +325,17 @@ void JzAssetLoadingSystem::UpdateEntityAssetTags(JzWorld &world, U32 entityId)
 
     // Update tags based on state
     if (anyFailed) {
-        registry.remove<JzAssetLoadingTag>(entity);
-        registry.remove<JzAssetReadyTag>(entity);
-        registry.emplace_or_replace<JzAssetLoadFailedTag>(entity);
+        world.RemoveComponent<JzAssetLoadingTag>(entity);
+        world.RemoveComponent<JzAssetReadyTag>(entity);
+        world.AddOrReplaceComponent<JzAssetLoadFailedTag>(entity);
     } else if (allReady) {
-        registry.remove<JzAssetLoadingTag>(entity);
-        registry.remove<JzAssetLoadFailedTag>(entity);
-        registry.emplace_or_replace<JzAssetReadyTag>(entity);
+        world.RemoveComponent<JzAssetLoadingTag>(entity);
+        world.RemoveComponent<JzAssetLoadFailedTag>(entity);
+        world.AddOrReplaceComponent<JzAssetReadyTag>(entity);
     } else if (anyLoading) {
-        registry.remove<JzAssetReadyTag>(entity);
-        registry.remove<JzAssetLoadFailedTag>(entity);
-        registry.emplace_or_replace<JzAssetLoadingTag>(entity);
+        world.RemoveComponent<JzAssetReadyTag>(entity);
+        world.RemoveComponent<JzAssetLoadFailedTag>(entity);
+        world.AddOrReplaceComponent<JzAssetLoadingTag>(entity);
     }
 }
 
