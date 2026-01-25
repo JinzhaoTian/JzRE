@@ -15,6 +15,10 @@
 #include "JzRE/Runtime/Platform/JzGPUTextureObject.h"
 #include "JzRE/Runtime/Core/JzRETypes.h"
 
+// Include enhanced ECS components
+#include "JzRE/Runtime/Function/ECS/JzInputComponents.h"
+#include "JzRE/Runtime/Function/ECS/JzWindowComponents.h"
+
 namespace JzRE {
 
 // ==================== Mesh Component ====================
@@ -285,7 +289,10 @@ struct JzGizmoComponent {
 // ==================== Global Configuration Components ====================
 
 /**
- * @brief Component containing global window/frame configuration.
+ * @brief Legacy component containing global window/frame configuration.
+ *
+ * @deprecated Use JzWindowStateComponent from JzWindowComponents.h for
+ * comprehensive window state in ECS-based window management.
  *
  * This component is updated by the Runtime and read by systems (Camera, Render)
  * to adapt to window resize events and frame updates.
@@ -449,10 +456,16 @@ struct JzRenderableTag { };
  */
 struct JzMainCameraTag { };
 
-// ==================== Input Components ====================
+// ==================== Input Components (Legacy) ====================
+// Note: For comprehensive input state, use JzInputStateComponent and
+// JzInputActionComponent from JzInputComponents.h. These legacy components
+// are maintained for backward compatibility and are auto-synced by JzInputSystem.
 
 /**
  * @brief Component for storing mouse input state.
+ *
+ * @deprecated Consider using JzInputStateComponent.mouse for comprehensive
+ * mouse state including buttons, position, delta, and scroll in a single component.
  *
  * This component is updated by JzInputSystem and read by other systems
  * (like CameraSystem) to process mouse input.

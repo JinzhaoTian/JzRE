@@ -8,6 +8,8 @@
 #include "JzRE/Runtime/Core/JzClock.h"
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
 #include "JzRE/Runtime/Function/ECS/JzComponents.h"
+#include "JzRE/Runtime/Function/ECS/JzWindowComponents.h"
+#include "JzRE/Runtime/Function/ECS/JzInputComponents.h"
 
 #include "JzRE/Runtime/Function/Rendering/JzDeviceFactory.h"
 
@@ -129,6 +131,8 @@ void JzRE::JzRERuntime::RegisterSystems()
     // systemManager.AddDependency<RenderSystem, TransformSystem>();
 
     // Register systems in execution order by phase:
+    // Window system must be registered first to handle window/input events
+    m_windowSystem       = m_world->RegisterSystem<JzWindowSystem>();
     m_inputSystem        = m_world->RegisterSystem<JzInputSystem>();
     m_assetLoadingSystem = m_world->RegisterSystem<JzAssetLoadingSystem>();
     m_cameraSystem       = m_world->RegisterSystem<JzCameraSystem>();
@@ -218,6 +222,8 @@ void JzRE::JzRERuntime::ShutdownSubsystems()
     m_lightSystem.reset();
     m_cameraSystem.reset();
     m_assetLoadingSystem.reset();
+    m_inputSystem.reset();
+    m_windowSystem.reset();
     m_world.reset();
     m_inputManager.reset();
     m_device.reset();
@@ -237,7 +243,7 @@ void JzRE::JzRERuntime::CleanupGlobals()
 
 void JzRE::JzRERuntime::CreateGlobalConfigEntity()
 {
-    // Create Global Config Entity
+    // Create Global Config Entity (legacy)
     m_globalConfigEntity = m_world->CreateEntity();
 
     auto &config        = m_world->AddComponent<JzWindowComponent>(m_globalConfigEntity);
@@ -245,6 +251,33 @@ void JzRE::JzRERuntime::CreateGlobalConfigEntity()
     config.frameSize    = m_window->GetFramebufferSize();
     if (config.frameSize.y > 0) {
         config.aspectRatio = static_cast<F32>(config.frameSize.x) / static_cast<F32>(config.frameSize.y);
+    }
+
+    // Create Window Entity with new ECS components
+    m_windowEntity = m_world->CreateEntity();
+
+    // Add enhanced window state component
+    auto &windowState         = m_world->AddComponent<JzWindowStateComponent>(m_windowEntity);
+    windowState.title         = m_window->GetTitle();
+    windowState.size          = m_window->GetSize();
+    windowState.position      = m_window->GetPosition();
+    windowState.framebufferSize = m_window->GetFramebufferSize();
+    windowState.focused       = m_window->IsFocused();
+    windowState.visible       = m_window->IsVisible();
+    windowState.nativeHandle  = m_window->GetNativeWindow();
+
+    // Add input state component for ECS-based input
+    m_world->AddComponent<JzInputStateComponent>(m_windowEntity);
+
+    // Add window event queue component
+    m_world->AddComponent<JzWindowEventQueueComponent>(m_windowEntity);
+
+    // Mark as primary window
+    m_world->AddComponent<JzPrimaryWindowTag>(m_windowEntity);
+
+    // Set the primary window in WindowSystem
+    if (m_windowSystem) {
+        m_windowSystem->SetPrimaryWindow(m_windowEntity);
     }
 }
 
@@ -316,6 +349,11 @@ void JzRE::JzRERuntime::Run()
 
         // Clear input events for next frame
         m_inputManager->ClearEvents();
+
+        // Clear ECS input state per-frame flags
+        if (m_inputSystem) {
+            m_inputSystem->ClearFrameState(*m_world);
+        }
 
         // Swap buffers
         m_window->SwapBuffers();

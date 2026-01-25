@@ -11,6 +11,7 @@
 #include "JzRE/Runtime/Function/ECS/JzEntity.h"
 #include "JzRE/Runtime/Function/ECS/JzWorld.h"
 #include "JzRE/Runtime/Function/ECS/JzInputSystem.h"
+#include "JzRE/Runtime/Function/ECS/JzWindowSystem.h"
 #include "JzRE/Runtime/Function/ECS/JzCameraSystem.h"
 #include "JzRE/Runtime/Function/ECS/JzLightSystem.h"
 #include "JzRE/Runtime/Function/ECS/JzRenderSystem.h"
@@ -183,6 +184,7 @@ protected:
 
     // ECS world and systems
     std::unique_ptr<JzWorld>              m_world;
+    std::shared_ptr<JzWindowSystem>       m_windowSystem;
     std::shared_ptr<JzInputSystem>        m_inputSystem;
     std::shared_ptr<JzCameraSystem>       m_cameraSystem;
     std::shared_ptr<JzLightSystem>        m_lightSystem;
@@ -191,6 +193,7 @@ protected:
 
     JzEntity m_mainCameraEntity   = INVALID_ENTITY;
     JzEntity m_globalConfigEntity = INVALID_ENTITY;
+    JzEntity m_windowEntity       = INVALID_ENTITY; ///< Primary window ECS entity
 };
 
 } // namespace JzRE
