@@ -228,46 +228,6 @@ public:
      */
     void Update(F32 delta);
 
-    /**
-     * @brief Updates only systems in the Logic phase.
-     *
-     * Logic systems handle game logic, physics, AI, animations, etc.
-     * This can run in parallel with GPU work from the previous frame.
-     *
-     * @param delta The delta time since the last frame.
-     */
-    void UpdateLogic(F32 delta);
-
-    /**
-     * @brief Updates only systems in the PreRender phase.
-     *
-     * PreRender systems prepare data for rendering: camera matrices,
-     * light collection, culling, LOD selection, etc.
-     *
-     * @param delta The delta time since the last frame.
-     */
-    void UpdatePreRender(F32 delta);
-
-    /**
-     * @brief Updates only systems in the Render phase.
-     *
-     * Render systems perform actual GPU rendering operations.
-     * Must run on the main thread after synchronization.
-     *
-     * @param delta The delta time since the last frame.
-     */
-    void UpdateRender(F32 delta);
-
-    /**
-     * @brief Updates only systems in a specific phase.
-     *
-     * Use this for fine-grained control over individual phases.
-     *
-     * @param phase The specific phase to update.
-     * @param delta The delta time since the last frame.
-     */
-    void UpdatePhase(JzSystemPhase phase, F32 delta);
-
 private:
     entt::registry                         m_registry; ///< The EnTT registry holding all entities and components.
     std::vector<std::shared_ptr<JzSystem>> m_systems;  ///< Registered systems.

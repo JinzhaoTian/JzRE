@@ -183,9 +183,6 @@ void JzRE::JzRERuntime::UpdateSystems(F32 deltaTime)
     // plan B
     // systemManager.ExecuteSystems(deltaTime);
 
-    // Update all Logic phase systems (movement, physics, AI, animations)
-    m_world->UpdateLogic(deltaTime);
-
     // Update global window component
     if (m_world->IsValid(m_globalConfigEntity)) {
         auto &config     = m_world->GetComponent<JzWindowComponent>(m_globalConfigEntity);
@@ -195,11 +192,8 @@ void JzRE::JzRERuntime::UpdateSystems(F32 deltaTime)
         }
     }
 
-    // Update all PreRender phase systems (camera matrices, light collection, culling)
-    m_world->UpdatePreRender(deltaTime);
-
-    // Update all Render phase systems (actual rendering)
-    m_world->UpdateRender(deltaTime);
+    // Update all systems (camera matrices, light collection, culling)
+    m_world->Update(deltaTime);
 }
 
 void JzRE::JzRERuntime::SynchronizeSystems()
@@ -308,10 +302,10 @@ void JzRE::JzRERuntime::Run()
 
         OnFrameBegin();
 
-        UpdateSystems(deltaTime);
-
         // Call user update logic
         OnUpdate(deltaTime);
+
+        UpdateSystems(deltaTime);
 
         SynchronizeSystems();
 
