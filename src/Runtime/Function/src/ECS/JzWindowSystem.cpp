@@ -5,26 +5,17 @@
 
 #include "JzRE/Runtime/Function/ECS/JzWindowSystem.h"
 
-#include <stdexcept>
-#if defined(_WIN32)
-#define GLFW_EXPOSE_NATIVE_WIN32
-#elif defined(__APPLE__)
-#define GLFW_EXPOSE_NATIVE_COCOA
-#elif defined(__linux__)
-#define GLFW_EXPOSE_NATIVE_X11
-#endif
-#include <GLFW/glfw3native.h>
-
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
 #include "JzRE/Runtime/Function/Event/JzEventDispatcherSystem.h"
 #include "JzRE/Runtime/Function/Event/JzWindowEvents.h"
+#include "JzRE/Runtime/Platform/IWindowBackend.h"
+#include "JzRE/Runtime/Platform/JzGLFWWindowBackend.h"
 
 namespace JzRE {
 
-// Static member initialization
-std::unordered_map<GLFWwindow *, JzWindowSystem *> JzWindowSystem::s_windowMap;
-
 // ==================== Lifecycle ====================
+
+JzWindowSystem::JzWindowSystem() = default;
 
 JzWindowSystem::~JzWindowSystem()
 {
@@ -39,7 +30,7 @@ void JzWindowSystem::OnInit(JzWorld &world)
 
 void JzWindowSystem::Update(JzWorld &world, F32 delta)
 {
-    if (!m_glfwWindow) return;
+    if (!m_backend || !m_backend->IsValid()) return;
 
     // Poll events from backend
     PollEvents(world);
@@ -71,21 +62,24 @@ void JzWindowSystem::OnShutdown(JzWorld &world)
     // Window destruction is handled by the destructor or explicit ReleaseWindow() call
 }
 
+// ==================== Backend Management ====================
+
+void JzWindowSystem::SetBackend(std::unique_ptr<IWindowBackend> backend)
+{
+    m_backend = std::move(backend);
+}
+
 // ==================== Window Creation ====================
 
 void JzWindowSystem::InitializeWindow(JzERHIType rhiType, const JzWindowConfig &config)
 {
-    m_rhiType      = rhiType;
-    m_title        = config.title;
-    m_size         = JzIVec2(config.width, config.height);
-    m_windowedSize = m_size;
-    m_fullscreen   = config.fullscreen;
+    // Create default GLFW backend if none was set
+    if (!m_backend) {
+        m_backend = std::make_unique<JzGLFWWindowBackend>();
+    }
 
-    CreateGlfwWindow(config);
-    SetupCallbacks();
-
-    WindowResizedEvent.Add(std::bind(&JzWindowSystem::OnResize, this, std::placeholders::_1));
-    WindowMoveEvent.Add(std::bind(&JzWindowSystem::OnMove, this, std::placeholders::_1));
+    m_backend->Initialize(rhiType, config);
+    WireBackendDelegates();
 }
 
 JzEntity JzWindowSystem::CreateWindowEntity(JzWorld &world, const JzWindowConfig &config)
@@ -118,10 +112,9 @@ JzEntity JzWindowSystem::CreateWindowEntity(JzWorld &world, const JzWindowConfig
 
 void JzWindowSystem::ReleaseWindow()
 {
-    if (m_glfwWindow) {
-        s_windowMap.erase(m_glfwWindow);
-        glfwDestroyWindow(m_glfwWindow);
-        m_glfwWindow = nullptr;
+    if (m_backend) {
+        m_backend->Shutdown();
+        m_backend.reset();
     }
 }
 
@@ -129,498 +122,296 @@ void JzWindowSystem::ReleaseWindow()
 
 void JzWindowSystem::MakeCurrentContext() const
 {
-    if (m_glfwWindow) {
-        glfwMakeContextCurrent(m_glfwWindow);
+    if (m_backend) {
+        m_backend->MakeContextCurrent();
     }
 }
 
 void JzWindowSystem::DetachContext() const
 {
-    glfwMakeContextCurrent(nullptr);
+    if (m_backend) {
+        m_backend->DetachContext();
+    }
 }
 
 void JzWindowSystem::PollWindowEvents() const
 {
-    glfwPollEvents();
+    if (m_backend) {
+        m_backend->PollEvents();
+    }
 }
 
 void JzWindowSystem::SwapWindowBuffers() const
 {
-    if (m_glfwWindow) {
-        glfwSwapBuffers(m_glfwWindow);
+    if (m_backend) {
+        m_backend->SwapBuffers();
     }
 }
 
 // ==================== Window Properties ====================
 
-GLFWwindow *JzWindowSystem::GetGLFWWindow() const
+void *JzWindowSystem::GetPlatformWindowHandle() const
 {
-    return m_glfwWindow;
+    return m_backend ? m_backend->GetPlatformWindowHandle() : nullptr;
 }
 
 void *JzWindowSystem::GetNativeWindow() const
 {
-    if (!m_glfwWindow) return nullptr;
-
-#if defined(_WIN32)
-    return glfwGetWin32Window(m_glfwWindow);
-#elif defined(__APPLE__)
-    return glfwGetCocoaWindow(m_glfwWindow);
-#elif defined(__linux__)
-    return reinterpret_cast<void *>(glfwGetX11Window(m_glfwWindow));
-#else
-    return nullptr;
-#endif
+    return m_backend ? m_backend->GetNativeWindowHandle() : nullptr;
 }
 
 void JzWindowSystem::SetTitle(const String &title)
 {
-    m_title = title;
-    if (m_glfwWindow) {
-        glfwSetWindowTitle(m_glfwWindow, title.c_str());
+    if (m_backend) {
+        m_backend->SetTitle(title);
     }
 }
 
 String JzWindowSystem::GetTitle() const
 {
-    return m_title;
+    return m_backend ? m_backend->GetTitle() : String{};
 }
 
 void JzWindowSystem::SetPosition(JzIVec2 position)
 {
-    if (!m_fullscreen && m_glfwWindow) {
-        glfwSetWindowPos(m_glfwWindow, position.x, position.y);
-        m_position = position;
+    if (m_backend) {
+        m_backend->SetPosition(position);
     }
 }
 
 JzIVec2 JzWindowSystem::GetPosition() const
 {
-    if (!m_glfwWindow) return m_position;
-    I32 x, y;
-    glfwGetWindowPos(m_glfwWindow, &x, &y);
-    return {x, y};
+    return m_backend ? m_backend->GetPosition() : JzIVec2{0, 0};
 }
 
 void JzWindowSystem::SetSize(JzIVec2 size)
 {
-    if (!m_fullscreen && m_glfwWindow) {
-        glfwSetWindowSize(m_glfwWindow, size.x, size.y);
-        m_size = size;
+    if (m_backend) {
+        m_backend->SetSize(size);
     }
 }
 
 JzIVec2 JzWindowSystem::GetSize() const
 {
-    if (!m_glfwWindow) return m_size;
-    I32 width, height;
-    glfwGetWindowSize(m_glfwWindow, &width, &height);
-    return {width, height};
+    return m_backend ? m_backend->GetSize() : JzIVec2{0, 0};
 }
 
 JzIVec2 JzWindowSystem::GetFramebufferSize() const
 {
-    if (!m_glfwWindow) return m_size;
-    I32 width, height;
-    glfwGetFramebufferSize(m_glfwWindow, &width, &height);
-    return {width, height};
+    return m_backend ? m_backend->GetFramebufferSize() : JzIVec2{0, 0};
 }
 
 JzIVec2 JzWindowSystem::GetMonitorSize() const
 {
-    const GLFWvidmode *mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-    return {static_cast<I32>(mode->width), static_cast<I32>(mode->height)};
+    return m_backend ? m_backend->GetMonitorSize() : JzIVec2{0, 0};
 }
 
 void JzWindowSystem::SetMinimumSize(JzIVec2 minimumSize)
 {
-    m_minimumSize = minimumSize;
-    UpdateSizeLimit();
+    if (m_backend) {
+        m_backend->SetMinimumSize(minimumSize);
+    }
 }
 
 JzIVec2 JzWindowSystem::GetMinimumSize() const
 {
-    return m_minimumSize;
+    return m_backend ? m_backend->GetMinimumSize() : JzIVec2{-1, -1};
 }
 
 void JzWindowSystem::SetMaximumSize(JzIVec2 maximumSize)
 {
-    m_maximumSize = maximumSize;
-    UpdateSizeLimit();
+    if (m_backend) {
+        m_backend->SetMaximumSize(maximumSize);
+    }
 }
 
 JzIVec2 JzWindowSystem::GetMaximumSize() const
 {
-    return m_maximumSize;
+    return m_backend ? m_backend->GetMaximumSize() : JzIVec2{-1, -1};
 }
 
 // ==================== Window State ====================
 
 void JzWindowSystem::SetFullscreen(Bool value)
 {
-    if (!m_glfwWindow) return;
-
-    if (value) {
-        m_fullscreen   = true;
-        m_windowedSize = m_size;
-        m_windowedPos  = m_position;
-
-        glfwSetWindowMonitor(
-            m_glfwWindow,
-            glfwGetPrimaryMonitor(),
-            static_cast<I32>(m_position.x),
-            static_cast<I32>(m_position.y),
-            static_cast<I32>(m_size.x),
-            static_cast<I32>(m_size.y),
-            m_refreshRate);
-    } else {
-        m_fullscreen = false;
-        m_size       = m_windowedSize;
-        m_position   = m_windowedPos;
-
-        glfwSetWindowMonitor(
-            m_glfwWindow,
-            nullptr,
-            static_cast<I32>(m_position.x),
-            static_cast<I32>(m_position.y),
-            static_cast<I32>(m_size.x),
-            static_cast<I32>(m_size.y),
-            m_refreshRate);
+    if (m_backend) {
+        m_backend->SetFullscreen(value);
     }
 }
 
 Bool JzWindowSystem::IsFullscreen() const
 {
-    if (!m_glfwWindow) return false;
-    return glfwGetWindowMonitor(m_glfwWindow) != nullptr;
+    return m_backend ? m_backend->IsFullscreen() : false;
 }
 
 void JzWindowSystem::SetAlignCentered()
 {
-    if (!m_glfwWindow) return;
-
-    const GLFWvidmode *mode      = glfwGetVideoMode(glfwGetPrimaryMonitor());
-    auto               monWidth  = mode->width;
-    auto               monHeight = mode->height;
-
-    I32 winWidth, winHeight;
-    glfwGetWindowSize(m_glfwWindow, &winWidth, &winHeight);
-
-    glfwSetWindowPos(m_glfwWindow, monWidth / 2 - winWidth / 2, monHeight / 2 - winHeight / 2);
+    if (m_backend) {
+        m_backend->SetAlignCentered();
+    }
 }
 
 Bool JzWindowSystem::IsMinimized() const
 {
-    if (!m_glfwWindow) return false;
-    return glfwGetWindowAttrib(m_glfwWindow, GLFW_ICONIFIED) == GLFW_TRUE;
+    return m_backend ? m_backend->IsMinimized() : false;
 }
 
 void JzWindowSystem::Minimize() const
 {
-    if (m_glfwWindow) {
-        glfwIconifyWindow(m_glfwWindow);
+    if (m_backend) {
+        m_backend->Minimize();
     }
 }
 
 void JzWindowSystem::Restore() const
 {
-    if (m_glfwWindow) {
-        glfwRestoreWindow(m_glfwWindow);
+    if (m_backend) {
+        m_backend->Restore();
     }
 }
 
 Bool JzWindowSystem::IsMaximized() const
 {
-    if (!m_glfwWindow) return false;
-    return glfwGetWindowAttrib(m_glfwWindow, GLFW_MAXIMIZED) == GLFW_TRUE;
+    return m_backend ? m_backend->IsMaximized() : false;
 }
 
 void JzWindowSystem::Maximize() const
 {
-    if (m_glfwWindow) {
-        glfwMaximizeWindow(m_glfwWindow);
+    if (m_backend) {
+        m_backend->Maximize();
     }
 }
 
 Bool JzWindowSystem::IsHidden() const
 {
-    if (!m_glfwWindow) return false;
-    return glfwGetWindowAttrib(m_glfwWindow, GLFW_VISIBLE) == GLFW_FALSE;
+    return m_backend ? m_backend->IsHidden() : false;
 }
 
 Bool JzWindowSystem::IsVisible() const
 {
-    if (!m_glfwWindow) return false;
-    return glfwGetWindowAttrib(m_glfwWindow, GLFW_VISIBLE) == GLFW_TRUE;
+    return m_backend ? m_backend->IsVisible() : false;
 }
 
 void JzWindowSystem::Hide() const
 {
-    if (m_glfwWindow) {
-        glfwHideWindow(m_glfwWindow);
+    if (m_backend) {
+        m_backend->Hide();
     }
 }
 
 void JzWindowSystem::Show() const
 {
-    if (m_glfwWindow) {
-        glfwShowWindow(m_glfwWindow);
+    if (m_backend) {
+        m_backend->Show();
     }
 }
 
 Bool JzWindowSystem::IsFocused() const
 {
-    if (!m_glfwWindow) return false;
-    return glfwGetWindowAttrib(m_glfwWindow, GLFW_FOCUSED) == GLFW_TRUE;
+    return m_backend ? m_backend->IsFocused() : false;
 }
 
 void JzWindowSystem::Focus() const
 {
-    if (m_glfwWindow) {
-        glfwFocusWindow(m_glfwWindow);
+    if (m_backend) {
+        m_backend->Focus();
     }
 }
 
 void JzWindowSystem::SetShouldClose(Bool value) const
 {
-    if (m_glfwWindow) {
-        glfwSetWindowShouldClose(m_glfwWindow, value);
+    if (m_backend) {
+        m_backend->SetShouldClose(value);
     }
 }
 
 Bool JzWindowSystem::ShouldClose() const
 {
-    if (!m_glfwWindow) return true;
-    return glfwWindowShouldClose(m_glfwWindow);
+    return m_backend ? m_backend->ShouldClose() : true;
 }
 
-// ==================== GLFW Window Creation (Private) ====================
+// ==================== Input Polling ====================
 
-void JzWindowSystem::CreateGlfwWindow(const JzWindowConfig &config)
+Bool JzWindowSystem::GetKeyState(I32 key) const
 {
-    I32 initCode = glfwInit();
-    if (initCode == GLFW_FALSE) {
-        glfwTerminate();
-        throw std::runtime_error("Failed to Init GLFW");
-    }
-
-    glfwDefaultWindowHints();
-
-    GLFWmonitor *selectedMonitor = nullptr;
-    if (m_fullscreen) {
-        selectedMonitor = glfwGetPrimaryMonitor();
-    }
-
-    glfwWindowHint(GLFW_RESIZABLE, config.resizable);
-    glfwWindowHint(GLFW_DECORATED, config.decorated);
-    glfwWindowHint(GLFW_FOCUSED, GLFW_TRUE);
-    glfwWindowHint(GLFW_MAXIMIZED, GLFW_FALSE);
-    glfwWindowHint(GLFW_FLOATING, config.floating);
-    glfwWindowHint(GLFW_VISIBLE, config.visible);
-    glfwWindowHint(GLFW_AUTO_ICONIFY, GLFW_FALSE);
-    glfwWindowHint(GLFW_SAMPLES, config.samples);
-
-    switch (m_rhiType) {
-        case JzERHIType::Unknown:
-            break;
-
-        case JzERHIType::OpenGL:
-            glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-            glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-            break;
-
-        case JzERHIType::Vulkan:
-            glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-            break;
-
-        case JzERHIType::D3D11:
-            break;
-
-        case JzERHIType::D3D12:
-            break;
-
-        case JzERHIType::Metal:
-            glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-#ifdef __APPLE__
-            glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE);
-#endif
-            break;
-    }
-
-    m_glfwWindow = glfwCreateWindow(
-        m_size.x,
-        m_size.y,
-        m_title.c_str(),
-        selectedMonitor,
-        nullptr);
-
-    if (!m_glfwWindow) {
-        const char *description;
-        I32         error_code    = glfwGetError(&description);
-        String      error_message = "Failed to create GLFW window";
-        if (error_code != GLFW_NO_ERROR) {
-            error_message += " - GLFW Error " + std::to_string(error_code) + ": " + std::string(description);
-        }
-        throw std::runtime_error(error_message);
-    }
-
-    glfwSetWindowSizeLimits(
-        m_glfwWindow,
-        m_minimumSize.x,
-        m_minimumSize.y,
-        m_maximumSize.x,
-        m_maximumSize.y);
-
-    glfwSetWindowPos(
-        m_glfwWindow,
-        m_position.x,
-        m_position.y);
-
-    s_windowMap[m_glfwWindow] = this;
+    return m_backend ? m_backend->GetKeyState(key) : false;
 }
 
-void JzWindowSystem::SetupCallbacks()
+Bool JzWindowSystem::GetMouseButtonState(I32 button) const
 {
-    if (!m_glfwWindow) return;
-
-    // Key callback
-    glfwSetKeyCallback(m_glfwWindow, [](GLFWwindow *window, I32 key, I32 scancode, I32 action, I32 mods) {
-        JzWindowSystem *instance = FindInstance(window);
-        if (instance) {
-            if (action == GLFW_PRESS)
-                instance->KeyboardButtonPressedEvent.Broadcast(key);
-            if (action == GLFW_RELEASE)
-                instance->KeyboardButtonReleasedEvent.Broadcast(key);
-        }
-    });
-
-    // Mouse button callback
-    glfwSetMouseButtonCallback(m_glfwWindow, [](GLFWwindow *window, I32 button, I32 action, I32 mods) {
-        JzWindowSystem *instance = FindInstance(window);
-        if (instance) {
-            if (action == GLFW_PRESS)
-                instance->MouseButtonPressedEvent.Broadcast(button);
-            if (action == GLFW_RELEASE)
-                instance->MouseButtonReleasedEvent.Broadcast(button);
-        }
-    });
-
-    // Scroll callback
-    glfwSetScrollCallback(m_glfwWindow, [](GLFWwindow *window, F64 xOffset, F64 yOffset) {
-        JzWindowSystem *instance = FindInstance(window);
-        if (instance) {
-            instance->MouseScrolledEvent.Broadcast({static_cast<F32>(xOffset), static_cast<F32>(yOffset)});
-        }
-    });
-
-    // Window size callback
-    glfwSetWindowSizeCallback(m_glfwWindow, [](GLFWwindow *window, I32 width, I32 height) {
-        JzWindowSystem *instance = FindInstance(window);
-        if (instance) {
-            instance->WindowResizedEvent.Broadcast({width, height});
-        }
-    });
-
-    // Framebuffer size callback
-    glfwSetFramebufferSizeCallback(m_glfwWindow, [](GLFWwindow *window, I32 width, I32 height) {
-        JzWindowSystem *instance = FindInstance(window);
-        if (instance) {
-            instance->WindowFrameBufferResizedEvent.Broadcast({width, height});
-        }
-    });
-
-    // Cursor position callback
-    glfwSetCursorPosCallback(m_glfwWindow, [](GLFWwindow *window, F64 x, F64 y) {
-        JzWindowSystem *instance = FindInstance(window);
-        if (instance) {
-            instance->WindowCursorMoveEvent.Broadcast({static_cast<I32>(x), static_cast<I32>(y)});
-        }
-    });
-
-    // Window position callback
-    glfwSetWindowPosCallback(m_glfwWindow, [](GLFWwindow *window, I32 x, I32 y) {
-        JzWindowSystem *instance = FindInstance(window);
-        if (instance) {
-            instance->WindowMoveEvent.Broadcast({x, y});
-        }
-    });
-
-    // Iconify callback
-    glfwSetWindowIconifyCallback(m_glfwWindow, [](GLFWwindow *window, I32 iconified) {
-        JzWindowSystem *instance = FindInstance(window);
-        if (instance) {
-            if (iconified == GLFW_TRUE)
-                instance->WindowMinimizedEvent.Broadcast();
-            if (iconified == GLFW_FALSE)
-                instance->WindowMaximizedEvent.Broadcast();
-        }
-    });
-
-    // Focus callback
-    glfwSetWindowFocusCallback(m_glfwWindow, [](GLFWwindow *window, I32 focused) {
-        JzWindowSystem *instance = FindInstance(window);
-        if (instance) {
-            if (focused == GLFW_TRUE)
-                instance->WindowFocusGainEvent.Broadcast();
-            if (focused == GLFW_FALSE)
-                instance->WindowFocusLostEvent.Broadcast();
-        }
-    });
-
-    // Close callback
-    glfwSetWindowCloseCallback(m_glfwWindow, [](GLFWwindow *window) {
-        JzWindowSystem *instance = FindInstance(window);
-        if (instance) {
-            instance->WindowClosedEvent.Broadcast();
-        }
-    });
+    return m_backend ? m_backend->GetMouseButtonState(button) : false;
 }
 
-void JzWindowSystem::UpdateSizeLimit() const
+JzVec2 JzWindowSystem::GetCursorPosition() const
 {
-    if (m_glfwWindow) {
-        glfwSetWindowSizeLimits(
-            m_glfwWindow,
-            m_minimumSize.x,
-            m_minimumSize.y,
-            m_maximumSize.x,
-            m_maximumSize.y);
-    }
+    return m_backend ? m_backend->GetCursorPosition() : JzVec2{0.0f, 0.0f};
 }
 
-void JzWindowSystem::OnResize(JzIVec2 size)
-{
-    m_size = size;
-}
+// ==================== Backend Delegate Wiring ====================
 
-void JzWindowSystem::OnMove(JzIVec2 position)
+void JzWindowSystem::WireBackendDelegates()
 {
-    if (!m_fullscreen) {
-        m_position = position;
-    }
-}
+    if (!m_backend) return;
 
-JzWindowSystem *JzWindowSystem::FindInstance(GLFWwindow *glfwWindow)
-{
-    auto it = s_windowMap.find(glfwWindow);
-    return it != s_windowMap.end() ? it->second : nullptr;
+    // Input events: backend → JzWindowSystem public delegates
+    m_backend->OnKeyPressed += [this](I32 key) {
+        KeyboardButtonPressedEvent.Broadcast(key);
+    };
+    m_backend->OnKeyReleased += [this](I32 key) {
+        KeyboardButtonReleasedEvent.Broadcast(key);
+    };
+    m_backend->OnMouseButtonPressed += [this](I32 button) {
+        MouseButtonPressedEvent.Broadcast(button);
+    };
+    m_backend->OnMouseButtonReleased += [this](I32 button) {
+        MouseButtonReleasedEvent.Broadcast(button);
+    };
+    m_backend->OnMouseScrolled += [this](JzVec2 scroll) {
+        MouseScrolledEvent.Broadcast(scroll);
+    };
+
+    // Window events: backend → JzWindowSystem public delegates
+    m_backend->OnWindowResized += [this](JzIVec2 size) {
+        WindowResizedEvent.Broadcast(size);
+    };
+    m_backend->OnFrameBufferResized += [this](JzIVec2 size) {
+        WindowFrameBufferResizedEvent.Broadcast(size);
+    };
+    m_backend->OnWindowMoved += [this](JzIVec2 pos) {
+        WindowMoveEvent.Broadcast(pos);
+    };
+    m_backend->OnCursorMoved += [this](JzIVec2 pos) {
+        WindowCursorMoveEvent.Broadcast(pos);
+    };
+    m_backend->OnWindowMinimized += [this]() {
+        WindowMinimizedEvent.Broadcast();
+    };
+    m_backend->OnWindowMaximized += [this]() {
+        WindowMaximizedEvent.Broadcast();
+    };
+    m_backend->OnWindowFocusGained += [this]() {
+        WindowFocusGainEvent.Broadcast();
+    };
+    m_backend->OnWindowFocusLost += [this]() {
+        WindowFocusLostEvent.Broadcast();
+    };
+    m_backend->OnWindowClosed += [this]() {
+        WindowClosedEvent.Broadcast();
+    };
 }
 
 // ==================== ECS Update Helpers ====================
 
 void JzWindowSystem::PollEvents(JzWorld &world)
 {
-    if (m_glfwWindow) {
-        glfwPollEvents();
+    if (m_backend) {
+        m_backend->PollEvents();
     }
 }
 
 void JzWindowSystem::UpdateWindowState(JzWorld &world)
 {
-    if (!m_glfwWindow) return;
+    if (!m_backend || !m_backend->IsValid()) return;
 
     auto view = world.View<JzWindowStateComponent>();
     for (auto entity : view) {
@@ -655,7 +446,7 @@ void JzWindowSystem::UpdateWindowState(JzWorld &world)
 
 void JzWindowSystem::UpdateInputState(JzWorld &world)
 {
-    if (!m_glfwWindow) return;
+    if (!m_backend || !m_backend->IsValid()) return;
 
     auto view = world.View<JzWindowStateComponent, JzInputStateComponent>();
     for (auto entity : view) {
@@ -665,14 +456,12 @@ void JzWindowSystem::UpdateInputState(JzWorld &world)
 
 void JzWindowSystem::SyncInputFromBackend(JzWorld &world, JzEntity windowEntity)
 {
-    if (!m_glfwWindow) return;
+    if (!m_backend || !m_backend->IsValid()) return;
 
     auto &input = world.GetComponent<JzInputStateComponent>(windowEntity);
 
     // Get current mouse position
-    F64 mouseX, mouseY;
-    glfwGetCursorPos(m_glfwWindow, &mouseX, &mouseY);
-    JzVec2 currentMousePos(static_cast<F32>(mouseX), static_cast<F32>(mouseY));
+    JzVec2 currentMousePos = m_backend->GetCursorPosition();
 
     // Calculate mouse delta
     if (!input.firstFrame) {
@@ -687,7 +476,7 @@ void JzWindowSystem::SyncInputFromBackend(JzWorld &world, JzEntity windowEntity)
 
     // Update keyboard state
     auto updateKey = [&](I32 key) {
-        Bool pressed    = glfwGetKey(m_glfwWindow, key) == GLFW_PRESS;
+        Bool pressed    = m_backend->GetKeyState(key);
         Bool wasPressed = input.keyboard.keysPressed[static_cast<Size>(key)];
 
         if (pressed && !wasPressed) {
@@ -704,8 +493,8 @@ void JzWindowSystem::SyncInputFromBackend(JzWorld &world, JzEntity windowEntity)
         }
     };
 
-    // Update common keys
-    for (I32 key = GLFW_KEY_SPACE; key <= GLFW_KEY_LAST; ++key) {
+    // Update common keys (GLFW key range: KEY_SPACE=32 to KEY_LAST=348)
+    for (I32 key = 32; key <= 348; ++key) {
         if (key < static_cast<I32>(JzInputStateComponent::KeyboardState::KEY_COUNT)) {
             updateKey(key);
         }
@@ -713,7 +502,7 @@ void JzWindowSystem::SyncInputFromBackend(JzWorld &world, JzEntity windowEntity)
 
     // Update mouse buttons
     for (I32 button = 0; button < static_cast<I32>(JzInputStateComponent::MouseState::BUTTON_COUNT); ++button) {
-        Bool pressed    = glfwGetMouseButton(m_glfwWindow, button) == GLFW_PRESS;
+        Bool pressed    = m_backend->GetMouseButtonState(button);
         Bool wasPressed = input.mouse.buttonsPressed[static_cast<Size>(button)];
 
         if (pressed && !wasPressed) {
@@ -793,7 +582,7 @@ void JzWindowSystem::ProcessWindowEvents(JzWorld &world)
 
 void JzWindowSystem::ApplyComponentChanges(JzWorld &world)
 {
-    if (!m_glfwWindow) return;
+    if (!m_backend || !m_backend->IsValid()) return;
 
     auto view = world.View<JzWindowStateComponent>();
     for (auto entity : view) {

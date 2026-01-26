@@ -5,6 +5,7 @@
 
 #include "JzRE/Editor/JzUIManager.h"
 #include "JzRE/Runtime/Function/ECS/JzWindowSystem.h"
+#include <GLFW/glfw3.h>
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
@@ -20,7 +21,8 @@ JzRE::JzUIManager::JzUIManager(JzWindowSystem &windowSystem)
     SetDocking(false);
 
     /* Setup Platform/Renderer backends */
-    ImGui_ImplGlfw_InitForOpenGL(windowSystem.GetGLFWWindow(), true);
+    auto *glfwWindow = static_cast<GLFWwindow *>(windowSystem.GetPlatformWindowHandle());
+    ImGui_ImplGlfw_InitForOpenGL(glfwWindow, true);
     ImGui_ImplOpenGL3_Init("#version 150");
 
     ImGui::StyleColorsDark();

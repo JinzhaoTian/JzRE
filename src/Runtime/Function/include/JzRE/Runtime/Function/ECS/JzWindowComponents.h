@@ -48,7 +48,7 @@ struct JzWindowStateComponent {
     Bool focused{false};
     Bool resizable{true};
     Bool decorated{true};
-    Bool floating{false};              ///< Always on top
+    Bool floating{false}; ///< Always on top
     Bool transparentFramebuffer{false};
 
     // ========== Size Limits ==========
@@ -73,8 +73,8 @@ struct JzWindowStateComponent {
 
     // ========== Internal State Flags ==========
     Bool shouldClose{false};
-    Bool sizeDirty{false};   ///< Size changed, needs backend update
-    Bool stateDirty{false};  ///< State changed, needs backend update
+    Bool sizeDirty{false};  ///< Size changed, needs backend update
+    Bool stateDirty{false}; ///< State changed, needs backend update
 
     // ========== Saved Windowed State (for fullscreen toggle) ==========
     JzIVec2 windowedSize{1280, 720};
@@ -82,14 +82,27 @@ struct JzWindowStateComponent {
 
     // ========== Helper Methods ==========
 
-    F32 GetAspectRatio() const {
+    F32 GetAspectRatio() const
+    {
         return size.y > 0 ? static_cast<F32>(size.x) / static_cast<F32>(size.y) : 1.0f;
     }
 
-    Bool IsFullscreen() const { return state == JzEWindowState::Fullscreen; }
-    Bool IsMinimized() const { return state == JzEWindowState::Minimized; }
-    Bool IsMaximized() const { return state == JzEWindowState::Maximized; }
-    Bool IsHidden() const { return state == JzEWindowState::Hidden; }
+    Bool IsFullscreen() const
+    {
+        return state == JzEWindowState::Fullscreen;
+    }
+    Bool IsMinimized() const
+    {
+        return state == JzEWindowState::Minimized;
+    }
+    Bool IsMaximized() const
+    {
+        return state == JzEWindowState::Maximized;
+    }
+    Bool IsHidden() const
+    {
+        return state == JzEWindowState::Hidden;
+    }
 };
 
 // ==================== Display/Monitor Component ====================
@@ -101,10 +114,10 @@ struct JzWindowStateComponent {
  */
 struct JzDisplayComponent {
     String  name;
-    JzIVec2 position{0, 0};        ///< Virtual position
-    JzIVec2 physicalSize{0, 0};    ///< Physical size in mm
+    JzIVec2 position{0, 0};     ///< Virtual position
+    JzIVec2 physicalSize{0, 0}; ///< Physical size in mm
     JzIVec2 resolution{1920, 1080};
-    JzVec2  scale{1.0f, 1.0f};     ///< DPI scale
+    JzVec2  scale{1.0f, 1.0f}; ///< DPI scale
     F32     refreshRate{60.0f};
     I32     redBits{8}, greenBits{8}, blueBits{8};
 
@@ -152,10 +165,21 @@ struct JzWindowEvent {
 
     // Event-specific data
     union {
-        struct { I32 width; I32 height; } resized;
-        struct { I32 x; I32 y; } moved;
-        struct { Bool focused; } focus;
-        struct { F32 xScale; F32 yScale; } contentScale;
+        struct {
+            I32 width;
+            I32 height;
+        } resized;
+        struct {
+            I32 x;
+            I32 y;
+        } moved;
+        struct {
+            Bool focused;
+        } focus;
+        struct {
+            F32 xScale;
+            F32 yScale;
+        } contentScale;
     } data;
 
     // File drop paths (separate due to non-trivial type)
@@ -171,38 +195,20 @@ struct JzWindowEvent {
 struct JzWindowEventQueueComponent {
     std::vector<JzWindowEvent> events;
 
-    void Push(JzWindowEvent event) {
+    void Push(JzWindowEvent event)
+    {
         events.push_back(std::move(event));
     }
 
-    void Clear() {
+    void Clear()
+    {
         events.clear();
     }
 
-    Bool HasEvents() const {
+    Bool HasEvents() const
+    {
         return !events.empty();
     }
-};
-
-// ==================== Window Configuration ====================
-
-/**
- * @brief Window creation configuration.
- *
- * Used when creating a new window entity.
- */
-struct JzWindowConfig {
-    String  title{"JzRE"};
-    I32     width{1280};
-    I32     height{720};
-    Bool    fullscreen{false};
-    Bool    vsync{true};
-    Bool    resizable{true};
-    Bool    decorated{true};
-    Bool    floating{false};
-    Bool    visible{true};
-    I32     samples{4}; ///< MSAA samples
-    Bool    srgb{true};
 };
 
 // ==================== Window Tags ====================

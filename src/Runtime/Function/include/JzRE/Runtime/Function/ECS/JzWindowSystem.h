@@ -5,12 +5,7 @@
 
 #pragma once
 
-#include <unordered_map>
-#ifdef _WIN32
-#define NOMINMAX
-#include <windows.h>
-#endif
-#include <GLFW/glfw3.h>
+#include <memory>
 
 #include "JzRE/Runtime/Core/JzRETypes.h"
 #include "JzRE/Runtime/Core/JzDelegate.h"
@@ -20,21 +15,22 @@
 #include "JzRE/Runtime/Function/ECS/JzWindowComponents.h"
 #include "JzRE/Runtime/Function/ECS/JzInputComponents.h"
 #include "JzRE/Runtime/Platform/JzDevice.h"
+#include "JzRE/Runtime/Platform/JzWindowConfig.h"
 
 namespace JzRE {
 
 // Forward declarations
 class JzEventDispatcherSystem;
+class IWindowBackend;
 
 /**
- * @brief System that directly manages the GLFW window and synchronizes with ECS components.
+ * @brief System that manages the window backend and synchronizes with ECS components.
  *
- * This system owns the GLFWwindow and handles all platform-specific window operations.
- * It replaces the former JzWindow class by integrating window management directly
- * into the ECS architecture.
+ * This system delegates all platform-specific window operations to an IWindowBackend
+ * implementation (default: JzGLFWWindowBackend).
  *
  * Responsibilities:
- * - Create and destroy the GLFW window
+ * - Manage the window backend lifecycle
  * - Poll window events from the backend
  * - Update JzWindowStateComponent from backend state
  * - Apply component changes to the backend (bidirectional sync)
@@ -47,7 +43,7 @@ class JzEventDispatcherSystem;
  */
 class JzWindowSystem : public JzSystem {
 public:
-    JzWindowSystem() = default;
+    JzWindowSystem();
     ~JzWindowSystem() override;
 
     // ==================== ECS System Lifecycle ====================
@@ -61,15 +57,27 @@ public:
         return JzSystemPhase::Input;
     }
 
+    // ==================== Backend Management ====================
+
+    /**
+     * @brief Set a custom window backend.
+     *
+     * Must be called before InitializeWindow() if a non-default backend is desired.
+     * If not called, InitializeWindow() will create a JzGLFWWindowBackend by default.
+     *
+     * @param backend The window backend to use.
+     */
+    void SetBackend(std::unique_ptr<IWindowBackend> backend);
+
     // ==================== Window Creation ====================
 
     /**
-     * @brief Create the GLFW window with the given configuration.
+     * @brief Initialize the window with the given configuration.
      *
+     * Creates a default JzGLFWWindowBackend if no backend was set via SetBackend().
      * This must be called before using any window operations.
-     * Can be called independently of the ECS lifecycle (for standalone use).
      *
-     * @param rhiType The RHI type for setting GLFW context hints.
+     * @param rhiType The RHI type for setting context hints.
      * @param config Window configuration.
      */
     void InitializeWindow(JzERHIType rhiType, const JzWindowConfig &config);
@@ -84,7 +92,7 @@ public:
     JzEntity CreateWindowEntity(JzWorld &world, const JzWindowConfig &config);
 
     /**
-     * @brief Destroy the GLFW window and cleanup resources.
+     * @brief Destroy the window and cleanup resources.
      */
     void ReleaseWindow();
 
@@ -112,8 +120,17 @@ public:
 
     // ==================== Window Properties ====================
 
-    GLFWwindow *GetGLFWWindow() const;
-    void       *GetNativeWindow() const;
+    /**
+     * @brief Get the windowing library's window handle (e.g., GLFWwindow* as void*).
+     *
+     * Used for library-specific integrations such as ImGui backends.
+     */
+    void *GetPlatformWindowHandle() const;
+
+    /**
+     * @brief Get the OS-native window handle (HWND, NSWindow*, X11 Window).
+     */
+    void *GetNativeWindow() const;
 
     void   SetTitle(const String &title);
     String GetTitle() const;
@@ -158,6 +175,25 @@ public:
     void SetShouldClose(Bool value) const;
     Bool ShouldClose() const;
 
+    // ==================== Input Polling ====================
+
+    /**
+     * @brief Poll the current state of a keyboard key.
+     * @return true if pressed, false if released.
+     */
+    Bool GetKeyState(I32 key) const;
+
+    /**
+     * @brief Poll the current state of a mouse button.
+     * @return true if pressed, false if released.
+     */
+    Bool GetMouseButtonState(I32 button) const;
+
+    /**
+     * @brief Get the current cursor position in window coordinates.
+     */
+    JzVec2 GetCursorPosition() const;
+
     // ==================== Entity Management ====================
 
     JzEntity GetPrimaryWindow() const
@@ -193,15 +229,6 @@ public:
     JzDelegate<>        WindowClosedEvent;
 
 private:
-    // ==================== GLFW Window Creation ====================
-
-    void CreateGlfwWindow(const JzWindowConfig &config);
-    void SetupCallbacks();
-    void UpdateSizeLimit() const;
-
-    void OnResize(JzIVec2 size);
-    void OnMove(JzIVec2 position);
-
     // ==================== ECS Update Helpers ====================
 
     void PollEvents(JzWorld &world);
@@ -215,25 +242,12 @@ private:
     void SyncInputFromBackend(JzWorld &world, JzEntity windowEntity);
     void EmitWindowEvents(JzWorld &world);
 
-    // ==================== Static Callback Helpers ====================
-
-    static JzWindowSystem                                    *FindInstance(GLFWwindow *glfwWindow);
-    static std::unordered_map<GLFWwindow *, JzWindowSystem *> s_windowMap;
+    void WireBackendDelegates();
 
 private:
-    // ==================== GLFW State ====================
+    // ==================== Backend ====================
 
-    GLFWwindow *m_glfwWindow{nullptr};
-    JzERHIType  m_rhiType{JzERHIType::Unknown};
-    String      m_title;
-    JzIVec2     m_size{0, 0};
-    JzIVec2     m_position{0, 0};
-    JzIVec2     m_minimumSize{-1, -1};
-    JzIVec2     m_maximumSize{-1, -1};
-    JzIVec2     m_windowedSize{0, 0};
-    JzIVec2     m_windowedPos{0, 0};
-    Bool        m_fullscreen{false};
-    I32         m_refreshRate{-1};
+    std::unique_ptr<IWindowBackend> m_backend;
 
     // ==================== ECS State ====================
 
@@ -242,10 +256,6 @@ private:
     // Statistics tracking
     F64 m_accumulatedTime{0.0};
     I32 m_frameCount{0};
-
-    // Cached previous mouse position for delta calculation
-    JzVec2 m_previousMousePosition{0.0f, 0.0f};
-    Bool   m_firstFrame{true};
 
     // Cached previous window state for event emission (change detection)
     JzIVec2 m_prevSize{0, 0};

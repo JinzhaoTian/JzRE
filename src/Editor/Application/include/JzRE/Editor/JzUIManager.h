@@ -6,11 +6,6 @@
 #pragma once
 
 #include <unordered_map>
-#ifdef _WIN32
-#define NOMINMAX
-#include <windows.h>
-#endif
-#include <GLFW/glfw3.h>
 #include <imgui.h>
 #include "JzRE/Runtime/Core/JzRETypes.h"
 #include "JzCanvas.h"

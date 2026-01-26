@@ -36,26 +36,16 @@ JzRE::JzInputManager::~JzInputManager()
 
 JzRE::JzEInputKeyboardButtonState JzRE::JzInputManager::GetKeyState(JzEInputKeyboardButton key) const
 {
-    switch (glfwGetKey(m_windowSystem.GetGLFWWindow(), static_cast<I32>(key))) {
-        case GLFW_PRESS:
-            return JzEInputKeyboardButtonState::KEY_DOWN;
-        case GLFW_RELEASE:
-            return JzEInputKeyboardButtonState::KEY_UP;
-        default:
-            return JzEInputKeyboardButtonState::KEY_UP;
-    }
+    return m_windowSystem.GetKeyState(static_cast<I32>(key))
+        ? JzEInputKeyboardButtonState::KEY_DOWN
+        : JzEInputKeyboardButtonState::KEY_UP;
 }
 
 JzRE::JzEInputMouseButtonState JzRE::JzInputManager::GetMouseButtonState(JzEInputMouseButton button) const
 {
-    switch (glfwGetMouseButton(m_windowSystem.GetGLFWWindow(), static_cast<I32>(button))) {
-        case GLFW_PRESS:
-            return JzEInputMouseButtonState::MOUSE_DOWN;
-        case GLFW_RELEASE:
-            return JzEInputMouseButtonState::MOUSE_UP;
-        default:
-            return JzEInputMouseButtonState::MOUSE_UP;
-    }
+    return m_windowSystem.GetMouseButtonState(static_cast<I32>(button))
+        ? JzEInputMouseButtonState::MOUSE_DOWN
+        : JzEInputMouseButtonState::MOUSE_UP;
 }
 
 JzRE::Bool JzRE::JzInputManager::IsKeyPressed(JzEInputKeyboardButton key) const
@@ -80,9 +70,7 @@ JzRE::Bool JzRE::JzInputManager::IsMouseButtonReleased(JzEInputMouseButton butto
 
 JzRE::JzVec2 JzRE::JzInputManager::GetMousePosition() const
 {
-    F64 x, y;
-    glfwGetCursorPos(m_windowSystem.GetGLFWWindow(), &x, &y);
-    return JzVec2(static_cast<F32>(x), static_cast<F32>(y));
+    return m_windowSystem.GetCursorPosition();
 }
 
 JzRE::JzVec2 JzRE::JzInputManager::GetMouseScroll() const
