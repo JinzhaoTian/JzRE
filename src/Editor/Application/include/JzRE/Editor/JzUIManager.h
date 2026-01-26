@@ -14,9 +14,11 @@
 #include <imgui.h>
 #include "JzRE/Runtime/Core/JzRETypes.h"
 #include "JzCanvas.h"
-#include "JzRE/Runtime/Function/ECS/JzWindowSystem.h"
 
 namespace JzRE {
+
+// Forward declaration
+class JzWindowSystem;
 
 /**
  * @brief UI Manager of JzRE

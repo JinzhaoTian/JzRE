@@ -13,27 +13,16 @@
 #include "JzRE/Editor/Panels/JzMaterialEditor.h"
 #include "JzRE/Editor/Panels/JzMenuBar.h"
 #include "JzRE/Runtime/JzRERuntime.h"
-
-JzRE::JzEditor::JzEditor(JzRE::JzWindowSystem &windowSystem) :
-    m_windowSystem(windowSystem),
-    m_runtime(nullptr)
-{
-    m_uiManager     = std::make_unique<JzUIManager>(m_windowSystem);
-    m_canvas        = std::make_unique<JzCanvas>();
-    m_panelsManager = std::make_unique<JzPanelsManager>(*m_canvas);
-
-    m_canvas->SetDockspace(true);
-
-    InitializePanels();
-}
+#include "JzRE/Runtime/Core/JzServiceContainer.h"
+#include "JzRE/Runtime/Function/ECS/JzWindowSystem.h"
 
 JzRE::JzEditor::JzEditor(JzRE::JzRERuntime &runtime) :
-    m_windowSystem(runtime.GetWindowSystem()),
     m_runtime(&runtime)
 {
-    m_uiManager     = std::make_unique<JzUIManager>(m_windowSystem);
-    m_canvas        = std::make_unique<JzCanvas>();
-    m_panelsManager = std::make_unique<JzPanelsManager>(*m_canvas);
+    auto &windowSystem = JzServiceContainer::Get<JzWindowSystem>();
+    m_uiManager        = std::make_unique<JzUIManager>(windowSystem);
+    m_canvas           = std::make_unique<JzCanvas>();
+    m_panelsManager    = std::make_unique<JzPanelsManager>(*m_canvas);
 
     m_canvas->SetDockspace(true);
 
@@ -42,7 +31,8 @@ JzRE::JzEditor::JzEditor(JzRE::JzRERuntime &runtime) :
 
 void JzRE::JzEditor::InitializePanels()
 {
-    m_panelsManager->CreatePanel<JzMenuBar>("Menu Bar", m_windowSystem);
+    auto &windowSystem = JzServiceContainer::Get<JzWindowSystem>();
+    m_panelsManager->CreatePanel<JzMenuBar>("Menu Bar", windowSystem);
     m_panelsManager->CreatePanel<JzAssetBrowser>("Asset Browser", true);
     m_panelsManager->CreatePanel<JzSceneView>("Scene View", true);
     m_panelsManager->CreatePanel<JzAssetView>("Asset View", true);

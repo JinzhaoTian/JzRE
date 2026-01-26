@@ -5,7 +5,6 @@
 
 #pragma once
 
-#include "JzRE/Runtime/Function/ECS/JzWindowSystem.h"
 #include "JzRE/Editor/JzCanvas.h"
 #include "JzRE/Editor/JzUIManager.h"
 #include "JzRE/Editor/Panels/JzPanelsManager.h"
@@ -23,23 +22,17 @@ class JzRERuntime;
  * complete editor experience.
  *
  * Usage:
- * 1. Standalone with window: JzEditor(window) - manages its own update loop
- * 2. With runtime: JzEditor(runtime) - integrates with runtime's render loop
+ * JzEditor(runtime) - integrates with runtime's render loop.
+ * JzWindowSystem is retrieved via JzServiceContainer (dependency injection).
  */
 class JzEditor {
 public:
-    /**
-     * @brief Construct editor with a window system reference
-     *
-     * @param windowSystem Reference to the window system
-     */
-    explicit JzEditor(JzWindowSystem &windowSystem);
-
     /**
      * @brief Construct editor with a runtime reference
      *
      * This constructor allows the editor to access runtime components
      * like the renderer, scene, and input manager directly.
+     * JzWindowSystem is retrieved from JzServiceContainer.
      *
      * @param runtime Reference to the runtime
      */
@@ -90,7 +83,6 @@ private:
     void RenderEditorUI(F32 deltaTime);
 
 private:
-    JzWindowSystem                  &m_windowSystem;
     JzRERuntime                     *m_runtime = nullptr;
     std::unique_ptr<JzCanvas>        m_canvas;
     std::unique_ptr<JzPanelsManager> m_panelsManager;
