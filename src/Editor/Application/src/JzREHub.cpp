@@ -32,20 +32,22 @@ JzRE::JzREHub::JzREHub(JzERHIType rhiType)
 {
     JzServiceContainer::Init();
 
-    JzWindowSettings windowSettings;
-    windowSettings.title       = "JzRE Hub";
-    windowSettings.size        = {800, 500};
-    windowSettings.isResizable = false;
-    windowSettings.isDecorated = false;
+    JzWindowConfig windowConfig;
+    windowConfig.title     = "JzRE Hub";
+    windowConfig.width     = 800;
+    windowConfig.height    = 500;
+    windowConfig.resizable = false;
+    windowConfig.decorated = false;
 
-    m_window = std::make_unique<JzWindow>(rhiType, windowSettings);
-    m_window->MakeCurrentContext();
-    m_window->SetAlignCentered();
+    m_windowSystem = std::make_unique<JzWindowSystem>();
+    m_windowSystem->InitializeWindow(rhiType, windowConfig);
+    m_windowSystem->MakeCurrentContext();
+    m_windowSystem->SetAlignCentered();
 
     m_device = JzDeviceFactory::CreateDevice(rhiType);
     JzServiceContainer::Provide<JzDevice>(*m_device);
 
-    m_uiManager = std::make_unique<JzUIManager>(*m_window);
+    m_uiManager = std::make_unique<JzUIManager>(*m_windowSystem);
 
     const auto fontPath = std::filesystem::current_path() / "fonts" / "SourceHanSansCN-Regular.otf";
     m_uiManager->LoadFont("sourcehansanscn-regular-16", fontPath.string(), 16);
@@ -55,7 +57,7 @@ JzRE::JzREHub::JzREHub(JzERHIType rhiType)
 
     m_canvas = std::make_unique<JzCanvas>();
 
-    m_menuBar = std::make_unique<JzREHubMenuBar>(*m_window);
+    m_menuBar = std::make_unique<JzREHubMenuBar>(*m_windowSystem);
     m_canvas->AddPanel(*m_menuBar);
 
     m_hubPanel = std::make_unique<JzREHubPanel>();
@@ -82,28 +84,28 @@ JzRE::JzREHub::~JzREHub()
         m_device.reset();
     }
 
-    if (m_window) {
-        m_window.reset();
+    if (m_windowSystem) {
+        m_windowSystem.reset();
     }
 }
 
 std::optional<std::filesystem::path> JzRE::JzREHub::Run()
 {
-    while (!m_window->ShouldClose()) {
-        m_window->PollEvents();
+    while (!m_windowSystem->ShouldClose()) {
+        m_windowSystem->PollWindowEvents();
         m_uiManager->Render();
-        m_window->SwapBuffers();
+        m_windowSystem->SwapWindowBuffers();
 
         if (!m_hubPanel->IsOpened()) {
-            m_window->SetShouldClose(true);
+            m_windowSystem->SetShouldClose(true);
         }
     }
 
     return m_hubPanel->GetResult();
 }
 
-JzRE::JzREHubMenuBar::JzREHubMenuBar(JzRE::JzWindow &window) :
-    m_window(window),
+JzRE::JzREHubMenuBar::JzREHubMenuBar(JzRE::JzWindowSystem &windowSystem) :
+    m_windowSystem(windowSystem),
     m_buttonSize({30.0f, 20.0f}),
     m_backgroudColor("#2A2A2A"),
     m_isDragging(false)
@@ -119,10 +121,10 @@ JzRE::JzREHubMenuBar::JzREHubMenuBar(JzRE::JzWindow &window) :
     minimizeButton.buttonIdleColor  = m_backgroudColor;
     minimizeButton.lineBreak        = false;
     minimizeButton.ClickedEvent    += [this]() {
-        if (m_window.IsMinimized())
-            m_window.Restore();
+        if (m_windowSystem.IsMinimized())
+            m_windowSystem.Restore();
         else
-            m_window.Minimize();
+            m_windowSystem.Minimize();
     };
 
     auto maximizeIcon = std::make_shared<JzTexture>((iconsDir / "maximize-64.png").string());
@@ -132,10 +134,10 @@ JzRE::JzREHubMenuBar::JzREHubMenuBar(JzRE::JzWindow &window) :
     maximizeButton.buttonIdleColor  = m_backgroudColor;
     maximizeButton.lineBreak        = false;
     maximizeButton.ClickedEvent    += [this]() {
-        if (m_window.IsFullscreen())
-            m_window.SetFullscreen(false);
+        if (m_windowSystem.IsFullscreen())
+            m_windowSystem.SetFullscreen(false);
         else
-            m_window.SetFullscreen(true);
+            m_windowSystem.SetFullscreen(true);
     };
 
     auto closeIcon = std::make_shared<JzTexture>((iconsDir / "close-64.png").string());
@@ -147,7 +149,7 @@ JzRE::JzREHubMenuBar::JzREHubMenuBar(JzRE::JzWindow &window) :
     closeButton.buttonClickedColor  = "#ec6c77";
     closeButton.iconSize            = {14.f, 14.f};
     closeButton.lineBreak           = true;
-    closeButton.ClickedEvent       += [this]() { m_window.SetShouldClose(true); };
+    closeButton.ClickedEvent       += [this]() { m_windowSystem.SetShouldClose(true); };
 }
 
 void JzRE::JzREHubMenuBar::_Draw_Impl()
@@ -173,7 +175,7 @@ void JzRE::JzREHubMenuBar::HandleDragging()
     ImGuiIO &io                 = ImGui::GetIO();
     Bool     isMouseOverMenuBar = ImGui::IsMouseHoveringRect(menuBarMin, menuBarMax);
 
-    const JzIVec2 windowScreenPos       = m_window.GetPosition();
+    const JzIVec2 windowScreenPos       = m_windowSystem.GetPosition();
     const JzIVec2 currentMouseScreenPos = windowScreenPos + JzIVec2(io.MousePos.x, io.MousePos.y);
 
     if (isMouseOverMenuBar && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
@@ -185,7 +187,7 @@ void JzRE::JzREHubMenuBar::HandleDragging()
     if (m_isDragging) {
         if (ImGui::IsMouseDragging(ImGuiMouseButton_Left)) {
             const JzIVec2 delta = currentMouseScreenPos - m_dragStartMousePos;
-            m_window.SetPosition(m_dragStartWindowPos + delta);
+            m_windowSystem.SetPosition(m_dragStartWindowPos + delta);
         }
         if (ImGui::IsMouseReleased(ImGuiMouseButton_Left)) {
             m_isDragging = false;

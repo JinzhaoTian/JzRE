@@ -4,12 +4,11 @@
  */
 
 #include "JzRE/Editor/JzUIManager.h"
-#include "JzRE/Runtime/Function/Window/JzWindow.h"
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
-JzRE::JzUIManager::JzUIManager(JzWindow &window)
+JzRE::JzUIManager::JzUIManager(JzWindowSystem &windowSystem)
 {
     /* Setup Dear ImGui context */
     ImGui::CreateContext();
@@ -20,7 +19,7 @@ JzRE::JzUIManager::JzUIManager(JzWindow &window)
     SetDocking(false);
 
     /* Setup Platform/Renderer backends */
-    ImGui_ImplGlfw_InitForOpenGL(window.GetGLFWWindow(), true);
+    ImGui_ImplGlfw_InitForOpenGL(windowSystem.GetGLFWWindow(), true);
     ImGui_ImplOpenGL3_Init("#version 150");
 
     ImGui::StyleColorsDark();

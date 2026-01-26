@@ -115,7 +115,7 @@ High-level engine systems built on lower layers.
 | **Scene**     | `JzActor` - Scene graph                       |
 | **ECS**       | `JzEntityManager`, Systems, Components        |
 | **Input**     | `JzInputManager` - Keyboard/mouse handling    |
-| **Window**    | `JzWindow` - GLFW window wrapper              |
+| **Window**    | `JzWindowSystem` - ECS-integrated GLFW window management |
 
 📄 See: [ECS Integration](ecs.md), [Rendering Pipeline](rendering_pipeline.md)
 

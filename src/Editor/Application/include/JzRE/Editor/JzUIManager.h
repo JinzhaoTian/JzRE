@@ -14,7 +14,7 @@
 #include <imgui.h>
 #include "JzRE/Runtime/Core/JzRETypes.h"
 #include "JzCanvas.h"
-#include "JzRE/Runtime/Function/Window/JzWindow.h"
+#include "JzRE/Runtime/Function/ECS/JzWindowSystem.h"
 
 namespace JzRE {
 
@@ -26,7 +26,7 @@ public:
     /**
      * @brief Constructor
      */
-    JzUIManager(JzWindow &window);
+    JzUIManager(JzWindowSystem &windowSystem);
 
     /**
      * @brief Destructor

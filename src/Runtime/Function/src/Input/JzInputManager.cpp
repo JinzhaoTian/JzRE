@@ -5,38 +5,38 @@
 
 #include "JzRE/Runtime/Function/Input/JzInputManager.h"
 
-JzRE::JzInputManager::JzInputManager(JzWindow &window) :
-    m_window(window)
+JzRE::JzInputManager::JzInputManager(JzWindowSystem &windowSystem) :
+    m_windowSystem(windowSystem)
 {
-    m_keyboardButtonPressedListenerID = m_window.KeyboardButtonPressedEvent += [this](I32 keyboardButton) {
+    m_keyboardButtonPressedListenerID = m_windowSystem.KeyboardButtonPressedEvent += [this](I32 keyboardButton) {
         m_keyboardButtonStates[static_cast<JzEInputKeyboardButton>(keyboardButton)] = JzEInputKeyboardButtonState::KEY_DOWN;
     };
-    m_keyboardButtonReleasedListenerID = m_window.KeyboardButtonReleasedEvent += [this](I32 keyboardButton) {
+    m_keyboardButtonReleasedListenerID = m_windowSystem.KeyboardButtonReleasedEvent += [this](I32 keyboardButton) {
         m_keyboardButtonStates[static_cast<JzEInputKeyboardButton>(keyboardButton)] = JzEInputKeyboardButtonState::KEY_UP;
     };
-    m_mouseButtonPressedListenerID = m_window.MouseButtonPressedEvent += [this](I32 mouseButton) {
+    m_mouseButtonPressedListenerID = m_windowSystem.MouseButtonPressedEvent += [this](I32 mouseButton) {
         m_mouseButtonStates[static_cast<JzEInputMouseButton>(mouseButton)] = JzEInputMouseButtonState::MOUSE_DOWN;
     };
-    m_mouseButtonReleasedListenerID = m_window.MouseButtonReleasedEvent += [this](I32 mouseButton) {
+    m_mouseButtonReleasedListenerID = m_windowSystem.MouseButtonReleasedEvent += [this](I32 mouseButton) {
         m_mouseButtonStates[static_cast<JzEInputMouseButton>(mouseButton)] = JzEInputMouseButtonState::MOUSE_UP;
     };
-    m_mouseScrollListenerID = m_window.MouseScrolledEvent += [this](JzVec2 scroll) {
+    m_mouseScrollListenerID = m_windowSystem.MouseScrolledEvent += [this](JzVec2 scroll) {
         m_mouseScroll = scroll;
     };
 }
 
 JzRE::JzInputManager::~JzInputManager()
 {
-    m_window.KeyboardButtonPressedEvent  -= m_keyboardButtonPressedListenerID;
-    m_window.KeyboardButtonReleasedEvent -= m_keyboardButtonReleasedListenerID;
-    m_window.MouseButtonPressedEvent     -= m_mouseButtonPressedListenerID;
-    m_window.MouseButtonReleasedEvent    -= m_mouseButtonReleasedListenerID;
-    m_window.MouseScrolledEvent          -= m_mouseScrollListenerID;
+    m_windowSystem.KeyboardButtonPressedEvent  -= m_keyboardButtonPressedListenerID;
+    m_windowSystem.KeyboardButtonReleasedEvent -= m_keyboardButtonReleasedListenerID;
+    m_windowSystem.MouseButtonPressedEvent     -= m_mouseButtonPressedListenerID;
+    m_windowSystem.MouseButtonReleasedEvent    -= m_mouseButtonReleasedListenerID;
+    m_windowSystem.MouseScrolledEvent          -= m_mouseScrollListenerID;
 }
 
 JzRE::JzEInputKeyboardButtonState JzRE::JzInputManager::GetKeyState(JzEInputKeyboardButton key) const
 {
-    switch (glfwGetKey(m_window.GetGLFWWindow(), static_cast<I32>(key))) {
+    switch (glfwGetKey(m_windowSystem.GetGLFWWindow(), static_cast<I32>(key))) {
         case GLFW_PRESS:
             return JzEInputKeyboardButtonState::KEY_DOWN;
         case GLFW_RELEASE:
@@ -48,7 +48,7 @@ JzRE::JzEInputKeyboardButtonState JzRE::JzInputManager::GetKeyState(JzEInputKeyb
 
 JzRE::JzEInputMouseButtonState JzRE::JzInputManager::GetMouseButtonState(JzEInputMouseButton button) const
 {
-    switch (glfwGetMouseButton(m_window.GetGLFWWindow(), static_cast<I32>(button))) {
+    switch (glfwGetMouseButton(m_windowSystem.GetGLFWWindow(), static_cast<I32>(button))) {
         case GLFW_PRESS:
             return JzEInputMouseButtonState::MOUSE_DOWN;
         case GLFW_RELEASE:
@@ -81,7 +81,7 @@ JzRE::Bool JzRE::JzInputManager::IsMouseButtonReleased(JzEInputMouseButton butto
 JzRE::JzVec2 JzRE::JzInputManager::GetMousePosition() const
 {
     F64 x, y;
-    glfwGetCursorPos(m_window.GetGLFWWindow(), &x, &y);
+    glfwGetCursorPos(m_windowSystem.GetGLFWWindow(), &x, &y);
     return JzVec2(static_cast<F32>(x), static_cast<F32>(y));
 }
 

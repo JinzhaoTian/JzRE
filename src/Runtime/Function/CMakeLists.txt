@@ -16,9 +16,6 @@ file(GLOB SCENE_SOURCES CONFIGURE_DEPENDS "src/Scene/*.cpp")
 # Input sources
 file(GLOB INPUT_SOURCES CONFIGURE_DEPENDS "src/Input/*.cpp")
 
-# Window sources
-file(GLOB WINDOW_SOURCES CONFIGURE_DEPENDS "src/Window/*.cpp")
-
 # Combine all sources
 set(ALL_FUNCTION_SOURCES
     ${FUNCTION_HEADERS}
@@ -26,7 +23,6 @@ set(ALL_FUNCTION_SOURCES
     ${RENDERING_SOURCES}
     ${SCENE_SOURCES}
     ${INPUT_SOURCES}
-    ${WINDOW_SOURCES}
 )
 
 target_sources(JzRuntimeFunction PRIVATE ${ALL_FUNCTION_SOURCES})

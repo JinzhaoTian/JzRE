@@ -8,7 +8,7 @@
 #include <filesystem>
 #include <optional>
 #include "JzRE/Runtime/Core/JzRETypes.h"
-#include "JzRE/Runtime/Function/Window/JzWindow.h"
+#include "JzRE/Runtime/Function/ECS/JzWindowSystem.h"
 #include "JzRE/Runtime/Platform/JzDevice.h"
 #include "JzRE/Editor/JzUIManager.h"
 #include "JzRE/Editor/JzCanvas.h"
@@ -43,7 +43,7 @@ public:
     std::optional<std::filesystem::path> Run();
 
 private:
-    std::unique_ptr<JzWindow>       m_window;
+    std::unique_ptr<JzWindowSystem> m_windowSystem;
     std::unique_ptr<JzDevice>       m_device;
     std::unique_ptr<JzUIManager>    m_uiManager;
     std::unique_ptr<JzCanvas>       m_canvas;
@@ -59,7 +59,7 @@ public:
     /**
      * @brief Constructor
      */
-    JzREHubMenuBar(JzWindow &window);
+    JzREHubMenuBar(JzWindowSystem &windowSystem);
 
 protected:
     /**
@@ -71,7 +71,7 @@ private:
     void HandleDragging();
 
 private:
-    JzWindow &m_window;
+    JzWindowSystem &m_windowSystem;
     JzVec2    m_buttonSize;
     String    m_backgroudColor;
     Bool      m_isDragging;

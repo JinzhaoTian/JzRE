@@ -45,7 +45,7 @@ App (JzRE executable)
 | `JzRuntimeCore` | Math (JzVector, JzMatrix), types (JzRETypes), threading (JzThreadPool), logging (JzLogger) |
 | `JzRuntimePlatform` | RHI command pattern (`JzRHICommandList`, `JzDevice`), GPU objects, platform file dialogs |
 | `JzRuntimeResource` | `JzResourceManager`, factories for Texture/Mesh/Model/Shader/Material/Font |
-| `JzRuntimeFunction` | ECS systems (`JzRenderSystem`, `JzCameraSystem`, `JzLightSystem`), `JzInputManager`, `JzWindow` |
+| `JzRuntimeFunction` | ECS systems (`JzRenderSystem`, `JzCameraSystem`, `JzLightSystem`, `JzWindowSystem`), `JzInputManager` |
 | `JzREInterface` | Runtime application base class (`JzRERuntime`) with virtual `OnStart/OnUpdate/OnStop` hooks |
 | `JzEditor` | ImGui-based editor panels, UI widget wrappers |
 

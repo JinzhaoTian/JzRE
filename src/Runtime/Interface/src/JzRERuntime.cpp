@@ -85,24 +85,10 @@ void JzRE::JzRERuntime::CreateSubsystems()
     m_assetManager               = std::make_unique<JzAssetManager>(assetConfig);
     JzServiceContainer::Provide<JzAssetManager>(*m_assetManager);
 
-    // Create window
-    JzWindowSettings windowSettings;
-    windowSettings.title = m_settings.windowTitle;
-    windowSettings.size  = m_settings.windowSize;
-    m_window             = std::make_unique<JzWindow>(m_settings.rhiType, windowSettings);
-    m_window->MakeCurrentContext();
-    m_window->SetAlignCentered();
-    JzServiceContainer::Provide<JzWindow>(*m_window);
+    // Create device (after window is created in RegisterSystems)
+    // Note: device creation is deferred until after window system initialization
 
-    // Create device
-    m_device = JzDeviceFactory::CreateDevice(m_settings.rhiType);
-    JzServiceContainer::Provide<JzDevice>(*m_device);
-
-    // Create input manager
-    m_inputManager = std::make_unique<JzInputManager>(*m_window);
-    JzServiceContainer::Provide<JzInputManager>(*m_inputManager);
-
-    // Initialize ECS world and systems
+    // Initialize ECS world first (needed for system registration)
     m_world = std::make_unique<JzWorld>();
     JzServiceContainer::Provide<JzWorld>(*m_world);
 }
@@ -133,7 +119,26 @@ void JzRE::JzRERuntime::RegisterSystems()
     // Register systems in execution order by phase:
     // Window system must be registered first to handle window/input events
     m_windowSystem = m_world->RegisterSystem<JzWindowSystem>();
-    m_inputSystem  = m_world->RegisterSystem<JzInputSystem>();
+    JzServiceContainer::Provide<JzWindowSystem>(*m_windowSystem);
+
+    // Create GLFW window via the window system
+    JzWindowConfig windowConfig;
+    windowConfig.title  = m_settings.windowTitle;
+    windowConfig.width  = m_settings.windowSize.x;
+    windowConfig.height = m_settings.windowSize.y;
+    m_windowSystem->InitializeWindow(m_settings.rhiType, windowConfig);
+    m_windowSystem->MakeCurrentContext();
+    m_windowSystem->SetAlignCentered();
+
+    // Create device (requires GL context to be current)
+    m_device = JzDeviceFactory::CreateDevice(m_settings.rhiType);
+    JzServiceContainer::Provide<JzDevice>(*m_device);
+
+    // Create input manager
+    m_inputManager = std::make_unique<JzInputManager>(*m_windowSystem);
+    JzServiceContainer::Provide<JzInputManager>(*m_inputManager);
+
+    m_inputSystem = m_world->RegisterSystem<JzInputSystem>();
 
     // Event dispatcher runs after window/input so events queued this frame are dispatched this frame
     m_eventDispatcherSystem = m_world->RegisterSystem<JzEventDispatcherSystem>();
@@ -195,7 +200,7 @@ void JzRE::JzRERuntime::UpdateSystems(F32 deltaTime)
     // Update global window component
     if (m_world->IsValid(m_globalConfigEntity)) {
         auto &config     = m_world->GetComponent<JzWindowComponent>(m_globalConfigEntity);
-        config.frameSize = m_window->GetFramebufferSize();
+        config.frameSize = m_windowSystem->GetFramebufferSize();
         if (config.frameSize.y > 0) {
             config.aspectRatio = static_cast<F32>(config.frameSize.x) / static_cast<F32>(config.frameSize.y);
         }
@@ -229,11 +234,11 @@ void JzRE::JzRERuntime::ShutdownSubsystems()
     m_assetLoadingSystem.reset();
     m_eventDispatcherSystem.reset();
     m_inputSystem.reset();
-    m_windowSystem.reset();
-    m_world.reset();
     m_inputManager.reset();
     m_device.reset();
-    m_window.reset();
+
+    m_windowSystem.reset();
+    m_world.reset();
 
     // Shutdown asset manager
     if (m_assetManager) {
@@ -254,7 +259,7 @@ void JzRE::JzRERuntime::CreateGlobalConfigEntity()
 
     auto &config        = m_world->AddComponent<JzWindowComponent>(m_globalConfigEntity);
     config.blitToScreen = true;
-    config.frameSize    = m_window->GetFramebufferSize();
+    config.frameSize    = m_windowSystem->GetFramebufferSize();
     if (config.frameSize.y > 0) {
         config.aspectRatio = static_cast<F32>(config.frameSize.x) / static_cast<F32>(config.frameSize.y);
     }
@@ -264,13 +269,13 @@ void JzRE::JzRERuntime::CreateGlobalConfigEntity()
 
     // Add enhanced window state component
     auto &windowState           = m_world->AddComponent<JzWindowStateComponent>(m_windowEntity);
-    windowState.title           = m_window->GetTitle();
-    windowState.size            = m_window->GetSize();
-    windowState.position        = m_window->GetPosition();
-    windowState.framebufferSize = m_window->GetFramebufferSize();
-    windowState.focused         = m_window->IsFocused();
-    windowState.visible         = m_window->IsVisible();
-    windowState.nativeHandle    = m_window->GetNativeWindow();
+    windowState.title           = m_windowSystem->GetTitle();
+    windowState.size            = m_windowSystem->GetSize();
+    windowState.position        = m_windowSystem->GetPosition();
+    windowState.framebufferSize = m_windowSystem->GetFramebufferSize();
+    windowState.focused         = m_windowSystem->IsFocused();
+    windowState.visible         = m_windowSystem->IsVisible();
+    windowState.nativeHandle    = m_windowSystem->GetNativeWindow();
 
     // Add input state component for ECS-based input
     m_world->AddComponent<JzInputStateComponent>(m_windowEntity);
@@ -337,7 +342,7 @@ void JzRE::JzRERuntime::Run()
     while (IsRunning()) {
         auto deltaTime = clock.GetDeltaTime();
 
-        m_window->PollEvents();
+        m_windowSystem->PollWindowEvents();
 
         OnFrameBegin();
 
@@ -362,7 +367,7 @@ void JzRE::JzRERuntime::Run()
         }
 
         // Swap buffers
-        m_window->SwapBuffers();
+        m_windowSystem->SwapWindowBuffers();
 
         // Update clock for next frame
         clock.Update();
@@ -373,12 +378,12 @@ void JzRE::JzRERuntime::Run()
 
 JzRE::Bool JzRE::JzRERuntime::IsRunning() const
 {
-    return !m_window->ShouldClose();
+    return !m_windowSystem->ShouldClose();
 }
 
-JzRE::JzWindow &JzRE::JzRERuntime::GetWindow()
+JzRE::JzWindowSystem &JzRE::JzRERuntime::GetWindowSystem()
 {
-    return *m_window;
+    return *m_windowSystem;
 }
 
 JzRE::JzDevice &JzRE::JzRERuntime::GetDevice()

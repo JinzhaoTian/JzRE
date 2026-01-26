@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "JzRE/Runtime/Function/Window/JzWindow.h"
+#include "JzRE/Runtime/Function/ECS/JzWindowSystem.h"
 #include "JzRE/Editor/JzCanvas.h"
 #include "JzRE/Editor/JzUIManager.h"
 #include "JzRE/Editor/Panels/JzPanelsManager.h"
@@ -29,11 +29,11 @@ class JzRERuntime;
 class JzEditor {
 public:
     /**
-     * @brief Construct editor with a window reference
+     * @brief Construct editor with a window system reference
      *
-     * @param window Reference to the window
+     * @param windowSystem Reference to the window system
      */
-    explicit JzEditor(JzWindow &window);
+    explicit JzEditor(JzWindowSystem &windowSystem);
 
     /**
      * @brief Construct editor with a runtime reference
@@ -90,7 +90,7 @@ private:
     void RenderEditorUI(F32 deltaTime);
 
 private:
-    JzWindow                        &m_window;
+    JzWindowSystem                  &m_windowSystem;
     JzRERuntime                     *m_runtime = nullptr;
     std::unique_ptr<JzCanvas>        m_canvas;
     std::unique_ptr<JzPanelsManager> m_panelsManager;

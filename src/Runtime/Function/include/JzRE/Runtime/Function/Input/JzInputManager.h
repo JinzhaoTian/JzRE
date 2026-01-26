@@ -8,7 +8,7 @@
 #include "JzRE/Runtime/Core/JzRETypes.h"
 #include "JzRE/Runtime/Core/JzDelegate.h"
 #include "JzRE/Runtime/Core/JzVector.h"
-#include "JzRE/Runtime/Function/Window/JzWindow.h"
+#include "JzRE/Runtime/Function/ECS/JzWindowSystem.h"
 
 namespace JzRE {
 
@@ -180,9 +180,9 @@ public:
     /**
      * @brief Constructor
      *
-     * @param window
+     * @param windowSystem
      */
-    JzInputManager(JzWindow &window);
+    JzInputManager(JzWindowSystem &windowSystem);
 
     /**
      * @brief Destructor
@@ -263,7 +263,7 @@ public:
     void ClearEvents();
 
 private:
-    JzWindow                                                               &m_window;
+    JzWindowSystem                                                         &m_windowSystem;
     DelegateHandle                                                              m_keyboardButtonPressedListenerID;
     DelegateHandle                                                              m_keyboardButtonReleasedListenerID;
     std::unordered_map<JzEInputKeyboardButton, JzEInputKeyboardButtonState> m_keyboardButtonStates;

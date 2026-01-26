@@ -14,11 +14,11 @@
 #include "JzRE/Editor/Panels/JzMenuBar.h"
 #include "JzRE/Runtime/JzRERuntime.h"
 
-JzRE::JzEditor::JzEditor(JzRE::JzWindow &window) :
-    m_window(window),
+JzRE::JzEditor::JzEditor(JzRE::JzWindowSystem &windowSystem) :
+    m_windowSystem(windowSystem),
     m_runtime(nullptr)
 {
-    m_uiManager     = std::make_unique<JzUIManager>(m_window);
+    m_uiManager     = std::make_unique<JzUIManager>(m_windowSystem);
     m_canvas        = std::make_unique<JzCanvas>();
     m_panelsManager = std::make_unique<JzPanelsManager>(*m_canvas);
 
@@ -28,10 +28,10 @@ JzRE::JzEditor::JzEditor(JzRE::JzWindow &window) :
 }
 
 JzRE::JzEditor::JzEditor(JzRE::JzRERuntime &runtime) :
-    m_window(runtime.GetWindow()),
+    m_windowSystem(runtime.GetWindowSystem()),
     m_runtime(&runtime)
 {
-    m_uiManager     = std::make_unique<JzUIManager>(m_window);
+    m_uiManager     = std::make_unique<JzUIManager>(m_windowSystem);
     m_canvas        = std::make_unique<JzCanvas>();
     m_panelsManager = std::make_unique<JzPanelsManager>(*m_canvas);
 
@@ -42,7 +42,7 @@ JzRE::JzEditor::JzEditor(JzRE::JzRERuntime &runtime) :
 
 void JzRE::JzEditor::InitializePanels()
 {
-    m_panelsManager->CreatePanel<JzMenuBar>("Menu Bar", m_window);
+    m_panelsManager->CreatePanel<JzMenuBar>("Menu Bar", m_windowSystem);
     m_panelsManager->CreatePanel<JzAssetBrowser>("Asset Browser", true);
     m_panelsManager->CreatePanel<JzSceneView>("Scene View", true);
     m_panelsManager->CreatePanel<JzAssetView>("Asset View", true);

@@ -252,7 +252,7 @@ The ECS event system bridges `JzWindowSystem` and `JzInputSystem` with `JzEventD
 ### Event Flow
 
 ```
-GLFW Callbacks → JzWindow
+GLFW Callbacks → JzWindowSystem (direct GLFW management)
     ↓
 JzWindowSystem::Update()
     ├── Syncs JzWindowStateComponent (polling)

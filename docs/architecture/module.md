@@ -63,8 +63,8 @@ JzRE/
 │   │       │   │   └── JzEntityManager.h
 │   │       │   ├── Input/
 │   │       │   │   └── JzInputManager.h
-│   │       │   └── Window/
-│   │       │       └── JzWindow.h
+│   │       │   └── Event/
+│   │       │       └── JzWindowEvents.h
 │   │       └── src/
 │   │
 │   ├── Editor/                     # Editor Application

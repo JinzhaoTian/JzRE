@@ -18,8 +18,8 @@
 #include "JzRE/Runtime/Function/Input/JzInputManager.h"
 #include "JzRE/Runtime/Platform/JzOpenFileDialog.h"
 
-JzRE::JzMenuBar::JzMenuBar(JzRE::JzWindow &window) :
-    m_window(window)
+JzRE::JzMenuBar::JzMenuBar(JzRE::JzWindowSystem &windowSystem) :
+    m_windowSystem(windowSystem)
 {
     CreateFileMenu();
     // CreateBuildMenu();
@@ -134,7 +134,7 @@ void JzRE::JzMenuBar::CreateFileMenu()
     fileMenu.CreateWidget<JzSeparator>();
 
     auto &exitMenu         = fileMenu.CreateWidget<JzMenuItem>("Exit", "ALT + F4");
-    exitMenu.ClickedEvent += [this] { m_window.SetShouldClose(true); };
+    exitMenu.ClickedEvent += [this] { m_windowSystem.SetShouldClose(true); };
 }
 
 void JzRE::JzMenuBar::CreateBuildMenu()

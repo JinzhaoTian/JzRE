@@ -107,7 +107,7 @@ High-level engine systems:
 | Scene     | `Scene/`     | `JzActor`                                      |
 | ECS       | `ECS/`       | `JzEntityManager`, `Jz*System`, `Jz*Component` |
 | Input     | `Input/`     | `JzInputManager`                               |
-| Window    | `Window/`    | `JzWindow`                                     |
+| Window    | `ECS/`       | `JzWindowSystem` (integrated into ECS)         |
 
 ---
 
