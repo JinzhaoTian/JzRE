@@ -15,11 +15,15 @@ Layer 1: Platform Layer
   └── JzInputManager (Service)
         ↓
 Layer 2: Function Layer (ECS)
-  └── JzInputSystem (System in Input Phase)
+  ├── JzWindowSystem (Input Phase)
+  │     └── Polls backend, syncs JzInputStateComponent, emits window events
+  ├── JzInputSystem (Input Phase)
+  │     ├── Syncs legacy components, updates actions
+  │     └── Emits input events (JzKeyEvent, JzMouseButtonEvent, etc.)
+  └── JzEventDispatcherSystem (Input Phase)
+        └── Dispatches queued events to registered handlers
         ↓
-        Updates Input Components
-        ↓
-  Other Systems read Input Components
+  Other Systems read Input Components OR subscribe to events
 ```
 
 ## Architecture Benefits
@@ -201,33 +205,94 @@ docs/architecture/
 └── ecs.md                               # Updated with input architecture docs
 ```
 
-## Future Enhancements
+## Event-Driven Input
 
-### 1. Input Action System
+In addition to the component-based polling approach, the input system emits typed ECS events through `JzEventDispatcherSystem`. This enables reactive event-driven patterns alongside the existing polling model.
 
-Map raw keys to abstract actions:
+### Input Events
+
+All events inherit from `JzREEvent` (timestamp, source entity, target entity) and are defined in `JzInputEvents.h`:
+
+| Event | Fields | Emitted When |
+|-------|--------|--------------|
+| `JzKeyEvent` | `key` (JzEKeyCode), `scancode`, `action` (JzEKeyAction), `mods` | Key pressed or released |
+| `JzMouseButtonEvent` | `button` (JzEMouseButton), `action`, `mods`, `position` | Mouse button pressed or released |
+| `JzMouseMoveEvent` | `position`, `delta` | Mouse moved (non-zero delta) |
+| `JzMouseScrollEvent` | `offset`, `position` | Scroll wheel used |
+| `JzMouseEnterEvent` | `entered` | Cursor enters/leaves window |
+| `JzInputActionTriggeredEvent` | `actionName`, `value` | Action first triggered this frame |
+| `JzInputActionReleasedEvent` | `actionName`, `duration` | Action released this frame |
+
+### Event Emission
+
+Events are emitted at the end of `JzInputSystem::Update()` by comparing current state against the previous frame:
+
+- **Keyboard**: Diffs `keysPressed` bitset vs previous frame, emits `JzKeyEvent` with `Pressed`/`Released` action
+- **Mouse buttons**: Diffs `buttonsPressed` bitset vs previous frame, emits `JzMouseButtonEvent`
+- **Mouse movement**: Emits `JzMouseMoveEvent` when `positionDelta` is non-zero
+- **Scroll**: Emits `JzMouseScrollEvent` when `scrollDelta` is non-zero
+- **Actions**: Emits `JzInputActionTriggeredEvent`/`JzInputActionReleasedEvent` based on action state changes
+
+### Event Subscription Example
 
 ```cpp
-struct JzInputActionComponent {
-    std::unordered_map<String, Bool> actions;  // "jump" -> pressed
-    std::unordered_map<String, F32> axes;      // "move_x" -> value
-};
+void MySystem::OnInit(JzWorld &world) {
+    auto &dispatcher = JzServiceContainer::Get<JzEventDispatcherSystem>();
+
+    dispatcher.RegisterHandler<JzKeyEvent>([](const JzKeyEvent &event) {
+        if (event.key == JzEKeyCode::F5 && event.action == JzEKeyAction::Pressed) {
+            // Quick save
+        }
+    });
+
+    dispatcher.RegisterHandler<JzInputActionTriggeredEvent>([](const JzInputActionTriggeredEvent &event) {
+        if (event.actionName == "jump") {
+            // Handle jump action
+        }
+    });
+}
 ```
 
-### 2. Input Contexts
+### When to Use Polling vs Events
+
+| Approach | Use When | Example |
+|----------|----------|---------|
+| **Polling** (component-based) | Continuous input, every frame | Camera orbit, WASD movement |
+| **Events** (dispatcher-based) | Discrete actions, one-shot triggers | Key shortcuts, button clicks |
+
+### Input Action System (Implemented)
+
+The `JzInputActionComponent` maps raw keys to abstract actions:
+
+```cpp
+// Define actions with bindings
+JzInputActionComponent::Action jumpAction;
+jumpAction.name = "jump";
+jumpAction.bindings.push_back({JzInputActionComponent::BindingType::Key, .key = static_cast<I32>(JzEKeyCode::Space)});
+
+actions.actions["jump"] = jumpAction;
+
+// Query action state
+if (actions.IsActionTriggered("jump")) { /* jump */ }
+```
+
+### Input Contexts (Implemented)
 
 Different input mappings per game state:
 
 ```cpp
-enum class InputContext { Menu, Gameplay, Cinematic };
+JzInputActionComponent::InputContext gameplayCtx;
+gameplayCtx.name = "gameplay";
+gameplayCtx.enabledActions = {"jump", "shoot", "move"};
+gameplayCtx.priority = 0;
 
-struct JzInputContextComponent {
-    InputContext current;
-    std::unordered_map<InputContext, InputMappings> contexts;
-};
+actions.contexts.push_back(gameplayCtx);
+actions.activeContext = "gameplay";
 ```
 
-### 3. Input Buffering
+## Future Enhancements
+
+### 1. Input Buffering
 
 Store recent input events for frame-perfect execution:
 
@@ -238,7 +303,7 @@ struct JzInputBufferComponent {
 };
 ```
 
-### 4. Input Replay
+### 2. Input Replay
 
 Record and replay input for testing:
 

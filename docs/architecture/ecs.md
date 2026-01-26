@@ -245,16 +245,99 @@ void JzRERuntime::Run() {
 
 ---
 
+## Event System Integration
+
+The ECS event system bridges `JzWindowSystem` and `JzInputSystem` with `JzEventDispatcherSystem`, enabling any system to subscribe to typed window/input events.
+
+### Event Flow
+
+```
+GLFW Callbacks → JzWindow
+    ↓
+JzWindowSystem::Update()
+    ├── Syncs JzWindowStateComponent (polling)
+    ├── Syncs JzInputStateComponent (polling)
+    └── Emits window events (JzWindowResizedEvent, JzWindowFocusEvent, etc.)
+    ↓
+JzInputSystem::Update()
+    ├── Syncs legacy components (JzMouseInputComponent, etc.)
+    ├── Updates action values (JzInputActionComponent)
+    └── Emits input events (JzKeyEvent, JzMouseButtonEvent, etc.)
+    ↓
+JzEventDispatcherSystem::Update()
+    └── Dispatches all queued events to registered handlers
+    ↓
+Any System → RegisterHandler<JzKeyEvent>(...) to receive events
+```
+
+### Window Events (`JzWindowEvents.h`)
+
+| Event                                | Fields                         | Emitted When                  |
+| ------------------------------------ | ------------------------------ | ----------------------------- |
+| `JzWindowResizedEvent`               | `size`, `oldSize`              | Window size changes           |
+| `JzWindowFramebufferResizedEvent`    | `size`                         | Framebuffer resizes (HiDPI)   |
+| `JzWindowMovedEvent`                 | `position`                     | Window position changes       |
+| `JzWindowFocusEvent`                 | `focused`                      | Focus gained/lost             |
+| `JzWindowIconifiedEvent`             | `iconified`                    | Minimized/restored            |
+| `JzWindowMaximizedEvent`             | `maximized`                    | Maximized/restored            |
+| `JzWindowClosedEvent`                | `forced`                       | Close requested               |
+| `JzFileDroppedEvent`                 | `filePaths`, `dropPosition`    | File dropped on window        |
+| `JzWindowContentScaleChangedEvent`   | `scale`                        | DPI scale changes             |
+
+### Input Events (`JzInputEvents.h`)
+
+| Event                          | Fields                              | Emitted When                     |
+| ------------------------------ | ----------------------------------- | -------------------------------- |
+| `JzKeyEvent`                   | `key`, `scancode`, `action`, `mods` | Key pressed/released             |
+| `JzMouseButtonEvent`           | `button`, `action`, `mods`, `position` | Mouse button pressed/released |
+| `JzMouseMoveEvent`             | `position`, `delta`                 | Mouse moved (non-zero delta)     |
+| `JzMouseScrollEvent`           | `offset`, `position`                | Scroll wheel used                |
+| `JzMouseEnterEvent`            | `entered`                           | Cursor enters/leaves window      |
+| `JzInputActionTriggeredEvent`  | `actionName`, `value`               | Action triggered this frame      |
+| `JzInputActionReleasedEvent`   | `actionName`, `duration`            | Action released this frame       |
+
+### Subscribing to Events
+
+```cpp
+void MySystem::OnInit(JzWorld &world) {
+    auto &dispatcher = JzServiceContainer::Get<JzEventDispatcherSystem>();
+
+    dispatcher.RegisterHandler<JzKeyEvent>([](const JzKeyEvent &event) {
+        if (event.key == JzEKeyCode::Escape && event.action == JzEKeyAction::Pressed) {
+            // Handle escape key
+        }
+    });
+
+    dispatcher.RegisterHandler<JzWindowResizedEvent>([](const JzWindowResizedEvent &event) {
+        // Handle window resize
+    });
+}
+```
+
+### System Registration Order
+
+The event dispatcher must be registered after window/input systems so that events queued during the current frame are dispatched in the same frame:
+
+```cpp
+m_windowSystem          = m_world->RegisterSystem<JzWindowSystem>();
+m_inputSystem           = m_world->RegisterSystem<JzInputSystem>();
+m_eventDispatcherSystem = m_world->RegisterSystem<JzEventDispatcherSystem>();
+// ... remaining systems
+```
+
+---
+
 ## Available Systems
 
-| System               | Phase     | Description                                                       |
-| -------------------- | --------- | ----------------------------------------------------------------- |
-| `JzInputSystem`  | Input     | Processes raw input from JzInputManager, updates input components |
-| `JzMoveSystem`   | Logic     | Updates position based on velocity                                |
-| `JzSceneSystem`  | Logic     | Updates world transforms in hierarchy                             |
-| `JzCameraSystem` | PreRender | Updates camera matrices, reads input components for orbit control |
-| `JzLightSystem`  | PreRender | Collects light data for rendering                                 |
-| `JzRenderSystem` | Render    | Manages framebuffer, renders entities with mesh/material          |
+| System                      | Phase     | Description                                                       |
+| --------------------------- | --------- | ----------------------------------------------------------------- |
+| `JzWindowSystem`            | Input     | Polls backend, syncs window/input state, emits window events      |
+| `JzInputSystem`             | Input     | Processes input, syncs legacy components, emits input events      |
+| `JzEventDispatcherSystem`   | Input     | Dispatches queued ECS events to registered handlers               |
+| `JzAssetLoadingSystem`      | Logic     | Manages asset loading and resource creation                       |
+| `JzCameraSystem`            | PreRender | Updates camera matrices, reads input components for orbit control |
+| `JzLightSystem`             | PreRender | Collects light data for rendering                                 |
+| `JzRenderSystem`            | Render    | Manages framebuffer, renders entities with mesh/material          |
 
 ---
 

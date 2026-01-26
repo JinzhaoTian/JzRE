@@ -8,6 +8,8 @@
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
 #include "JzRE/Runtime/Function/ECS/JzComponents.h"
 #include "JzRE/Runtime/Function/ECS/JzWindowComponents.h"
+#include "JzRE/Runtime/Function/Event/JzEventDispatcherSystem.h"
+#include "JzRE/Runtime/Function/Event/JzInputEvents.h"
 #include "JzRE/Runtime/Function/Input/JzInputManager.h"
 
 namespace JzRE {
@@ -42,6 +44,11 @@ void JzInputSystem::Update(JzWorld &world, F32 delta)
 
     // Update camera input
     UpdateCameraInput(world);
+
+    // Emit typed ECS events through the event dispatcher
+    EmitKeyboardEvents(world);
+    EmitMouseEvents(world);
+    EmitActionEvents(world);
 }
 
 void JzInputSystem::ClearFrameState(JzWorld &world)
@@ -54,11 +61,10 @@ void JzInputSystem::ClearFrameState(JzWorld &world)
     }
 }
 
-JzInputStateComponent* JzInputSystem::GetPrimaryInputState(JzWorld &world)
+JzInputStateComponent *JzInputSystem::GetPrimaryInputState(JzWorld &world)
 {
     // Try cached entity first
-    if (world.IsValid(m_primaryWindowEntity) &&
-        world.HasComponent<JzInputStateComponent>(m_primaryWindowEntity)) {
+    if (world.IsValid(m_primaryWindowEntity) && world.HasComponent<JzInputStateComponent>(m_primaryWindowEntity)) {
         return &world.GetComponent<JzInputStateComponent>(m_primaryWindowEntity);
     }
 
@@ -115,12 +121,9 @@ void JzInputSystem::SyncLegacyComponentsFromInputState(JzWorld &world)
         keyInput.d = inputState.keyboard.IsKeyPressed(JzEKeyCode::D);
 
         keyInput.space = inputState.keyboard.IsKeyPressed(JzEKeyCode::Space);
-        keyInput.shift = inputState.keyboard.IsKeyPressed(JzEKeyCode::LeftShift) ||
-                         inputState.keyboard.IsKeyPressed(JzEKeyCode::RightShift);
-        keyInput.ctrl  = inputState.keyboard.IsKeyPressed(JzEKeyCode::LeftControl) ||
-                         inputState.keyboard.IsKeyPressed(JzEKeyCode::RightControl);
-        keyInput.alt   = inputState.keyboard.IsKeyPressed(JzEKeyCode::LeftAlt) ||
-                         inputState.keyboard.IsKeyPressed(JzEKeyCode::RightAlt);
+        keyInput.shift = inputState.keyboard.IsKeyPressed(JzEKeyCode::LeftShift) || inputState.keyboard.IsKeyPressed(JzEKeyCode::RightShift);
+        keyInput.ctrl  = inputState.keyboard.IsKeyPressed(JzEKeyCode::LeftControl) || inputState.keyboard.IsKeyPressed(JzEKeyCode::RightControl);
+        keyInput.alt   = inputState.keyboard.IsKeyPressed(JzEKeyCode::LeftAlt) || inputState.keyboard.IsKeyPressed(JzEKeyCode::RightAlt);
 
         keyInput.escape = inputState.keyboard.IsKeyPressed(JzEKeyCode::Escape);
         keyInput.enter  = inputState.keyboard.IsKeyPressed(JzEKeyCode::Enter);
@@ -144,8 +147,7 @@ void JzInputSystem::SyncLegacyComponentsFromInputState(JzWorld &world)
 
         cameraState.orbitActive = inputState.mouse.IsButtonPressed(JzEMouseButton::Left);
         cameraState.panActive   = inputState.mouse.IsButtonPressed(JzEMouseButton::Right);
-        cameraState.zoomActive  = inputState.mouse.IsButtonPressed(JzEMouseButton::Middle) ||
-                                  (inputState.mouse.scrollDelta.y != 0.0f);
+        cameraState.zoomActive  = inputState.mouse.IsButtonPressed(JzEMouseButton::Middle) || (inputState.mouse.scrollDelta.y != 0.0f);
 
         if (cameraState.orbitActive || cameraState.panActive) {
             cameraState.mouseDelta = inputState.mouse.positionDelta;
@@ -164,7 +166,7 @@ void JzInputSystem::SyncLegacyComponentsFromInputState(JzWorld &world)
         if (inputState.keyboard.IsKeyPressed(JzEKeyCode::Space)) cameraState.movementInput.y += 1.0f;
         if (inputState.keyboard.IsKeyPressed(JzEKeyCode::LeftControl)) cameraState.movementInput.y -= 1.0f;
 
-        cameraState.speedBoost = inputState.keyboard.IsKeyPressed(JzEKeyCode::LeftShift);
+        cameraState.speedBoost     = inputState.keyboard.IsKeyPressed(JzEKeyCode::LeftShift);
         cameraState.resetRequested = inputState.keyboard.IsKeyDown(JzEKeyCode::R);
     }
 }
@@ -354,7 +356,7 @@ void JzInputSystem::UpdateInputActions(JzWorld &world, F32 delta)
     }
 }
 
-F32 JzInputSystem::GetBindingValue(const JzInputStateComponent &input,
+F32 JzInputSystem::GetBindingValue(const JzInputStateComponent           &input,
                                    const JzInputActionComponent::Binding &binding)
 {
     switch (binding.type) {
@@ -364,7 +366,8 @@ F32 JzInputSystem::GetBindingValue(const JzInputStateComponent &input,
         case JzInputActionComponent::BindingType::MouseButton:
             return input.mouse.IsButtonPressed(binding.mouseButton) ? 1.0f : 0.0f;
 
-        case JzInputActionComponent::BindingType::MouseAxis: {
+        case JzInputActionComponent::BindingType::MouseAxis:
+        {
             F32 value = 0.0f;
             switch (binding.mouseAxis) {
                 case 0: value = input.mouse.positionDelta.x; break; // X
@@ -390,8 +393,8 @@ F32 JzInputSystem::GetBindingValue(const JzInputStateComponent &input,
             if (binding.gamepadId < static_cast<I32>(input.gamepad.pads.size())) {
                 const auto &pad = input.gamepad.pads[static_cast<Size>(binding.gamepadId)];
                 if (binding.gamepadAxis < static_cast<I32>(pad.axes.size())) {
-                    F32 value = pad.axes[static_cast<Size>(binding.gamepadAxis)].x;
-                    value *= binding.sensitivity;
+                    F32 value  = pad.axes[static_cast<Size>(binding.gamepadAxis)].x;
+                    value     *= binding.sensitivity;
                     if (binding.invert) value = -value;
                     return ApplyDeadzone(value, binding.deadzone);
                 }
@@ -413,6 +416,130 @@ F32 JzInputSystem::ApplyDeadzone(F32 value, F32 deadzone)
         return (value - deadzone) / (1.0f - deadzone);
     } else {
         return (value + deadzone) / (1.0f - deadzone);
+    }
+}
+
+void JzInputSystem::EmitKeyboardEvents(JzWorld &world)
+{
+    JzInputStateComponent *inputState = GetPrimaryInputState(world);
+    if (!inputState) return;
+
+    JzEventDispatcherSystem *dispatcher = nullptr;
+    try {
+        dispatcher = &JzServiceContainer::Get<JzEventDispatcherSystem>();
+    } catch (...) {
+        return;
+    }
+
+    const auto &keyboard = inputState->keyboard;
+
+    for (I32 key = 0; key < static_cast<I32>(JzInputStateComponent::KeyboardState::KEY_COUNT); ++key) {
+        Bool currentPressed = keyboard.keysPressed[static_cast<Size>(key)];
+        Bool wasPressed     = m_prevKeysPressed[static_cast<Size>(key)];
+
+        if (currentPressed && !wasPressed) {
+            JzKeyEvent event;
+            event.source = m_primaryWindowEntity;
+            event.key    = static_cast<JzEKeyCode>(key);
+            event.action = JzEKeyAction::Pressed;
+            dispatcher->Send(std::move(event));
+        } else if (!currentPressed && wasPressed) {
+            JzKeyEvent event;
+            event.source = m_primaryWindowEntity;
+            event.key    = static_cast<JzEKeyCode>(key);
+            event.action = JzEKeyAction::Released;
+            dispatcher->Send(std::move(event));
+        }
+    }
+
+    m_prevKeysPressed = keyboard.keysPressed;
+}
+
+void JzInputSystem::EmitMouseEvents(JzWorld &world)
+{
+    JzInputStateComponent *inputState = GetPrimaryInputState(world);
+    if (!inputState) return;
+
+    JzEventDispatcherSystem *dispatcher = nullptr;
+    try {
+        dispatcher = &JzServiceContainer::Get<JzEventDispatcherSystem>();
+    } catch (...) {
+        return;
+    }
+
+    const auto &mouse = inputState->mouse;
+
+    // Mouse button events
+    for (I32 button = 0; button < static_cast<I32>(JzInputStateComponent::MouseState::BUTTON_COUNT); ++button) {
+        Bool currentPressed = mouse.buttonsPressed[static_cast<Size>(button)];
+        Bool wasPressed     = m_prevButtonsPressed[static_cast<Size>(button)];
+
+        if (currentPressed && !wasPressed) {
+            JzMouseButtonEvent event;
+            event.source   = m_primaryWindowEntity;
+            event.button   = static_cast<JzEMouseButton>(button);
+            event.action   = JzEKeyAction::Pressed;
+            event.position = mouse.position;
+            dispatcher->Send(std::move(event));
+        } else if (!currentPressed && wasPressed) {
+            JzMouseButtonEvent event;
+            event.source   = m_primaryWindowEntity;
+            event.button   = static_cast<JzEMouseButton>(button);
+            event.action   = JzEKeyAction::Released;
+            event.position = mouse.position;
+            dispatcher->Send(std::move(event));
+        }
+    }
+    m_prevButtonsPressed = mouse.buttonsPressed;
+
+    // Mouse move event (only if delta is non-zero)
+    if (mouse.positionDelta.x != 0.0f || mouse.positionDelta.y != 0.0f) {
+        JzMouseMoveEvent event;
+        event.source   = m_primaryWindowEntity;
+        event.position = mouse.position;
+        event.delta    = mouse.positionDelta;
+        dispatcher->Send(std::move(event));
+    }
+
+    // Mouse scroll event (only if scroll delta is non-zero)
+    if (mouse.scrollDelta.x != 0.0f || mouse.scrollDelta.y != 0.0f) {
+        JzMouseScrollEvent event;
+        event.source   = m_primaryWindowEntity;
+        event.offset   = mouse.scrollDelta;
+        event.position = mouse.position;
+        dispatcher->Send(std::move(event));
+    }
+}
+
+void JzInputSystem::EmitActionEvents(JzWorld &world)
+{
+    JzEventDispatcherSystem *dispatcher = nullptr;
+    try {
+        dispatcher = &JzServiceContainer::Get<JzEventDispatcherSystem>();
+    } catch (...) {
+        return;
+    }
+
+    auto view = world.View<JzInputActionComponent>();
+    for (auto entity : view) {
+        const auto &actions = world.GetComponent<JzInputActionComponent>(entity);
+
+        for (const auto &[name, action] : actions.actions) {
+            if (action.triggered) {
+                JzInputActionTriggeredEvent event;
+                event.source     = entity;
+                event.actionName = name;
+                event.value      = action.value;
+                dispatcher->Send(std::move(event));
+            }
+            if (action.released) {
+                JzInputActionReleasedEvent event;
+                event.source     = entity;
+                event.actionName = name;
+                event.duration   = action.pressedDuration;
+                dispatcher->Send(std::move(event));
+            }
+        }
     }
 }
 

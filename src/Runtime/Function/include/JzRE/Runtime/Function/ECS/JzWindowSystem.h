@@ -15,6 +15,7 @@ namespace JzRE {
 
 // Forward declarations
 class JzWindow;
+class JzEventDispatcherSystem;
 
 /**
  * @brief System that manages windows and synchronizes with the window backend.
@@ -34,7 +35,7 @@ class JzWindow;
  */
 class JzWindowSystem : public JzSystem {
 public:
-    JzWindowSystem() = default;
+    JzWindowSystem()           = default;
     ~JzWindowSystem() override = default;
 
     /**
@@ -57,14 +58,18 @@ public:
     /**
      * @brief Window system runs in the Input phase.
      */
-    JzSystemPhase GetPhase() const override {
+    JzSystemPhase GetPhase() const override
+    {
         return JzSystemPhase::Input;
     }
 
     /**
      * @brief Get the primary window entity.
      */
-    JzEntity GetPrimaryWindow() const { return m_primaryWindow; }
+    JzEntity GetPrimaryWindow() const
+    {
+        return m_primaryWindow;
+    }
 
     /**
      * @brief Create a window entity with the given configuration.
@@ -78,7 +83,10 @@ public:
     /**
      * @brief Set the primary window entity.
      */
-    void SetPrimaryWindow(JzEntity window) { m_primaryWindow = window; }
+    void SetPrimaryWindow(JzEntity window)
+    {
+        m_primaryWindow = window;
+    }
 
 private:
     /**
@@ -126,6 +134,16 @@ private:
      */
     void SyncInputFromBackend(JzWorld &world, JzEntity windowEntity);
 
+    /**
+     * @brief Emit typed ECS events through the event dispatcher.
+     *
+     * Detects state changes by comparing current JzWindowStateComponent
+     * against cached previous state, and emits corresponding events.
+     * Also converts JzWindowEventQueueComponent events for types that
+     * cannot be detected by state-diff (FileDropped, FramebufferResized, etc.).
+     */
+    void EmitWindowEvents(JzWorld &world);
+
 private:
     JzEntity m_primaryWindow{};
 
@@ -136,6 +154,15 @@ private:
     // Cached previous mouse position for delta calculation
     JzVec2 m_previousMousePosition{0.0f, 0.0f};
     Bool   m_firstFrame{true};
+
+    // Cached previous window state for event emission (change detection)
+    JzIVec2 m_prevSize{0, 0};
+    JzIVec2 m_prevPosition{0, 0};
+    Bool    m_prevFocused{false};
+    Bool    m_prevMinimized{false};
+    Bool    m_prevMaximized{false};
+    Bool    m_prevShouldClose{false};
+    Bool    m_eventStateInitialized{false};
 };
 
 } // namespace JzRE

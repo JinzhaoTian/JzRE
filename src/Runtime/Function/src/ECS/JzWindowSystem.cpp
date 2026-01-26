@@ -6,6 +6,8 @@
 #include "JzRE/Runtime/Function/ECS/JzWindowSystem.h"
 
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
+#include "JzRE/Runtime/Function/Event/JzEventDispatcherSystem.h"
+#include "JzRE/Runtime/Function/Event/JzWindowEvents.h"
 #include "JzRE/Runtime/Function/Window/JzWindow.h"
 
 namespace JzRE {
@@ -30,6 +32,9 @@ void JzWindowSystem::Update(JzWorld &world, F32 delta)
     // Process window events
     ProcessWindowEvents(world);
 
+    // Emit typed ECS events through the event dispatcher
+    EmitWindowEvents(world);
+
     // Apply any component changes to backend
     ApplyComponentChanges(world);
 
@@ -50,15 +55,15 @@ JzEntity JzWindowSystem::CreateWindowEntity(JzWorld &world, const JzWindowConfig
     JzEntity entity = world.CreateEntity();
 
     // Add window state component
-    auto &windowState         = world.AddComponent<JzWindowStateComponent>(entity);
-    windowState.title         = config.title;
-    windowState.size          = JzIVec2(config.width, config.height);
+    auto &windowState           = world.AddComponent<JzWindowStateComponent>(entity);
+    windowState.title           = config.title;
+    windowState.size            = JzIVec2(config.width, config.height);
     windowState.framebufferSize = windowState.size;
-    windowState.resizable     = config.resizable;
-    windowState.decorated     = config.decorated;
-    windowState.floating      = config.floating;
-    windowState.visible       = config.visible;
-    windowState.swapInterval  = config.vsync ? 1 : 0;
+    windowState.resizable       = config.resizable;
+    windowState.decorated       = config.decorated;
+    windowState.floating        = config.floating;
+    windowState.visible         = config.visible;
+    windowState.swapInterval    = config.vsync ? 1 : 0;
 
     if (config.fullscreen) {
         windowState.state = JzEWindowState::Fullscreen;
@@ -178,7 +183,7 @@ void JzWindowSystem::SyncInputFromBackend(JzWorld &world, JzEntity windowEntity)
 
     // Update keyboard state
     auto updateKey = [&](I32 key) {
-        Bool pressed = glfwGetKey(window.GetGLFWWindow(), key) == GLFW_PRESS;
+        Bool pressed    = glfwGetKey(window.GetGLFWWindow(), key) == GLFW_PRESS;
         Bool wasPressed = input.keyboard.keysPressed[static_cast<Size>(key)];
 
         if (pressed && !wasPressed) {
@@ -204,7 +209,7 @@ void JzWindowSystem::SyncInputFromBackend(JzWorld &world, JzEntity windowEntity)
 
     // Update mouse buttons
     for (I32 button = 0; button < static_cast<I32>(JzInputStateComponent::MouseState::BUTTON_COUNT); ++button) {
-        Bool pressed = glfwGetMouseButton(window.GetGLFWWindow(), button) == GLFW_PRESS;
+        Bool pressed    = glfwGetMouseButton(window.GetGLFWWindow(), button) == GLFW_PRESS;
         Bool wasPressed = input.mouse.buttonsPressed[static_cast<Size>(button)];
 
         if (pressed && !wasPressed) {
@@ -227,6 +232,14 @@ void JzWindowSystem::SyncInputFromBackend(JzWorld &world, JzEntity windowEntity)
 
 void JzWindowSystem::ProcessWindowEvents(JzWorld &world)
 {
+    // Get event dispatcher (optional - gracefully skip if not registered)
+    JzEventDispatcherSystem *dispatcher = nullptr;
+    try {
+        dispatcher = &JzServiceContainer::Get<JzEventDispatcherSystem>();
+    } catch (...) {
+        dispatcher = nullptr;
+    }
+
     auto view = world.View<JzWindowEventQueueComponent>();
     for (auto entity : view) {
         auto &queue = world.GetComponent<JzWindowEventQueueComponent>(entity);
@@ -244,6 +257,31 @@ void JzWindowSystem::ProcessWindowEvents(JzWorld &world)
                     // Handle close request
                     if (world.HasComponent<JzWindowStateComponent>(entity)) {
                         world.GetComponent<JzWindowStateComponent>(entity).shouldClose = true;
+                    }
+                    break;
+                case JzEWindowEventType::FileDropped:
+                    if (dispatcher) {
+                        JzFileDroppedEvent ecsEvent;
+                        ecsEvent.source       = entity;
+                        ecsEvent.filePaths    = event.droppedPaths;
+                        ecsEvent.dropPosition = event.dropPosition;
+                        dispatcher->Send(std::move(ecsEvent));
+                    }
+                    break;
+                case JzEWindowEventType::FramebufferResized:
+                    if (dispatcher) {
+                        JzWindowFramebufferResizedEvent ecsEvent;
+                        ecsEvent.source = entity;
+                        ecsEvent.size   = JzIVec2(event.data.resized.width, event.data.resized.height);
+                        dispatcher->Send(std::move(ecsEvent));
+                    }
+                    break;
+                case JzEWindowEventType::ContentScaleChanged:
+                    if (dispatcher) {
+                        JzWindowContentScaleChangedEvent ecsEvent;
+                        ecsEvent.source = entity;
+                        ecsEvent.scale  = JzVec2(event.data.contentScale.xScale, event.data.contentScale.yScale);
+                        dispatcher->Send(std::move(ecsEvent));
                     }
                     break;
                 default:
@@ -341,7 +379,7 @@ void JzWindowSystem::UpdateStatistics(JzWorld &world, F32 delta)
 
         auto view = world.View<JzWindowStateComponent>();
         for (auto entity : view) {
-            auto &state = world.GetComponent<JzWindowStateComponent>(entity);
+            auto &state            = world.GetComponent<JzWindowStateComponent>(entity);
             state.stats.averageFPS = fps;
             state.stats.frameTime  = 1000.0 / fps;
             state.stats.frameCount++;
@@ -349,6 +387,93 @@ void JzWindowSystem::UpdateStatistics(JzWorld &world, F32 delta)
 
         m_accumulatedTime = 0.0;
         m_frameCount      = 0;
+    }
+}
+
+void JzWindowSystem::EmitWindowEvents(JzWorld &world)
+{
+    // Get event dispatcher (optional - gracefully skip if not registered)
+    JzEventDispatcherSystem *dispatcher = nullptr;
+    try {
+        dispatcher = &JzServiceContainer::Get<JzEventDispatcherSystem>();
+    } catch (...) {
+        return;
+    }
+
+    // Iterate primary window entity
+    auto view = world.View<JzWindowStateComponent>();
+    for (auto entity : view) {
+        const auto &state = world.GetComponent<JzWindowStateComponent>(entity);
+
+        // On first frame, initialize cached state without emitting events
+        if (!m_eventStateInitialized) {
+            m_prevSize              = state.size;
+            m_prevPosition          = state.position;
+            m_prevFocused           = state.focused;
+            m_prevMinimized         = state.IsMinimized();
+            m_prevMaximized         = state.IsMaximized();
+            m_prevShouldClose       = state.shouldClose;
+            m_eventStateInitialized = true;
+            continue;
+        }
+
+        // Window resized
+        if (state.size != m_prevSize) {
+            JzWindowResizedEvent ecsEvent;
+            ecsEvent.source  = entity;
+            ecsEvent.size    = state.size;
+            ecsEvent.oldSize = m_prevSize;
+            dispatcher->Send(std::move(ecsEvent));
+        }
+
+        // Window moved
+        if (state.position != m_prevPosition) {
+            JzWindowMovedEvent ecsEvent;
+            ecsEvent.source   = entity;
+            ecsEvent.position = state.position;
+            dispatcher->Send(std::move(ecsEvent));
+        }
+
+        // Focus changed
+        if (state.focused != m_prevFocused) {
+            JzWindowFocusEvent ecsEvent;
+            ecsEvent.source  = entity;
+            ecsEvent.focused = state.focused;
+            dispatcher->Send(std::move(ecsEvent));
+        }
+
+        // Minimized / restored
+        Bool currentMinimized = state.IsMinimized();
+        if (currentMinimized != m_prevMinimized) {
+            JzWindowIconifiedEvent ecsEvent;
+            ecsEvent.source    = entity;
+            ecsEvent.iconified = currentMinimized;
+            dispatcher->Send(std::move(ecsEvent));
+        }
+
+        // Maximized
+        Bool currentMaximized = state.IsMaximized();
+        if (currentMaximized != m_prevMaximized) {
+            JzWindowMaximizedEvent ecsEvent;
+            ecsEvent.source    = entity;
+            ecsEvent.maximized = currentMaximized;
+            dispatcher->Send(std::move(ecsEvent));
+        }
+
+        // Close request
+        if (state.shouldClose && !m_prevShouldClose) {
+            JzWindowClosedEvent ecsEvent;
+            ecsEvent.source = entity;
+            dispatcher->Send(std::move(ecsEvent));
+        }
+
+        // Update cached state
+        m_prevSize        = state.size;
+        m_prevPosition    = state.position;
+        m_prevFocused     = state.focused;
+        m_prevMinimized   = currentMinimized;
+        m_prevMaximized   = currentMaximized;
+        m_prevShouldClose = state.shouldClose;
     }
 }
 

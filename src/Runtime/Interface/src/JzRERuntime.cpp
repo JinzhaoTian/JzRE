@@ -132,8 +132,13 @@ void JzRE::JzRERuntime::RegisterSystems()
 
     // Register systems in execution order by phase:
     // Window system must be registered first to handle window/input events
-    m_windowSystem       = m_world->RegisterSystem<JzWindowSystem>();
-    m_inputSystem        = m_world->RegisterSystem<JzInputSystem>();
+    m_windowSystem = m_world->RegisterSystem<JzWindowSystem>();
+    m_inputSystem  = m_world->RegisterSystem<JzInputSystem>();
+
+    // Event dispatcher runs after window/input so events queued this frame are dispatched this frame
+    m_eventDispatcherSystem = m_world->RegisterSystem<JzEventDispatcherSystem>();
+    JzServiceContainer::Provide<JzEventDispatcherSystem>(*m_eventDispatcherSystem);
+
     m_assetLoadingSystem = m_world->RegisterSystem<JzAssetLoadingSystem>();
     m_cameraSystem       = m_world->RegisterSystem<JzCameraSystem>();
     m_lightSystem        = m_world->RegisterSystem<JzLightSystem>();
@@ -222,6 +227,7 @@ void JzRE::JzRERuntime::ShutdownSubsystems()
     m_lightSystem.reset();
     m_cameraSystem.reset();
     m_assetLoadingSystem.reset();
+    m_eventDispatcherSystem.reset();
     m_inputSystem.reset();
     m_windowSystem.reset();
     m_world.reset();
@@ -257,14 +263,14 @@ void JzRE::JzRERuntime::CreateGlobalConfigEntity()
     m_windowEntity = m_world->CreateEntity();
 
     // Add enhanced window state component
-    auto &windowState         = m_world->AddComponent<JzWindowStateComponent>(m_windowEntity);
-    windowState.title         = m_window->GetTitle();
-    windowState.size          = m_window->GetSize();
-    windowState.position      = m_window->GetPosition();
+    auto &windowState           = m_world->AddComponent<JzWindowStateComponent>(m_windowEntity);
+    windowState.title           = m_window->GetTitle();
+    windowState.size            = m_window->GetSize();
+    windowState.position        = m_window->GetPosition();
     windowState.framebufferSize = m_window->GetFramebufferSize();
-    windowState.focused       = m_window->IsFocused();
-    windowState.visible       = m_window->IsVisible();
-    windowState.nativeHandle  = m_window->GetNativeWindow();
+    windowState.focused         = m_window->IsFocused();
+    windowState.visible         = m_window->IsVisible();
+    windowState.nativeHandle    = m_window->GetNativeWindow();
 
     // Add input state component for ECS-based input
     m_world->AddComponent<JzInputStateComponent>(m_windowEntity);

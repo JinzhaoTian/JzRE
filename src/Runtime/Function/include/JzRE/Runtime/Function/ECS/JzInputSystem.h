@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <bitset>
 #include "JzRE/Runtime/Core/JzRETypes.h"
 #include "JzRE/Runtime/Core/JzVector.h"
 #include "JzRE/Runtime/Function/ECS/JzSystem.h"
@@ -12,6 +13,9 @@
 #include "JzRE/Runtime/Function/ECS/JzInputComponents.h"
 
 namespace JzRE {
+
+// Forward declarations
+class JzEventDispatcherSystem;
 
 /**
  * @brief System that processes raw input and updates input components.
@@ -88,18 +92,42 @@ private:
     /**
      * @brief Get the primary input state component (from primary window entity).
      */
-    JzInputStateComponent* GetPrimaryInputState(JzWorld &world);
+    JzInputStateComponent *GetPrimaryInputState(JzWorld &world);
 
     /**
      * @brief Calculate binding value from input state.
      */
-    F32 GetBindingValue(const JzInputStateComponent &input,
+    F32 GetBindingValue(const JzInputStateComponent           &input,
                         const JzInputActionComponent::Binding &binding);
 
     /**
      * @brief Apply deadzone to axis value.
      */
     F32 ApplyDeadzone(F32 value, F32 deadzone);
+
+    /**
+     * @brief Emit keyboard key events through the event dispatcher.
+     *
+     * Diffs current keysPressed vs previous frame to emit
+     * JzKeyEvent with Pressed/Released action.
+     */
+    void EmitKeyboardEvents(JzWorld &world);
+
+    /**
+     * @brief Emit mouse events through the event dispatcher.
+     *
+     * Emits JzMouseButtonEvent on button state changes,
+     * JzMouseMoveEvent on movement, JzMouseScrollEvent on scroll.
+     */
+    void EmitMouseEvents(JzWorld &world);
+
+    /**
+     * @brief Emit high-level action events through the event dispatcher.
+     *
+     * Emits JzInputActionTriggeredEvent / JzInputActionReleasedEvent
+     * when actions change state.
+     */
+    void EmitActionEvents(JzWorld &world);
 
 private:
     // Cached previous mouse position for delta calculation (legacy mode)
@@ -108,6 +136,10 @@ private:
 
     // Cached primary window entity for quick access
     JzEntity m_primaryWindowEntity{};
+
+    // Cached previous input state for event emission (change detection)
+    std::bitset<512> m_prevKeysPressed;
+    std::bitset<8>   m_prevButtonsPressed;
 };
 
 } // namespace JzRE
