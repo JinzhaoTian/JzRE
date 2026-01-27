@@ -134,10 +134,6 @@ void JzRE::JzRERuntime::RegisterSystems()
     m_device = JzDeviceFactory::CreateDevice(m_settings.rhiType);
     JzServiceContainer::Provide<JzDevice>(*m_device);
 
-    // Create input manager
-    m_inputManager = std::make_unique<JzInputManager>(*m_windowSystem);
-    JzServiceContainer::Provide<JzInputManager>(*m_inputManager);
-
     m_inputSystem = m_world->RegisterSystem<JzInputSystem>();
 
     // Event dispatcher runs after window/input so events queued this frame are dispatched this frame
@@ -234,7 +230,6 @@ void JzRE::JzRERuntime::ShutdownSubsystems()
     m_assetLoadingSystem.reset();
     m_eventDispatcherSystem.reset();
     m_inputSystem.reset();
-    m_inputManager.reset();
     m_device.reset();
 
     m_windowSystem.reset();
@@ -357,9 +352,6 @@ void JzRE::JzRERuntime::Run()
         OnRender(deltaTime);
 
         OnFrameEnd();
-
-        // Clear input events for next frame
-        m_inputManager->ClearEvents();
 
         // Clear ECS input state per-frame flags
         if (m_inputSystem) {

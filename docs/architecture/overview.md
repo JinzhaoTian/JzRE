@@ -114,7 +114,7 @@ High-level engine systems built on lower layers.
 | **Rendering** | `JzDeviceFactory` - Device creation utilities |
 | **Scene**     | `JzActor` - Scene graph                       |
 | **ECS**       | `JzEntityManager`, Systems, Components        |
-| **Input**     | `JzInputManager` - Keyboard/mouse handling    |
+| **Input**     | `JzInputSystem` - ECS-based keyboard/mouse/gamepad input processing |
 | **Window**    | `JzWindowSystem` - ECS-integrated GLFW window management |
 
 📄 See: [ECS Integration](ecs.md), [Rendering Pipeline](rendering_pipeline.md)

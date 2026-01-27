@@ -1,10 +1,10 @@
-# Runtime Function Layer - Rendering, Scene, ECS, Input, Window
+# Runtime Function Layer - Rendering, Scene, ECS, Window
 add_library(JzRuntimeFunction STATIC)
 
 # Collect all sources by subsystem
 file(GLOB_RECURSE FUNCTION_HEADERS CONFIGURE_DEPENDS "include/*.h" "include/*.inl")
 
-# ECS sources (all files now in ECS/ directory)
+# ECS sources (all files now in ECS/ directory, including input system)
 file(GLOB ECS_SOURCES CONFIGURE_DEPENDS "src/ECS/*.cpp")
 
 # Rendering sources
@@ -13,16 +13,12 @@ file(GLOB RENDERING_SOURCES CONFIGURE_DEPENDS "src/Rendering/*.cpp")
 # Scene sources
 file(GLOB SCENE_SOURCES CONFIGURE_DEPENDS "src/Scene/*.cpp")
 
-# Input sources
-file(GLOB INPUT_SOURCES CONFIGURE_DEPENDS "src/Input/*.cpp")
-
 # Combine all sources
 set(ALL_FUNCTION_SOURCES
     ${FUNCTION_HEADERS}
     ${ECS_SOURCES}
     ${RENDERING_SOURCES}
     ${SCENE_SOURCES}
-    ${INPUT_SOURCES}
 )
 
 target_sources(JzRuntimeFunction PRIVATE ${ALL_FUNCTION_SOURCES})

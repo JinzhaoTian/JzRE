@@ -14,8 +14,9 @@
 #include "JzRE/Editor/UI/JzArrowButton.h"
 #include "JzRE/Editor/UI/JzSeparator.h"
 #include "JzRE/Editor/UI/JzConverter.h"
-// TODO: Re-enable when migrated to EnTT ECS
-#include "JzRE/Runtime/Function/Input/JzInputManager.h"
+#include "JzRE/Runtime/Function/ECS/JzWorld.h"
+#include "JzRE/Runtime/Function/ECS/JzInputComponents.h"
+#include "JzRE/Runtime/Function/ECS/JzWindowComponents.h"
 #include "JzRE/Runtime/Platform/JzOpenFileDialog.h"
 
 JzRE::JzMenuBar::JzMenuBar(JzRE::JzWindowSystem &windowSystem) :
@@ -35,15 +36,26 @@ JzRE::JzMenuBar::JzMenuBar(JzRE::JzWindowSystem &windowSystem) :
 
 void JzRE::JzMenuBar::HandleShortcuts(F32 deltaTime)
 {
-    auto &inputMgr = JzServiceContainer::Get<JzInputManager>();
+    auto &world = JzServiceContainer::Get<JzWorld>();
 
-    if (inputMgr.GetKeyState(JzEInputKeyboardButton::KEY_LEFT_CONTROL) == JzEInputKeyboardButtonState::KEY_DOWN) {
-        if (inputMgr.IsKeyPressed(JzEInputKeyboardButton::KEY_N)) {
-            // TODO: Migrate to EnTT ECS
+    // Get primary window input state
+    JzInputStateComponent *inputState = nullptr;
+    auto                   inputView  = world.View<JzInputStateComponent, JzPrimaryWindowTag>();
+    for (auto entity : inputView) {
+        inputState = &world.GetComponent<JzInputStateComponent>(entity);
+        break;
+    }
+    if (!inputState) return;
+
+    const auto &input = *inputState;
+
+    if (input.keyboard.IsKeyPressed(JzEKeyCode::LeftControl)) {
+        if (input.keyboard.IsKeyDown(JzEKeyCode::N)) {
+            // TODO: New scene
         }
 
-        if (inputMgr.IsKeyPressed(JzEInputKeyboardButton::KEY_S)) {
-            if (inputMgr.GetKeyState(JzEInputKeyboardButton::KEY_LEFT_SHIFT) == JzEInputKeyboardButtonState::KEY_UP) {
+        if (input.keyboard.IsKeyDown(JzEKeyCode::S)) {
+            if (!input.keyboard.IsKeyPressed(JzEKeyCode::LeftShift)) {
                 // EDITOR_EXEC(SaveSceneChanges());
             } else {
                 // EDITOR_EXEC(SaveAs());

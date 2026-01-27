@@ -6,9 +6,10 @@
 #include <cmath>
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
 #include "JzRE/Editor/Panels/JzSceneView.h"
-#include "JzRE/Runtime/Function/Input/JzInputManager.h"
 #include "JzRE/Runtime/Function/ECS/JzWorld.h"
 #include "JzRE/Runtime/Function/ECS/JzComponents.h"
+#include "JzRE/Runtime/Function/ECS/JzInputComponents.h"
+#include "JzRE/Runtime/Function/ECS/JzWindowComponents.h"
 
 JzRE::JzSceneView::JzSceneView(const JzRE::String &name, JzRE::Bool is_opened) :
     JzRE::JzView(name, is_opened)
@@ -33,10 +34,21 @@ void JzRE::JzSceneView::Update(JzRE::F32 deltaTime)
         return;
     }
 
-    auto &inputManager = JzServiceContainer::Get<JzInputManager>();
+    // Get primary window input state from ECS
+    auto &world = JzServiceContainer::Get<JzWorld>();
+
+    JzInputStateComponent *inputState = nullptr;
+    auto                   inputView  = world.View<JzInputStateComponent, JzPrimaryWindowTag>();
+    for (auto entity : inputView) {
+        inputState = &world.GetComponent<JzInputStateComponent>(entity);
+        break;
+    }
+    if (!inputState) return;
+
+    const auto &input = *inputState;
 
     // Get current mouse position
-    JzVec2 currentMousePos = inputManager.GetMousePosition();
+    JzVec2 currentMousePos = input.mouse.position;
 
     // Calculate mouse delta
     F32 deltaX = 0.0f;
@@ -46,10 +58,9 @@ void JzRE::JzSceneView::Update(JzRE::F32 deltaTime)
         deltaY = currentMousePos.y - m_lastMousePos.y;
     }
 
-    // Track button states - use GetMouseButtonState for real-time GLFW state
-    // instead of IsMouseButtonPressed which is event-based and cleared each frame
-    Bool leftPressed  = inputManager.GetMouseButtonState(JzEInputMouseButton::MOUSE_BUTTON_LEFT) == JzEInputMouseButtonState::MOUSE_DOWN;
-    Bool rightPressed = inputManager.GetMouseButtonState(JzEInputMouseButton::MOUSE_BUTTON_RIGHT) == JzEInputMouseButtonState::MOUSE_DOWN;
+    // Track button states from ECS input state
+    Bool leftPressed  = input.mouse.IsButtonPressed(JzEMouseButton::Left);
+    Bool rightPressed = input.mouse.IsButtonPressed(JzEMouseButton::Right);
 
     // Handle left mouse button - Orbit rotation
     if (leftPressed) {
@@ -80,7 +91,7 @@ void JzRE::JzSceneView::Update(JzRE::F32 deltaTime)
     }
 
     // Handle scroll wheel - Zoom
-    JzVec2 scroll = inputManager.GetMouseScroll();
+    JzVec2 scroll = input.mouse.scrollDelta;
     if (std::abs(scroll.y) > 0.001f) {
         HandleZoom(scroll.y);
     }
@@ -91,15 +102,15 @@ void JzRE::JzSceneView::Update(JzRE::F32 deltaTime)
 
     // Keyboard shortcuts for gizmo operations
     if (IsFocused()) {
-        if (inputManager.IsKeyPressed(JzEInputKeyboardButton::KEY_W)) {
+        if (input.keyboard.IsKeyDown(JzEKeyCode::W)) {
             SetGizmoOperation(JzEGizmoOperation::TRANSLATE);
         }
 
-        if (inputManager.IsKeyPressed(JzEInputKeyboardButton::KEY_E)) {
+        if (input.keyboard.IsKeyDown(JzEKeyCode::E)) {
             SetGizmoOperation(JzEGizmoOperation::ROTATE);
         }
 
-        if (inputManager.IsKeyPressed(JzEInputKeyboardButton::KEY_R)) {
+        if (input.keyboard.IsKeyDown(JzEKeyCode::R)) {
             SetGizmoOperation(JzEGizmoOperation::SCALE);
         }
     }
@@ -118,8 +129,17 @@ JzRE::JzEGizmoOperation JzRE::JzSceneView::GetGizmoOperation() const
 
 void JzRE::JzSceneView::HandleActorPicking()
 {
-    auto &inputManager = JzServiceContainer::Get<JzInputManager>();
-    if (inputManager.IsMouseButtonReleased(JzEInputMouseButton::MOUSE_BUTTON_LEFT)) {
+    auto &world = JzServiceContainer::Get<JzWorld>();
+
+    JzInputStateComponent *inputState = nullptr;
+    auto                   inputView  = world.View<JzInputStateComponent, JzPrimaryWindowTag>();
+    for (auto entity : inputView) {
+        inputState = &world.GetComponent<JzInputStateComponent>(entity);
+        break;
+    }
+    if (!inputState) return;
+
+    if (inputState->mouse.IsButtonUp(JzEMouseButton::Left)) {
         // m_gizmoOperations.StopPicking();
     }
 }

@@ -17,7 +17,6 @@
 #include "JzRE/Runtime/Function/ECS/JzRenderSystem.h"
 #include "JzRE/Runtime/Function/ECS/JzAssetLoadingSystem.h"
 #include "JzRE/Runtime/Function/Event/JzEventDispatcherSystem.h"
-#include "JzRE/Runtime/Function/Input/JzInputManager.h"
 #include "JzRE/Runtime/Platform/JzDevice.h"
 #include "JzRE/Runtime/Resource/JzAssetManager.h"
 
@@ -178,7 +177,6 @@ protected:
     JzRERuntimeSettings m_settings;
 
     std::unique_ptr<JzDevice>       m_device;
-    std::unique_ptr<JzInputManager> m_inputManager;
     std::unique_ptr<JzAssetManager> m_assetManager;
 
     // ECS world and systems

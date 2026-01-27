@@ -106,7 +106,7 @@ High-level engine systems:
 | Rendering | `Rendering/` | `JzDeviceFactory`                              |
 | Scene     | `Scene/`     | `JzActor`                                      |
 | ECS       | `ECS/`       | `JzEntityManager`, `Jz*System`, `Jz*Component` |
-| Input     | `Input/`     | `JzInputManager`                               |
+| Input     | `ECS/`       | `JzInputSystem`, `JzInputComponents`           |
 | Window    | `ECS/`       | `JzWindowSystem` (integrated into ECS)         |
 
 ---

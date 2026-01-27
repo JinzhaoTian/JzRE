@@ -61,8 +61,6 @@ JzRE/
 │   │       │   │   └── JzActor.h
 │   │       │   ├── ECS/
 │   │       │   │   └── JzEntityManager.h
-│   │       │   ├── Input/
-│   │       │   │   └── JzInputManager.h
 │   │       │   └── Event/
 │   │       │       └── JzWindowEvents.h
 │   │       └── src/

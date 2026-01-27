@@ -274,7 +274,7 @@ JzInputSystem::Update()
 JzEventDispatcherSystem::Update()
     └── Dispatches all queued events to registered handlers
     ↓
-Any System / JzInputManager → RegisterHandler<JzKeyEvent>(...) to receive events
+Any System → RegisterHandler<JzKeyEvent>(...) to receive events
 ```
 
 ### Window Events (`JzWindowEvents.h`)
@@ -446,37 +446,20 @@ protected:
 
 ## Input Processing Architecture
 
-JzRE uses a **two-layer input architecture** that separates raw input collection from ECS-based processing:
+JzRE uses a **pure ECS input architecture** where all input flows through components and systems:
 
-### Layer 1: Legacy Input Manager (JzInputManager)
+### JzInputSystem (ECS System)
 
-The `JzInputManager` is a service-based component that:
-
-- Subscribes to ECS events (`JzKeyEvent`, `JzMouseButtonEvent`, `JzMouseScrollEvent`) via `JzEventDispatcherSystem`
-- Tracks raw keyboard and mouse button states
-- Provides polling-based API for input queries
-- Used as a legacy fallback when `JzInputStateComponent` is unavailable
-
-```cpp
-// Access via service container
-auto& inputManager = JzServiceContainer::Get<JzInputManager>();
-
-// Query raw input state
-bool pressed = inputManager.IsKeyPressed(JzEInputKeyboardButton::KEY_W);
-JzVec2 mousePos = inputManager.GetMousePosition();
-```
-
-### Layer 2: Function Layer (JzInputSystem)
-
-The `JzInputSystem` bridges raw input to ECS components:
+The `JzInputSystem` processes raw input state and distributes it to ECS components:
 
 - Runs in the **Input phase** (first logic phase)
-- Reads from JzInputManager
-- Updates input components on entities
-- Computes derived input state (deltas, press/release events)
+- Reads from `JzInputStateComponent` (populated by `JzWindowSystem` via GLFW callbacks)
+- Updates higher-level input components on entities (`JzMouseInputComponent`, `JzKeyboardInputComponent`, `JzCameraInputStateComponent`)
+- Processes input action bindings (`JzInputActionComponent`)
+- Emits typed ECS events (`JzKeyEvent`, `JzMouseButtonEvent`, etc.)
 
 ```cpp
-// Systems read from input components, not InputManager directly
+// Systems read from input components — all data is ECS-driven
 void MyCameraSystem::Update(JzWorld& world, F32 delta) {
     auto view = world.View<JzCameraComponent, JzCameraInputComponent>();
 
@@ -486,6 +469,14 @@ void MyCameraSystem::Update(JzWorld& world, F32 delta) {
             ApplyOrbit(camera, input.mouseDelta);
         }
     }
+}
+
+// Non-ECS code (e.g., Editor panels) can query JzInputStateComponent directly
+auto& world = JzServiceContainer::Get<JzWorld>();
+auto inputView = world.View<JzInputStateComponent, JzPrimaryWindowTag>();
+for (auto entity : inputView) {
+    auto& input = world.GetComponent<JzInputStateComponent>(entity);
+    if (input.keyboard.IsKeyPressed(JzEKeyCode::W)) { /* ... */ }
 }
 ```
 
@@ -501,7 +492,7 @@ JzWindowSystem (polls backend + applies callback data)
 JzInputStateComponent (per-window ECS component)
     ↓
 JzInputSystem (Input Phase)
-    ├── Syncs legacy components (JzMouseInputComponent, etc.)
+    ├── Syncs higher-level components (JzMouseInputComponent, etc.)
     ├── Updates action values (JzInputActionComponent)
     └── Emits ECS events (JzKeyEvent, JzMouseButtonEvent, etc.)
     ↓
@@ -512,12 +503,12 @@ Game Systems (CameraSystem, PlayerSystem, etc.)
 
 ### Benefits of This Architecture
 
-1. **Separation of Concerns**: Platform abstraction (InputManager) vs game logic (ECS)
+1. **Pure ECS**: All input state flows through components — no service-based singletons
 2. **Testability**: Systems can be tested with mock input components
 3. **Data-Driven**: Input is just another component type
 4. **Extensibility**: Easy to add input mappings, action systems, etc.
 5. **Clear Dependencies**: Systems depend on components, not global services
-6. **ECS Philosophy**: All game state flows through components
+6. **Unified Access**: Both ECS systems and Editor code query the same `JzInputStateComponent`
 
 ### Input Component Patterns
 

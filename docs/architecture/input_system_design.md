@@ -6,38 +6,37 @@ This document describes the design and implementation of the Input System in JzR
 
 ## Design Decision: Should Input be a System?
 
-### Answer: YES (with a hybrid approach)
+### Answer: YES (pure ECS approach)
 
-JzRE implements a **two-layer input architecture** that provides the benefits of both approaches:
+JzRE implements a **pure ECS input architecture** where all input flows through components and systems:
 
 ```
-Layer 1: Platform Layer
-  └── JzInputManager (Service)
+JzWindowSystem (Input Phase)
+  └── Polls GLFW backend, syncs JzInputStateComponent, emits window events
         ↓
-Layer 2: Function Layer (ECS)
-  ├── JzWindowSystem (Input Phase)
-  │     └── Polls backend, syncs JzInputStateComponent, emits window events
-  ├── JzInputSystem (Input Phase)
-  │     ├── Syncs legacy components, updates actions
-  │     └── Emits input events (JzKeyEvent, JzMouseButtonEvent, etc.)
-  └── JzEventDispatcherSystem (Input Phase)
-        └── Dispatches queued events to registered handlers
+JzInputSystem (Input Phase)
+  ├── Syncs higher-level components (JzMouseInputComponent, JzKeyboardInputComponent, etc.)
+  ├── Updates action values (JzInputActionComponent)
+  └── Emits input events (JzKeyEvent, JzMouseButtonEvent, etc.)
         ↓
-  Other Systems read Input Components OR subscribe to events
+JzEventDispatcherSystem (Input Phase)
+  └── Dispatches queued events to registered handlers
+        ↓
+Other Systems read Input Components OR subscribe to events
 ```
 
 ## Architecture Benefits
 
 ### 1. Separation of Concerns
 
-- **JzInputManager**: Hardware abstraction, event handling, platform-specific code
-- **JzInputSystem**: Game logic, input processing, component updates
+- **JzWindowSystem**: Hardware abstraction, GLFW polling, populates `JzInputStateComponent`
+- **JzInputSystem**: Input processing, component updates, event emission
 
 ### 2. ECS Purity
 
-- All game logic flows through ECS components
+- All input state flows through ECS components — no service-based singletons
 - Systems don't directly depend on external services
-- Clear data flow: Input Manager → Input System → Components → Game Systems
+- Clear data flow: WindowSystem → InputStateComponent → InputSystem → Components → Game Systems
 
 ### 3. Testability
 
@@ -107,14 +106,16 @@ Processed input specifically for camera control:
 
 ```cpp
 // Frame N
-1. m_window->PollEvents()
-   ↓ GLFW callbacks fire
-   ↓ JzInputManager updates internal state
+1. JzWindowSystem::Update()
+   ↓ Polls GLFW events
+   ↓ Populates JzInputStateComponent on window entity
 
 2. JzInputSystem::Update()
-   ↓ Reads JzInputManager
-   ↓ Updates JzMouseInputComponent
-   ↓ Updates JzCameraInputComponent
+   ↓ Reads JzInputStateComponent from primary window
+   ↓ Syncs JzMouseInputComponent, JzKeyboardInputComponent
+   ↓ Syncs JzCameraInputStateComponent
+   ↓ Updates JzInputActionComponent action values
+   ↓ Emits ECS input events
 
 3. JzCameraSystem::Update()
    ↓ Reads JzCameraInputComponent
@@ -124,8 +125,8 @@ Processed input specifically for camera control:
 4. JzRenderSystem::Update()
    ↓ Uses camera matrices for rendering
 
-5. m_inputManager->ClearEvents()
-   ↓ Reset press/release events for next frame
+5. JzInputSystem::ClearFrameState()
+   ↓ Reset per-frame input flags for next frame
 ```
 
 ## Comparison with Alternative Approaches

@@ -7,7 +7,6 @@
 
 #include <bitset>
 #include "JzRE/Runtime/Core/JzRETypes.h"
-#include "JzRE/Runtime/Core/JzVector.h"
 #include "JzRE/Runtime/Function/ECS/JzSystem.h"
 #include "JzRE/Runtime/Function/ECS/JzWorld.h"
 #include "JzRE/Runtime/Function/ECS/JzInputComponents.h"
@@ -18,22 +17,17 @@ namespace JzRE {
 class JzEventDispatcherSystem;
 
 /**
- * @brief System that processes raw input and updates input components.
+ * @brief ECS system that processes raw input and updates input components.
  *
- * This system processes input state and updates ECS input components.
- * It supports two modes of operation:
- *
- * 1. ECS Mode (Preferred): Reads from JzInputStateComponent (populated
- *    by JzWindowSystem) and updates legacy components for compatibility.
- *
- * 2. Legacy Mode: Falls back to JzInputManager if JzInputStateComponent
- *    is not available on any window entity.
+ * Reads from JzInputStateComponent (populated by JzWindowSystem via GLFW
+ * callbacks) and updates higher-level input components for consumption by
+ * other systems.
  *
  * Responsibilities:
- * - Sync JzInputStateComponent from window backend (via JzWindowSystem)
- * - Update legacy JzMouseInputComponent and JzKeyboardInputComponent
+ * - Sync JzMouseInputComponent/JzKeyboardInputComponent from JzInputStateComponent
  * - Process camera-specific input (JzCameraInputComponent, JzCameraInputStateComponent)
  * - Update JzInputActionComponent action values
+ * - Emit typed ECS events (JzKeyEvent, JzMouseButtonEvent, etc.)
  * - Clear per-frame input state at end of frame
  *
  * This system runs in the Input phase (first Logic phase) to ensure
@@ -62,16 +56,6 @@ public:
 
 private:
     /**
-     * @brief Update mouse input components from JzInputStateComponent or legacy manager.
-     */
-    void UpdateMouseInput(JzWorld &world);
-
-    /**
-     * @brief Update keyboard input components from JzInputStateComponent or legacy manager.
-     */
-    void UpdateKeyboardInput(JzWorld &world);
-
-    /**
      * @brief Update camera-specific input components.
      *
      * Processes raw mouse/keyboard input and translates it into
@@ -85,7 +69,7 @@ private:
     void UpdateInputActions(JzWorld &world, F32 delta);
 
     /**
-     * @brief Sync legacy components from JzInputStateComponent.
+     * @brief Sync higher-level input components from JzInputStateComponent.
      */
     void SyncLegacyComponentsFromInputState(JzWorld &world);
 
@@ -130,10 +114,6 @@ private:
     void EmitActionEvents(JzWorld &world);
 
 private:
-    // Cached previous mouse position for delta calculation (legacy mode)
-    JzVec2 m_previousMousePosition{0.0f, 0.0f};
-    Bool   m_firstFrame{true};
-
     // Cached primary window entity for quick access
     JzEntity m_primaryWindowEntity{};
 
