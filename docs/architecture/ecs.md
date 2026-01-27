@@ -251,23 +251,30 @@ The ECS event system bridges `JzWindowSystem` and `JzInputSystem` with `JzEventD
 
 ### Event Flow
 
+All events flow through `JzEventDispatcherSystem`. There are no public delegates on
+`JzWindowSystem` — the backend's internal `JzDelegate` callbacks are an implementation
+detail of the Platform layer.
+
 ```
-GLFW Callbacks → JzWindowSystem (direct GLFW management)
-    ↓
+GLFW Callbacks
+    → IWindowBackend delegates (internal, Platform layer)
+        → JzWindowSystem accumulates callback data (e.g. scroll delta)
+
 JzWindowSystem::Update()
-    ├── Syncs JzWindowStateComponent (polling)
-    ├── Syncs JzInputStateComponent (polling)
-    └── Emits window events (JzWindowResizedEvent, JzWindowFocusEvent, etc.)
+    ├── Polls backend → JzWindowStateComponent
+    ├── Polls backend + applies callback data → JzInputStateComponent
+    └── Change detection → emits window ECS events
+            (JzWindowResizedEvent, JzWindowFocusEvent, etc.)
     ↓
 JzInputSystem::Update()
     ├── Syncs legacy components (JzMouseInputComponent, etc.)
     ├── Updates action values (JzInputActionComponent)
-    └── Emits input events (JzKeyEvent, JzMouseButtonEvent, etc.)
+    └── Emits input ECS events (JzKeyEvent, JzMouseButtonEvent, etc.)
     ↓
 JzEventDispatcherSystem::Update()
     └── Dispatches all queued events to registered handlers
     ↓
-Any System → RegisterHandler<JzKeyEvent>(...) to receive events
+Any System / JzInputManager → RegisterHandler<JzKeyEvent>(...) to receive events
 ```
 
 ### Window Events (`JzWindowEvents.h`)
@@ -441,14 +448,14 @@ protected:
 
 JzRE uses a **two-layer input architecture** that separates raw input collection from ECS-based processing:
 
-### Layer 1: Platform Layer (JzInputManager)
+### Layer 1: Legacy Input Manager (JzInputManager)
 
 The `JzInputManager` is a service-based component that:
 
-- Listens to window events (GLFW callbacks)
+- Subscribes to ECS events (`JzKeyEvent`, `JzMouseButtonEvent`, `JzMouseScrollEvent`) via `JzEventDispatcherSystem`
 - Tracks raw keyboard and mouse button states
 - Provides polling-based API for input queries
-- Lives in the Platform Layer (not ECS)
+- Used as a legacy fallback when `JzInputStateComponent` is unavailable
 
 ```cpp
 // Access via service container
@@ -487,13 +494,18 @@ void MyCameraSystem::Update(JzWorld& world, F32 delta) {
 ```
 Hardware Input
     ↓
-Window Events (GLFW)
+GLFW Callbacks → IWindowBackend (internal delegates)
     ↓
-JzInputManager (Platform Layer)
+JzWindowSystem (polls backend + applies callback data)
+    ↓
+JzInputStateComponent (per-window ECS component)
     ↓
 JzInputSystem (Input Phase)
+    ├── Syncs legacy components (JzMouseInputComponent, etc.)
+    ├── Updates action values (JzInputActionComponent)
+    └── Emits ECS events (JzKeyEvent, JzMouseButtonEvent, etc.)
     ↓
-Input Components (JzMouseInputComponent, etc.)
+JzEventDispatcherSystem → registered handlers
     ↓
 Game Systems (CameraSystem, PlayerSystem, etc.)
 ```

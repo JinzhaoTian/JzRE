@@ -353,51 +353,17 @@ void JzWindowSystem::WireBackendDelegates()
 {
     if (!m_backend) return;
 
-    // Input events: backend → JzWindowSystem public delegates
-    m_backend->OnKeyPressed += [this](I32 key) {
-        KeyboardButtonPressedEvent.Broadcast(key);
-    };
-    m_backend->OnKeyReleased += [this](I32 key) {
-        KeyboardButtonReleasedEvent.Broadcast(key);
-    };
-    m_backend->OnMouseButtonPressed += [this](I32 button) {
-        MouseButtonPressedEvent.Broadcast(button);
-    };
-    m_backend->OnMouseButtonReleased += [this](I32 button) {
-        MouseButtonReleasedEvent.Broadcast(button);
-    };
+    // Accumulate scroll delta from backend callbacks.
+    // Scroll has no pollable state, so we must capture it from the callback
+    // and apply it during SyncInputFromBackend().
     m_backend->OnMouseScrolled += [this](JzVec2 scroll) {
-        MouseScrolledEvent.Broadcast(scroll);
+        m_pendingScrollDelta += scroll;
     };
 
-    // Window events: backend → JzWindowSystem public delegates
-    m_backend->OnWindowResized += [this](JzIVec2 size) {
-        WindowResizedEvent.Broadcast(size);
-    };
-    m_backend->OnFrameBufferResized += [this](JzIVec2 size) {
-        WindowFrameBufferResizedEvent.Broadcast(size);
-    };
-    m_backend->OnWindowMoved += [this](JzIVec2 pos) {
-        WindowMoveEvent.Broadcast(pos);
-    };
-    m_backend->OnCursorMoved += [this](JzIVec2 pos) {
-        WindowCursorMoveEvent.Broadcast(pos);
-    };
-    m_backend->OnWindowMinimized += [this]() {
-        WindowMinimizedEvent.Broadcast();
-    };
-    m_backend->OnWindowMaximized += [this]() {
-        WindowMaximizedEvent.Broadcast();
-    };
-    m_backend->OnWindowFocusGained += [this]() {
-        WindowFocusGainEvent.Broadcast();
-    };
-    m_backend->OnWindowFocusLost += [this]() {
-        WindowFocusLostEvent.Broadcast();
-    };
-    m_backend->OnWindowClosed += [this]() {
-        WindowClosedEvent.Broadcast();
-    };
+    // All other backend events are handled through:
+    // - Window events: EmitWindowEvents() uses change detection on JzWindowStateComponent
+    // - Input state: SyncInputFromBackend() polls keyboard/mouse state from the backend
+    // No delegate forwarding is needed; events flow through JzEventDispatcherSystem.
 }
 
 // ==================== ECS Update Helpers ====================
@@ -518,6 +484,10 @@ void JzWindowSystem::SyncInputFromBackend(JzWorld &world, JzEntity windowEntity)
             input.mouse.buttonsPressed.reset(static_cast<Size>(button));
         }
     }
+
+    // Apply accumulated scroll delta from backend callbacks
+    input.mouse.scrollDelta = m_pendingScrollDelta;
+    m_pendingScrollDelta    = JzVec2(0.0f, 0.0f);
 }
 
 void JzWindowSystem::ProcessWindowEvents(JzWorld &world)

@@ -96,7 +96,7 @@ public:
     void *GetNativeWindowHandle() const override;
 
 private:
-    void CreateWindow(const JzWindowConfig &config);
+    void CreateGLFWWindow(const JzWindowConfig &config);
     void SetupCallbacks();
     void UpdateSizeLimit();
 

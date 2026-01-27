@@ -40,7 +40,7 @@ void JzGLFWWindowBackend::Initialize(JzERHIType rhiType, const JzWindowConfig &c
     m_windowedSize = m_size;
     m_fullscreen   = config.fullscreen;
 
-    CreateWindow(config);
+    CreateGLFWWindow(config);
     SetupCallbacks();
 }
 
@@ -354,7 +354,7 @@ void *JzGLFWWindowBackend::GetNativeWindowHandle() const
 
 // ==================== Private: Window Creation ====================
 
-void JzGLFWWindowBackend::CreateWindow(const JzWindowConfig &config)
+void JzGLFWWindowBackend::CreateGLFWWindow(const JzWindowConfig &config)
 {
     I32 initCode = glfwInit();
     if (initCode == GLFW_FALSE) {
