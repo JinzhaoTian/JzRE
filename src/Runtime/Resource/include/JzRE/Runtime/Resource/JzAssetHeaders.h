@@ -1,5 +1,5 @@
 /**
- * @file    JzAssetSystem.h
+ * @file    JzAssetHeaders.h
  * @brief   Unified header for the asset management system
  * @author  Jinzhao Tian
  * @copyright Copyright (c) 2025 JzRE
@@ -9,7 +9,7 @@
  *
  * @example
  * @code
- * #include "JzRE/Runtime/Resource/JzAssetSystem.h"
+ * #include "JzRE/Runtime/Resource/JzAssetHeaders.h"
  *
  * // Create and initialize asset manager
  * JzAssetManagerConfig config;
@@ -46,6 +46,13 @@
 
 // Asset manager
 #include "JzRE/Runtime/Resource/JzAssetManager.h"
+
+// Common asset types (must be included for template instantiations)
+#include "JzRE/Runtime/Resource/JzMesh.h"
+#include "JzRE/Runtime/Resource/JzMaterial.h"
+#include "JzRE/Runtime/Resource/JzTexture.h"
+#include "JzRE/Runtime/Resource/JzModel.h"
+#include "JzRE/Runtime/Resource/JzShaderAsset.h"
 
 namespace JzRE {
 

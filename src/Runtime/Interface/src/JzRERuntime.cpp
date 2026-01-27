@@ -78,17 +78,11 @@ void JzRE::JzRERuntime::CreateSubsystems()
     // aiSystem      = CreateAISystem();
     // uiSystem      = CreateUISystem();
 
-    // Initialize asset manager (new ECS-friendly asset system)
-    JzAssetManagerConfig assetConfig;
-    assetConfig.maxCacheMemoryMB = 512;
-    assetConfig.asyncWorkerCount = 2;
-    m_assetManager               = std::make_unique<JzAssetManager>(assetConfig);
-    JzServiceContainer::Provide<JzAssetManager>(*m_assetManager);
-
     // Create device (after window is created in RegisterSystems)
     // Note: device creation is deferred until after window system initialization
 
     // Initialize ECS world first (needed for system registration)
+    // Asset system is created as an ECS system in RegisterSystems()
     m_world = std::make_unique<JzWorld>();
     JzServiceContainer::Provide<JzWorld>(*m_world);
 }
@@ -140,30 +134,40 @@ void JzRE::JzRERuntime::RegisterSystems()
     m_eventDispatcherSystem = m_world->RegisterSystem<JzEventDispatcherSystem>();
     JzServiceContainer::Provide<JzEventDispatcherSystem>(*m_eventDispatcherSystem);
 
-    m_assetLoadingSystem = m_world->RegisterSystem<JzAssetLoadingSystem>();
-    m_cameraSystem       = m_world->RegisterSystem<JzCameraSystem>();
+    m_assetSystem = m_world->RegisterSystem<JzAssetSystem>();
+    JzServiceContainer::Provide<JzAssetSystem>(*m_assetSystem);
+
+    m_cameraSystem = m_world->RegisterSystem<JzCameraSystem>();
     m_lightSystem        = m_world->RegisterSystem<JzLightSystem>();
     m_renderSystem       = m_world->RegisterSystem<JzRenderSystem>();
 }
 
 void JzRE::JzRERuntime::InitializeSubsystems()
 {
-    m_assetManager->Initialize();
+    // Initialize asset system (creates and initializes internal JzAssetManager)
+    JzAssetManagerConfig assetConfig;
+    assetConfig.maxCacheMemoryMB = 512;
+    assetConfig.asyncWorkerCount = 2;
+    m_assetSystem->Initialize(assetConfig);
 
-    // Register resource factories with asset manager
-    m_assetManager->RegisterFactory<JzShaderAsset>(std::make_unique<JzShaderAssetFactory>());
-    m_assetManager->RegisterFactory<JzModel>(std::make_unique<JzModelFactory>());
-    m_assetManager->RegisterFactory<JzMesh>(std::make_unique<JzMeshFactory>());
-    m_assetManager->RegisterFactory<JzTexture>(std::make_unique<JzTextureFactory>());
-    m_assetManager->RegisterFactory<JzMaterial>(std::make_unique<JzMaterialFactory>());
+    // Register JzAssetManager in service container for backward compatibility
+    // (JzRenderSystem, JzShaderHotReloadSystem, JzAssetBrowser use it)
+    JzServiceContainer::Provide<JzAssetManager>(m_assetSystem->GetAssetManager());
 
-    // Add search paths for asset manager
+    // Register resource factories
+    m_assetSystem->RegisterFactory<JzShaderAsset>(std::make_unique<JzShaderAssetFactory>());
+    m_assetSystem->RegisterFactory<JzModel>(std::make_unique<JzModelFactory>());
+    m_assetSystem->RegisterFactory<JzMesh>(std::make_unique<JzMeshFactory>());
+    m_assetSystem->RegisterFactory<JzTexture>(std::make_unique<JzTextureFactory>());
+    m_assetSystem->RegisterFactory<JzMaterial>(std::make_unique<JzMaterialFactory>());
+
+    // Add search paths
     auto enginePath = std::filesystem::current_path();
-    m_assetManager->AddSearchPath(enginePath.string());
-    m_assetManager->AddSearchPath((enginePath / "resources").string());
-    m_assetManager->AddSearchPath((enginePath / "resources" / "models").string());
-    m_assetManager->AddSearchPath((enginePath / "resources" / "textures").string());
-    m_assetManager->AddSearchPath((enginePath / "resources" / "shaders").string());
+    m_assetSystem->AddSearchPath(enginePath.string());
+    m_assetSystem->AddSearchPath((enginePath / "resources").string());
+    m_assetSystem->AddSearchPath((enginePath / "resources" / "models").string());
+    m_assetSystem->AddSearchPath((enginePath / "resources" / "textures").string());
+    m_assetSystem->AddSearchPath((enginePath / "resources" / "shaders").string());
 }
 
 void JzRE::JzRERuntime::PreloadAssets()
@@ -227,19 +231,13 @@ void JzRE::JzRERuntime::ShutdownSubsystems()
     m_renderSystem.reset();
     m_lightSystem.reset();
     m_cameraSystem.reset();
-    m_assetLoadingSystem.reset();
+    m_assetSystem.reset();
     m_eventDispatcherSystem.reset();
     m_inputSystem.reset();
     m_device.reset();
 
     m_windowSystem.reset();
     m_world.reset();
-
-    // Shutdown asset manager
-    if (m_assetManager) {
-        m_assetManager->Shutdown();
-        m_assetManager.reset();
-    }
 }
 
 void JzRE::JzRERuntime::CleanupGlobals()
@@ -388,9 +386,14 @@ JzRE::JzWorld &JzRE::JzRERuntime::GetWorld()
     return *m_world;
 }
 
+JzRE::JzAssetSystem &JzRE::JzRERuntime::GetAssetSystem()
+{
+    return *m_assetSystem;
+}
+
 JzRE::JzAssetManager &JzRE::JzRERuntime::GetAssetManager()
 {
-    return *m_assetManager;
+    return m_assetSystem->GetAssetManager();
 }
 
 void JzRE::JzRERuntime::OnStart()

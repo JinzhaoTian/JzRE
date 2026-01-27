@@ -4,9 +4,6 @@
  */
 
 #include "JzRE/Runtime/JzRERuntime.h"
-#include "JzRE/Runtime/Function/ECS/JzAssetComponents.h"
-#include "JzRE/Runtime/Function/ECS/JzComponents.h"
-#include "JzRE/Runtime/Resource/JzModel.h"
 
 #include <iostream>
 #include <string>
@@ -97,10 +94,9 @@ bool ParseCommandLine(int argc, char *argv[], CommandLineArgs &args)
  * a model file using the ECS-based asset management system.
  *
  * This example demonstrates:
- * - Loading models via JzAssetManager
- * - Creating entities with JzMeshAssetComponent and JzMaterialAssetComponent
- * - Using JzAssetLoadingSystem for automatic asset state management
- * - Proper asset lifecycle management with reference counting
+ * - Loading models via JzAssetSystem
+ * - Spawning entities from models with SpawnModel()
+ * - Automatic asset lifecycle management with DetachAllAssets()
  */
 class RuntimeExample : public JzRE::JzRERuntime {
 public:
@@ -121,35 +117,22 @@ protected:
     {
         std::cout << "Loading model via Asset system: " << m_modelPath << "\n";
 
-        auto &assetManager = GetAssetManager();
+        auto &assetSystem = GetAssetSystem();
 
-        // Load model synchronously using the new Asset system
-        m_modelHandle = assetManager.LoadSync<JzRE::JzModel>(m_modelPath);
+        // Load model synchronously
+        m_modelHandle = assetSystem.LoadSync<JzRE::JzModel>(m_modelPath);
 
-        if (!m_modelHandle.IsValid()) {
+        if (!assetSystem.IsLoaded(m_modelHandle)) {
             std::cerr << "Error: Failed to load model: " << m_modelPath << "\n";
             return;
         }
 
-        // Check load state
-        auto loadState = assetManager.GetLoadState(m_modelHandle);
-        if (loadState != JzRE::JzEAssetLoadState::Loaded) {
-            std::cerr << "Error: Model not in loaded state\n";
-            return;
-        }
-
-        // Get the loaded model
-        JzRE::JzModel *model = assetManager.Get(m_modelHandle);
-        if (!model) {
-            std::cerr << "Error: Failed to get model data\n";
-            return;
-        }
-
         // Add reference to keep the model alive
-        assetManager.AddRef(m_modelHandle);
+        assetSystem.AddRef(m_modelHandle);
 
-        // Spawn ECS entities from the model using asset components
-        SpawnModelEntities(model);
+        // Spawn ECS entities from the model
+        // SpawnModel handles: transform, mesh/material components, ref tracking, ready tags
+        m_modelEntities = assetSystem.SpawnModel(GetWorld(), m_modelHandle);
 
         std::cout << "Model loaded successfully (" << m_modelEntities.size() << " mesh entities)\n";
     }
@@ -161,7 +144,7 @@ protected:
      */
     void OnUpdate([[maybe_unused]] JzRE::F32 deltaTime) override
     {
-        // The JzAssetLoadingSystem automatically handles:
+        // JzAssetSystem automatically handles:
         // - Monitoring asset components for load state changes
         // - Updating component cache data when assets become ready
         // - Managing JzAssetLoadingTag / JzAssetReadyTag tags
@@ -174,129 +157,28 @@ protected:
     {
         std::cout << "Closing JzRE Example\n";
 
-        // Clean up spawned entities
-        auto &world = GetWorld();
+        auto &assetSystem = GetAssetSystem();
+        auto &world       = GetWorld();
+
+        // DetachAllAssets releases all tracked asset references automatically
         for (auto entity : m_modelEntities) {
             if (world.IsValid(entity)) {
+                assetSystem.DetachAllAssets(world, entity);
                 world.DestroyEntity(entity);
             }
         }
         m_modelEntities.clear();
 
-        // Release mesh and material handles
-        auto &assetManager = GetAssetManager();
-        for (auto &meshHandle : m_meshHandles) {
-            if (meshHandle.IsValid()) {
-                assetManager.Release(meshHandle);
-            }
-        }
-        m_meshHandles.clear();
-
-        for (auto &matHandle : m_materialHandles) {
-            if (matHandle.IsValid()) {
-                assetManager.Release(matHandle);
-            }
-        }
-        m_materialHandles.clear();
-
         // Release model handle
         if (m_modelHandle.IsValid()) {
-            assetManager.Release(m_modelHandle);
+            assetSystem.Release(m_modelHandle);
         }
     }
 
 private:
-    /**
-     * @brief Spawn ECS entities from a loaded model using asset components
-     *
-     * Creates one entity per mesh with:
-     * - JzTransformComponent
-     * - JzMeshAssetComponent (references mesh via handle)
-     * - JzMaterialAssetComponent (references material via handle)
-     * - JzAssetReadyTag (since assets are already loaded)
-     *
-     * @param model The loaded model
-     */
-    void SpawnModelEntities(JzRE::JzModel *model)
-    {
-        auto &world        = GetWorld();
-        auto &assetManager = GetAssetManager();
-
-        const auto &meshes    = model->GetMeshes();
-        const auto &materials = model->GetMaterials();
-
-        for (JzRE::Size i = 0; i < meshes.size(); ++i) {
-            const auto &mesh = meshes[i];
-            if (!mesh) continue;
-
-            // Create entity
-            auto entity = world.CreateEntity();
-            m_modelEntities.push_back(entity);
-
-            // Add transform component (identity transform)
-            world.AddComponent<JzRE::JzTransformComponent>(entity);
-
-            // Create mesh handle by registering the mesh with asset manager
-            // Use model path + mesh index as unique identifier
-            auto  meshPath     = m_modelPath + "#mesh" + std::to_string(i);
-            auto &meshRegistry = assetManager.GetRegistry<JzRE::JzMesh>();
-            auto  meshHandle   = meshRegistry.Allocate(meshPath);
-            if (meshHandle.IsValid()) {
-                meshRegistry.Set(meshHandle, mesh);
-                meshRegistry.SetLoadState(meshHandle, JzRE::JzEAssetLoadState::Loaded);
-                assetManager.AddRef(meshHandle);
-                m_meshHandles.push_back(meshHandle);
-
-                // Add mesh asset component
-                auto &meshComp         = world.AddComponent<JzRE::JzMeshAssetComponent>(entity, meshHandle);
-                meshComp.isReady       = true;
-                meshComp.indexCount    = mesh->GetIndexCount();
-                meshComp.materialIndex = mesh->GetMaterialIndex();
-            }
-
-            // Get associated material (if any)
-            JzRE::I32 matIdx = mesh->GetMaterialIndex();
-            if (matIdx >= 0 && static_cast<JzRE::Size>(matIdx) < materials.size()) {
-                const auto &material = materials[matIdx];
-                if (material) {
-                    // Create material handle using model path + material index
-                    auto  matPath     = m_modelPath + "#mat" + std::to_string(matIdx);
-                    auto &matRegistry = assetManager.GetRegistry<JzRE::JzMaterial>();
-                    auto  matHandle   = matRegistry.Allocate(matPath);
-                    if (matHandle.IsValid()) {
-                        matRegistry.Set(matHandle, material);
-                        matRegistry.SetLoadState(matHandle, JzRE::JzEAssetLoadState::Loaded);
-                        assetManager.AddRef(matHandle);
-                        m_materialHandles.push_back(matHandle);
-
-                        // Add material asset component with cached properties
-                        auto       &matComp   = world.AddComponent<JzRE::JzMaterialAssetComponent>(entity, matHandle);
-                        const auto &props     = material->GetProperties();
-                        matComp.ambientColor  = props.ambientColor;
-                        matComp.diffuseColor  = props.diffuseColor;
-                        matComp.specularColor = props.specularColor;
-                        matComp.shininess     = props.shininess;
-                        matComp.opacity       = props.opacity;
-                        matComp.baseColor     = JzRE::JzVec4(props.diffuseColor.x, props.diffuseColor.y,
-                                                             props.diffuseColor.z, props.opacity);
-                        matComp.isReady       = true;
-
-                        // Set diffuse texture flag if material has one
-                        matComp.hasDiffuseTexture = material->HasDiffuseTexture();
-                    }
-                }
-            }
-
-            // Mark entity as ready (all assets already loaded)
-            world.AddComponent<JzRE::JzAssetReadyTag>(entity);
-        }
-    }
-
-    std::string                         m_modelPath;
-    JzRE::JzModelHandle                 m_modelHandle;
-    std::vector<JzRE::JzMeshHandle>     m_meshHandles;
-    std::vector<JzRE::JzMaterialHandle> m_materialHandles;
-    std::vector<JzRE::JzEntity>         m_modelEntities;
+    std::string                 m_modelPath;
+    JzRE::JzModelHandle         m_modelHandle;
+    std::vector<JzRE::JzEntity> m_modelEntities;
 };
 
 /**

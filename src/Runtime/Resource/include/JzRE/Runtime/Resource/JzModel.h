@@ -83,6 +83,16 @@ public:
         return m_materials;
     }
 
+    /**
+     * @brief Get the file path
+     *
+     * @return const String&
+     */
+    const String &GetPath() const
+    {
+        return m_path;
+    }
+
 private:
     void                        ProcessNode(aiNode *node, const aiScene *scene);
     std::shared_ptr<JzMesh>     ProcessMesh(aiMesh *mesh, const aiScene *scene);
