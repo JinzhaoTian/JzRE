@@ -94,13 +94,6 @@ public:
      */
     JzAssetSystem &GetAssetSystem();
 
-    /**
-     * @brief Get the asset manager instance
-     *
-     * @return JzAssetManager& Reference to the underlying asset manager
-     */
-    JzAssetManager &GetAssetManager();
-
 protected:
     /**
      * @brief Called before the main loop starts

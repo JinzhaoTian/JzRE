@@ -138,8 +138,8 @@ void JzRE::JzRERuntime::RegisterSystems()
     JzServiceContainer::Provide<JzAssetSystem>(*m_assetSystem);
 
     m_cameraSystem = m_world->RegisterSystem<JzCameraSystem>();
-    m_lightSystem        = m_world->RegisterSystem<JzLightSystem>();
-    m_renderSystem       = m_world->RegisterSystem<JzRenderSystem>();
+    m_lightSystem  = m_world->RegisterSystem<JzLightSystem>();
+    m_renderSystem = m_world->RegisterSystem<JzRenderSystem>();
 }
 
 void JzRE::JzRERuntime::InitializeSubsystems()
@@ -389,11 +389,6 @@ JzRE::JzWorld &JzRE::JzRERuntime::GetWorld()
 JzRE::JzAssetSystem &JzRE::JzRERuntime::GetAssetSystem()
 {
     return *m_assetSystem;
-}
-
-JzRE::JzAssetManager &JzRE::JzRERuntime::GetAssetManager()
-{
-    return m_assetSystem->GetAssetManager();
 }
 
 void JzRE::JzRERuntime::OnStart()
