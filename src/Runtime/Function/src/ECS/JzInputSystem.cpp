@@ -6,7 +6,7 @@
 #include "JzRE/Runtime/Function/ECS/JzInputSystem.h"
 
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
-#include "JzRE/Runtime/Function/ECS/JzComponents.h"
+#include "JzRE/Runtime/Function/ECS/JzCameraComponents.h"
 #include "JzRE/Runtime/Function/ECS/JzWindowComponents.h"
 #include "JzRE/Runtime/Function/Event/JzEventDispatcherSystem.h"
 #include "JzRE/Runtime/Function/Event/JzInputEvents.h"

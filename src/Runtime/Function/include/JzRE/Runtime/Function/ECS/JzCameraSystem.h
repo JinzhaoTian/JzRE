@@ -5,10 +5,7 @@
 
 #pragma once
 
-#include "JzRE/Runtime/Core/JzMatrix.h"
-#include "JzRE/Runtime/Core/JzRETypes.h"
-#include "JzRE/Runtime/Core/JzVector.h"
-#include "JzRE/Runtime/Function/ECS/JzComponents.h"
+#include "JzRE/Runtime/Function/ECS/JzCameraComponents.h"
 #include "JzRE/Runtime/Function/ECS/JzSystem.h"
 #include "JzRE/Runtime/Function/ECS/JzWorld.h"
 

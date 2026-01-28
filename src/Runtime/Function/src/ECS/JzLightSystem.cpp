@@ -5,7 +5,8 @@
 
 #include "JzRE/Runtime/Function/ECS/JzLightSystem.h"
 
-#include "JzRE/Runtime/Function/ECS/JzComponents.h"
+#include "JzRE/Runtime/Function/ECS/JzTransformComponents.h"
+#include "JzRE/Runtime/Function/ECS/JzLightComponents.h"
 
 namespace JzRE {
 

@@ -427,4 +427,55 @@ struct JzCameraInputStateComponent {
     Bool   speedBoost{false};               ///< Shift key held for faster movement
 };
 
+// ==================== Legacy Input Components ====================
+// Note: For comprehensive input state, use JzInputStateComponent and
+// JzInputActionComponent above. These legacy components
+// are maintained for backward compatibility and are auto-synced by JzInputSystem.
+
+/**
+ * @brief Component for storing mouse input state.
+ *
+ * @deprecated Consider using JzInputStateComponent.mouse for comprehensive
+ * mouse state including buttons, position, delta, and scroll in a single component.
+ *
+ * This component is updated by JzInputSystem and read by other systems
+ * (like CameraSystem) to process mouse input.
+ */
+struct JzMouseInputComponent {
+    JzVec2 position{0.0f, 0.0f};      ///< Current mouse position
+    JzVec2 positionDelta{0.0f, 0.0f}; ///< Mouse movement since last frame
+    JzVec2 scroll{0.0f, 0.0f};        ///< Scroll wheel delta this frame
+
+    Bool leftButtonDown{false};   ///< Left mouse button state
+    Bool rightButtonDown{false};  ///< Right mouse button state
+    Bool middleButtonDown{false}; ///< Middle mouse button state
+
+    Bool leftButtonPressed{false};   ///< Left button pressed this frame
+    Bool rightButtonPressed{false};  ///< Right button pressed this frame
+    Bool middleButtonPressed{false}; ///< Middle button pressed this frame
+
+    Bool leftButtonReleased{false};   ///< Left button released this frame
+    Bool rightButtonReleased{false};  ///< Right button released this frame
+    Bool middleButtonReleased{false}; ///< Middle button released this frame
+};
+
+/**
+ * @brief Component for storing keyboard input state.
+ *
+ * This component is updated by JzInputSystem and provides
+ * high-level key state queries.
+ */
+struct JzKeyboardInputComponent {
+    // Common key states for quick access
+    Bool w{false}, a{false}, s{false}, d{false};
+    Bool space{false}, shift{false}, ctrl{false}, alt{false};
+    Bool escape{false}, enter{false}, tab{false};
+
+    // Arrow keys
+    Bool up{false}, down{false}, left{false}, right{false};
+
+    // Function keys
+    Bool f1{false}, f2{false}, f3{false}, f4{false};
+};
+
 } // namespace JzRE

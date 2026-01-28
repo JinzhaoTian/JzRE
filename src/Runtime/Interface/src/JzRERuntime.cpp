@@ -7,9 +7,11 @@
 
 #include "JzRE/Runtime/Core/JzClock.h"
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
-#include "JzRE/Runtime/Function/ECS/JzComponents.h"
-#include "JzRE/Runtime/Function/ECS/JzWindowComponents.h"
+#include "JzRE/Runtime/Function/ECS/JzTransformComponents.h"
+#include "JzRE/Runtime/Function/ECS/JzCameraComponents.h"
+#include "JzRE/Runtime/Function/ECS/JzLightComponents.h"
 #include "JzRE/Runtime/Function/ECS/JzInputComponents.h"
+#include "JzRE/Runtime/Function/ECS/JzWindowComponents.h"
 
 #include "JzRE/Runtime/Function/Rendering/JzDeviceFactory.h"
 

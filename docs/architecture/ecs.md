@@ -350,45 +350,90 @@ m_eventDispatcherSystem = m_world->RegisterSystem<JzEventDispatcherSystem>();
 
 ## Components
 
-### Core Components
+Components are organized into per-system header files.
 
-- `JzTransformComponent` - Position, rotation, scale
-- `JzVelocityComponent` - Velocity vector
-- `JzMeshComponent` - Reference to mesh resource
-- `JzMaterialComponent` - Reference to material resource
-- `JzSceneNodeComponent` - Scene graph node
-- `JzHierarchyComponent` - Parent/children relationships
+### Entity Components (`JzEntityComponents.h`)
 
-### Rendering Components
+| Component              | Description                          |
+| ---------------------- | ------------------------------------ |
+| `JzActiveTag`          | Tag for active entities              |
+| `JzStaticTag`          | Tag for static entities              |
+| `JzPendingDestroyTag`  | Mark for deferred destruction        |
+| `JzNameComponent`      | Human-readable entity name           |
+| `JzUUIDComponent`      | Unique identifier for serialization  |
 
-| Component                         | Description                                                         |
-| --------------------------------- | ------------------------------------------------------------------- |
-| `JzCameraComponent`           | Full camera state (position, rotation, fov, near/far, matrices)     |
-| `JzOrbitControllerComponent`  | Orbit camera controller (target, yaw, pitch, distance, sensitivity) |
-| `JzDirectionalLightComponent` | Directional light (direction, color, intensity)                     |
-| `JzPointLightComponent`       | Point light (color, intensity, range, attenuation)                  |
-| `JzSpotLightComponent`        | Spot light (direction, color, intensity, cutoff angles)             |
+### Transform Components (`JzTransformComponents.h`)
 
-### Input Components
+| Component                | Description                              |
+| ------------------------ | ---------------------------------------- |
+| `JzTransformComponent`   | Position, rotation, scale, cached matrix |
+| `JzVelocityComponent`    | Velocity vector                          |
 
-| Component                      | Description                                                          |
-| ------------------------------ | -------------------------------------------------------------------- |
-| `JzMouseInputComponent`    | Mouse position, delta, button states (updated by JzInputSystem)  |
-| `JzKeyboardInputComponent` | Common key states (WASD, arrow keys, modifiers, function keys)       |
-| `JzCameraInputComponent`   | Processed camera input (orbit/pan active, mouse delta, scroll delta) |
+### Camera Components (`JzCameraComponents.h`)
 
-### Tag Components
+| Component                      | Description                                                         |
+| ------------------------------ | ------------------------------------------------------------------- |
+| `JzCameraComponent`            | Full camera state (position, rotation, fov, near/far, matrices)     |
+| `JzOrbitControllerComponent`   | Orbit camera controller (target, yaw, pitch, distance, sensitivity) |
+| `JzMainCameraTag`              | Tag for main camera entity                                          |
+| `JzCameraInputComponent`       | Legacy processed camera input (orbit/pan, mouse delta, scroll)      |
 
-- `JzActiveTag` - Tag for active entities
-- `JzStaticTag` - Tag for static entities
-- `JzPendingDestroyTag` - Mark for deferred destruction
-- `JzRenderableTag` - Mark entity as renderable
-- `JzMainCameraTag` - Mark main camera entity
+### Light Components (`JzLightComponents.h`)
 
-### Utility Components
+| Component                     | Description                                             |
+| ----------------------------- | ------------------------------------------------------- |
+| `JzDirectionalLightComponent` | Directional light (direction, color, intensity)         |
+| `JzPointLightComponent`       | Point light (color, intensity, range, attenuation)      |
+| `JzSpotLightComponent`        | Spot light (direction, color, intensity, cutoff angles)  |
 
-- `JzNameComponent` - Human-readable entity name
-- `JzUUIDComponent` - Unique identifier for serialization
+### Render Components (`JzRenderComponents.h`)
+
+| Component              | Description                              |
+| ---------------------- | ---------------------------------------- |
+| `JzMeshComponent`      | Mesh geometry data and GPU resources     |
+| `JzMaterialComponent`  | PBR material properties and textures     |
+| `JzRenderableTag`      | Tag to mark entity as renderable         |
+| `JzSkyboxComponent`    | Skybox tag                               |
+| `JzGridComponent`      | Grid visualization parameters            |
+| `JzGizmoComponent`     | Editor gizmo type and selection state    |
+
+### Spatial Components (`JzSpatialComponents.h`)
+
+| Component                    | Description                              |
+| ---------------------------- | ---------------------------------------- |
+| `JzBoundingBoxComponent`     | Axis-aligned bounding box (min, max)     |
+| `JzBoundingSphereComponent`  | Bounding sphere (center, radius)         |
+| `JzBoundsComponent`          | Local and world bounds                   |
+| `JzSpatialComponent`         | Spatial partition (position, grid cell)   |
+| `JzStreamingComponent`       | Streaming load state                     |
+
+### Input Components (`JzInputComponents.h`)
+
+| Component                       | Description                                                      |
+| ------------------------------- | ---------------------------------------------------------------- |
+| `JzInputStateComponent`         | Full input state (keyboard, mouse, gamepad)                      |
+| `JzInputActionComponent`        | Action bindings and input contexts                               |
+| `JzCameraInputStateComponent`   | Enhanced camera input signals                                    |
+| `JzMouseInputComponent`         | Legacy mouse position, delta, button states                      |
+| `JzKeyboardInputComponent`      | Legacy common key states (WASD, arrows, modifiers)               |
+
+### Window Components (`JzWindowComponents.h`)
+
+| Component                       | Description                                          |
+| ------------------------------- | ---------------------------------------------------- |
+| `JzWindowStateComponent`        | Window properties, state, and dirty flags            |
+| `JzDisplayComponent`            | Display/monitor info and video modes                 |
+| `JzWindowEventQueueComponent`   | Queued window events for the frame                   |
+| `JzPrimaryWindowTag`            | Tag for the primary window entity                    |
+| `JzPersistentWindowTag`         | Tag for windows that cannot be closed by user        |
+
+### Asset Components (`JzAssetComponents.h`)
+
+| Component                   | Description                                   |
+| --------------------------- | --------------------------------------------- |
+| `JzMeshAssetComponent`      | Reference to mesh asset for deferred loading  |
+| `JzMaterialAssetComponent`  | Reference to material asset                   |
+| `JzAssetReadyTag`           | Tag indicating all assets are GPU-ready       |
 
 ---
 
@@ -606,27 +651,34 @@ JzVec3 lightColor = lightSystem->GetPrimaryLightColor();
 ```
 src/Runtime/Function/
 ├── include/JzRE/Runtime/Function/ECS/
-│   ├── JzComponent.h               # Shared component definitions
-│   ├── JzEntity.h                  # Entity type
-│   ├── JzECS.h                 # Convenience header
-│   ├── JzEntity.h              # Entity type definitions
-│   ├── JzWorld.h               # Core world class
-│   ├── JzWorld.inl             # Template implementations
-│   ├── JzSystem.h              # System base class
-│   ├── JzComponents.h          # Component re-exports + tags
-│   ├── JzRenderComponents.h    # Camera, light, rendering components
-│   ├── JzModelSpawner.h        # Model to entity conversion
+│   ├── JzEntity.h                  # Entity type definitions
+│   ├── JzWorld.h                   # Core world class
+│   ├── JzWorld.inl                 # Template implementations
+│   ├── JzSystem.h                  # System base class
+│   ├── JzEntityComponents.h        # Entity metadata (tags, name, UUID)
+│   ├── JzTransformComponents.h     # Transform, velocity
+│   ├── JzCameraComponents.h        # Camera, orbit controller, camera input
+│   ├── JzLightComponents.h         # Directional, point, spot lights
+│   ├── JzRenderComponents.h        # Mesh, material, renderable, skybox, grid, gizmo
+│   ├── JzSpatialComponents.h       # Bounding volumes, spatial partition, streaming
+│   ├── JzInputComponents.h         # Input state, actions, legacy mouse/keyboard
+│   ├── JzWindowComponents.h        # Window state, display, events
+│   ├── JzAssetComponents.h         # Asset references and ready tags
+│   │
 │   ├── JzCameraSystem.h
 │   ├── JzLightSystem.h
 │   ├── JzRenderSystem.h
+│   ├── JzInputSystem.h
+│   ├── JzAssetSystem.h
 │   ├── JzMoveSystem.h
-│   └── JzSceneSystem.h
-└── src/ECS/EnTT/
+│   └── JzShaderHotReloadSystem.h
+└── src/ECS/
     ├── JzWorld.cpp
-    ├── JzModelSpawner.cpp
     ├── JzCameraSystem.cpp
     ├── JzLightSystem.cpp
-    └── JzRenderSystem.cpp
+    ├── JzRenderSystem.cpp
+    ├── JzInputSystem.cpp
+    └── JzAssetSystem.cpp
 ```
 
 ---

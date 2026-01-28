@@ -7,7 +7,7 @@
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
 #include "JzRE/Editor/Panels/JzSceneView.h"
 #include "JzRE/Runtime/Function/ECS/JzWorld.h"
-#include "JzRE/Runtime/Function/ECS/JzComponents.h"
+#include "JzRE/Runtime/Function/ECS/JzCameraComponents.h"
 #include "JzRE/Runtime/Function/ECS/JzInputComponents.h"
 #include "JzRE/Runtime/Function/ECS/JzWindowComponents.h"
 
