@@ -197,15 +197,6 @@ void JzRE::JzRERuntime::UpdateSystems(F32 deltaTime)
     // plan B
     // systemManager.ExecuteSystems(deltaTime);
 
-    // Update global window component
-    if (m_world->IsValid(m_globalConfigEntity)) {
-        auto &config     = m_world->GetComponent<JzWindowComponent>(m_globalConfigEntity);
-        config.frameSize = m_windowSystem->GetFramebufferSize();
-        if (config.frameSize.y > 0) {
-            config.aspectRatio = static_cast<F32>(config.frameSize.x) / static_cast<F32>(config.frameSize.y);
-        }
-    }
-
     // Update all systems (camera matrices, light collection, culling)
     m_world->Update(deltaTime);
 }
@@ -247,17 +238,7 @@ void JzRE::JzRERuntime::CleanupGlobals()
 
 void JzRE::JzRERuntime::CreateGlobalConfigEntity()
 {
-    // Create Global Config Entity (legacy)
-    m_globalConfigEntity = m_world->CreateEntity();
-
-    auto &config        = m_world->AddComponent<JzWindowComponent>(m_globalConfigEntity);
-    config.blitToScreen = true;
-    config.frameSize    = m_windowSystem->GetFramebufferSize();
-    if (config.frameSize.y > 0) {
-        config.aspectRatio = static_cast<F32>(config.frameSize.x) / static_cast<F32>(config.frameSize.y);
-    }
-
-    // Create Window Entity with new ECS components
+    // Create Window Entity with ECS components
     m_windowEntity = m_world->CreateEntity();
 
     // Add enhanced window state component
@@ -369,16 +350,6 @@ void JzRE::JzRERuntime::Run()
 JzRE::Bool JzRE::JzRERuntime::IsRunning() const
 {
     return !m_windowSystem->ShouldClose();
-}
-
-JzRE::JzWindowSystem &JzRE::JzRERuntime::GetWindowSystem()
-{
-    return *m_windowSystem;
-}
-
-JzRE::JzDevice &JzRE::JzRERuntime::GetDevice()
-{
-    return *m_device;
 }
 
 JzRE::JzWorld &JzRE::JzRERuntime::GetWorld()

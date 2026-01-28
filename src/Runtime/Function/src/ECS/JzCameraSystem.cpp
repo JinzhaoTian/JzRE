@@ -8,6 +8,8 @@
 #include <algorithm>
 #include <cmath>
 
+#include "JzRE/Runtime/Function/ECS/JzWindowComponents.h"
+
 namespace JzRE {
 
 void JzCameraSystem::OnInit(JzWorld &world)
@@ -23,11 +25,11 @@ void JzCameraSystem::Update(JzWorld &world, F32 delta)
     for (auto entity : view) {
         auto &camera = world.GetComponent<JzCameraComponent>(entity);
 
-        // Update aspect ratio from window component
-        auto windowView = world.View<JzWindowComponent>();
+        // Update aspect ratio from window state component
+        auto windowView = world.View<JzWindowStateComponent>();
         if (!windowView.empty()) {
-            const auto &windowConfig = world.GetComponent<JzWindowComponent>(windowView.front());
-            camera.aspect = windowConfig.aspectRatio;
+            const auto &windowState = world.GetComponent<JzWindowStateComponent>(windowView.front());
+            camera.aspect           = windowState.GetAspectRatio();
         }
 
         // Handle orbit controller if present
@@ -83,8 +85,8 @@ void JzCameraSystem::UpdateCameraMatrices(JzCameraComponent &camera)
 }
 
 void JzCameraSystem::HandleOrbitController(JzCameraComponent            &camera,
-                                               JzOrbitControllerComponent   &orbit,
-                                               const JzCameraInputComponent &input)
+                                           JzOrbitControllerComponent   &orbit,
+                                           const JzCameraInputComponent &input)
 {
     // Handle orbit rotation (left mouse button)
     if (input.orbitActive) {
@@ -133,7 +135,7 @@ void JzCameraSystem::HandleOrbitController(JzCameraComponent            &camera,
 }
 
 void JzCameraSystem::HandleOrbitRotation(JzOrbitControllerComponent &orbit, F32 deltaX,
-                                             F32 deltaY)
+                                         F32 deltaY)
 {
     // Update yaw and pitch based on mouse movement (drag-object style)
     orbit.yaw   -= deltaX * orbit.orbitSensitivity;
@@ -145,7 +147,7 @@ void JzCameraSystem::HandleOrbitRotation(JzOrbitControllerComponent &orbit, F32 
 }
 
 void JzCameraSystem::HandlePanning(JzOrbitControllerComponent &orbit, F32 deltaX,
-                                       F32 deltaY)
+                                   F32 deltaY)
 {
     // Calculate the right and up vectors in world space based on current orientation
     F32 cosYaw   = std::cos(orbit.yaw);
@@ -178,7 +180,7 @@ void JzCameraSystem::HandleZoom(JzOrbitControllerComponent &orbit, F32 scrollY)
 }
 
 void JzCameraSystem::UpdateCameraFromOrbit(JzCameraComponent          &camera,
-                                               JzOrbitControllerComponent &orbit)
+                                           JzOrbitControllerComponent &orbit)
 {
     // Calculate camera position using spherical coordinates
     F32 cosPitch = std::cos(orbit.pitch);

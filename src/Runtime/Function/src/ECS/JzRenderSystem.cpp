@@ -6,8 +6,9 @@
 #include "JzRE/Runtime/Function/ECS/JzRenderSystem.h"
 
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
-#include "JzRE/Runtime/Function/ECS/JzComponents.h"
 #include "JzRE/Runtime/Function/ECS/JzAssetComponents.h"
+#include "JzRE/Runtime/Function/ECS/JzComponents.h"
+#include "JzRE/Runtime/Function/ECS/JzWindowComponents.h"
 #include "JzRE/Runtime/Platform/JzDevice.h"
 #include "JzRE/Runtime/Resource/JzShaderAsset.h"
 #include "JzRE/Runtime/Resource/JzAssetManager.h"
@@ -26,16 +27,16 @@ void JzRenderSystem::OnInit(JzWorld &world)
 void JzRenderSystem::Update(JzWorld &world, F32 delta)
 {
     // Update frame logic and blitting
-    auto windowView = world.View<JzWindowComponent>();
+    auto windowView = world.View<JzWindowStateComponent>();
     Bool shouldBlit = false;
 
     if (!windowView.empty()) {
-        const auto &windowConfig = world.GetComponent<JzWindowComponent>(windowView.front());
-        if (m_frameSize != windowConfig.frameSize) {
-            m_frameSize        = windowConfig.frameSize;
+        const auto &windowState = world.GetComponent<JzWindowStateComponent>(windowView.front());
+        if (m_frameSize != windowState.framebufferSize) {
+            m_frameSize        = windowState.framebufferSize;
             m_frameSizeChanged = true;
         }
-        shouldBlit = windowConfig.blitToScreen;
+        shouldBlit = windowState.visible;
     }
 
     // Create/recreate framebuffer if size changed
@@ -70,8 +71,6 @@ void JzRenderSystem::OnShutdown(JzWorld &world)
 {
     CleanupResources();
 }
-
-
 
 JzIVec2 JzRenderSystem::GetCurrentFrameSize() const
 {

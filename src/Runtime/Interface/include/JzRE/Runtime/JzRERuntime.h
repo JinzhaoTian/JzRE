@@ -28,10 +28,9 @@ struct JzRERuntimeSettings {
 };
 
 /**
- * @brief JzRE Runtime Application
+ * @brief JzRE Runtime
  *
- * This class provides core rendering functionality using an ECS-based architecture.
- * It manages the rendering pipeline through EnTT systems and input handling.
+ * This class provides core functionality using an ECS-based architecture.
  *
  * Usage patterns:
  * 1. Standalone runtime: Override OnStart/OnUpdate/OnStop for custom logic
@@ -43,9 +42,7 @@ public:
     /**
      * @brief Constructor
      *
-     * @param rhiType The RHI type to use for rendering (e.g., OpenGL, Vulkan)
-     * @param windowTitle Title of the window
-     * @param windowSize Initial size of the window
+     * @param settings The runtime settings
      */
     JzRERuntime(const JzRERuntimeSettings &settings = {});
 
@@ -65,20 +62,6 @@ public:
      * @return Bool True if the application is running, false otherwise
      */
     Bool IsRunning() const;
-
-    /**
-     * @brief Get the window system
-     *
-     * @return JzWindowSystem& Reference to the window system
-     */
-    JzWindowSystem &GetWindowSystem();
-
-    /**
-     * @brief Get the device instance
-     *
-     * @return JzDevice& Reference to the device
-     */
-    JzDevice &GetDevice();
 
     /**
      * @brief Get the ECS world
@@ -129,6 +112,9 @@ protected:
     virtual void OnStop();
 
 private:
+    /**
+     * @brief
+     */
     void Startup();
 
     void CreateSubsystems();
@@ -187,9 +173,8 @@ protected:
     std::shared_ptr<JzAssetSystem>           m_assetSystem;
     std::shared_ptr<JzEventDispatcherSystem> m_eventDispatcherSystem;
 
-    JzEntity m_mainCameraEntity   = INVALID_ENTITY;
-    JzEntity m_globalConfigEntity = INVALID_ENTITY;
-    JzEntity m_windowEntity       = INVALID_ENTITY; ///< Primary window ECS entity
+    JzEntity m_mainCameraEntity = INVALID_ENTITY;
+    JzEntity m_windowEntity     = INVALID_ENTITY; ///< Primary window ECS entity
 };
 
 } // namespace JzRE
