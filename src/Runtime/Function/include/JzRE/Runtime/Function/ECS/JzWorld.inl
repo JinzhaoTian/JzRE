@@ -83,6 +83,51 @@ auto JzWorld::View() const
     return m_registry.view<Components...>();
 }
 
+// ==================== Context Management ====================
+
+template <typename T, typename... Args>
+T &JzWorld::SetContext(Args &&...args)
+{
+    // Use emplace_or_replace to handle both new and existing context
+    return m_registry.ctx().insert_or_assign<T>(std::forward<Args>(args)...);
+}
+
+template <typename T>
+T &JzWorld::GetContext()
+{
+    return m_registry.ctx().get<T>();
+}
+
+template <typename T>
+const T &JzWorld::GetContext() const
+{
+    return m_registry.ctx().get<T>();
+}
+
+template <typename T>
+T *JzWorld::TryGetContext()
+{
+    return m_registry.ctx().find<T>();
+}
+
+template <typename T>
+const T *JzWorld::TryGetContext() const
+{
+    return m_registry.ctx().find<T>();
+}
+
+template <typename T>
+Bool JzWorld::HasContext() const
+{
+    return m_registry.ctx().contains<T>();
+}
+
+template <typename T>
+void JzWorld::RemoveContext()
+{
+    m_registry.ctx().erase<T>();
+}
+
 // ==================== System Management ====================
 
 template <typename T, typename... Args>
