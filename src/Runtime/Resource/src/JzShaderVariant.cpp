@@ -4,7 +4,7 @@
  */
 
 #include "JzRE/Runtime/Resource/JzShaderVariant.h"
-#include "JzRE/Runtime/Platform/JzRHIPipeline.h"
+#include "JzRE/Runtime/Platform/RHI/JzRHIPipeline.h"
 
 namespace JzRE {
 

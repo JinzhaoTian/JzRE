@@ -1,30 +1,26 @@
 # Runtime Platform Layer - RHI, Graphics Backends, Platform Abstractions
 add_library(JzRuntimePlatform STATIC)
 
-# Collect all RHI sources
+# Collect all RHI sources from src/ subdirectories
 file(GLOB_RECURSE PLATFORM_HEADERS CONFIGURE_DEPENDS "include/*.h")
-file(GLOB RHI_SOURCES CONFIGURE_DEPENDS "src/*.cpp")
+file(GLOB_RECURSE RHI_SOURCES CONFIGURE_DEPENDS "src/*.cpp")
 
-# OpenGL backend
-file(GLOB OPENGL_SOURCES CONFIGURE_DEPENDS "OpenGL/*.cpp")
-file(GLOB OPENGL_HEADERS CONFIGURE_DEPENDS "OpenGL/*.h")
+# OpenGL backend - from src/OpenGL/
+file(GLOB OPENGL_SOURCES CONFIGURE_DEPENDS "src/OpenGL/*.cpp")
+file(GLOB OPENGL_HEADERS CONFIGURE_DEPENDS "include/OpenGL/*.h")
 
 # Vulkan backend (conditional)
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Vulkan" AND IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/Vulkan")
-    file(GLOB VULKAN_SOURCES CONFIGURE_DEPENDS "Vulkan/*.cpp")
-    file(GLOB VULKAN_HEADERS CONFIGURE_DEPENDS "Vulkan/*.h")
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/include/Vulkan" AND IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/Vulkan")
+    file(GLOB VULKAN_HEADERS CONFIGURE_DEPENDS "include/Vulkan/*.h")
 endif()
 
-# Platform-specific sources
+# Platform-specific sources - from src/{Platform}/
 if(WIN32)
-    file(GLOB PLATFORM_SPECIFIC_SOURCES CONFIGURE_DEPENDS "Windows/*.cpp")
-    file(GLOB PLATFORM_SPECIFIC_HEADERS CONFIGURE_DEPENDS "Windows/*.h")
+    file(GLOB PLATFORM_SPECIFIC_SOURCES CONFIGURE_DEPENDS "src/Windows/*.cpp")
 elseif(APPLE)
-    file(GLOB PLATFORM_SPECIFIC_SOURCES CONFIGURE_DEPENDS "macOS/*.cpp" "macOS/*.mm")
-    file(GLOB PLATFORM_SPECIFIC_HEADERS CONFIGURE_DEPENDS "macOS/*.h")
+    file(GLOB PLATFORM_SPECIFIC_SOURCES CONFIGURE_DEPENDS "src/macOS/*.cpp" "src/macOS/*.mm")
 else()
-    file(GLOB PLATFORM_SPECIFIC_SOURCES CONFIGURE_DEPENDS "Linux/*.cpp")
-    file(GLOB PLATFORM_SPECIFIC_HEADERS CONFIGURE_DEPENDS "Linux/*.h")
+    file(GLOB PLATFORM_SPECIFIC_SOURCES CONFIGURE_DEPENDS "src/Linux/*.cpp")
 endif()
 
 # Combine all sources
@@ -33,10 +29,8 @@ set(ALL_PLATFORM_SOURCES
     ${RHI_SOURCES}
     ${OPENGL_SOURCES}
     ${OPENGL_HEADERS}
-    ${VULKAN_SOURCES}
     ${VULKAN_HEADERS}
     ${PLATFORM_SPECIFIC_SOURCES}
-    ${PLATFORM_SPECIFIC_HEADERS}
 )
 
 target_sources(JzRuntimePlatform PRIVATE ${ALL_PLATFORM_SOURCES})
@@ -51,10 +45,8 @@ source_group(
 set_target_properties(JzRuntimePlatform PROPERTIES FOLDER "Runtime")
 
 target_include_directories(JzRuntimePlatform
-    PUBLIC 
+    PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include
-        ${CMAKE_CURRENT_SOURCE_DIR}/OpenGL
-        ${CMAKE_CURRENT_SOURCE_DIR}/Vulkan
 )
 
 # ============================================

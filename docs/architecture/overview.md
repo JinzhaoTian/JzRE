@@ -73,6 +73,7 @@ Abstracts platform-specific functionality and graphics APIs.
 
 - **RHI (Render Hardware Interface)** - Graphics API abstraction
 - `JzDevice` - Unified device interface for resource creation
+- `JzDeviceFactory` - Device creation factory (backend selection)
 - `JzRHICommandList` - Command buffer for deferred rendering
 - `JzGPU*Object` - GPU resource wrappers (Buffer, Texture, Shader, etc.)
 - `JzFileDialog` - Cross-platform file dialogs
@@ -109,13 +110,12 @@ High-level engine systems built on lower layers.
 
 **Subsystems:**
 
-| Subsystem     | Description                                   |
-| ------------- | --------------------------------------------- |
-| **Rendering** | `JzDeviceFactory` - Device creation utilities |
-| **Scene**     | `JzActor` - Scene graph                       |
-| **ECS**       | `JzEntityManager`, Systems, Components        |
-| **Input**     | `JzInputSystem` - ECS-based keyboard/mouse/gamepad input processing |
-| **Window**    | `JzWindowSystem` - ECS-integrated GLFW window management |
+| Subsystem  | Description                                   |
+| ---------- | --------------------------------------------- |
+| **Scene**  | `JzActor` - Scene graph                       |
+| **ECS**    | `JzEntityManager`, Systems, Components        |
+| **Input**  | `JzInputSystem` - ECS-based keyboard/mouse/gamepad input processing |
+| **Window** | `JzWindowSystem` - ECS-integrated GLFW window management |
 
 📄 See: [ECS Integration](ecs.md), [Rendering Pipeline](rendering_pipeline.md)
 
@@ -258,7 +258,8 @@ cd build && ctest --output-on-failure
 ```cpp
 // Runtime modules
 #include "JzRE/Runtime/Core/JzRETypes.h"
-#include "JzRE/Runtime/Platform/JzDevice.h"
+#include "JzRE/Runtime/Platform/RHI/JzDevice.h"
+#include "JzRE/Runtime/Platform/Command/JzRHICommandList.h"
 #include "JzRE/Runtime/Resource/JzResourceManager.h"
 #include "JzRE/Runtime/Function/ECS/JzEntityManager.h"
 

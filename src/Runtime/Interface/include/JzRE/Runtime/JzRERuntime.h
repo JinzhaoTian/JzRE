@@ -17,7 +17,7 @@
 #include "JzRE/Runtime/Function/ECS/JzRenderSystem.h"
 #include "JzRE/Runtime/Function/ECS/JzAssetSystem.h"
 #include "JzRE/Runtime/Function/Event/JzEventDispatcherSystem.h"
-#include "JzRE/Runtime/Platform/JzDevice.h"
+#include "JzRE/Runtime/Platform/RHI/JzDevice.h"
 
 namespace JzRE {
 

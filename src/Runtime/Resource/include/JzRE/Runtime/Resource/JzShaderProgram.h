@@ -7,7 +7,7 @@
 
 #include <vector>
 #include "JzRE/Runtime/Core/JzRETypes.h"
-#include "JzRE/Runtime/Platform/JzRHIPipeline.h"
+#include "JzRE/Runtime/Platform/RHI/JzRHIPipeline.h"
 #include "JzRE/Runtime/Resource/JzShaderVariantKey.h"
 
 namespace JzRE {

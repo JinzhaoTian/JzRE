@@ -5,7 +5,7 @@
 
 #include "JzRE/Editor/UI/JzFileContextMenu.h"
 #include "JzRE/Editor/UI/JzMenuItem.h"
-#include "JzRE/Runtime/Platform/JzMessageBox.h"
+#include "JzRE/Runtime/Platform/Dialog/JzMessageBox.h"
 
 JzRE::JzFileContextMenu::JzFileContextMenu(const JzRE::String &filePath) :
     JzAssetContextMenu(filePath) { }

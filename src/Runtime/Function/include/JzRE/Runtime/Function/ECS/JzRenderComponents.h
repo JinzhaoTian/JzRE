@@ -10,9 +10,9 @@
 #include "JzRE/Runtime/Core/JzRETypes.h"
 #include "JzRE/Runtime/Core/JzVector.h"
 #include "JzRE/Runtime/Core/JzVertex.h"
-#include "JzRE/Runtime/Platform/JzGPUBufferObject.h"
-#include "JzRE/Runtime/Platform/JzGPUVertexArrayObject.h"
-#include "JzRE/Runtime/Platform/JzGPUTextureObject.h"
+#include "JzRE/Runtime/Platform/RHI/JzGPUBufferObject.h"
+#include "JzRE/Runtime/Platform/RHI/JzGPUVertexArrayObject.h"
+#include "JzRE/Runtime/Platform/RHI/JzGPUTextureObject.h"
 
 namespace JzRE {
 

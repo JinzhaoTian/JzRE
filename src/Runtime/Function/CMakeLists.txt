@@ -7,9 +7,6 @@ file(GLOB_RECURSE FUNCTION_HEADERS CONFIGURE_DEPENDS "include/*.h" "include/*.in
 # ECS sources (all files now in ECS/ directory, including input system)
 file(GLOB ECS_SOURCES CONFIGURE_DEPENDS "src/ECS/*.cpp")
 
-# Rendering sources
-file(GLOB RENDERING_SOURCES CONFIGURE_DEPENDS "src/Rendering/*.cpp")
-
 # Scene sources
 file(GLOB SCENE_SOURCES CONFIGURE_DEPENDS "src/Scene/*.cpp")
 
@@ -17,7 +14,6 @@ file(GLOB SCENE_SOURCES CONFIGURE_DEPENDS "src/Scene/*.cpp")
 set(ALL_FUNCTION_SOURCES
     ${FUNCTION_HEADERS}
     ${ECS_SOURCES}
-    ${RENDERING_SOURCES}
     ${SCENE_SOURCES}
 )
 

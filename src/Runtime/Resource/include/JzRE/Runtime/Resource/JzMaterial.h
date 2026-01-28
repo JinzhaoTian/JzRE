@@ -8,8 +8,8 @@
 #include <memory>
 #include <vector>
 #include "JzRE/Runtime/Resource/JzResource.h"
-#include "JzRE/Runtime/Platform/JzRHIPipeline.h"
-#include "JzRE/Runtime/Platform/JzGPUTextureObject.h"
+#include "JzRE/Runtime/Platform/RHI/JzRHIPipeline.h"
+#include "JzRE/Runtime/Platform/RHI/JzGPUTextureObject.h"
 #include "JzRE/Runtime/Core/JzVector.h"
 
 namespace JzRE {

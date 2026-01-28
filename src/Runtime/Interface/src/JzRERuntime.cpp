@@ -13,7 +13,7 @@
 #include "JzRE/Runtime/Function/ECS/JzInputComponents.h"
 #include "JzRE/Runtime/Function/ECS/JzWindowComponents.h"
 
-#include "JzRE/Runtime/Function/Rendering/JzDeviceFactory.h"
+#include "JzRE/Runtime/Platform/RHI/JzDeviceFactory.h"
 
 // Resource factories for JzAssetManager
 #include "JzRE/Runtime/Resource/JzShaderAssetFactory.h"

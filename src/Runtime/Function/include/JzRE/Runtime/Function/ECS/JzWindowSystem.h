@@ -13,8 +13,8 @@
 #include "JzRE/Runtime/Function/ECS/JzWorld.h"
 #include "JzRE/Runtime/Function/ECS/JzWindowComponents.h"
 #include "JzRE/Runtime/Function/ECS/JzInputComponents.h"
-#include "JzRE/Runtime/Platform/JzDevice.h"
-#include "JzRE/Runtime/Platform/JzWindowConfig.h"
+#include "JzRE/Runtime/Platform/RHI/JzDevice.h"
+#include "JzRE/Runtime/Platform/Window/JzWindowConfig.h"
 
 namespace JzRE {
 

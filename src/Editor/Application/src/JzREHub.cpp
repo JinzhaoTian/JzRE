@@ -25,8 +25,8 @@
 #include "JzRE/Editor/UI/JzSeparator.h"
 #include "JzRE/Editor/UI/JzColumns.h"
 #include "JzRE/Editor/UI/JzConverter.h"
-#include "JzRE/Runtime/Platform/JzOpenFileDialog.h"
-#include "JzRE/Runtime/Function/Rendering/JzDeviceFactory.h"
+#include "JzRE/Runtime/Platform/Dialog/JzOpenFileDialog.h"
+#include "JzRE/Runtime/Platform/RHI/JzDeviceFactory.h"
 
 JzRE::JzREHub::JzREHub(JzERHIType rhiType)
 {

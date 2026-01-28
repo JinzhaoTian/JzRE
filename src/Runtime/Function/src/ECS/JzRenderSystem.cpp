@@ -10,7 +10,7 @@
 #include "JzRE/Runtime/Function/ECS/JzTransformComponents.h"
 #include "JzRE/Runtime/Function/ECS/JzCameraComponents.h"
 #include "JzRE/Runtime/Function/ECS/JzWindowComponents.h"
-#include "JzRE/Runtime/Platform/JzDevice.h"
+#include "JzRE/Runtime/Platform/RHI/JzDevice.h"
 #include "JzRE/Runtime/Resource/JzShaderAsset.h"
 #include "JzRE/Runtime/Resource/JzAssetManager.h"
 #include "JzRE/Runtime/Resource/JzMesh.h"

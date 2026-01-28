@@ -5,7 +5,7 @@
 
 #include "JzRE/Runtime/Resource/JzMaterial.h"
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
-#include "JzRE/Runtime/Platform/JzDevice.h"
+#include "JzRE/Runtime/Platform/RHI/JzDevice.h"
 
 JzRE::JzMaterial::JzMaterial(const JzRE::String &path)
 {

@@ -11,9 +11,9 @@
 #include "JzRE/Runtime/Core/JzVector.h"
 #include "JzRE/Runtime/Function/ECS/JzSystem.h"
 #include "JzRE/Runtime/Function/ECS/JzWorld.h"
-#include "JzRE/Runtime/Platform/JzGPUFramebufferObject.h"
-#include "JzRE/Runtime/Platform/JzGPUTextureObject.h"
-#include "JzRE/Runtime/Platform/JzRHIPipeline.h"
+#include "JzRE/Runtime/Platform/RHI/JzGPUFramebufferObject.h"
+#include "JzRE/Runtime/Platform/RHI/JzGPUTextureObject.h"
+#include "JzRE/Runtime/Platform/RHI/JzRHIPipeline.h"
 
 namespace JzRE {
 

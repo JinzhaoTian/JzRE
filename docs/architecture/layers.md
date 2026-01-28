@@ -85,7 +85,28 @@ Provides platform-agnostic services through abstraction:
 | **Graphics Backends** | OpenGL, Vulkan (planned) implementations               |
 | **Platform APIs**     | File dialogs, message boxes per OS                     |
 
-**Key Classes**: `JzDevice`, `JzRHICommandList`, `JzGPU*Object`, `JzFileDialog`
+**Directory Structure:**
+
+```
+Platform/
+├── include/JzRE/Runtime/Platform/
+│   ├── RHI/          # Device, GPU objects, Pipeline, RenderPass
+│   ├── Command/      # RHI command pattern (Command, CommandList, commands)
+│   ├── Threading/    # RenderThreadPool, Task system
+│   ├── Window/       # Window backend interface and GLFW implementation
+│   ├── Dialog/       # File dialogs, message boxes
+│   ├── OpenGL/       # OpenGL backend headers
+│   └── Vulkan/       # Vulkan backend headers
+└── src/
+    ├── RHI/          # DeviceFactory, RHIStats
+    ├── Command/      # Command implementations
+    ├── Threading/    # Thread pool, task implementations
+    ├── Window/       # GLFW window implementation
+    ├── OpenGL/       # OpenGL backend implementations
+    └── {Platform}/   # Platform-specific dialogs (Windows/macOS/Linux)
+```
+
+**Key Classes**: `JzDevice`, `JzDeviceFactory`, `JzRHICommandList`, `JzGPU*Object`, `JzFileDialog`
 
 ### 3. Resource Layer (`src/Runtime/Resource/`)
 
@@ -101,13 +122,12 @@ Asset loading, caching, and lifecycle management.
 
 High-level engine systems:
 
-| Subsystem | Directory    | Key Classes                                    |
-| --------- | ------------ | ---------------------------------------------- |
-| Rendering | `Rendering/` | `JzDeviceFactory`                              |
-| Scene     | `Scene/`     | `JzActor`                                      |
-| ECS       | `ECS/`       | `JzEntityManager`, `Jz*System`, `Jz*Component` |
-| Input     | `ECS/`       | `JzInputSystem`, `JzInputComponents`           |
-| Window    | `ECS/`       | `JzWindowSystem` (integrated into ECS)         |
+| Subsystem | Directory | Key Classes                                    |
+| --------- | --------- | ---------------------------------------------- |
+| Scene     | `Scene/`  | `JzActor`                                      |
+| ECS       | `ECS/`    | `JzEntityManager`, `Jz*System`, `Jz*Component` |
+| Input     | `ECS/`    | `JzInputSystem`, `JzInputComponents`           |
+| Window    | `ECS/`    | `JzWindowSystem` (integrated into ECS)         |
 
 ---
 

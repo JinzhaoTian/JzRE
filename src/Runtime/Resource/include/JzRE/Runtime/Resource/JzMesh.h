@@ -8,8 +8,8 @@
 #include <vector>
 #include "JzRE/Runtime/Resource/JzResource.h"
 #include "JzRE/Runtime/Core/JzVertex.h"
-#include "JzRE/Runtime/Platform/JzGPUBufferObject.h"
-#include "JzRE/Runtime/Platform/JzGPUVertexArrayObject.h"
+#include "JzRE/Runtime/Platform/RHI/JzGPUBufferObject.h"
+#include "JzRE/Runtime/Platform/RHI/JzGPUVertexArrayObject.h"
 
 namespace JzRE {
 

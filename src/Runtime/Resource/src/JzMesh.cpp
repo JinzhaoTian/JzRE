@@ -5,7 +5,7 @@
 
 #include "JzRE/Runtime/Resource/JzMesh.h"
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
-#include "JzRE/Runtime/Platform/JzDevice.h"
+#include "JzRE/Runtime/Platform/RHI/JzDevice.h"
 
 namespace JzRE {
 

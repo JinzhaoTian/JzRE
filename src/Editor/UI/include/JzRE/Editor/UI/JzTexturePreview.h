@@ -8,7 +8,7 @@
 #include <memory>
 #include "JzRE/Runtime/Core/JzVector.h"
 #include "JzRE/Editor/UI/JzPlugin.h"
-#include "JzRE/Runtime/Platform/JzGPUTextureObject.h"
+#include "JzRE/Runtime/Platform/RHI/JzGPUTextureObject.h"
 
 namespace JzRE {
 

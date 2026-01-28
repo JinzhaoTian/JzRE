@@ -53,7 +53,11 @@ App (JzRE executable)
 
 ```cpp
 #include "JzRE/Runtime/Core/JzRETypes.h"
-#include "JzRE/Runtime/Platform/JzDevice.h"
+#include "JzRE/Runtime/Platform/RHI/JzDevice.h"
+#include "JzRE/Runtime/Platform/Command/JzRHICommandList.h"
+#include "JzRE/Runtime/Platform/Threading/JzRenderThreadPool.h"
+#include "JzRE/Runtime/Platform/Window/IWindowBackend.h"
+#include "JzRE/Runtime/Platform/Dialog/JzFileDialog.h"
 #include "JzRE/Runtime/Resource/JzResourceManager.h"
 #include "JzRE/Runtime/Function/ECS/JzEntityManager.h"
 #include "JzRE/Runtime/JzRERuntime.h"  // Runtime application base class

@@ -7,7 +7,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
-#include "JzRE/Runtime/Platform/JzDevice.h"
+#include "JzRE/Runtime/Platform/RHI/JzDevice.h"
 
 JzRE::JzTexture::JzTexture(std::shared_ptr<JzRE::JzGPUTextureObject> rhiTexture) :
     m_rhiTexture(rhiTexture)

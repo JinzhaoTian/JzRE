@@ -8,8 +8,8 @@
 #include "JzRE/Runtime/Resource/JzShaderAsset.h"
 #include "JzRE/Runtime/Core/JzLogger.h"
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
-#include "JzRE/Runtime/Platform/JzDevice.h"
-#include "JzRE/Runtime/Platform/JzRHIPipeline.h"
+#include "JzRE/Runtime/Platform/RHI/JzDevice.h"
+#include "JzRE/Runtime/Platform/RHI/JzRHIPipeline.h"
 
 #include <fstream>
 #include <regex>

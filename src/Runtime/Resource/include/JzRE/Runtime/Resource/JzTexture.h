@@ -7,7 +7,7 @@
 
 #include <memory>
 #include "JzRE/Runtime/Resource/JzResource.h"
-#include "JzRE/Runtime/Platform/JzGPUTextureObject.h"
+#include "JzRE/Runtime/Platform/RHI/JzGPUTextureObject.h"
 
 namespace JzRE {
 

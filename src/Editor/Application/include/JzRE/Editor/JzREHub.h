@@ -9,7 +9,7 @@
 #include <optional>
 #include "JzRE/Runtime/Core/JzRETypes.h"
 #include "JzRE/Runtime/Function/ECS/JzWindowSystem.h"
-#include "JzRE/Runtime/Platform/JzDevice.h"
+#include "JzRE/Runtime/Platform/RHI/JzDevice.h"
 #include "JzRE/Editor/JzUIManager.h"
 #include "JzRE/Editor/JzCanvas.h"
 #include "JzRE/Editor/UI/JzPanelWindow.h"

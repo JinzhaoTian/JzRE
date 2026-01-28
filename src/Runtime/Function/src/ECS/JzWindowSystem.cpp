@@ -8,8 +8,8 @@
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
 #include "JzRE/Runtime/Function/Event/JzEventDispatcherSystem.h"
 #include "JzRE/Runtime/Function/Event/JzWindowEvents.h"
-#include "JzRE/Runtime/Platform/IWindowBackend.h"
-#include "JzRE/Runtime/Platform/JzGLFWWindowBackend.h"
+#include "JzRE/Runtime/Platform/Window/IWindowBackend.h"
+#include "JzRE/Runtime/Platform/Window/JzGLFWWindowBackend.h"
 
 namespace JzRE {
 

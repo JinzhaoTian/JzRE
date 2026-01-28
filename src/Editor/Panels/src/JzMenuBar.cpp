@@ -17,7 +17,7 @@
 #include "JzRE/Runtime/Function/ECS/JzWorld.h"
 #include "JzRE/Runtime/Function/ECS/JzInputComponents.h"
 #include "JzRE/Runtime/Function/ECS/JzWindowComponents.h"
-#include "JzRE/Runtime/Platform/JzOpenFileDialog.h"
+#include "JzRE/Runtime/Platform/Dialog/JzOpenFileDialog.h"
 
 JzRE::JzMenuBar::JzMenuBar(JzRE::JzWindowSystem &windowSystem) :
     m_windowSystem(windowSystem)
