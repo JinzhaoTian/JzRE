@@ -22,9 +22,9 @@ namespace JzRE {
  * Implementations:
  * - JzGLFWWindowBackend (default)
  */
-class IWindowBackend {
+class JzIWindowBackend {
 public:
-    virtual ~IWindowBackend() = default;
+    virtual ~JzIWindowBackend() = default;
 
     // ==================== Lifecycle ====================
 

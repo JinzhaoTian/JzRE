@@ -20,12 +20,12 @@ namespace JzRE {
 
 // Forward declarations
 class JzEventDispatcherSystem;
-class IWindowBackend;
+class JzIWindowBackend;
 
 /**
  * @brief System that manages the window backend and synchronizes with ECS components.
  *
- * This system delegates all platform-specific window operations to an IWindowBackend
+ * This system delegates all platform-specific window operations to a JzIWindowBackend
  * implementation (default: JzGLFWWindowBackend).
  *
  * Responsibilities:
@@ -66,7 +66,7 @@ public:
      *
      * @param backend The window backend to use.
      */
-    void SetBackend(std::unique_ptr<IWindowBackend> backend);
+    void SetBackend(std::unique_ptr<JzIWindowBackend> backend);
 
     // ==================== Window Creation ====================
 
@@ -223,7 +223,7 @@ private:
 private:
     // ==================== Backend ====================
 
-    std::unique_ptr<IWindowBackend> m_backend;
+    std::unique_ptr<JzIWindowBackend> m_backend;
 
     // ==================== ECS State ====================
 

@@ -8,7 +8,7 @@
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
 #include "JzRE/Runtime/Function/Event/JzEventDispatcherSystem.h"
 #include "JzRE/Runtime/Function/Event/JzWindowEvents.h"
-#include "JzRE/Runtime/Platform/Window/IWindowBackend.h"
+#include "JzRE/Runtime/Platform/Window/JzIWindowBackend.h"
 #include "JzRE/Runtime/Platform/Window/JzGLFWWindowBackend.h"
 
 namespace JzRE {
@@ -64,7 +64,7 @@ void JzWindowSystem::OnShutdown(JzWorld &world)
 
 // ==================== Backend Management ====================
 
-void JzWindowSystem::SetBackend(std::unique_ptr<IWindowBackend> backend)
+void JzWindowSystem::SetBackend(std::unique_ptr<JzIWindowBackend> backend)
 {
     m_backend = std::move(backend);
 }

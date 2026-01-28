@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "JzRE/Runtime/Platform/Window/IWindowBackend.h"
+#include "JzRE/Runtime/Platform/Window/JzIWindowBackend.h"
 
 struct GLFWwindow;
 
@@ -18,7 +18,7 @@ namespace JzRE {
  * window creation, callback setup, property access, input polling,
  * and native handle retrieval.
  */
-class JzGLFWWindowBackend : public IWindowBackend {
+class JzGLFWWindowBackend : public JzIWindowBackend {
 public:
     JzGLFWWindowBackend() = default;
     ~JzGLFWWindowBackend() override;
