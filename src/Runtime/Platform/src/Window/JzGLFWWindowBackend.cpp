@@ -4,7 +4,9 @@
  */
 
 #include "JzRE/Runtime/Platform/Window/JzGLFWWindowBackend.h"
+#include "JzRE/Runtime/Platform/Window/JzPlatformInputEvents.h"
 
+#include <chrono>
 #include <stdexcept>
 
 #ifdef _WIN32
@@ -445,25 +447,48 @@ void JzGLFWWindowBackend::SetupCallbacks()
     // Store this pointer for lambda access
     glfwSetWindowUserPointer(m_window, this);
 
+    // Helper to get current timestamp
+    auto getTimestamp = []() -> U64 {
+        return static_cast<U64>(
+            std::chrono::duration_cast<std::chrono::microseconds>(
+                std::chrono::steady_clock::now().time_since_epoch())
+                .count());
+    };
+
     // Key callback
-    glfwSetKeyCallback(m_window, [](GLFWwindow *window, I32 key, I32 /*scancode*/, I32 action, I32 /*mods*/) {
+    glfwSetKeyCallback(m_window, [](GLFWwindow *window, I32 key, I32 scancode, I32 action, I32 mods) {
         auto *self = static_cast<JzGLFWWindowBackend *>(glfwGetWindowUserPointer(window));
         if (self) {
-            if (action == GLFW_PRESS)
-                self->OnKeyPressed.Broadcast(key);
-            if (action == GLFW_RELEASE)
-                self->OnKeyReleased.Broadcast(key);
+            JzPlatformKeyEvent event;
+            event.timestamp = static_cast<U64>(
+                std::chrono::duration_cast<std::chrono::microseconds>(
+                    std::chrono::steady_clock::now().time_since_epoch())
+                    .count());
+            event.key      = key;
+            event.scancode = scancode;
+            event.action   = action;
+            event.mods     = mods;
+            self->m_eventQueue.Push(std::move(event));
         }
     });
 
     // Mouse button callback
-    glfwSetMouseButtonCallback(m_window, [](GLFWwindow *window, I32 button, I32 action, I32 /*mods*/) {
+    glfwSetMouseButtonCallback(m_window, [](GLFWwindow *window, I32 button, I32 action, I32 mods) {
         auto *self = static_cast<JzGLFWWindowBackend *>(glfwGetWindowUserPointer(window));
         if (self) {
-            if (action == GLFW_PRESS)
-                self->OnMouseButtonPressed.Broadcast(button);
-            if (action == GLFW_RELEASE)
-                self->OnMouseButtonReleased.Broadcast(button);
+            F64 x, y;
+            glfwGetCursorPos(window, &x, &y);
+
+            JzPlatformMouseButtonEvent event;
+            event.timestamp = static_cast<U64>(
+                std::chrono::duration_cast<std::chrono::microseconds>(
+                    std::chrono::steady_clock::now().time_since_epoch())
+                    .count());
+            event.button   = button;
+            event.action   = action;
+            event.mods     = mods;
+            event.position = {static_cast<F32>(x), static_cast<F32>(y)};
+            self->m_eventQueue.Push(std::move(event));
         }
     });
 
@@ -471,7 +496,41 @@ void JzGLFWWindowBackend::SetupCallbacks()
     glfwSetScrollCallback(m_window, [](GLFWwindow *window, F64 xOffset, F64 yOffset) {
         auto *self = static_cast<JzGLFWWindowBackend *>(glfwGetWindowUserPointer(window));
         if (self) {
-            self->OnMouseScrolled.Broadcast({static_cast<F32>(xOffset), static_cast<F32>(yOffset)});
+            JzPlatformMouseScrollEvent event;
+            event.timestamp = static_cast<U64>(
+                std::chrono::duration_cast<std::chrono::microseconds>(
+                    std::chrono::steady_clock::now().time_since_epoch())
+                    .count());
+            event.offset = {static_cast<F32>(xOffset), static_cast<F32>(yOffset)};
+            self->m_eventQueue.Push(std::move(event));
+        }
+    });
+
+    // Cursor position callback
+    glfwSetCursorPosCallback(m_window, [](GLFWwindow *window, F64 x, F64 y) {
+        auto *self = static_cast<JzGLFWWindowBackend *>(glfwGetWindowUserPointer(window));
+        if (self) {
+            JzPlatformMouseMoveEvent event;
+            event.timestamp = static_cast<U64>(
+                std::chrono::duration_cast<std::chrono::microseconds>(
+                    std::chrono::steady_clock::now().time_since_epoch())
+                    .count());
+            event.position = {static_cast<F32>(x), static_cast<F32>(y)};
+            self->m_eventQueue.Push(std::move(event));
+        }
+    });
+
+    // Mouse enter callback
+    glfwSetCursorEnterCallback(m_window, [](GLFWwindow *window, I32 entered) {
+        auto *self = static_cast<JzGLFWWindowBackend *>(glfwGetWindowUserPointer(window));
+        if (self) {
+            JzPlatformMouseEnterEvent event;
+            event.timestamp = static_cast<U64>(
+                std::chrono::duration_cast<std::chrono::microseconds>(
+                    std::chrono::steady_clock::now().time_since_epoch())
+                    .count());
+            event.entered = (entered == GLFW_TRUE);
+            self->m_eventQueue.Push(std::move(event));
         }
     });
 
@@ -480,7 +539,14 @@ void JzGLFWWindowBackend::SetupCallbacks()
         auto *self = static_cast<JzGLFWWindowBackend *>(glfwGetWindowUserPointer(window));
         if (self) {
             self->m_size = {width, height};
-            self->OnWindowResized.Broadcast({width, height});
+
+            JzPlatformWindowResizeEvent event;
+            event.timestamp = static_cast<U64>(
+                std::chrono::duration_cast<std::chrono::microseconds>(
+                    std::chrono::steady_clock::now().time_since_epoch())
+                    .count());
+            event.size = {width, height};
+            self->m_eventQueue.Push(std::move(event));
         }
     });
 
@@ -488,15 +554,13 @@ void JzGLFWWindowBackend::SetupCallbacks()
     glfwSetFramebufferSizeCallback(m_window, [](GLFWwindow *window, I32 width, I32 height) {
         auto *self = static_cast<JzGLFWWindowBackend *>(glfwGetWindowUserPointer(window));
         if (self) {
-            self->OnFrameBufferResized.Broadcast({width, height});
-        }
-    });
-
-    // Cursor position callback
-    glfwSetCursorPosCallback(m_window, [](GLFWwindow *window, F64 x, F64 y) {
-        auto *self = static_cast<JzGLFWWindowBackend *>(glfwGetWindowUserPointer(window));
-        if (self) {
-            self->OnCursorMoved.Broadcast({static_cast<I32>(x), static_cast<I32>(y)});
+            JzPlatformFramebufferResizeEvent event;
+            event.timestamp = static_cast<U64>(
+                std::chrono::duration_cast<std::chrono::microseconds>(
+                    std::chrono::steady_clock::now().time_since_epoch())
+                    .count());
+            event.size = {width, height};
+            self->m_eventQueue.Push(std::move(event));
         }
     });
 
@@ -507,7 +571,14 @@ void JzGLFWWindowBackend::SetupCallbacks()
             if (!self->m_fullscreen) {
                 self->m_position = {x, y};
             }
-            self->OnWindowMoved.Broadcast({x, y});
+
+            JzPlatformWindowMoveEvent event;
+            event.timestamp = static_cast<U64>(
+                std::chrono::duration_cast<std::chrono::microseconds>(
+                    std::chrono::steady_clock::now().time_since_epoch())
+                    .count());
+            event.position = {x, y};
+            self->m_eventQueue.Push(std::move(event));
         }
     });
 
@@ -515,10 +586,27 @@ void JzGLFWWindowBackend::SetupCallbacks()
     glfwSetWindowIconifyCallback(m_window, [](GLFWwindow *window, I32 iconified) {
         auto *self = static_cast<JzGLFWWindowBackend *>(glfwGetWindowUserPointer(window));
         if (self) {
-            if (iconified == GLFW_TRUE)
-                self->OnWindowMinimized.Broadcast();
-            if (iconified == GLFW_FALSE)
-                self->OnWindowMaximized.Broadcast();
+            JzPlatformWindowIconifyEvent event;
+            event.timestamp = static_cast<U64>(
+                std::chrono::duration_cast<std::chrono::microseconds>(
+                    std::chrono::steady_clock::now().time_since_epoch())
+                    .count());
+            event.iconified = (iconified == GLFW_TRUE);
+            self->m_eventQueue.Push(std::move(event));
+        }
+    });
+
+    // Maximize callback
+    glfwSetWindowMaximizeCallback(m_window, [](GLFWwindow *window, I32 maximized) {
+        auto *self = static_cast<JzGLFWWindowBackend *>(glfwGetWindowUserPointer(window));
+        if (self) {
+            JzPlatformWindowMaximizeEvent event;
+            event.timestamp = static_cast<U64>(
+                std::chrono::duration_cast<std::chrono::microseconds>(
+                    std::chrono::steady_clock::now().time_since_epoch())
+                    .count());
+            event.maximized = (maximized == GLFW_TRUE);
+            self->m_eventQueue.Push(std::move(event));
         }
     });
 
@@ -526,10 +614,13 @@ void JzGLFWWindowBackend::SetupCallbacks()
     glfwSetWindowFocusCallback(m_window, [](GLFWwindow *window, I32 focused) {
         auto *self = static_cast<JzGLFWWindowBackend *>(glfwGetWindowUserPointer(window));
         if (self) {
-            if (focused == GLFW_TRUE)
-                self->OnWindowFocusGained.Broadcast();
-            if (focused == GLFW_FALSE)
-                self->OnWindowFocusLost.Broadcast();
+            JzPlatformWindowFocusEvent event;
+            event.timestamp = static_cast<U64>(
+                std::chrono::duration_cast<std::chrono::microseconds>(
+                    std::chrono::steady_clock::now().time_since_epoch())
+                    .count());
+            event.focused = (focused == GLFW_TRUE);
+            self->m_eventQueue.Push(std::move(event));
         }
     });
 
@@ -537,7 +628,60 @@ void JzGLFWWindowBackend::SetupCallbacks()
     glfwSetWindowCloseCallback(m_window, [](GLFWwindow *window) {
         auto *self = static_cast<JzGLFWWindowBackend *>(glfwGetWindowUserPointer(window));
         if (self) {
-            self->OnWindowClosed.Broadcast();
+            JzPlatformWindowCloseEvent event;
+            event.timestamp = static_cast<U64>(
+                std::chrono::duration_cast<std::chrono::microseconds>(
+                    std::chrono::steady_clock::now().time_since_epoch())
+                    .count());
+            self->m_eventQueue.Push(std::move(event));
+        }
+    });
+
+    // File drop callback
+    glfwSetDropCallback(m_window, [](GLFWwindow *window, I32 count, const char **paths) {
+        auto *self = static_cast<JzGLFWWindowBackend *>(glfwGetWindowUserPointer(window));
+        if (self) {
+            F64 x, y;
+            glfwGetCursorPos(window, &x, &y);
+
+            JzPlatformFileDropEvent event;
+            event.timestamp = static_cast<U64>(
+                std::chrono::duration_cast<std::chrono::microseconds>(
+                    std::chrono::steady_clock::now().time_since_epoch())
+                    .count());
+            event.position = {static_cast<F32>(x), static_cast<F32>(y)};
+            for (I32 i = 0; i < count; ++i) {
+                event.paths.emplace_back(paths[i]);
+            }
+            self->m_eventQueue.Push(std::move(event));
+        }
+    });
+
+    // Character callback (for text input)
+    glfwSetCharCallback(m_window, [](GLFWwindow *window, U32 codepoint) {
+        auto *self = static_cast<JzGLFWWindowBackend *>(glfwGetWindowUserPointer(window));
+        if (self) {
+            JzPlatformCharEvent event;
+            event.timestamp = static_cast<U64>(
+                std::chrono::duration_cast<std::chrono::microseconds>(
+                    std::chrono::steady_clock::now().time_since_epoch())
+                    .count());
+            event.codepoint = codepoint;
+            self->m_eventQueue.Push(std::move(event));
+        }
+    });
+
+    // Content scale callback (DPI change)
+    glfwSetWindowContentScaleCallback(m_window, [](GLFWwindow *window, float xScale, float yScale) {
+        auto *self = static_cast<JzGLFWWindowBackend *>(glfwGetWindowUserPointer(window));
+        if (self) {
+            JzPlatformContentScaleEvent event;
+            event.timestamp = static_cast<U64>(
+                std::chrono::duration_cast<std::chrono::microseconds>(
+                    std::chrono::steady_clock::now().time_since_epoch())
+                    .count());
+            event.scale = {xScale, yScale};
+            self->m_eventQueue.Push(std::move(event));
         }
     });
 }

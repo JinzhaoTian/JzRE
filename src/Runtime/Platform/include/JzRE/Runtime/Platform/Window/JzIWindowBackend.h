@@ -6,7 +6,7 @@
 #pragma once
 
 #include "JzRE/Runtime/Core/JzRETypes.h"
-#include "JzRE/Runtime/Core/JzDelegate.h"
+#include "JzRE/Runtime/Core/JzPlatformEventQueue.h"
 #include "JzRE/Runtime/Core/JzVector.h"
 #include "JzRE/Runtime/Platform/RHI/JzDevice.h"
 #include "JzRE/Runtime/Platform/Window/JzWindowConfig.h"
@@ -136,26 +136,27 @@ public:
      */
     virtual void *GetNativeWindowHandle() const = 0;
 
-    // ==================== Event Delegates ====================
-    // The backend fires these when window/input events occur from callbacks.
-    // JzWindowSystem subscribes to forward them into ECS.
+    // ==================== Event Queue ====================
 
-    JzDelegate<I32>     OnKeyPressed;
-    JzDelegate<I32>     OnKeyReleased;
-    JzDelegate<I32>     OnMouseButtonPressed;
-    JzDelegate<I32>     OnMouseButtonReleased;
-    JzDelegate<JzIVec2> OnMouseMoved;
-    JzDelegate<JzVec2>  OnMouseScrolled;
+    /**
+     * @brief Get the platform event queue.
+     *
+     * Events are pushed by platform callbacks (GLFW, SDL, etc.),
+     * consumed by JzWindowSystem which converts them to ECS events.
+     * This replaces the previous JzDelegate-based event system.
+     */
+    JzPlatformEventQueue &GetEventQueue()
+    {
+        return m_eventQueue;
+    }
 
-    JzDelegate<JzIVec2> OnWindowResized;
-    JzDelegate<JzIVec2> OnFrameBufferResized;
-    JzDelegate<JzIVec2> OnWindowMoved;
-    JzDelegate<JzIVec2> OnCursorMoved;
-    JzDelegate<>        OnWindowMinimized;
-    JzDelegate<>        OnWindowMaximized;
-    JzDelegate<>        OnWindowFocusGained;
-    JzDelegate<>        OnWindowFocusLost;
-    JzDelegate<>        OnWindowClosed;
+    const JzPlatformEventQueue &GetEventQueue() const
+    {
+        return m_eventQueue;
+    }
+
+protected:
+    JzPlatformEventQueue m_eventQueue;
 };
 
 } // namespace JzRE

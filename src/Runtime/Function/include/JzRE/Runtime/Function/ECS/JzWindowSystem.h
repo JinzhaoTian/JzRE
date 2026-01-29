@@ -13,6 +13,7 @@
 #include "JzRE/Runtime/Function/ECS/JzWorld.h"
 #include "JzRE/Runtime/Function/ECS/JzWindowComponents.h"
 #include "JzRE/Runtime/Function/ECS/JzInputComponents.h"
+#include "JzRE/Runtime/Function/Event/JzPlatformEventAdapter.h"
 #include "JzRE/Runtime/Platform/RHI/JzDevice.h"
 #include "JzRE/Runtime/Platform/Window/JzWindowConfig.h"
 
@@ -217,13 +218,16 @@ private:
     void HandleCloseRequests(JzWorld &world);
     void SyncInputFromBackend(JzWorld &world, JzEntity windowEntity);
     void EmitWindowEvents(JzWorld &world);
-
-    void WireBackendDelegates();
+    void ProcessPlatformEvents(JzWorld &world);
 
 private:
     // ==================== Backend ====================
 
     std::unique_ptr<JzIWindowBackend> m_backend;
+
+    // ==================== Platform Event Adapter ====================
+
+    JzPlatformEventAdapter m_eventAdapter;
 
     // ==================== ECS State ====================
 

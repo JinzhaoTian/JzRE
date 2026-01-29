@@ -8,6 +8,7 @@
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
 #include "JzRE/Runtime/Function/Event/JzEventDispatcherSystem.h"
 #include "JzRE/Runtime/Function/Event/JzWindowEvents.h"
+#include "JzRE/Runtime/Function/Event/JzInputEvents.h"
 #include "JzRE/Runtime/Platform/Window/JzIWindowBackend.h"
 #include "JzRE/Runtime/Platform/Window/JzGLFWWindowBackend.h"
 
@@ -32,8 +33,11 @@ void JzWindowSystem::Update(JzWorld &world, F32 delta)
 {
     if (!m_backend || !m_backend->IsValid()) return;
 
-    // Poll events from backend
+    // Poll events from backend (fills platform event queue)
     PollEvents(world);
+
+    // Process platform events and convert to ECS events
+    ProcessPlatformEvents(world);
 
     // Update window state components from backend
     UpdateWindowState(world);
@@ -79,7 +83,7 @@ void JzWindowSystem::InitializeWindow(JzERHIType rhiType, const JzWindowConfig &
     }
 
     m_backend->Initialize(rhiType, config);
-    WireBackendDelegates();
+    // Platform events are now handled via the event queue, no delegate wiring needed
 }
 
 JzEntity JzWindowSystem::CreateWindowEntity(JzWorld &world, const JzWindowConfig &config)
@@ -347,23 +351,28 @@ JzVec2 JzWindowSystem::GetCursorPosition() const
     return m_backend ? m_backend->GetCursorPosition() : JzVec2{0.0f, 0.0f};
 }
 
-// ==================== Backend Delegate Wiring ====================
+// ==================== Platform Event Processing ====================
 
-void JzWindowSystem::WireBackendDelegates()
+void JzWindowSystem::ProcessPlatformEvents(JzWorld &world)
 {
-    if (!m_backend) return;
+    if (!m_backend || !m_backend->IsValid()) return;
+    if (m_primaryWindow == INVALID_ENTITY) return;
 
-    // Accumulate scroll delta from backend callbacks.
-    // Scroll has no pollable state, so we must capture it from the callback
-    // and apply it during SyncInputFromBackend().
-    m_backend->OnMouseScrolled += [this](JzVec2 scroll) {
-        m_pendingScrollDelta += scroll;
-    };
+    // Get event dispatcher (optional - gracefully skip if not registered)
+    JzEventDispatcherSystem *dispatcher = nullptr;
+    try {
+        dispatcher = &JzServiceContainer::Get<JzEventDispatcherSystem>();
+    } catch (...) {
+        // No dispatcher registered, just drain the queue without dispatching
+        m_backend->GetEventQueue().Clear();
+        return;
+    }
 
-    // All other backend events are handled through:
-    // - Window events: EmitWindowEvents() uses change detection on JzWindowStateComponent
-    // - Input state: SyncInputFromBackend() polls keyboard/mouse state from the backend
-    // No delegate forwarding is needed; events flow through JzEventDispatcherSystem.
+    // Process platform events and convert to ECS events
+    m_eventAdapter.ProcessPlatformEvents(
+        m_backend->GetEventQueue(),
+        *dispatcher,
+        m_primaryWindow);
 }
 
 // ==================== ECS Update Helpers ====================
@@ -485,7 +494,11 @@ void JzWindowSystem::SyncInputFromBackend(JzWorld &world, JzEntity windowEntity)
         }
     }
 
-    // Apply accumulated scroll delta from backend callbacks
+    // Apply accumulated scroll delta from platform events
+    // Note: Scroll events are now dispatched through the event system,
+    // but we still track scroll state in the input component for polling queries.
+    // The scroll delta is reset each frame after being read.
+    // Individual systems can subscribe to JzMouseScrollEvent for event-driven handling.
     input.mouse.scrollDelta = m_pendingScrollDelta;
     m_pendingScrollDelta    = JzVec2(0.0f, 0.0f);
 }
