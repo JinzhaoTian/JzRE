@@ -8,7 +8,7 @@
 #include <queue>
 #include <mutex>
 #include <vector>
-#include "JzEventBase.h"
+#include "JzECSEvent.h"
 
 namespace JzRE {
 
@@ -20,7 +20,7 @@ public:
     template <typename T>
     void Push(T &&event)
     {
-        static_assert(std::is_base_of_v<JzREEvent, T>, "T must inherit from JzREEvent");
+        static_assert(std::is_base_of_v<JzECSEvent, T>, "T must inherit from JzECSEvent");
         std::lock_guard<std::mutex> lock(m_mutex);
         m_queue.emplace(std::forward<T>(event));
     }
@@ -34,7 +34,7 @@ public:
         }
     }
 
-    bool Pop(JzEventWrapper &outEvent)
+    bool Pop(JzECSEventWrapper &outEvent)
     {
         std::lock_guard<std::mutex> lock(m_mutex);
         if (m_queue.empty()) {
@@ -45,7 +45,7 @@ public:
         return true;
     }
 
-    size_t PopBatch(std::vector<JzEventWrapper> &outEvents, size_t maxCount)
+    size_t PopBatch(std::vector<JzECSEventWrapper> &outEvents, size_t maxCount)
     {
         std::lock_guard<std::mutex> lock(m_mutex);
         size_t                      count = 0;
@@ -59,8 +59,8 @@ public:
 
     void Clear()
     {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        std::queue<JzEventWrapper>  empty;
+        std::lock_guard<std::mutex>   lock(m_mutex);
+        std::queue<JzECSEventWrapper> empty;
         std::swap(m_queue, empty);
     }
 
@@ -70,16 +70,16 @@ public:
         return m_queue.size();
     }
 
-    void PushWrapper(JzEventWrapper &&wrapper)
+    void PushWrapper(JzECSEventWrapper &&wrapper)
     {
         std::lock_guard<std::mutex> lock(m_mutex);
         m_queue.emplace(std::move(wrapper));
     }
 
 private:
-    std::vector<JzEventWrapper> m_batchBuffer; // Not used in this basic impl
-    std::queue<JzEventWrapper>  m_queue;
-    mutable std::mutex          m_mutex;
+    std::vector<JzECSEventWrapper> m_batchBuffer; // Not used in this basic impl
+    std::queue<JzECSEventWrapper>  m_queue;
+    mutable std::mutex             m_mutex;
 };
 
 } // namespace JzRE

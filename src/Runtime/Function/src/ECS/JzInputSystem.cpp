@@ -8,7 +8,7 @@
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
 #include "JzRE/Runtime/Function/ECS/JzCameraComponents.h"
 #include "JzRE/Runtime/Function/ECS/JzWindowComponents.h"
-#include "JzRE/Runtime/Function/Event/JzEventDispatcherSystem.h"
+#include "JzRE/Runtime/Function/Event/JzEventSystem.h"
 #include "JzRE/Runtime/Function/Event/JzInputEvents.h"
 
 namespace JzRE {
@@ -300,9 +300,9 @@ void JzInputSystem::EmitKeyboardEvents(JzWorld &world)
     JzInputStateComponent *inputState = GetPrimaryInputState(world);
     if (!inputState) return;
 
-    JzEventDispatcherSystem *dispatcher = nullptr;
+    JzEventSystem *dispatcher = nullptr;
     try {
-        dispatcher = &JzServiceContainer::Get<JzEventDispatcherSystem>();
+        dispatcher = &JzServiceContainer::Get<JzEventSystem>();
     } catch (...) {
         return;
     }
@@ -336,9 +336,9 @@ void JzInputSystem::EmitMouseEvents(JzWorld &world)
     JzInputStateComponent *inputState = GetPrimaryInputState(world);
     if (!inputState) return;
 
-    JzEventDispatcherSystem *dispatcher = nullptr;
+    JzEventSystem *dispatcher = nullptr;
     try {
-        dispatcher = &JzServiceContainer::Get<JzEventDispatcherSystem>();
+        dispatcher = &JzServiceContainer::Get<JzEventSystem>();
     } catch (...) {
         return;
     }
@@ -389,9 +389,9 @@ void JzInputSystem::EmitMouseEvents(JzWorld &world)
 
 void JzInputSystem::EmitActionEvents(JzWorld &world)
 {
-    JzEventDispatcherSystem *dispatcher = nullptr;
+    JzEventSystem *dispatcher = nullptr;
     try {
-        dispatcher = &JzServiceContainer::Get<JzEventDispatcherSystem>();
+        dispatcher = &JzServiceContainer::Get<JzEventSystem>();
     } catch (...) {
         return;
     }

@@ -133,8 +133,8 @@ void JzRE::JzRERuntime::RegisterSystems()
     m_inputSystem = m_world->RegisterSystem<JzInputSystem>();
 
     // Event dispatcher runs after window/input so events queued this frame are dispatched this frame
-    m_eventDispatcherSystem = m_world->RegisterSystem<JzEventDispatcherSystem>();
-    JzServiceContainer::Provide<JzEventDispatcherSystem>(*m_eventDispatcherSystem);
+    m_eventSystem = m_world->RegisterSystem<JzEventSystem>();
+    JzServiceContainer::Provide<JzEventSystem>(*m_eventSystem);
 
     m_assetSystem = m_world->RegisterSystem<JzAssetSystem>();
     JzServiceContainer::Provide<JzAssetSystem>(*m_assetSystem);
@@ -225,7 +225,7 @@ void JzRE::JzRERuntime::ShutdownSubsystems()
     m_lightSystem.reset();
     m_cameraSystem.reset();
     m_assetSystem.reset();
-    m_eventDispatcherSystem.reset();
+    m_eventSystem.reset();
     m_inputSystem.reset();
     m_device.reset();
 

@@ -14,7 +14,7 @@
 namespace JzRE {
 
 // Forward declarations
-class JzEventDispatcherSystem;
+class JzEventSystem;
 
 /**
  * @brief ECS system that processes raw input and updates input components.

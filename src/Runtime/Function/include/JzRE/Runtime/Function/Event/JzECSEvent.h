@@ -17,8 +17,8 @@ namespace JzRE {
 /**
  * @brief Base class for all ECS events
  */
-struct JzREEvent {
-    virtual ~JzREEvent() = default;
+struct JzECSEvent {
+    virtual ~JzECSEvent() = default;
     U64      timestamp;               // Event timestamp
     JzEntity source = INVALID_ENTITY; // Event source entity
     JzEntity target = INVALID_ENTITY; // Event target entity
@@ -28,10 +28,10 @@ struct JzREEvent {
  * @brief Compile-time Event Type ID generation
  */
 template <typename T>
-struct JzREEventType {
+struct JzECSEventType {
     static U32 Id()
     {
-        static_assert(std::is_base_of_v<JzREEvent, T>, "T must inherit from JzREEvent");
+        static_assert(std::is_base_of_v<JzECSEvent, T>, "T must inherit from JzECSEvent");
         static U32 id = typeIdCounter++;
         return id;
     }
@@ -43,24 +43,24 @@ private:
 /**
  * @brief Type-safe Event Wrapper
  */
-class JzEventWrapper {
+class JzECSEventWrapper {
 public:
     template <typename T>
-    JzEventWrapper(T &&event) :
+    JzECSEventWrapper(T &&event) :
         data(new T(std::forward<T>(event))),
-        typeId(JzREEventType<T>::Id()),
+        typeId(JzECSEventType<T>::Id()),
         deleter([](void *ptr) {
             delete static_cast<T *>(ptr);
         })
     { }
 
-    JzEventWrapper() :
+    JzECSEventWrapper() :
         data(nullptr),
         typeId(0),
         deleter(nullptr) { }
 
     // Move constructor
-    JzEventWrapper(JzEventWrapper &&other) noexcept :
+    JzECSEventWrapper(JzECSEventWrapper &&other) noexcept :
         data(other.data),
         typeId(other.typeId),
         deleter(other.deleter)
@@ -70,7 +70,7 @@ public:
     }
 
     // Move assignment
-    JzEventWrapper &operator=(JzEventWrapper &&other) noexcept
+    JzECSEventWrapper &operator=(JzECSEventWrapper &&other) noexcept
     {
         if (this != &other) {
             if (data && deleter) deleter(data);
@@ -84,10 +84,10 @@ public:
     }
 
     // Disable copy
-    JzEventWrapper(const JzEventWrapper &)            = delete;
-    JzEventWrapper &operator=(const JzEventWrapper &) = delete;
+    JzECSEventWrapper(const JzECSEventWrapper &)            = delete;
+    JzECSEventWrapper &operator=(const JzECSEventWrapper &) = delete;
 
-    ~JzEventWrapper()
+    ~JzECSEventWrapper()
     {
         if (data && deleter)
             deleter(data);
@@ -96,7 +96,7 @@ public:
     template <typename T>
     T *As() const
     {
-        if (JzREEventType<T>::Id() == typeId) {
+        if (JzECSEventType<T>::Id() == typeId) {
             return static_cast<T *>(data);
         }
         return nullptr;

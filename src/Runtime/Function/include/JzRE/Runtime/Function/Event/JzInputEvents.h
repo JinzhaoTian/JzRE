@@ -7,7 +7,7 @@
 
 #include "JzRE/Runtime/Core/JzRETypes.h"
 #include "JzRE/Runtime/Core/JzVector.h"
-#include "JzRE/Runtime/Function/Event/JzEventBase.h"
+#include "JzRE/Runtime/Function/Event/JzECSEvent.h"
 #include "JzRE/Runtime/Function/ECS/JzInputComponents.h"
 
 namespace JzRE {
@@ -24,7 +24,7 @@ enum class JzEKeyAction : I32 {
 /**
  * @brief Keyboard key event
  */
-struct JzKeyEvent : public JzREEvent {
+struct JzKeyEvent : public JzECSEvent {
     JzEKeyCode   key;
     I32          scancode{0};
     JzEKeyAction action;
@@ -34,7 +34,7 @@ struct JzKeyEvent : public JzREEvent {
 /**
  * @brief Mouse button event
  */
-struct JzMouseButtonEvent : public JzREEvent {
+struct JzMouseButtonEvent : public JzECSEvent {
     JzEMouseButton button;
     JzEKeyAction   action;
     I32            mods{0};
@@ -44,7 +44,7 @@ struct JzMouseButtonEvent : public JzREEvent {
 /**
  * @brief Mouse move event
  */
-struct JzMouseMoveEvent : public JzREEvent {
+struct JzMouseMoveEvent : public JzECSEvent {
     JzVec2 position; ///< Current mouse position
     JzVec2 delta;    ///< Movement since last frame
 };
@@ -52,7 +52,7 @@ struct JzMouseMoveEvent : public JzREEvent {
 /**
  * @brief Mouse scroll event
  */
-struct JzMouseScrollEvent : public JzREEvent {
+struct JzMouseScrollEvent : public JzECSEvent {
     JzVec2 offset;   ///< Scroll delta (x, y)
     JzVec2 position; ///< Mouse position at time of scroll
 };
@@ -60,14 +60,14 @@ struct JzMouseScrollEvent : public JzREEvent {
 /**
  * @brief Mouse enter/leave window event
  */
-struct JzMouseEnterEvent : public JzREEvent {
+struct JzMouseEnterEvent : public JzECSEvent {
     Bool entered; ///< true = entered, false = left
 };
 
 /**
  * @brief Input action triggered event (high-level)
  */
-struct JzInputActionTriggeredEvent : public JzREEvent {
+struct JzInputActionTriggeredEvent : public JzECSEvent {
     String actionName;
     F32    value{0.0f};
 };
@@ -75,7 +75,7 @@ struct JzInputActionTriggeredEvent : public JzREEvent {
 /**
  * @brief Input action released event (high-level)
  */
-struct JzInputActionReleasedEvent : public JzREEvent {
+struct JzInputActionReleasedEvent : public JzECSEvent {
     String actionName;
     F32    duration{0.0f}; ///< How long the action was held
 };

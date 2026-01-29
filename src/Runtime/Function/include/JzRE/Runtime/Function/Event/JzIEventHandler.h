@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "JzEventBase.h"
+#include "JzECSEvent.h"
 
 namespace JzRE {
 
@@ -14,9 +14,9 @@ namespace JzRE {
  */
 class JzIEventHandler {
 public:
-    virtual ~JzIEventHandler()                            = default;
-    virtual void HandleEvent(const JzEventWrapper &event) = 0;
-    virtual U32  GetEventType() const                     = 0;
+    virtual ~JzIEventHandler()                               = default;
+    virtual void HandleEvent(const JzECSEventWrapper &event) = 0;
+    virtual U32  GetEventType() const                        = 0;
     virtual I32  GetPriority() const
     {
         return 0;
@@ -35,7 +35,7 @@ public:
         m_handler(std::move(func)),
         m_priority(priority) { }
 
-    void HandleEvent(const JzEventWrapper &event) override
+    void HandleEvent(const JzECSEventWrapper &event) override
     {
         if (auto *typedEvent = event.As<T>()) {
             m_handler(*typedEvent);
@@ -44,7 +44,7 @@ public:
 
     U32 GetEventType() const override
     {
-        return JzREEventType<T>::Id();
+        return JzECSEventType<T>::Id();
     }
 
     I32 GetPriority() const override

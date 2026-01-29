@@ -20,7 +20,7 @@
 namespace JzRE {
 
 // Forward declarations
-class JzEventDispatcherSystem;
+class JzEventSystem;
 class JzIWindowBackend;
 
 /**

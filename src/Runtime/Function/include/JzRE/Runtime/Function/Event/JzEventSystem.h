@@ -17,7 +17,7 @@
 
 namespace JzRE {
 
-class JzEventDispatcherSystem : public JzSystem {
+class JzEventSystem : public JzSystem {
 public:
     void OnInit(JzWorld &world) override
     {
@@ -48,7 +48,7 @@ public:
     template <typename T>
     JzEventHandler<T> *RegisterHandler(std::function<void(const T &)> handler, I32 priority = 0)
     {
-        auto  u32EventId   = JzREEventType<T>::Id();
+        auto  u32EventId   = JzECSEventType<T>::Id();
         auto  eventHandler = std::make_unique<JzEventHandler<T>>(std::move(handler), priority);
         auto *ptr          = eventHandler.get();
 
@@ -63,7 +63,7 @@ public:
     void Send(T &&event)
     {
         m_globalQueue.Push(std::forward<T>(event));
-        m_stats.eventsByType[JzREEventType<T>::Id()]++;
+        m_stats.eventsByType[JzECSEventType<T>::Id()]++;
     }
 
     // Send to Entity
@@ -106,8 +106,8 @@ public:
 private:
     void ProcessGlobalQueue()
     {
-        std::vector<JzEventWrapper> events;
-        const size_t                batchSize = 100;
+        std::vector<JzECSEventWrapper> events;
+        const size_t                   batchSize = 100;
 
         while (true) {
             size_t count = m_globalQueue.PopBatch(events, batchSize);
@@ -122,7 +122,7 @@ private:
         }
     }
 
-    void ProcessSingleEvent(const JzEventWrapper &event)
+    void ProcessSingleEvent(const JzECSEventWrapper &event)
     {
         auto u32EventId = event.GetTypeId();
         auto it         = m_handlers.find(u32EventId);
@@ -182,7 +182,7 @@ private:
     std::unordered_map<U32, std::vector<std::unique_ptr<JzIEventHandler>>> m_handlers;
     std::map<I32, std::vector<JzIEventHandler *>>                          m_priorityQueues;
     JzEventQueue                                                           m_globalQueue;
-    std::vector<JzEventWrapper>                                            m_delayedEvents;
+    std::vector<JzECSEventWrapper>                                         m_delayedEvents;
 
     struct Stats {
         std::atomic<U64>             eventsProcessed{0};

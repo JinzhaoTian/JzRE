@@ -6,7 +6,7 @@
 #include "JzRE/Runtime/Function/ECS/JzWindowSystem.h"
 
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
-#include "JzRE/Runtime/Function/Event/JzEventDispatcherSystem.h"
+#include "JzRE/Runtime/Function/Event/JzEventSystem.h"
 #include "JzRE/Runtime/Function/Event/JzWindowEvents.h"
 #include "JzRE/Runtime/Function/Event/JzInputEvents.h"
 #include "JzRE/Runtime/Platform/Window/JzIWindowBackend.h"
@@ -359,9 +359,9 @@ void JzWindowSystem::ProcessPlatformEvents(JzWorld &world)
     if (m_primaryWindow == INVALID_ENTITY) return;
 
     // Get event dispatcher (optional - gracefully skip if not registered)
-    JzEventDispatcherSystem *dispatcher = nullptr;
+    JzEventSystem *dispatcher = nullptr;
     try {
-        dispatcher = &JzServiceContainer::Get<JzEventDispatcherSystem>();
+        dispatcher = &JzServiceContainer::Get<JzEventSystem>();
     } catch (...) {
         // No dispatcher registered, just drain the queue without dispatching
         m_backend->GetEventQueue().Clear();
@@ -506,9 +506,9 @@ void JzWindowSystem::SyncInputFromBackend(JzWorld &world, JzEntity windowEntity)
 void JzWindowSystem::ProcessWindowEvents(JzWorld &world)
 {
     // Get event dispatcher (optional - gracefully skip if not registered)
-    JzEventDispatcherSystem *dispatcher = nullptr;
+    JzEventSystem *dispatcher = nullptr;
     try {
-        dispatcher = &JzServiceContainer::Get<JzEventDispatcherSystem>();
+        dispatcher = &JzServiceContainer::Get<JzEventSystem>();
     } catch (...) {
         dispatcher = nullptr;
     }
@@ -650,9 +650,9 @@ void JzWindowSystem::UpdateStatistics(JzWorld &world, F32 delta)
 void JzWindowSystem::EmitWindowEvents(JzWorld &world)
 {
     // Get event dispatcher (optional - gracefully skip if not registered)
-    JzEventDispatcherSystem *dispatcher = nullptr;
+    JzEventSystem *dispatcher = nullptr;
     try {
-        dispatcher = &JzServiceContainer::Get<JzEventDispatcherSystem>();
+        dispatcher = &JzServiceContainer::Get<JzEventSystem>();
     } catch (...) {
         return;
     }

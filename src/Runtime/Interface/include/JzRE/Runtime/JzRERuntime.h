@@ -16,7 +16,7 @@
 #include "JzRE/Runtime/Function/ECS/JzLightSystem.h"
 #include "JzRE/Runtime/Function/ECS/JzRenderSystem.h"
 #include "JzRE/Runtime/Function/ECS/JzAssetSystem.h"
-#include "JzRE/Runtime/Function/Event/JzEventDispatcherSystem.h"
+#include "JzRE/Runtime/Function/Event/JzEventSystem.h"
 #include "JzRE/Runtime/Platform/RHI/JzDevice.h"
 
 namespace JzRE {
@@ -164,14 +164,14 @@ protected:
     std::unique_ptr<JzDevice> m_device;
 
     // ECS world and systems
-    std::unique_ptr<JzWorld>                 m_world;
-    std::shared_ptr<JzWindowSystem>          m_windowSystem;
-    std::shared_ptr<JzInputSystem>           m_inputSystem;
-    std::shared_ptr<JzCameraSystem>          m_cameraSystem;
-    std::shared_ptr<JzLightSystem>           m_lightSystem;
-    std::shared_ptr<JzRenderSystem>          m_renderSystem;
-    std::shared_ptr<JzAssetSystem>           m_assetSystem;
-    std::shared_ptr<JzEventDispatcherSystem> m_eventDispatcherSystem;
+    std::unique_ptr<JzWorld>        m_world;
+    std::shared_ptr<JzWindowSystem> m_windowSystem;
+    std::shared_ptr<JzInputSystem>  m_inputSystem;
+    std::shared_ptr<JzCameraSystem> m_cameraSystem;
+    std::shared_ptr<JzLightSystem>  m_lightSystem;
+    std::shared_ptr<JzRenderSystem> m_renderSystem;
+    std::shared_ptr<JzAssetSystem>  m_assetSystem;
+    std::shared_ptr<JzEventSystem>  m_eventSystem;
 
     JzEntity m_mainCameraEntity = INVALID_ENTITY;
     JzEntity m_windowEntity     = INVALID_ENTITY; ///< Primary window ECS entity

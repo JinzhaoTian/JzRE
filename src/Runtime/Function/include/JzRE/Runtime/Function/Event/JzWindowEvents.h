@@ -8,14 +8,14 @@
 #include <vector>
 #include "JzRE/Runtime/Core/JzRETypes.h"
 #include "JzRE/Runtime/Core/JzVector.h"
-#include "JzRE/Runtime/Function/Event/JzEventBase.h"
+#include "JzRE/Runtime/Function/Event/JzECSEvent.h"
 
 namespace JzRE {
 
 /**
  * @brief Window resized event
  */
-struct JzWindowResizedEvent : public JzREEvent {
+struct JzWindowResizedEvent : public JzECSEvent {
     JzIVec2 size;    ///< New window size
     JzIVec2 oldSize; ///< Previous window size
 };
@@ -23,49 +23,49 @@ struct JzWindowResizedEvent : public JzREEvent {
 /**
  * @brief Window framebuffer resized event (for HiDPI)
  */
-struct JzWindowFramebufferResizedEvent : public JzREEvent {
+struct JzWindowFramebufferResizedEvent : public JzECSEvent {
     JzIVec2 size; ///< New framebuffer size
 };
 
 /**
  * @brief Window moved event
  */
-struct JzWindowMovedEvent : public JzREEvent {
+struct JzWindowMovedEvent : public JzECSEvent {
     JzIVec2 position; ///< New window position
 };
 
 /**
  * @brief Window focus changed event
  */
-struct JzWindowFocusEvent : public JzREEvent {
+struct JzWindowFocusEvent : public JzECSEvent {
     Bool focused; ///< true = gained focus, false = lost focus
 };
 
 /**
  * @brief Window iconified (minimized/restored) event
  */
-struct JzWindowIconifiedEvent : public JzREEvent {
+struct JzWindowIconifiedEvent : public JzECSEvent {
     Bool iconified; ///< true = minimized, false = restored
 };
 
 /**
  * @brief Window maximized event
  */
-struct JzWindowMaximizedEvent : public JzREEvent {
+struct JzWindowMaximizedEvent : public JzECSEvent {
     Bool maximized; ///< true = maximized, false = restored
 };
 
 /**
  * @brief Window closed event
  */
-struct JzWindowClosedEvent : public JzREEvent {
+struct JzWindowClosedEvent : public JzECSEvent {
     Bool forced{false}; ///< Whether it was a forced close
 };
 
 /**
  * @brief File drop event
  */
-struct JzFileDroppedEvent : public JzREEvent {
+struct JzFileDroppedEvent : public JzECSEvent {
     std::vector<String> filePaths;
     JzVec2              dropPosition;
 };
@@ -73,7 +73,7 @@ struct JzFileDroppedEvent : public JzREEvent {
 /**
  * @brief Content scale changed event (DPI change)
  */
-struct JzWindowContentScaleChangedEvent : public JzREEvent {
+struct JzWindowContentScaleChangedEvent : public JzECSEvent {
     JzVec2 scale; ///< New content scale
 };
 

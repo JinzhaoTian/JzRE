@@ -10,7 +10,7 @@
 #include "JzRE/Runtime/Core/JzPlatformEvent.h"
 #include "JzRE/Runtime/Core/JzPlatformEventQueue.h"
 #include "JzRE/Runtime/Function/ECS/JzEntity.h"
-#include "JzRE/Runtime/Function/Event/JzEventDispatcherSystem.h"
+#include "JzRE/Runtime/Function/Event/JzEventSystem.h"
 #include "JzRE/Runtime/Function/Event/JzInputEvents.h"
 #include "JzRE/Runtime/Function/Event/JzWindowEvents.h"
 #include "JzRE/Runtime/Platform/Window/JzPlatformInputEvents.h"
@@ -22,7 +22,7 @@ namespace JzRE {
  *
  * This class bridges the Platform layer (no entity awareness) with the
  * Function layer ECS event system. It consumes events from JzPlatformEventQueue
- * and dispatches them as JzREEvent-derived types through JzEventDispatcherSystem.
+ * and dispatches them as JzECSEvent-derived types through JzEventSystem.
  */
 class JzPlatformEventAdapter {
 public:
@@ -35,10 +35,10 @@ public:
      * @param maxEvents Maximum number of events to process per call (0 = unlimited)
      */
     void ProcessPlatformEvents(
-        JzPlatformEventQueue    &platformQueue,
-        JzEventDispatcherSystem &dispatcher,
-        JzEntity                 windowEntity,
-        size_t                   maxEvents = 256)
+        JzPlatformEventQueue &platformQueue,
+        JzEventSystem        &dispatcher,
+        JzEntity              windowEntity,
+        size_t                maxEvents = 256)
     {
         std::vector<JzPlatformEventWrapper> events;
         events.reserve(maxEvents > 0 ? maxEvents : 64);
@@ -53,7 +53,7 @@ public:
 private:
     void DispatchAsECSEvent(
         const JzPlatformEventWrapper &wrapper,
-        JzEventDispatcherSystem      &dispatcher,
+        JzEventSystem                &dispatcher,
         JzEntity                      windowEntity)
     {
         // Key events
