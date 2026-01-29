@@ -158,10 +158,11 @@ private:
     std::unordered_set<JzShaderAssetHandle, JzAssetHandle<JzShaderAsset>::Hash>
     CollectUsedShaders(JzWorld &world);
 
-    F32  m_checkInterval       = 1.0f;  ///< Interval between checks (seconds)
-    F32  m_timeSinceLastCheck  = 0.0f;  ///< Time since last check
-    Size m_reloadCount         = 0;     ///< Number of reloads performed
-    Bool m_forceCheckNextFrame = false; ///< Force check on next update
+    JzWorld *m_world                 = nullptr; ///< Cached world pointer for context access
+    F32      m_checkInterval         = 1.0f;    ///< Interval between checks (seconds)
+    F32      m_timeSinceLastCheck    = 0.0f;    ///< Time since last check
+    Size     m_reloadCount           = 0;       ///< Number of reloads performed
+    Bool     m_forceCheckNextFrame   = false;   ///< Force check on next update
 };
 
 /**

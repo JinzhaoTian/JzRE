@@ -5,7 +5,6 @@
 
 #include "JzRE/Runtime/Function/ECS/JzInputSystem.h"
 
-#include "JzRE/Runtime/Core/JzServiceContainer.h"
 #include "JzRE/Runtime/Function/ECS/JzCameraComponents.h"
 #include "JzRE/Runtime/Function/ECS/JzWindowComponents.h"
 #include "JzRE/Runtime/Function/Event/JzEventSystem.h"
@@ -300,12 +299,9 @@ void JzInputSystem::EmitKeyboardEvents(JzWorld &world)
     JzInputStateComponent *inputState = GetPrimaryInputState(world);
     if (!inputState) return;
 
-    JzEventSystem *dispatcher = nullptr;
-    try {
-        dispatcher = &JzServiceContainer::Get<JzEventSystem>();
-    } catch (...) {
-        return;
-    }
+    JzEventSystem **dispatcherPtr = world.TryGetContext<JzEventSystem*>();
+    if (!dispatcherPtr || !*dispatcherPtr) return;
+    JzEventSystem *dispatcher = *dispatcherPtr;
 
     const auto &keyboard = inputState->keyboard;
 
@@ -336,12 +332,9 @@ void JzInputSystem::EmitMouseEvents(JzWorld &world)
     JzInputStateComponent *inputState = GetPrimaryInputState(world);
     if (!inputState) return;
 
-    JzEventSystem *dispatcher = nullptr;
-    try {
-        dispatcher = &JzServiceContainer::Get<JzEventSystem>();
-    } catch (...) {
-        return;
-    }
+    JzEventSystem **dispatcherPtr = world.TryGetContext<JzEventSystem*>();
+    if (!dispatcherPtr || !*dispatcherPtr) return;
+    JzEventSystem *dispatcher = *dispatcherPtr;
 
     const auto &mouse = inputState->mouse;
 
@@ -389,12 +382,9 @@ void JzInputSystem::EmitMouseEvents(JzWorld &world)
 
 void JzInputSystem::EmitActionEvents(JzWorld &world)
 {
-    JzEventSystem *dispatcher = nullptr;
-    try {
-        dispatcher = &JzServiceContainer::Get<JzEventSystem>();
-    } catch (...) {
-        return;
-    }
+    JzEventSystem **dispatcherPtr = world.TryGetContext<JzEventSystem*>();
+    if (!dispatcherPtr || !*dispatcherPtr) return;
+    JzEventSystem *dispatcher = *dispatcherPtr;
 
     auto view = world.View<JzInputActionComponent>();
     for (auto entity : view) {

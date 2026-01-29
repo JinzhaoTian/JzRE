@@ -8,7 +8,6 @@
 #include "JzRE/Runtime/Function/ECS/JzShaderHotReloadSystem.h"
 
 #include "JzRE/Runtime/Core/JzLogger.h"
-#include "JzRE/Runtime/Core/JzServiceContainer.h"
 #include "JzRE/Runtime/Function/ECS/JzAssetComponents.h"
 #include "JzRE/Runtime/Function/ECS/JzWorld.h"
 #include "JzRE/Runtime/Resource/JzAssetManager.h"
@@ -22,6 +21,7 @@ JzShaderHotReloadSystem::~JzShaderHotReloadSystem() = default;
 
 void JzShaderHotReloadSystem::OnInit(JzWorld &world)
 {
+    m_world = &world;
     JzRE_LOG_INFO("JzShaderHotReloadSystem: Initialized with check interval {}s", m_checkInterval);
 }
 
@@ -53,16 +53,15 @@ void JzShaderHotReloadSystem::ForceCheck()
 
 Bool JzShaderHotReloadSystem::ReloadShader(JzShaderAssetHandle shaderHandle)
 {
-    // Get asset manager from service container
-    JzAssetManager *assetManager = nullptr;
-    try {
-        assetManager = &JzServiceContainer::Get<JzAssetManager>();
-    } catch (...) {
+    // Get asset manager from world context
+    JzAssetManager **assetManagerPtr = m_world ? m_world->TryGetContext<JzAssetManager*>() : nullptr;
+    if (!assetManagerPtr || !*assetManagerPtr) {
         JzRE_LOG_WARN("JzShaderHotReloadSystem: AssetManager not available");
         return false;
     }
+    JzAssetManager *assetManager = *assetManagerPtr;
 
-    if (!assetManager || !assetManager->IsInitialized()) {
+    if (!assetManager->IsInitialized()) {
         return false;
     }
 
@@ -85,15 +84,14 @@ Bool JzShaderHotReloadSystem::ReloadShader(JzShaderAssetHandle shaderHandle)
 
 void JzShaderHotReloadSystem::CheckForUpdates(JzWorld &world)
 {
-    // Get asset manager from service container
-    JzAssetManager *assetManager = nullptr;
-    try {
-        assetManager = &JzServiceContainer::Get<JzAssetManager>();
-    } catch (...) {
+    // Get asset manager from world context
+    JzAssetManager **assetManagerPtr = world.TryGetContext<JzAssetManager*>();
+    if (!assetManagerPtr || !*assetManagerPtr) {
         return;
     }
+    JzAssetManager *assetManager = *assetManagerPtr;
 
-    if (!assetManager || !assetManager->IsInitialized()) {
+    if (!assetManager->IsInitialized()) {
         return;
     }
 

@@ -5,10 +5,8 @@
 
 #include "JzRE/Runtime/Function/ECS/JzWindowSystem.h"
 
-#include "JzRE/Runtime/Core/JzServiceContainer.h"
 #include "JzRE/Runtime/Function/Event/JzEventSystem.h"
 #include "JzRE/Runtime/Function/Event/JzWindowEvents.h"
-#include "JzRE/Runtime/Function/Event/JzInputEvents.h"
 #include "JzRE/Runtime/Platform/Window/JzIWindowBackend.h"
 #include "JzRE/Runtime/Platform/Window/JzGLFWWindowBackend.h"
 
@@ -359,14 +357,13 @@ void JzWindowSystem::ProcessPlatformEvents(JzWorld &world)
     if (m_primaryWindow == INVALID_ENTITY) return;
 
     // Get event dispatcher (optional - gracefully skip if not registered)
-    JzEventSystem *dispatcher = nullptr;
-    try {
-        dispatcher = &JzServiceContainer::Get<JzEventSystem>();
-    } catch (...) {
+    JzEventSystem **dispatcherPtr = world.TryGetContext<JzEventSystem*>();
+    if (!dispatcherPtr || !*dispatcherPtr) {
         // No dispatcher registered, just drain the queue without dispatching
         m_backend->GetEventQueue().Clear();
         return;
     }
+    JzEventSystem *dispatcher = *dispatcherPtr;
 
     // Process platform events and convert to ECS events
     m_eventAdapter.ProcessPlatformEvents(
@@ -506,12 +503,8 @@ void JzWindowSystem::SyncInputFromBackend(JzWorld &world, JzEntity windowEntity)
 void JzWindowSystem::ProcessWindowEvents(JzWorld &world)
 {
     // Get event dispatcher (optional - gracefully skip if not registered)
-    JzEventSystem *dispatcher = nullptr;
-    try {
-        dispatcher = &JzServiceContainer::Get<JzEventSystem>();
-    } catch (...) {
-        dispatcher = nullptr;
-    }
+    JzEventSystem **dispatcherPtr = world.TryGetContext<JzEventSystem*>();
+    JzEventSystem  *dispatcher    = (dispatcherPtr && *dispatcherPtr) ? *dispatcherPtr : nullptr;
 
     auto view = world.View<JzWindowEventQueueComponent>();
     for (auto entity : view) {
@@ -650,12 +643,9 @@ void JzWindowSystem::UpdateStatistics(JzWorld &world, F32 delta)
 void JzWindowSystem::EmitWindowEvents(JzWorld &world)
 {
     // Get event dispatcher (optional - gracefully skip if not registered)
-    JzEventSystem *dispatcher = nullptr;
-    try {
-        dispatcher = &JzServiceContainer::Get<JzEventSystem>();
-    } catch (...) {
-        return;
-    }
+    JzEventSystem **dispatcherPtr = world.TryGetContext<JzEventSystem*>();
+    if (!dispatcherPtr || !*dispatcherPtr) return;
+    JzEventSystem *dispatcher = *dispatcherPtr;
 
     auto view = world.View<JzWindowStateComponent>();
     for (auto entity : view) {

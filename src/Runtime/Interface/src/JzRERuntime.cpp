@@ -135,6 +135,7 @@ void JzRE::JzRERuntime::RegisterSystems()
     // Event dispatcher runs after window/input so events queued this frame are dispatched this frame
     m_eventSystem = m_world->RegisterSystem<JzEventSystem>();
     JzServiceContainer::Provide<JzEventSystem>(*m_eventSystem);
+    m_world->SetContext<JzEventSystem*>(m_eventSystem.get());
 
     m_assetSystem = m_world->RegisterSystem<JzAssetSystem>();
     JzServiceContainer::Provide<JzAssetSystem>(*m_assetSystem);
@@ -152,9 +153,10 @@ void JzRE::JzRERuntime::InitializeSubsystems()
     assetConfig.asyncWorkerCount = 2;
     m_assetSystem->Initialize(assetConfig);
 
-    // Register JzAssetManager in service container for backward compatibility
+    // Register JzAssetManager in service container and world context
     // (JzRenderSystem, JzShaderHotReloadSystem, JzAssetBrowser use it)
     JzServiceContainer::Provide<JzAssetManager>(m_assetSystem->GetAssetManager());
+    m_world->SetContext<JzAssetManager*>(&m_assetSystem->GetAssetManager());
 
     // Register resource factories
     m_assetSystem->RegisterFactory<JzShaderAsset>(std::make_unique<JzShaderAssetFactory>());
