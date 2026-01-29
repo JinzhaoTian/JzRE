@@ -151,12 +151,7 @@ void JzRE::JzRERuntime::InitializeSubsystems()
     JzAssetManagerConfig assetConfig;
     assetConfig.maxCacheMemoryMB = 512;
     assetConfig.asyncWorkerCount = 2;
-    m_assetSystem->Initialize(assetConfig);
-
-    // Register JzAssetManager in service container and world context
-    // (JzRenderSystem, JzShaderHotReloadSystem, JzAssetBrowser use it)
-    JzServiceContainer::Provide<JzAssetManager>(m_assetSystem->GetAssetManager());
-    m_world->SetContext<JzAssetManager*>(&m_assetSystem->GetAssetManager());
+    m_assetSystem->Initialize(*m_world, assetConfig);
 
     // Register resource factories
     m_assetSystem->RegisterFactory<JzShaderAsset>(std::make_unique<JzShaderAssetFactory>());

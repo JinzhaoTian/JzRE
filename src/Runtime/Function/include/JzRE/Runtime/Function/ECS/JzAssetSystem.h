@@ -91,11 +91,13 @@ public:
      * @brief Initialize the asset system with configuration
      *
      * Creates and initializes the internal JzAssetManager.
+     * Registers the asset manager with JzServiceContainer and world context.
      * Must be called before using any asset operations.
      *
+     * @param world The ECS world (for context registration)
      * @param config Asset manager configuration
      */
-    void Initialize(const JzAssetManagerConfig &config);
+    void Initialize(JzWorld &world, const JzAssetManagerConfig &config);
 
     /**
      * @brief Register a resource factory for a given asset type

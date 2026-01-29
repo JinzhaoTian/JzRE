@@ -8,6 +8,7 @@
 #include "JzRE/Runtime/Function/ECS/JzAssetSystem.h"
 
 #include "JzRE/Runtime/Core/JzLogger.h"
+#include "JzRE/Runtime/Core/JzServiceContainer.h"
 #include "JzRE/Runtime/Function/ECS/JzAssetComponents.h"
 #include "JzRE/Runtime/Function/ECS/JzTransformComponents.h"
 #include "JzRE/Runtime/Function/ECS/JzWorld.h"
@@ -56,10 +57,15 @@ void JzAssetSystem::OnShutdown(JzWorld &world)
 
 // ==================== Initialization ====================
 
-void JzAssetSystem::Initialize(const JzAssetManagerConfig &config)
+void JzAssetSystem::Initialize(JzWorld &world, const JzAssetManagerConfig &config)
 {
     m_assetManager = std::make_unique<JzAssetManager>(config);
     m_assetManager->Initialize();
+
+    // Register JzAssetManager in service container and world context
+    // (JzRenderSystem, JzShaderHotReloadSystem, JzAssetBrowser use it)
+    JzServiceContainer::Provide<JzAssetManager>(*m_assetManager);
+    world.SetContext<JzAssetManager*>(m_assetManager.get());
 }
 
 void JzAssetSystem::AddSearchPath(const String &path)
