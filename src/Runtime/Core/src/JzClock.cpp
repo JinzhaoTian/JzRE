@@ -64,3 +64,11 @@ void JzRE::JzClock::SetTimeScale(F32 timeScale)
 {
     __TIME_SCALE = timeScale;
 }
+
+JzRE::U64 JzRE::JzClock::GetTimestampMicroseconds()
+{
+    return static_cast<U64>(
+        std::chrono::duration_cast<std::chrono::microseconds>(
+            std::chrono::steady_clock::now().time_since_epoch())
+            .count());
+}

@@ -5,8 +5,8 @@
 
 #include "JzRE/Runtime/Platform/Window/JzGLFWWindowBackend.h"
 #include "JzRE/Runtime/Platform/Window/JzPlatformInputEvents.h"
+#include "JzRE/Runtime/Core/JzClock.h"
 
-#include <chrono>
 #include <stdexcept>
 
 #ifdef _WIN32
@@ -447,23 +447,12 @@ void JzGLFWWindowBackend::SetupCallbacks()
     // Store this pointer for lambda access
     glfwSetWindowUserPointer(m_window, this);
 
-    // Helper to get current timestamp
-    auto getTimestamp = []() -> U64 {
-        return static_cast<U64>(
-            std::chrono::duration_cast<std::chrono::microseconds>(
-                std::chrono::steady_clock::now().time_since_epoch())
-                .count());
-    };
-
     // Key callback
     glfwSetKeyCallback(m_window, [](GLFWwindow *window, I32 key, I32 scancode, I32 action, I32 mods) {
         auto *self = static_cast<JzGLFWWindowBackend *>(glfwGetWindowUserPointer(window));
         if (self) {
             JzPlatformKeyEvent event;
-            event.timestamp = static_cast<U64>(
-                std::chrono::duration_cast<std::chrono::microseconds>(
-                    std::chrono::steady_clock::now().time_since_epoch())
-                    .count());
+            event.timestamp = JzClock::GetTimestampMicroseconds();
             event.key      = key;
             event.scancode = scancode;
             event.action   = action;
@@ -480,10 +469,7 @@ void JzGLFWWindowBackend::SetupCallbacks()
             glfwGetCursorPos(window, &x, &y);
 
             JzPlatformMouseButtonEvent event;
-            event.timestamp = static_cast<U64>(
-                std::chrono::duration_cast<std::chrono::microseconds>(
-                    std::chrono::steady_clock::now().time_since_epoch())
-                    .count());
+            event.timestamp = JzClock::GetTimestampMicroseconds();
             event.button   = button;
             event.action   = action;
             event.mods     = mods;
@@ -497,10 +483,7 @@ void JzGLFWWindowBackend::SetupCallbacks()
         auto *self = static_cast<JzGLFWWindowBackend *>(glfwGetWindowUserPointer(window));
         if (self) {
             JzPlatformMouseScrollEvent event;
-            event.timestamp = static_cast<U64>(
-                std::chrono::duration_cast<std::chrono::microseconds>(
-                    std::chrono::steady_clock::now().time_since_epoch())
-                    .count());
+            event.timestamp = JzClock::GetTimestampMicroseconds();
             event.offset = {static_cast<F32>(xOffset), static_cast<F32>(yOffset)};
             self->m_eventQueue.Push(std::move(event));
         }
@@ -511,10 +494,7 @@ void JzGLFWWindowBackend::SetupCallbacks()
         auto *self = static_cast<JzGLFWWindowBackend *>(glfwGetWindowUserPointer(window));
         if (self) {
             JzPlatformMouseMoveEvent event;
-            event.timestamp = static_cast<U64>(
-                std::chrono::duration_cast<std::chrono::microseconds>(
-                    std::chrono::steady_clock::now().time_since_epoch())
-                    .count());
+            event.timestamp = JzClock::GetTimestampMicroseconds();
             event.position = {static_cast<F32>(x), static_cast<F32>(y)};
             self->m_eventQueue.Push(std::move(event));
         }
@@ -525,10 +505,7 @@ void JzGLFWWindowBackend::SetupCallbacks()
         auto *self = static_cast<JzGLFWWindowBackend *>(glfwGetWindowUserPointer(window));
         if (self) {
             JzPlatformMouseEnterEvent event;
-            event.timestamp = static_cast<U64>(
-                std::chrono::duration_cast<std::chrono::microseconds>(
-                    std::chrono::steady_clock::now().time_since_epoch())
-                    .count());
+            event.timestamp = JzClock::GetTimestampMicroseconds();
             event.entered = (entered == GLFW_TRUE);
             self->m_eventQueue.Push(std::move(event));
         }
@@ -541,10 +518,7 @@ void JzGLFWWindowBackend::SetupCallbacks()
             self->m_size = {width, height};
 
             JzPlatformWindowResizeEvent event;
-            event.timestamp = static_cast<U64>(
-                std::chrono::duration_cast<std::chrono::microseconds>(
-                    std::chrono::steady_clock::now().time_since_epoch())
-                    .count());
+            event.timestamp = JzClock::GetTimestampMicroseconds();
             event.size = {width, height};
             self->m_eventQueue.Push(std::move(event));
         }
@@ -555,10 +529,7 @@ void JzGLFWWindowBackend::SetupCallbacks()
         auto *self = static_cast<JzGLFWWindowBackend *>(glfwGetWindowUserPointer(window));
         if (self) {
             JzPlatformFramebufferResizeEvent event;
-            event.timestamp = static_cast<U64>(
-                std::chrono::duration_cast<std::chrono::microseconds>(
-                    std::chrono::steady_clock::now().time_since_epoch())
-                    .count());
+            event.timestamp = JzClock::GetTimestampMicroseconds();
             event.size = {width, height};
             self->m_eventQueue.Push(std::move(event));
         }
@@ -573,10 +544,7 @@ void JzGLFWWindowBackend::SetupCallbacks()
             }
 
             JzPlatformWindowMoveEvent event;
-            event.timestamp = static_cast<U64>(
-                std::chrono::duration_cast<std::chrono::microseconds>(
-                    std::chrono::steady_clock::now().time_since_epoch())
-                    .count());
+            event.timestamp = JzClock::GetTimestampMicroseconds();
             event.position = {x, y};
             self->m_eventQueue.Push(std::move(event));
         }
@@ -587,10 +555,7 @@ void JzGLFWWindowBackend::SetupCallbacks()
         auto *self = static_cast<JzGLFWWindowBackend *>(glfwGetWindowUserPointer(window));
         if (self) {
             JzPlatformWindowIconifyEvent event;
-            event.timestamp = static_cast<U64>(
-                std::chrono::duration_cast<std::chrono::microseconds>(
-                    std::chrono::steady_clock::now().time_since_epoch())
-                    .count());
+            event.timestamp = JzClock::GetTimestampMicroseconds();
             event.iconified = (iconified == GLFW_TRUE);
             self->m_eventQueue.Push(std::move(event));
         }
@@ -601,10 +566,7 @@ void JzGLFWWindowBackend::SetupCallbacks()
         auto *self = static_cast<JzGLFWWindowBackend *>(glfwGetWindowUserPointer(window));
         if (self) {
             JzPlatformWindowMaximizeEvent event;
-            event.timestamp = static_cast<U64>(
-                std::chrono::duration_cast<std::chrono::microseconds>(
-                    std::chrono::steady_clock::now().time_since_epoch())
-                    .count());
+            event.timestamp = JzClock::GetTimestampMicroseconds();
             event.maximized = (maximized == GLFW_TRUE);
             self->m_eventQueue.Push(std::move(event));
         }
@@ -615,10 +577,7 @@ void JzGLFWWindowBackend::SetupCallbacks()
         auto *self = static_cast<JzGLFWWindowBackend *>(glfwGetWindowUserPointer(window));
         if (self) {
             JzPlatformWindowFocusEvent event;
-            event.timestamp = static_cast<U64>(
-                std::chrono::duration_cast<std::chrono::microseconds>(
-                    std::chrono::steady_clock::now().time_since_epoch())
-                    .count());
+            event.timestamp = JzClock::GetTimestampMicroseconds();
             event.focused = (focused == GLFW_TRUE);
             self->m_eventQueue.Push(std::move(event));
         }
@@ -629,10 +588,7 @@ void JzGLFWWindowBackend::SetupCallbacks()
         auto *self = static_cast<JzGLFWWindowBackend *>(glfwGetWindowUserPointer(window));
         if (self) {
             JzPlatformWindowCloseEvent event;
-            event.timestamp = static_cast<U64>(
-                std::chrono::duration_cast<std::chrono::microseconds>(
-                    std::chrono::steady_clock::now().time_since_epoch())
-                    .count());
+            event.timestamp = JzClock::GetTimestampMicroseconds();
             self->m_eventQueue.Push(std::move(event));
         }
     });
@@ -645,10 +601,7 @@ void JzGLFWWindowBackend::SetupCallbacks()
             glfwGetCursorPos(window, &x, &y);
 
             JzPlatformFileDropEvent event;
-            event.timestamp = static_cast<U64>(
-                std::chrono::duration_cast<std::chrono::microseconds>(
-                    std::chrono::steady_clock::now().time_since_epoch())
-                    .count());
+            event.timestamp = JzClock::GetTimestampMicroseconds();
             event.position = {static_cast<F32>(x), static_cast<F32>(y)};
             for (I32 i = 0; i < count; ++i) {
                 event.paths.emplace_back(paths[i]);
@@ -662,10 +615,7 @@ void JzGLFWWindowBackend::SetupCallbacks()
         auto *self = static_cast<JzGLFWWindowBackend *>(glfwGetWindowUserPointer(window));
         if (self) {
             JzPlatformCharEvent event;
-            event.timestamp = static_cast<U64>(
-                std::chrono::duration_cast<std::chrono::microseconds>(
-                    std::chrono::steady_clock::now().time_since_epoch())
-                    .count());
+            event.timestamp = JzClock::GetTimestampMicroseconds();
             event.codepoint = codepoint;
             self->m_eventQueue.Push(std::move(event));
         }
@@ -676,10 +626,7 @@ void JzGLFWWindowBackend::SetupCallbacks()
         auto *self = static_cast<JzGLFWWindowBackend *>(glfwGetWindowUserPointer(window));
         if (self) {
             JzPlatformContentScaleEvent event;
-            event.timestamp = static_cast<U64>(
-                std::chrono::duration_cast<std::chrono::microseconds>(
-                    std::chrono::steady_clock::now().time_since_epoch())
-                    .count());
+            event.timestamp = JzClock::GetTimestampMicroseconds();
             event.scale = {xScale, yScale};
             self->m_eventQueue.Push(std::move(event));
         }

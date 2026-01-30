@@ -54,6 +54,12 @@ public:
      */
     void SetTimeScale(F32 timeScale);
 
+    /**
+     * @brief Get the current timestamp in microseconds since epoch
+     * @return Timestamp in microseconds as U64
+     */
+    static U64 GetTimestampMicroseconds();
+
 private:
     /**
      * @brief Initialize the clock
