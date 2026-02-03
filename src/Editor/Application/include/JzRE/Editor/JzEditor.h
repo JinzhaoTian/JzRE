@@ -49,11 +49,21 @@ public:
     void PreUpdate();
 
     /**
-     * @brief Editor main loop
+     * @brief Update editor logic (shortcuts, mode updates, panel updates)
      *
      * @param deltaTime Time since last frame in seconds
      */
     void Update(F32 deltaTime);
+
+    /**
+     * @brief Render editor views and UI
+     *
+     * This should be called after game systems have been updated and before Present().
+     * Rendering order: Game scene (via RenderSystem) -> SceneView -> ImGui UI
+     *
+     * @param deltaTime Time since last frame in seconds
+     */
+    void Render(F32 deltaTime);
 
     /**
      * @brief Swapping the buffers

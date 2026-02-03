@@ -77,10 +77,25 @@ void JzRE::JzEditor::PreUpdate() { }
 
 void JzRE::JzEditor::Update(JzRE::F32 deltaTime)
 {
+    // Editor logic updates only - no rendering
     HandleGlobalShortcuts();
     UpdateCurrentEditorMode(deltaTime);
-    RenderViews(deltaTime);
     UpdateEditorPanels(deltaTime);
+
+    // Update SceneView logic (camera control, input handling)
+    auto &sceneView = m_panelsManager->GetPanelAs<JzSceneView>("Scene View");
+    if (sceneView.IsOpened()) {
+        sceneView.Update(deltaTime);
+    }
+}
+
+void JzRE::JzEditor::Render(JzRE::F32 deltaTime)
+{
+    // Rendering phase:
+    // 1. Game scene is rendered by RenderSystem (already done in UpdateSystems)
+    // 2. Render SceneView (captures game scene to framebuffer)
+    // 3. Render ImGui UI on top
+    RenderViews(deltaTime);
     RenderEditorUI(deltaTime);
 }
 
@@ -109,13 +124,11 @@ void JzRE::JzEditor::UpdateCurrentEditorMode(JzRE::F32 deltaTime)
     // TODO
 }
 
-void JzRE::JzEditor::RenderViews(JzRE::F32 deltaTime)
+void JzRE::JzEditor::RenderViews([[maybe_unused]] JzRE::F32 deltaTime)
 {
+    // Render SceneView (and other view panels in the future)
+    // Note: SceneView.Update() is called in JzEditor::Update() for logic updates
     auto &sceneView = m_panelsManager->GetPanelAs<JzSceneView>("Scene View");
-
-    if (sceneView.IsOpened()) {
-        sceneView.Update(deltaTime);
-    }
 
     if (sceneView.IsOpened() && sceneView.IsVisible()) {
         sceneView.Render();

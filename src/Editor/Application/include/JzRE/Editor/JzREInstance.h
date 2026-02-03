@@ -53,11 +53,22 @@ protected:
     void OnStart() override;
 
     /**
-     * @brief Called after 3D scene rendering, before buffer swap
+     * @brief Called during the update phase for editor logic
      *
      * @param deltaTime Time elapsed since the last frame in seconds
      *
-     * Renders the editor UI (ImGui panels).
+     * Updates editor logic (shortcuts, mode updates, panel updates).
+     * Called before UpdateSystems() in the main loop.
+     */
+    void OnUpdate(F32 deltaTime) override;
+
+    /**
+     * @brief Called during the render phase for editor rendering
+     *
+     * @param deltaTime Time elapsed since the last frame in seconds
+     *
+     * Renders editor views and ImGui UI.
+     * Called after UpdateSystems() and before Present().
      */
     void OnRender(F32 deltaTime) override;
 
