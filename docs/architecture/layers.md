@@ -11,21 +11,23 @@ JzRE is a cross-platform, multi-graphics-API game engine built with C++20. The c
 ```mermaid
 graph TB
     subgraph "Editor Application"
-        EditorApp[JzRE Executable]
+        EditorApp[JzREInstance Executable]
         EditorModule[JzEditor]
         UIModule[UI - ImGui Wrappers]
     end
 
     subgraph "Runtime Layers"
         subgraph "Function Layer"
-            Render[Rendering]
-            ECS[ECS/Scene]
-            Input[Input]
-            Window[Window]
+            Render[JzRenderSystem]
+            ECS[JzWorld/ECS]
+            Event[JzEventSystem]
+            Input[JzInputSystem]
+            Window[JzWindowSystem]
+            Asset[JzAssetSystem]
         end
 
         subgraph "Resource Layer"
-            ResMgr[Resource Manager]
+            AssetMgr[JzAssetManager]
             Factories[Factories]
         end
 
@@ -33,7 +35,7 @@ graph TB
             Types[Types]
             Math[Math]
             Threading[Threading]
-            Events[Events]
+            Events[Platform Events]
         end
 
         subgraph "Platform Layer"
@@ -48,11 +50,12 @@ graph TB
     EditorModule --> Render
     UIModule --> RHI
 
-    Render --> ResMgr
-    ECS --> ResMgr
+    Render --> AssetMgr
+    Asset --> AssetMgr
+    ECS --> AssetMgr
     Render --> RHI
 
-    ResMgr --> Types
+    AssetMgr --> Types
     RHI --> Graphics
     Graphics --> Platform
     Platform --> Types
@@ -66,14 +69,17 @@ graph TB
 
 Engine foundation - no dependencies on other modules.
 
-| Component | Files                             |
-| --------- | --------------------------------- |
-| Types     | `JzRETypes.h`                     |
-| Math      | `JzVector.h`, `JzMatrix.h`        |
-| Threading | `JzThreadPool.h`, `JzTaskQueue.h` |
-| Events    | `JzEvent.h`                       |
-| Services  | `JzServiceContainer.h`            |
-| Logging   | `JzLogger.h`                      |
+| Component  | Files                                          |
+| ---------- | ---------------------------------------------- |
+| Types      | `JzRETypes.h`, `JzVertex.h`                    |
+| Math       | `JzVector.h`, `JzMatrix.h`                     |
+| Timing     | `JzClock.h`                                    |
+| Threading  | `JzThreadPool.h`, `JzTaskQueue.h`              |
+| Events     | `JzPlatformEvent.h`, `JzPlatformEventQueue.h`  |
+| Services   | `JzServiceContainer.h`                         |
+| Logging    | `JzLogger.h`, `JzLogSink.h`, `JzELog.h`        |
+| Utilities  | `JzDelegate.h`, `JzFileSystemUtils.h`          |
+| Reflection | `JzObject.h`, `JzReflectable.h`, `JzISerializable.h` |
 
 ### 2. Platform Layer (`src/Runtime/Platform/`)
 
@@ -90,23 +96,32 @@ Provides platform-agnostic services through abstraction:
 ```
 Platform/
 ├── include/JzRE/Runtime/Platform/
-│   ├── RHI/          # Device, GPU objects, Pipeline, RenderPass
-│   ├── Command/      # RHI command pattern (Command, CommandList, commands)
-│   ├── Threading/    # RenderThreadPool, Task system
-│   ├── Window/       # Window backend interface and GLFW implementation
-│   ├── Dialog/       # File dialogs, message boxes
-│   ├── OpenGL/       # OpenGL backend headers
-│   └── Vulkan/       # Vulkan backend headers
+│   ├── RHI/          # Device, GPU objects, Pipeline, RenderPass, Capabilities, Stats
+│   │   ├── JzDevice.h, JzDeviceFactory.h
+│   │   ├── JzRHIPipeline.h, JzRHIRenderPass.h
+│   │   ├── JzRHICapabilities.h, JzRHIStats.h
+│   │   └── JzGPU*Object.h (Buffer, Texture, Shader, Framebuffer, VertexArray)
+│   ├── Command/      # RHI command pattern (deferred execution)
+│   │   ├── JzRHICommand.h, JzRHICommandList.h, JzRHICommandQueue.h
+│   │   └── Jz*Command.h (Clear, Draw, Bind, SetViewport, RenderPass, etc.)
+│   ├── Threading/    # Multi-threaded rendering infrastructure
+│   │   ├── JzRenderThreadPool.h, JzRenderThreadContext.h
+│   │   ├── JzRenderTask.h, JzCommandBufferTask.h
+│   │   └── JzRHICommandManager.h
+│   ├── Window/       # Window backend abstraction
+│   │   ├── JzIWindowBackend.h, JzGLFWWindowBackend.h
+│   │   ├── JzWindowConfig.h
+│   │   └── JzPlatformInputEvents.h
+│   ├── Dialog/       # Cross-platform file dialogs
+│   ├── OpenGL/       # OpenGL backend implementation
+│   └── Vulkan/       # Vulkan backend (planned)
 └── src/
-    ├── RHI/          # DeviceFactory, RHIStats
-    ├── Command/      # Command implementations
-    ├── Threading/    # Thread pool, task implementations
-    ├── Window/       # GLFW window implementation
-    ├── OpenGL/       # OpenGL backend implementations
-    └── {Platform}/   # Platform-specific dialogs (Windows/macOS/Linux)
+    ├── RHI/, Command/, Threading/, Window/
+    ├── OpenGL/, Vulkan/
+    └── Windows/, Linux/, macOS/  # Platform-specific code
 ```
 
-**Key Classes**: `JzDevice`, `JzDeviceFactory`, `JzRHICommandList`, `JzGPU*Object`, `JzFileDialog`
+**Key Classes**: `JzDevice`, `JzDeviceFactory`, `JzRHICommandList`, `JzGPU*Object`, `JzIWindowBackend`
 
 ### 3. Resource Layer (`src/Runtime/Resource/`)
 
@@ -114,20 +129,27 @@ Asset loading, caching, and lifecycle management.
 
 | Component           | Description                                                          |
 | ------------------- | -------------------------------------------------------------------- |
-| `JzResourceManager` | Unified resource access                                              |
+| `JzAssetManager`    | Central asset management with generation-based handles               |
+| `JzAssetRegistry<T>`| Per-type asset storage with O(1) access                              |
+| `JzAssetHandle<T>`  | Type-safe handle with generation validation                          |
+| `JzLRUCache`        | LRU cache with memory budget management                              |
 | `Jz*Factory`        | Type-specific resource creation                                      |
-| Resource Types      | `JzTexture`, `JzMesh`, `JzModel`, `JzShader`, `JzMaterial`, `JzFont` |
+| Resource Types      | `JzTexture`, `JzMesh`, `JzModel`, `JzShaderAsset`, `JzMaterial`, `JzFont` |
+| Shader System       | `JzShaderProgram`, `JzShaderVariant`, `JzShaderVariantManager`       |
 
 ### 4. Function Layer (`src/Runtime/Function/`)
 
 High-level engine systems:
 
-| Subsystem | Directory | Key Classes                                    |
-| --------- | --------- | ---------------------------------------------- |
-| Scene     | `Scene/`  | `JzActor`                                      |
-| ECS       | `ECS/`    | `JzEntityManager`, `Jz*System`, `Jz*Component` |
-| Input     | `ECS/`    | `JzInputSystem`, `JzInputComponents`           |
-| Window    | `ECS/`    | `JzWindowSystem` (integrated into ECS)         |
+| Subsystem | Directory | Key Classes                                                    |
+| --------- | --------- | -------------------------------------------------------------- |
+| Scene     | `Scene/`  | `JzActor` (legacy)                                             |
+| ECS       | `ECS/`    | `JzWorld`, `JzSystem`, `Jz*Component` (EnTT-based)             |
+| Event     | `Event/`  | `JzEventSystem`, `JzEventQueue`, `JzECSEvent`, `JzPlatformEventAdapter` |
+| Input     | `ECS/`    | `JzInputSystem`, `JzInputComponents`, `JzInputEvents`          |
+| Window    | `ECS/`    | `JzWindowSystem`, `JzWindowComponents`, `JzWindowEvents`       |
+| Asset     | `ECS/`    | `JzAssetSystem`, `JzAssetComponents` (hot reload, ECS integration) |
+| Render    | `ECS/`    | `JzRenderSystem`, `JzCameraSystem`, `JzLightSystem`            |
 
 ---
 
@@ -135,13 +157,15 @@ High-level engine systems:
 
 Development tools built on top of Runtime:
 
-| Component         | Description                                                 |
-| ----------------- | ----------------------------------------------------------- |
-| `JzEditor`        | Editor main loop                                            |
-| `JzPanelsManager` | Panel layout                                                |
-| `JzUIManager`     | ImGui management                                            |
-| `UI/`             | ImGui widget wrappers                                       |
-| Panels            | `JzSceneView`, `JzHierarchy`, `JzAssetBrowser`, `JzConsole` |
+| Component         | Description                                                          |
+| ----------------- | -------------------------------------------------------------------- |
+| Application/      | `JzEditor`, `JzREHub`, `JzREInstance`, `JzCanvas`, `JzUIManager`     |
+| Core/             | `JzEvent` (editor-specific events)                                   |
+| Panels/           | `JzView`, `JzPanelsManager`, `JzSceneView`, `JzGameView`             |
+|                   | `JzHierarchy`, `JzAssetBrowser`, `JzAssetView`, `JzConsole`          |
+|                   | `JzMaterialEditor`, `JzMenuBar`, and 30+ UI panel files              |
+| UI/               | ImGui widget wrappers (`JzButton`, `JzContextMenu`, `JzDataWidget`)  |
+|                   | `JzDragnDropSource/Target`, `JzColorPicker`, `JzSlider`, etc.        |
 
 ---
 
@@ -177,8 +201,8 @@ graph LR
 ### Dependency Injection
 
 ```cpp
-JzServiceContainer::Provide<JzResourceManager>(manager);
-auto& mgr = JzServiceContainer::Get<JzResourceManager>();
+JzServiceContainer::Provide<JzAssetManager>(assetManager);
+auto& mgr = JzServiceContainer::Get<JzAssetManager>();
 ```
 
 ### Command Pattern

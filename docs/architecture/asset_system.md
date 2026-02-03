@@ -188,14 +188,19 @@ struct JzMaterialAssetComponent {
 ### Asset Tags
 
 ```cpp
-struct JzAssetLoadingTag {};    // Loading in progress
-struct JzAssetReadyTag {};      // All assets ready
-struct JzAssetLoadFailedTag {}; // Load failed
+struct JzAssetLoadingTag {};     // Loading in progress
+struct JzAssetReadyTag {};       // All assets ready
+struct JzAssetLoadFailedTag {};  // Load failed
+
+// Hot reload tags (added by JzAssetSystem when source files change)
+struct JzShaderDirtyTag {};      // Shader source modified, recompiled
+struct JzTextureDirtyTag {};     // Texture file modified
+struct JzMaterialDirtyTag {};    // Material definition modified
 ```
 
 ### JzAssetSystem
 
-The main ECS system that coordinates loading state with ECS and provides high-level APIs:
+The main ECS system that coordinates loading state with ECS and provides high-level APIs. **Note:** `JzAssetSystem` has absorbed the functionality of the former `JzAssetLoadingSystem`.
 
 ```cpp
 class JzAssetSystem : public JzSystem {
@@ -208,6 +213,8 @@ class JzAssetSystem : public JzSystem {
         // 2. Process mesh/material/shader asset components
         // 3. Update component caches when loaded
         // 4. Manage state tags (Loading/Ready/Failed)
+        // 5. Check for shader hot reload (JzShaderDirtyTag)
+        // 6. Propagate dirty tags to dependent entities
     }
 
     // High-level APIs (replaces manual registry access)
@@ -218,7 +225,12 @@ class JzAssetSystem : public JzSystem {
     JzEntity SpawnModel(const String& path);
     void AttachMesh(JzEntity entity, JzMeshHandle handle);
     void AttachMaterial(JzEntity entity, JzMaterialHandle handle);
+    void AttachShader(JzEntity entity, JzShaderHandle handle);
     void DetachAllAssets(JzEntity entity);
+
+    // Hot reload
+    void EnableHotReload(Bool enable);
+    void CheckForModifiedAssets();
 };
 ```
 
@@ -371,27 +383,7 @@ The LRU cache enforces memory budgets:
 - `JzLRUCacheManager`: Simple mutex for entry tracking
 - Callbacks invoked on main thread via result queue
 
-## Comparison with JzResourceManager
-
-| Feature | JzResourceManager | JzAssetManager |
-|---------|-------------------|----------------|
-| Handle type | `std::shared_ptr<T>` | `JzAssetHandle<T>` |
-| Generation check | No | Yes |
-| Async loading | No (TODO) | Yes |
-| Memory budget | No | Yes (LRU) |
-| ECS integration | Manual | Automatic (via JzAssetSystem) |
-| Thread safety | Mutex per cache | Fine-grained |
-
-## Migration Path
-
-1. **Phase 1**: Use new system for new code
-2. **Phase 2**: Add adapter for existing components
-3. **Phase 3**: Gradually migrate existing code
-4. **Phase 4**: Deprecate old components
-
-Both systems can coexist during migration.
-
-## New High-Level APIs
+## High-Level APIs
 
 ### RegisterAsset<T>
 
@@ -488,14 +480,36 @@ auto shadowVariant = shader->GetVariant(defines);
 
 ### Hot Reload Support
 
-`JzShaderAsset` supports hot reloading for development:
+`JzShaderAsset` supports hot reloading for development. Hot reload is now integrated into `JzAssetSystem`:
 
 ```cpp
-// Check if shader files have been modified
+// JzAssetSystem automatically monitors shader files
+// When a shader file changes, entities with that shader get JzShaderDirtyTag
+
+// Manual check (legacy approach):
 if (shader->NeedsReload()) {
     shader->Reload();  // Recompiles all variants
 }
+
+// ECS-integrated approach (recommended):
+auto view = world.View<JzShaderAssetComponent, JzShaderDirtyTag>();
+for (auto entity : view) {
+    // Shader was hot-reloaded by JzAssetSystem
+    // Handle re-binding uniforms, updating materials, etc.
+    world.GetRegistry().remove<JzShaderDirtyTag>(entity);
+}
 ```
+
+### Hot Reload Integration in JzAssetSystem
+
+`JzAssetSystem` integrates shader hot reload into the ECS update loop:
+
+1. **File Watching**: Monitors shader source files for modifications
+2. **Automatic Recompilation**: Recompiles shader variants when source changes
+3. **Entity Tagging**: Adds `JzShaderDirtyTag` to all entities using the modified shader
+4. **Cache Invalidation**: Updates `JzShaderVariantManager` cache
+
+This enables seamless iteration during development without manual reload calls.
 
 ### Factory Registration
 

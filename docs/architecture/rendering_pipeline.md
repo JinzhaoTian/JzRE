@@ -11,7 +11,11 @@ This document describes the ECS-based rendering pipeline in JzRE. The rendering 
 ```
 JzRERuntime
   └── JzWorld
+        ├── Input Systems        (JzSystemPhase::Input)
+        │     ├── JzWindowSystem - Window polling, input state sync
+        │     └── JzInputSystem  - Input processing, event emission
         ├── Logic Systems        (JzSystemPhase::Logic)
+        │     ├── JzAssetSystem  - Asset loading, hot reload
         │     └── User logic systems (movement, physics, AI, animations)
         ├── PreRender Systems    (JzSystemPhase::PreRender)
         │     ├── JzCameraSystem - Camera matrices, orbit control
@@ -24,16 +28,16 @@ JzRERuntime
 
 Systems execute in 8 phases grouped into 3 categories:
 
-| Group         | Phase      | Purpose                                    | Example Systems                       |
-| ------------- | ---------- | ------------------------------------------ | ------------------------------------- |
-| **Logic**     | Input      | Input processing, event handling           | InputSystem                           |
-|               | Physics    | Physics simulation, collision detection    | PhysicsSystem                         |
-|               | Animation  | Skeletal animation, blend trees            | AnimationSystem                       |
-|               | Logic      | General game logic, AI, scripts            | AISystem, ScriptSystem                |
-| **PreRender** | PreRender  | Camera matrices, light collection          | JzCameraSystem, JzLightSystem |
-|               | Culling    | Frustum culling, occlusion, LOD selection  | CullingSystem                         |
-| **Render**    | RenderPrep | Batch building, instance data preparation  | BatchBuildingSystem, InstanceSystem   |
-|               | Render     | Actual GPU draw calls                      | JzRenderSystem                    |
+| Group         | Phase      | Purpose                                    | Example Systems                           |
+| ------------- | ---------- | ------------------------------------------ | ----------------------------------------- |
+| **Logic**     | Input      | Input processing, event handling           | JzWindowSystem, JzInputSystem             |
+|               | Physics    | Physics simulation, collision detection    | PhysicsSystem (user-defined)              |
+|               | Animation  | Skeletal animation, blend trees            | AnimationSystem (user-defined)            |
+|               | Logic      | General game logic, AI, scripts            | JzAssetSystem, JzMoveSystem, user systems |
+| **PreRender** | PreRender  | Camera matrices, light collection          | JzCameraSystem, JzLightSystem             |
+|               | Culling    | Frustum culling, occlusion, LOD selection  | CullingSystem (user-defined)              |
+| **Render**    | RenderPrep | Batch building, instance data preparation  | BatchBuildingSystem (user-defined)        |
+|               | Render     | Actual GPU draw calls                      | JzRenderSystem                            |
 
 ### System Responsibilities
 

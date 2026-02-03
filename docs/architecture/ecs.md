@@ -247,11 +247,11 @@ void JzRERuntime::Run() {
 
 ## Event System Integration
 
-The ECS event system bridges `JzWindowSystem` and `JzInputSystem` with `JzEventDispatcherSystem`, enabling any system to subscribe to typed window/input events.
+The ECS event system bridges `JzWindowSystem` and `JzInputSystem` with `JzEventSystem`, enabling any system to subscribe to typed window/input events. The event system is stored as a singleton in the `JzWorld` context.
 
 ### Event Flow
 
-All events flow through `JzEventDispatcherSystem`. There are no public delegates on
+All events flow through `JzEventSystem`. There are no public delegates on
 `JzWindowSystem` — the backend's internal `JzDelegate` callbacks are an implementation
 detail of the Platform layer.
 
@@ -271,7 +271,7 @@ JzInputSystem::Update()
     ├── Updates action values (JzInputActionComponent)
     └── Emits input ECS events (JzKeyEvent, JzMouseButtonEvent, etc.)
     ↓
-JzEventDispatcherSystem::Update()
+JzEventSystem (stored in JzWorld context)
     └── Dispatches all queued events to registered handlers
     ↓
 Any System → RegisterHandler<JzKeyEvent>(...) to receive events
@@ -307,15 +307,16 @@ Any System → RegisterHandler<JzKeyEvent>(...) to receive events
 
 ```cpp
 void MySystem::OnInit(JzWorld &world) {
-    auto &dispatcher = JzServiceContainer::Get<JzEventDispatcherSystem>();
+    // Event system is stored in world context (not service container)
+    auto &eventSystem = world.GetContext<JzEventSystem>();
 
-    dispatcher.RegisterHandler<JzKeyEvent>([](const JzKeyEvent &event) {
+    eventSystem.RegisterHandler<JzKeyEvent>([](const JzKeyEvent &event) {
         if (event.key == JzEKeyCode::Escape && event.action == JzEKeyAction::Pressed) {
             // Handle escape key
         }
     });
 
-    dispatcher.RegisterHandler<JzWindowResizedEvent>([](const JzWindowResizedEvent &event) {
+    eventSystem.RegisterHandler<JzWindowResizedEvent>([](const JzWindowResizedEvent &event) {
         // Handle window resize
     });
 }
@@ -323,12 +324,16 @@ void MySystem::OnInit(JzWorld &world) {
 
 ### System Registration Order
 
-The event dispatcher must be registered after window/input systems so that events queued during the current frame are dispatched in the same frame:
+The event system is initialized in the world context before registering other systems:
 
 ```cpp
-m_windowSystem          = m_world->RegisterSystem<JzWindowSystem>();
-m_inputSystem           = m_world->RegisterSystem<JzInputSystem>();
-m_eventDispatcherSystem = m_world->RegisterSystem<JzEventDispatcherSystem>();
+// Initialize event system in world context
+m_world->SetContext<JzEventSystem>(std::make_unique<JzEventSystem>());
+
+// Register systems in order
+m_windowSystem = m_world->RegisterSystem<JzWindowSystem>();
+m_inputSystem  = m_world->RegisterSystem<JzInputSystem>();
+m_assetSystem  = m_world->RegisterSystem<JzAssetSystem>();
 // ... remaining systems
 ```
 
@@ -336,15 +341,17 @@ m_eventDispatcherSystem = m_world->RegisterSystem<JzEventDispatcherSystem>();
 
 ## Available Systems
 
-| System                      | Phase     | Description                                                       |
-| --------------------------- | --------- | ----------------------------------------------------------------- |
-| `JzWindowSystem`            | Input     | Polls backend, syncs window/input state, emits window events      |
-| `JzInputSystem`             | Input     | Processes input, syncs legacy components, emits input events      |
-| `JzEventDispatcherSystem`   | Input     | Dispatches queued ECS events to registered handlers               |
-| `JzAssetLoadingSystem`      | Logic     | Manages asset loading and resource creation                       |
-| `JzCameraSystem`            | PreRender | Updates camera matrices, reads input components for orbit control |
-| `JzLightSystem`             | PreRender | Collects light data for rendering                                 |
-| `JzRenderSystem`            | Render    | Manages framebuffer, renders entities with mesh/material          |
+| System             | Phase     | Description                                                       |
+| ------------------ | --------- | ----------------------------------------------------------------- |
+| `JzWindowSystem`   | Input     | Polls backend, syncs window/input state, emits window events      |
+| `JzInputSystem`    | Input     | Processes input, syncs legacy components, emits input events      |
+| `JzAssetSystem`    | Logic     | Asset loading, hot reload, shader variant management              |
+| `JzMoveSystem`     | Logic     | Entity movement and basic physics                                 |
+| `JzCameraSystem`   | PreRender | Updates camera matrices, reads input components for orbit control |
+| `JzLightSystem`    | PreRender | Collects light data for rendering                                 |
+| `JzRenderSystem`   | Render    | Manages framebuffer, renders entities with mesh/material          |
+
+**Note:** `JzEventSystem` is stored in `JzWorld` context (accessed via `world.GetContext<JzEventSystem>()`), not registered as a system.
 
 ---
 
@@ -429,11 +436,22 @@ Components are organized into per-system header files.
 
 ### Asset Components (`JzAssetComponents.h`)
 
-| Component                   | Description                                   |
-| --------------------------- | --------------------------------------------- |
-| `JzMeshAssetComponent`      | Reference to mesh asset for deferred loading  |
-| `JzMaterialAssetComponent`  | Reference to material asset                   |
-| `JzAssetReadyTag`           | Tag indicating all assets are GPU-ready       |
+| Component                    | Description                                               |
+| ---------------------------- | --------------------------------------------------------- |
+| `JzMeshAssetComponent`       | Reference to mesh asset for deferred loading              |
+| `JzMaterialAssetComponent`   | Reference to material asset (with shader variants)        |
+| `JzTextureAssetComponent`    | Reference to texture asset                                |
+| `JzModelAssetComponent`      | Reference to model asset                                  |
+| `JzShaderAssetComponent`     | Reference to shader asset (with defines)                  |
+| `JzAssetLoadingTag`          | Tag indicating asset is currently loading                 |
+| `JzAssetReadyTag`            | Tag indicating all assets are GPU-ready                   |
+| `JzAssetLoadFailedTag`       | Tag indicating asset load failed                          |
+| `JzShaderDirtyTag`           | Tag for shader hot reload detection                       |
+| `JzTextureDirtyTag`          | Tag for texture hot reload detection                      |
+| `JzMaterialDirtyTag`         | Tag for material hot reload detection                     |
+| `JzAssetReferenceComponent`  | Asset lifecycle tracking                                  |
+| `JzRenderQueueComponent`     | Render queue classification (Background/Opaque/Transparent/Overlay) |
+| `JzInstanceGroupComponent`   | Instance rendering group for batching                     |
 
 ---
 
@@ -541,7 +559,7 @@ JzInputSystem (Input Phase)
     ├── Updates action values (JzInputActionComponent)
     └── Emits ECS events (JzKeyEvent, JzMouseButtonEvent, etc.)
     ↓
-JzEventDispatcherSystem → registered handlers
+JzEventSystem (in JzWorld context) → registered handlers
     ↓
 Game Systems (CameraSystem, PlayerSystem, etc.)
 ```
@@ -650,34 +668,46 @@ JzVec3 lightColor = lightSystem->GetPrimaryLightColor();
 
 ```
 src/Runtime/Function/
-├── include/JzRE/Runtime/Function/ECS/
-│   ├── JzEntity.h                  # Entity type definitions
-│   ├── JzWorld.h                   # Core world class
-│   ├── JzWorld.inl                 # Template implementations
-│   ├── JzSystem.h                  # System base class
-│   ├── JzEntityComponents.h        # Entity metadata (tags, name, UUID)
-│   ├── JzTransformComponents.h     # Transform, velocity
-│   ├── JzCameraComponents.h        # Camera, orbit controller, camera input
-│   ├── JzLightComponents.h         # Directional, point, spot lights
-│   ├── JzRenderComponents.h        # Mesh, material, renderable, skybox, grid, gizmo
-│   ├── JzSpatialComponents.h       # Bounding volumes, spatial partition, streaming
-│   ├── JzInputComponents.h         # Input state, actions, legacy mouse/keyboard
-│   ├── JzWindowComponents.h        # Window state, display, events
-│   ├── JzAssetComponents.h         # Asset references and ready tags
+├── include/JzRE/Runtime/Function/
+│   ├── ECS/
+│   │   ├── JzEntity.h                  # Entity type definitions (handle with generation)
+│   │   ├── JzWorld.h                   # Core world class (wraps entt::registry)
+│   │   ├── JzWorld.inl                 # Template implementations
+│   │   ├── JzSystem.h                  # System base class with phases
+│   │   │
+│   │   ├── JzEntityComponents.h        # Entity metadata (tags, name, UUID)
+│   │   ├── JzTransformComponents.h     # Transform, velocity
+│   │   ├── JzCameraComponents.h        # Camera, orbit controller, camera input
+│   │   ├── JzLightComponents.h         # Directional, point, spot lights
+│   │   ├── JzRenderComponents.h        # Mesh, material, renderable, skybox, grid, gizmo
+│   │   ├── JzSpatialComponents.h       # Bounding volumes, spatial partition, streaming
+│   │   ├── JzInputComponents.h         # Input state, actions, legacy mouse/keyboard
+│   │   ├── JzWindowComponents.h        # Window state, display, events
+│   │   ├── JzAssetComponents.h         # Asset refs, ready/loading/dirty tags
+│   │   │
+│   │   ├── JzCameraSystem.h
+│   │   ├── JzLightSystem.h
+│   │   ├── JzRenderSystem.h
+│   │   ├── JzInputSystem.h
+│   │   ├── JzWindowSystem.h
+│   │   ├── JzAssetSystem.h             # Asset loading, hot reload integration
+│   │   └── JzMoveSystem.h
 │   │
-│   ├── JzCameraSystem.h
-│   ├── JzLightSystem.h
-│   ├── JzRenderSystem.h
-│   ├── JzInputSystem.h
-│   ├── JzAssetSystem.h            # Includes hot reload functionality
-│   └── JzMoveSystem.h
+│   └── Event/
+│       ├── JzEventSystem.h             # Main event dispatcher (stored in JzWorld context)
+│       ├── JzEventQueue.h              # Lock-free event queue
+│       ├── JzIEventHandler.h           # Event handler interface
+│       ├── JzECSEvent.h                # ECS event wrapper & type registry
+│       ├── JzWindowEvents.h            # Window events (resize, focus, close, etc.)
+│       ├── JzInputEvents.h             # Input events (key, mouse, scroll)
+│       └── JzPlatformEventAdapter.h    # Adapter from platform to ECS events
+│
 └── src/ECS/
     ├── JzWorld.cpp
-    ├── JzCameraSystem.cpp
-    ├── JzLightSystem.cpp
-    ├── JzRenderSystem.cpp
-    ├── JzInputSystem.cpp
-    └── JzAssetSystem.cpp
+    ├── JzCameraSystem.cpp, JzLightSystem.cpp, JzRenderSystem.cpp
+    ├── JzInputSystem.cpp, JzWindowSystem.cpp
+    ├── JzAssetSystem.cpp
+    └── JzMoveSystem.cpp
 ```
 
 ---

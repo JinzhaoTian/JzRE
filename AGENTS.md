@@ -24,19 +24,17 @@
 ```
 JzRE/
 ├── src/
-│   ├── Core/         # Fundamental types, math, threading, logging
-│   ├── RHI/          # Render Hardware Interface (abstract)
-│   ├── Graphics/     # Graphics API backends (OpenGL, Vulkan)
-│   ├── Resource/     # Asset management system
-│   ├── ECS/          # Entity-Component-System
-│   ├── Platform/     # OS-specific abstractions
-│   ├── UI/           # ImGui wrapper components
-│   ├── Editor/       # Editor application logic
-│   └── App/          # Application entry points
-├── docs/             # Architecture documentation
-├── tests/            # Unit tests
-├── resources/        # Runtime assets (shaders, textures)
-└── programs/         # Example programs
+│   ├── Runtime/
+│   │   ├── Core/         # Fundamental types, math, threading, logging
+│   │   ├── Platform/     # RHI abstraction, OpenGL/Vulkan backends, OS APIs
+│   │   ├── Resource/     # Asset management (JzAssetManager, factories)
+│   │   ├── Function/     # ECS systems, input, window, events
+│   │   └── Interface/    # JzRERuntime application framework
+│   └── Editor/           # ImGui-based editor panels and UI
+├── docs/                 # Architecture documentation
+├── tests/                # Unit tests (GTest)
+├── resources/            # Runtime assets (shaders, textures)
+└── programs/             # Code generation tools (JzREHeaderTool)
 ```
 
 ---
@@ -110,17 +108,18 @@ File headers must include:
 
 ```cpp
 // Register
-JzServiceContainer::Provide<JzResourceManager>(resourceManager);
+JzServiceContainer::Provide<JzAssetManager>(assetManager);
 
 // Retrieve
-auto& resMgr = JzServiceContainer::Get<JzResourceManager>();
+auto& assetMgr = JzServiceContainer::Get<JzAssetManager>();
 ```
 
-### Factory Pattern (Resources)
+### Factory Pattern (Assets)
 
 ```cpp
-resourceManager.RegisterFactory<JzTexture>(std::make_unique<JzTextureFactory>());
-auto texture = resourceManager.GetResource<JzTexture>("path/to/texture.png");
+assetManager.RegisterFactory<JzTexture>(std::make_unique<JzTextureFactory>());
+auto textureHandle = assetManager.LoadSync<JzTexture>("path/to/texture.png");
+auto* texture = assetManager.Get(textureHandle);
 ```
 
 ### Command Pattern (RHI)
@@ -134,21 +133,27 @@ cmdList->End();
 device->ExecuteCommandList(cmdList);
 ```
 
-### ECS Pattern
+### ECS Pattern (EnTT-based)
 
 ```cpp
+JzWorld world;
+
 // Create entity
-auto entity = entityManager.CreateEntity();
+auto entity = world.CreateEntity();
 
 // Add components
-entityManager.AddComponent<JzTransformComponent>(entity, position, rotation, scale);
-entityManager.AddComponent<JzMeshComponent>(entity, mesh);
+world.AddComponent<JzTransformComponent>(entity);
+world.AddComponent<JzMeshComponent>(entity);
 
 // Query entities
-for (auto e : entityManager.View<JzTransformComponent, JzMeshComponent>()) {
-    auto& transform = entityManager.GetComponent<JzTransformComponent>(e);
-    // ...
+auto view = world.View<JzTransformComponent, JzMeshComponent>();
+for (auto [e, transform, mesh] : view.each()) {
+    transform.position += velocity * deltaTime;
 }
+
+// Store singletons in world context
+world.SetContext<JzEventSystem>(std::make_unique<JzEventSystem>());
+auto& eventSystem = world.GetContext<JzEventSystem>();
 ```
 
 ---
@@ -179,13 +184,19 @@ cmake --build build
 ## Module Dependencies
 
 ```
-App → Editor → UI, ECS, Resource
-ECS → RHI, Resource, Core
-Resource → RHI, Core
-UI → RHI, Core
-RHI → Core
-Graphics → RHI, Platform
-Platform → Core
+App → Editor → JzRERuntime
+JzRERuntime → JzRuntimeFunction → JzRuntimeResource → JzRuntimePlatform → JzRuntimeCore
+```
+
+**Detailed:**
+```
+JzREInstance (Executable)
+  └── JzEditor (Static) → JzRERuntime, imgui
+        └── JzRERuntime (Interface) → All runtime layers
+              └── JzRuntimeFunction (Static) → ECS, Event, Input, Window systems
+                    └── JzRuntimeResource (Static) → JzAssetManager, factories
+                          └── JzRuntimePlatform (Static) → RHI, OpenGL, Window
+                                └── JzRuntimeCore (Static) → Types, math, logging
 ```
 
 **Rule**: Higher layers depend on lower layers. Never introduce reverse dependencies.
@@ -196,15 +207,14 @@ Platform → Core
 
 | Module | Status | Notes |
 |--------|--------|-------|
-| Core | ✅ Complete | ThreadPool, TaskQueue, Events, Math |
-| RHI | ✅ Complete | Abstract device, command lists |
-| OpenGL | ✅ Complete | Full implementation |
-| Vulkan | 🚧 Planned | Architecture ready, no implementation |
-| Resource | ✅ Complete | Sync loading, weak_ptr cache |
-| ECS | ✅ Complete | ComponentPool, Systems |
-| Platform | ✅ Complete | File dialogs, message boxes |
-| UI | ✅ Complete | ImGui wrappers |
-| Editor | ✅ Complete | Panels, views, canvas |
+| JzRuntimeCore | ✅ Complete | ThreadPool, TaskQueue, Math, Logging, Clock |
+| JzRuntimePlatform | ✅ Complete | RHI abstraction, OpenGL backend, Window backend |
+| OpenGL Backend | ✅ Complete | Full implementation |
+| Vulkan Backend | 🚧 Planned | Architecture ready, no implementation |
+| JzRuntimeResource | ✅ Complete | JzAssetManager, async loading, LRU cache, hot reload |
+| JzRuntimeFunction | ✅ Complete | ECS (EnTT), Systems, Event system |
+| JzREInterface | ✅ Complete | JzRERuntime application framework |
+| JzEditor | ✅ Complete | Panels, views, canvas, 40+ UI widgets |
 
 ---
 
@@ -212,12 +222,12 @@ Platform → Core
 
 ### Adding a New Resource Type
 
-1. Create `JzNewResource.h` in `Resource/include/JzRE/Resource/`
+1. Create `JzNewResource.h` in `src/Runtime/Resource/include/JzRE/Runtime/Resource/`
 2. Inherit from `JzResource`, implement `Load()` and `Unload()`
 3. Create `JzNewResourceFactory.h` inheriting `JzResourceFactory`
-4. Register factory in initialization:
+4. Register factory in `JzAssetSystem::Initialize()`:
    ```cpp
-   resourceManager.RegisterFactory<JzNewResource>(std::make_unique<JzNewResourceFactory>());
+   assetManager->RegisterFactory<JzNewResource>(std::make_unique<JzNewResourceFactory>());
    ```
 
 ### Adding a New RHI Command
@@ -229,9 +239,10 @@ Platform → Core
 
 ### Adding a New ECS Component
 
-1. Define struct in `ECS/include/JzRE/ECS/JzComponent.h`
-2. No registration needed - `JzComponentPool<T>` is template-based
-3. Use via `entityManager.AddComponent<NewComponent>(entity, ...)`
+1. Define struct in `src/Runtime/Function/include/JzRE/Runtime/Function/ECS/Jz*Components.h`
+2. No registration needed - EnTT is template-based
+3. Use via `world.AddComponent<NewComponent>(entity)`
+4. Query via `world.View<NewComponent, ...>()`
 
 ### Adding a New UI Widget
 
@@ -257,21 +268,23 @@ Platform → Core
 | `JzThreadPool` | ✅ Thread-safe |
 | `JzTaskQueue` | ✅ Thread-safe |
 | `JzRHICommandList` | ✅ Recording is thread-safe |
-| `JzResourceManager` | ✅ Cache access mutex-protected |
+| `JzAssetManager` | ✅ Fine-grained mutexes, async loading supported |
+| `JzAssetRegistry` | ✅ Uses shared_mutex for read-heavy workloads |
 | `JzOpenGLDevice` | ❌ Single-threaded only |
-| `JzEntityManager` | ❌ Not thread-safe, use single thread |
+| `JzWorld` | ❌ Not thread-safe, use single thread |
 
 ---
 
 ## Don'ts
 
-- ❌ Don't call OpenGL directly outside `Graphics/OpenGL/`
+- ❌ Don't call OpenGL directly outside `src/Runtime/Platform/src/OpenGL/`
 - ❌ Don't create circular dependencies between modules
 - ❌ Don't use raw `new`/`delete` - use smart pointers
 - ❌ Don't use Chinese in code comments (English only)
-- ❌ Don't modify `Core` module to depend on higher layers
-- ❌ Don't bypass `JzResourceManager` for asset loading
-- ❌ Don't make architectural changes without updating `docs/`
+- ❌ Don't modify `JzRuntimeCore` module to depend on higher layers
+- ❌ Don't bypass `JzAssetManager` for asset loading
+- ❌ Don't make architectural changes without updating `docs/architecture/`
+- ❌ Don't use service container for event system (use `JzWorld::GetContext<JzEventSystem>()` instead)
 
 ---
 
@@ -283,14 +296,13 @@ AI agents **MUST** update documentation when making code changes. This is not op
 
 | Code Change | Documentation to Update |
 |-------------|------------------------|
-| New class/module added | `docs/architecture.md`, `docs/module.md` |
-| RHI or rendering changes | `docs/rhi.md`, `docs/design.md` |
-| Resource system changes | `docs/resource_layer_design.md` |
-| Threading/Worker Thread changes | `docs/threading_roadmap.md` |
-| Module structure changes | `docs/module.md` |
-| Cross-module integration | `docs/integration.md` |
-| Window/Context changes | `docs/rhi_window_integration.md` |
-| New design patterns | `docs/design.md` |
+| New class/module added | `docs/architecture/overview.md`, `docs/architecture/module.md` |
+| RHI or rendering changes | `docs/architecture/rhi.md`, `docs/architecture/rendering_pipeline.md` |
+| Resource/asset system changes | `docs/architecture/resource.md`, `docs/architecture/asset_system.md` |
+| Threading/Worker Thread changes | `docs/architecture/threading.md` |
+| Module structure changes | `docs/architecture/module.md`, `docs/architecture/layers.md` |
+| ECS components/systems | `docs/architecture/ecs.md` |
+| Input system changes | `docs/architecture/input_system_design.md` |
 
 ### Documentation Standards
 
@@ -324,15 +336,16 @@ After adding rendering code in `src/Runtime/Function/src/Rendering/`:
 
 | Document | Purpose |
 |----------|---------|
-| [architecture.md](docs/architecture.md) | Overall layered design |
-| [rhi.md](docs/rhi.md) | RHI abstraction details |
-| [resource_layer_design.md](docs/resource_layer_design.md) | Resource system |
-| [threading_roadmap.md](docs/threading_roadmap.md) | Multithreading evolution |
-| [module.md](docs/module.md) | CMake and directory structure |
-| [design.md](docs/design.md) | Class and sequence diagrams |
-| [integration.md](docs/integration.md) | Cross-module integration |
-| [rhi_window_integration.md](docs/rhi_window_integration.md) | Window/context management |
-| [GEMINI.md](GEMINI.md) | Project configuration for AI agents |
+| [overview.md](docs/architecture/overview.md) | High-level engine architecture |
+| [layers.md](docs/architecture/layers.md) | Layer dependency hierarchy |
+| [module.md](docs/architecture/module.md) | CMake and directory structure |
+| [ecs.md](docs/architecture/ecs.md) | ECS components and systems |
+| [rendering_pipeline.md](docs/architecture/rendering_pipeline.md) | Rendering flow and system order |
+| [rhi.md](docs/architecture/rhi.md) | RHI abstraction details |
+| [resource.md](docs/architecture/resource.md) | Resource/asset management |
+| [asset_system.md](docs/architecture/asset_system.md) | JzAssetManager and hot reload |
+| [threading.md](docs/architecture/threading.md) | Threading model |
+| [input_system_design.md](docs/architecture/input_system_design.md) | Input handling design |
 
 ---
 

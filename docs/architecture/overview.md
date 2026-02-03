@@ -57,11 +57,14 @@ The foundation of the engine with zero dependencies on other modules.
 **Key Components:**
 
 - `JzRETypes.h` - Fundamental type definitions (U32, F32, Bool, String, etc.)
-- `JzVector.h`, `JzMatrix.h` - Math primitives and operations
+- `JzVector.h`, `JzMatrix.h`, `JzVertex.h` - Math primitives and operations
+- `JzClock.h` - Timing and frame delta calculations
 - `JzThreadPool.h`, `JzTaskQueue.h` - Concurrent execution infrastructure
-- `JzEvent.h` - Event system for decoupled communication
+- `JzPlatformEvent.h`, `JzPlatformEventQueue.h` - Platform-agnostic event types
 - `JzServiceContainer.h` - Dependency injection container
-- `JzLogger.h` - Logging infrastructure (via spdlog)
+- `JzLogger.h`, `JzLogSink.h` - Logging infrastructure (via spdlog)
+- `JzDelegate.h` - Callback/delegate pattern
+- `JzFileSystemUtils.h` - File I/O utilities
 
 📄 See: [Module Structure](module.md)
 
@@ -91,18 +94,21 @@ Manages asset lifecycle with automatic caching and reference counting.
 
 **Key Components:**
 
-- `JzResourceManager` - Central resource access point
+- `JzAssetManager` - Central asset management with generation-based handles
+- `JzAssetRegistry<T>` - Per-type asset storage with O(1) access
+- `JzLRUCache` - LRU cache with memory budget management
 - `JzResourceFactory` - Factory pattern for resource creation
-- Resource types: `JzTexture`, `JzMesh`, `JzModel`, `JzShader`, `JzMaterial`, `JzFont`
+- Resource types: `JzTexture`, `JzMesh`, `JzModel`, `JzShaderAsset`, `JzMaterial`, `JzFont`
 
 **Features:**
 
-- Automatic caching with `weak_ptr`
-- Reference-counted unloading
+- Type-safe handles with generation tracking (`JzAssetHandle<T>`)
+- Synchronous and asynchronous loading
+- LRU cache with configurable memory budget
+- Shader variants and hot reload support
 - Search path management
-- Type-safe resource access
 
-📄 See: [Resource Layer Design](resource.md)
+📄 See: [Resource Layer Design](resource.md), [Asset System](asset_system.md)
 
 ### Function Layer
 
@@ -112,10 +118,12 @@ High-level engine systems built on lower layers.
 
 | Subsystem  | Description                                   |
 | ---------- | --------------------------------------------- |
-| **Scene**  | `JzActor` - Scene graph                       |
-| **ECS**    | `JzEntityManager`, Systems, Components        |
+| **Scene**  | `JzActor` - Legacy scene graph (optional)     |
+| **ECS**    | `JzWorld`, Systems, Components (EnTT-based)   |
+| **Event**  | `JzEventSystem` - ECS event dispatcher (stored in JzWorld context) |
 | **Input**  | `JzInputSystem` - ECS-based keyboard/mouse/gamepad input processing |
 | **Window** | `JzWindowSystem` - ECS-integrated GLFW window management |
+| **Asset**  | `JzAssetSystem` - Asset loading, hot reload, ECS integration |
 
 📄 See: [ECS Integration](ecs.md), [Rendering Pipeline](rendering_pipeline.md)
 
@@ -154,26 +162,33 @@ device->ExecuteCommandList(cmdList);
 
 ```cpp
 // Provide service
-JzServiceContainer::Provide<JzResourceManager>(manager);
+JzServiceContainer::Provide<JzAssetManager>(assetManager);
 
 // Consume service
-auto& resMgr = JzServiceContainer::Get<JzResourceManager>();
+auto& assetMgr = JzServiceContainer::Get<JzAssetManager>();
 ```
 
-### Factory Pattern (Resources)
+### Factory Pattern (Assets)
 
 ```cpp
 // Register factories
-resourceManager.RegisterFactory<JzTexture>(std::make_unique<JzTextureFactory>());
+assetManager.RegisterFactory<JzTexture>(std::make_unique<JzTextureFactory>());
 
-// Get resource (auto-created and cached)
-auto texture = resourceManager.GetResource<JzTexture>("textures/player.png");
+// Load asset (sync)
+auto textureHandle = assetManager.LoadSync<JzTexture>("textures/player.png");
+auto* texture = assetManager.Get(textureHandle);
+
+// Load asset (async)
+assetManager.LoadAsync<JzTexture>("textures/player.png", [](JzTextureHandle handle, Bool success) {
+    // Callback when loaded
+});
 ```
 
 ### Entity-Component-System
 
 ```cpp
 // Create entity and add components
+JzWorld world;
 auto entity = world.CreateEntity();
 world.AddComponent<JzTransformComponent>(entity);
 world.AddComponent<JzMeshComponent>(entity);
@@ -183,6 +198,10 @@ auto view = world.View<JzTransformComponent, JzVelocityComponent>();
 for (auto [entity, transform, velocity] : view.each()) {
     transform.position += velocity.velocity * deltaTime;
 }
+
+// Store singleton services in world context
+world.SetContext<JzEventSystem>(std::make_unique<JzEventSystem>());
+auto& eventSystem = world.GetContext<JzEventSystem>();
 ```
 
 ---
@@ -260,8 +279,10 @@ cd build && ctest --output-on-failure
 #include "JzRE/Runtime/Core/JzRETypes.h"
 #include "JzRE/Runtime/Platform/RHI/JzDevice.h"
 #include "JzRE/Runtime/Platform/Command/JzRHICommandList.h"
-#include "JzRE/Runtime/Resource/JzResourceManager.h"
-#include "JzRE/Runtime/Function/ECS/JzEntityManager.h"
+#include "JzRE/Runtime/Resource/JzAssetManager.h"
+#include "JzRE/Runtime/Function/ECS/JzWorld.h"
+#include "JzRE/Runtime/Function/ECS/JzAssetSystem.h"
+#include "JzRE/Runtime/Function/Event/JzEventSystem.h"
 
 // Editor modules
 #include "JzRE/Editor/JzEditor.h"
@@ -274,8 +295,9 @@ cd build && ctest --output-on-failure
 ### Near-term
 
 - [ ] Vulkan backend implementation
-- [ ] Async resource loading
-- [ ] Material system improvements
+- [x] Async resource loading (implemented in JzAssetManager)
+- [x] Material system improvements (shader variants)
+- [x] Shader hot reload (integrated into JzAssetSystem)
 
 ### Mid-term
 

@@ -33,7 +33,7 @@ App (JzRE executable)
         └── JzRERuntime (interface library linking all layers)
               └── JzREInterface (runtime application framework)
                     └── Function Layer (ECS, Rendering, Scene, Input, Window)
-                          └── Resource Layer (ResourceManager, asset factories)
+                          └── Resource Layer (JzAssetManager, asset factories)
                                 └── Platform Layer (RHI abstraction, OpenGL/Vulkan backends, OS APIs)
                                       └── Core Layer (types, math, threading, events, logging)
 ```
@@ -44,7 +44,7 @@ App (JzRE executable)
 |--------|-------------|
 | `JzRuntimeCore` | Math (JzVector, JzMatrix), types (JzRETypes), threading (JzThreadPool), logging (JzLogger) |
 | `JzRuntimePlatform` | RHI command pattern (`JzRHICommandList`, `JzDevice`), GPU objects, platform file dialogs |
-| `JzRuntimeResource` | `JzResourceManager`, factories for Texture/Mesh/Model/Shader/Material/Font |
+| `JzRuntimeResource` | `JzAssetManager`, factories for Texture/Mesh/Model/Shader/Material/Font |
 | `JzRuntimeFunction` | ECS systems (`JzRenderSystem`, `JzCameraSystem`, `JzLightSystem`, `JzWindowSystem`), `JzInputManager` |
 | `JzREInterface` | Runtime application base class (`JzRERuntime`) with virtual `OnStart/OnUpdate/OnStop` hooks |
 | `JzEditor` | ImGui-based editor panels, UI widget wrappers |
@@ -58,7 +58,7 @@ App (JzRE executable)
 #include "JzRE/Runtime/Platform/Threading/JzRenderThreadPool.h"
 #include "JzRE/Runtime/Platform/Window/IWindowBackend.h"
 #include "JzRE/Runtime/Platform/Dialog/JzFileDialog.h"
-#include "JzRE/Runtime/Resource/JzResourceManager.h"
+#include "JzRE/Runtime/Resource/JzAssetManager.h"
 #include "JzRE/Runtime/Function/ECS/JzEntityManager.h"
 #include "JzRE/Runtime/JzRERuntime.h"  // Runtime application base class
 #include "JzRE/Editor/JzEditor.h"

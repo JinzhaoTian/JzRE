@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Resource Layer is a core component of the JzRE engine, responsible for managing the lifecycle of all game assets (textures, models, materials, shaders, etc.). The design is based on three core concepts: `JzResource`, `JzResourceFactory`, and `JzResourceManager`.
+The Resource Layer is a core component of the JzRE engine, responsible for managing the lifecycle of all game assets (textures, models, materials, shaders, etc.). The design is based on three core concepts: `JzResource`, `JzResourceFactory`, and `JzAssetManager`.
 
 ---
 
@@ -57,33 +57,37 @@ public:
 };
 ```
 
-### JzResourceManager (Resource Manager)
+### JzAssetManager (Asset Manager)
 
-Central coordinator for resource management, the sole entry point for obtaining resources.
+Central coordinator for asset management with generation-based handles.
 
 ```cpp
-class JzResourceManager {
+class JzAssetManager {
 public:
+    // Sync loading (blocking)
+    template<typename T>
+    JzAssetHandle<T> LoadSync(const String& path);
+
+    // Async loading (non-blocking)
+    template<typename T>
+    JzAssetHandle<T> LoadAsync(const String& path,
+                               JzAssetLoadCallback<T> callback,
+                               I32 priority);
+
+    // Access loaded asset
+    template<typename T>
+    T* Get(JzAssetHandle<T> handle);
+
     // Register resource factory
     template <typename T>
     void RegisterFactory(std::unique_ptr<JzResourceFactory> factory);
-
-    // Get resource (auto-loads)
-    template <typename T>
-    std::shared_ptr<T> GetResource(const String& name);
-
-    // Clean up unused resources
-    void UnloadUnusedResources();
 
     // Search path management
     void AddSearchPath(const String& path);
     String FindFullPath(const String& relativePath);
 
-private:
-    std::unordered_map<std::type_index, std::unique_ptr<JzResourceFactory>> m_factories;
-    std::unordered_map<String, std::weak_ptr<JzResource>> m_resourceCache;
-    std::vector<String> m_searchPaths;
-    std::mutex m_cacheMutex;
+    // Per-frame update (LRU eviction, async completion)
+    void Update();
 };
 ```
 
@@ -164,103 +168,115 @@ classDiagram
 
 ## Workflow
 
-### 1. Resource Registration (Automatic via JzAssetManager)
+### 1. Asset Registration (Automatic via JzAssetSystem)
 
-Factory registration is handled automatically by `JzRERuntime` constructor with `JzAssetManager`:
+Factory registration is handled automatically by `JzAssetSystem::Initialize()`:
 
 ```cpp
-// JzRERuntime constructor registers all factories with JzAssetManager
-m_assetManager->RegisterFactory<JzModel>(std::make_unique<JzModelFactory>());
-m_assetManager->RegisterFactory<JzMesh>(std::make_unique<JzMeshFactory>());
-m_assetManager->RegisterFactory<JzTexture>(std::make_unique<JzTextureFactory>());
-m_assetManager->RegisterFactory<JzMaterial>(std::make_unique<JzMaterialFactory>());
-m_assetManager->RegisterFactory<JzShader>(std::make_unique<JzShaderFactory>());
-m_assetManager->RegisterFactory<JzFont>(std::make_unique<JzFontFactory>());
+// JzAssetSystem registers all factories with JzAssetManager
+assetManager->RegisterFactory<JzModel>(std::make_unique<JzModelFactory>());
+assetManager->RegisterFactory<JzMesh>(std::make_unique<JzMeshFactory>());
+assetManager->RegisterFactory<JzTexture>(std::make_unique<JzTextureFactory>());
+assetManager->RegisterFactory<JzMaterial>(std::make_unique<JzMaterialFactory>());
+assetManager->RegisterFactory<JzShaderAsset>(std::make_unique<JzShaderAssetFactory>());
+assetManager->RegisterFactory<JzFont>(std::make_unique<JzFontFactory>());
 
 // Search paths are also added
-m_assetManager->AddSearchPath(enginePath.string());
-m_assetManager->AddSearchPath((enginePath / "resources").string());
-m_assetManager->AddSearchPath((enginePath / "resources" / "models").string());
-m_assetManager->AddSearchPath((enginePath / "resources" / "textures").string());
-m_assetManager->AddSearchPath((enginePath / "resources" / "shaders").string());
+assetManager->AddSearchPath(enginePath.string());
+assetManager->AddSearchPath((enginePath / "resources").string());
+assetManager->AddSearchPath((enginePath / "resources" / "models").string());
+assetManager->AddSearchPath((enginePath / "resources" / "textures").string());
+assetManager->AddSearchPath((enginePath / "resources" / "shaders").string());
 ```
 
-### 2. Resource Loading
+### 2. Asset Loading
 
 ```cpp
-// Request texture resource (manager auto-handles caching and loading)
-auto texture = resourceManager.GetResource<JzTexture>("textures/player.png");
+// Sync loading (blocking)
+auto textureHandle = assetManager.LoadSync<JzTexture>("textures/player.png");
+auto* texture = assetManager.Get(textureHandle);
 
-// Check resource state
 if (texture && texture->GetState() == JzEResourceState::Loaded) {
     // Use texture
     auto rhiTexture = texture->GetRHITexture();
 }
+
+// Async loading (non-blocking)
+assetManager.LoadAsync<JzTexture>("textures/enemy.png",
+    [](JzTextureHandle handle, Bool success) {
+        if (success) {
+            // Texture ready to use
+        }
+    });
 ```
 
 ### 3. Internal Loading Process
 
 ```mermaid
 flowchart TD
-    A[GetResource Call] --> B{Cache Lookup}
-    B -->|Hit and Valid| C[Return shared_ptr]
-    B -->|Miss or Expired| D{Find Factory}
-    D -->|Not Found| E[Return nullptr]
-    D -->|Found| F[Factory Creates Resource]
-    F --> G[Call Load]
-    G --> H[Add to Cache]
-    H --> C
+    A[LoadSync/LoadAsync Call] --> B{Registry Lookup}
+    B -->|Handle Exists| C[Return Handle]
+    B -->|Not Found| D{Find Factory}
+    D -->|Not Found| E[Return Invalid Handle]
+    D -->|Found| F[Allocate Slot in Registry]
+    F --> G[Factory Creates Resource]
+    G --> H[Call Load]
+    H --> I[Store in Registry]
+    I --> J[Record in LRU Cache]
+    J --> C
 ```
 
-### 4. Resource Unloading
+### 4. Asset Lifecycle
 
-Resource unloading is handled automatically through reference counting:
+Assets are managed through generation-based handles and LRU eviction:
 
 ```cpp
-// When the last shared_ptr is destroyed, resource is automatically unloaded
-{
-    auto texture = resourceManager.GetResource<JzTexture>("textures/enemy.png");
-    // Use texture...
-} // texture goes out of scope, if no other references, resource is destroyed
+// Load asset
+auto textureHandle = assetManager.LoadSync<JzTexture>("textures/enemy.png");
 
-// Periodically clean up expired cache entries
-resourceManager.UnloadUnusedResources();
+// Use asset
+auto* texture = assetManager.Get(textureHandle);
+
+// Assets are automatically evicted when:
+// 1. Memory budget is exceeded
+// 2. Asset hasn't been accessed recently (LRU)
+// 3. No active references exist
 ```
 
 ---
 
 ## Implementation Details
 
-### GetResource Template Implementation
+### LoadSync Template Implementation
 
 ```cpp
 template <typename T>
-std::shared_ptr<T> JzResourceManager::GetResource(const String& name) {
-    std::lock_guard<std::mutex> lock(m_cacheMutex);
-
-    // 1. Cache lookup
-    auto it = m_resourceCache.find(name);
-    if (it != m_resourceCache.end()) {
-        if (auto sharedRes = it->second.lock()) {
-            return std::static_pointer_cast<T>(sharedRes);
-        }
+JzAssetHandle<T> JzAssetManager::LoadSync(const String& path) {
+    // 1. Check if already loaded
+    auto& registry = GetRegistry<T>();
+    if (auto existingHandle = registry.FindByPath(path)) {
+        return existingHandle;
     }
 
-    // 2. Cache miss: create new resource
-    auto factory_it = m_factories.find(std::type_index(typeid(T)));
-    if (factory_it == m_factories.end()) {
-        // Error: no factory registered for this type
-        return nullptr;
+    // 2. Find factory
+    auto* factory = GetFactory<T>();
+    if (!factory) {
+        return JzAssetHandle<T>::Invalid();
     }
 
-    JzResource* newRawRes = factory_it->second->Create(name);
-    std::shared_ptr<T> newRes = std::shared_ptr<T>(static_cast<T*>(newRawRes));
+    // 3. Allocate slot and create resource
+    auto handle = registry.Allocate(path);
+    auto* resource = factory->Create(path);
 
-    // 3. Load and cache
-    newRes->Load();
-    m_resourceCache[name] = newRes;
+    // 4. Load and store
+    resource->Load();
+    registry.Set(handle, resource);
+    registry.SetLoadState(handle, JzEAssetLoadState::Loaded);
 
-    return newRes;
+    // 5. Record in LRU cache
+    m_lruCache.RecordAccess(handle.GetId(), resource->GetMemorySize());
+
+    return handle;
 }
 ```
 
@@ -291,23 +307,25 @@ public:
 
 ## Caching Strategy
 
-### weak_ptr Automatic Cleanup
+### LRU Cache with Memory Budget
 
-Key advantages of using `std::weak_ptr` as cache values:
+Key advantages of the LRU caching system:
 
-1. **Automatic Memory Reclamation**: Resources are automatically freed when all `shared_ptr`s are destroyed
-2. **No Dangling References**: Cache doesn't prevent resource reclamation
-3. **On-Demand Reload**: Expired resources can be transparently reloaded
+1. **Memory Budget**: Configurable maximum memory usage
+2. **Generation-Based Handles**: Prevents use-after-free bugs
+3. **Automatic Eviction**: Least recently used assets are evicted when over budget
+4. **Reference Counting**: Assets with active references are never evicted
 
 ```cpp
-void JzResourceManager::UnloadUnusedResources() {
-    std::lock_guard<std::mutex> lock(m_cacheMutex);
+void JzAssetManager::Update() {
+    // Check if over memory budget
+    if (m_lruCache.IsOverBudget()) {
+        // Get eviction candidates (excluding assets with active refs)
+        auto candidates = m_lruCache.GetEvictionCandidates(targetMemoryMB, activeRefs);
 
-    for (auto it = m_resourceCache.begin(); it != m_resourceCache.end(); ) {
-        if (it->second.expired()) {
-            it = m_resourceCache.erase(it);
-        } else {
-            ++it;
+        for (auto& id : candidates) {
+            // Unload and free the asset
+            UnloadAsset(id);
         }
     }
 }
@@ -354,10 +372,11 @@ void JzRenderSystem::Update(JzEntityManager& manager, F32 delta) {
 ### Loading a Model
 
 ```cpp
-auto& resMgr = JzServiceContainer::Get<JzResourceManager>();
+auto& assetManager = JzServiceContainer::Get<JzAssetManager>();
 
 // Load complete model (with meshes and materials)
-auto model = resMgr.GetResource<JzModel>("models/character.fbx");
+auto modelHandle = assetManager.LoadSync<JzModel>("models/character.fbx");
+auto* model = assetManager.Get(modelHandle);
 
 if (model && model->GetState() == JzEResourceState::Loaded) {
     for (auto& mesh : model->GetMeshes()) {
@@ -370,7 +389,8 @@ if (model && model->GetState() == JzEResourceState::Loaded) {
 
 ```cpp
 // Load icon texture
-auto iconTexture = resourceManager.GetResource<JzTexture>("icons/button.png");
+auto iconHandle = assetManager.LoadSync<JzTexture>("icons/button.png");
+auto* iconTexture = assetManager.Get(iconHandle);
 
 if (iconTexture) {
     auto myButton = std::make_unique<JzImageButton>(
@@ -540,26 +560,51 @@ JzServiceContainer::Provide<JzShaderManager>(*m_shaderManager);
 
 ---
 
+## Hot Reload Support
+
+The asset system now supports hot reloading for development workflows. This is integrated into `JzAssetSystem`:
+
+### Shader Hot Reload
+
+Shader hot reload is fully implemented:
+
+```cpp
+// JzAssetSystem monitors shader files and marks entities for reload
+// Entities with modified shaders get JzShaderDirtyTag
+
+// In your system, check for dirty shaders:
+auto view = world.View<JzShaderAssetComponent, JzShaderDirtyTag>();
+for (auto entity : view) {
+    auto& shaderComp = world.GetComponent<JzShaderAssetComponent>(entity);
+    // Shader has been reloaded - update pipeline, rebind uniforms, etc.
+    world.GetRegistry().remove<JzShaderDirtyTag>(entity);
+}
+```
+
+### Asset Dirty Tags
+
+| Tag                 | Purpose                                    |
+|---------------------|--------------------------------------------|
+| `JzShaderDirtyTag`  | Shader source files modified, recompiled   |
+| `JzTextureDirtyTag` | Texture file modified, reloaded            |
+| `JzMaterialDirtyTag`| Material definition modified               |
+
 ## Future Plans
 
 > [!NOTE]
-> The following features are planned for future versions and are not currently implemented.
+> The following features are planned for future versions.
 
-### Async Loading (Low Priority)
+### ~~Async Loading~~ ✅ Implemented
 
-```cpp
-// Future API design reference
-template<typename T>
-std::future<std::shared_ptr<T>> GetResourceAsync(const String& name);
-```
+Async loading is now available via `JzAssetManager::LoadAsync()`.
+
+### ~~Hot Reload~~ ✅ Implemented
+
+Shader hot reload is integrated into `JzAssetSystem`. Texture and material hot reload are in progress.
 
 ### Resource Dependencies
 
 Automatic loading of dependent resources (e.g., materials auto-loading referenced textures).
-
-### Hot Reload
-
-Automatic resource reloading when files change in editor mode.
 
 ### Streaming
 

@@ -154,18 +154,18 @@ enum class JzEResourceState {
     Error      // Load failed
 };
 
-// Using existing JzTaskQueue
-void JzResourceManager::LoadAsync(const String& name) {
+// Using existing JzTaskQueue (implemented in JzAssetManager)
+void JzAssetManager::LoadAsyncInternal(const String& path) {
     auto& taskQueue = JzServiceContainer::Get<JzTaskQueue>();
 
-    taskQueue.Submit(JzETaskPriority::Normal, [this, name]() {
+    taskQueue.Submit(JzETaskPriority::Normal, [this, path]() {
         // Background: read file, decode
-        auto data = ReadFile(name);
+        auto data = ReadFile(path);
         auto decoded = DecodeData(data);
 
         // Callback main thread: GPU upload
-        ScheduleMainThread([this, name, decoded]() {
-            UploadToGPU(name, decoded);
+        ScheduleMainThread([this, path, decoded]() {
+            UploadToGPU(path, decoded);
         });
     });
 }

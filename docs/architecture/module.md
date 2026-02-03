@@ -13,79 +13,77 @@ JzRE/
 ├── src/
 │   ├── Runtime/                    # Game Engine Runtime
 │   │   ├── CMakeLists.txt
-│   │   ├── Interface/              # Interface
-│   │   │   ├── CMakeLists.txt
+│   │   ├── Interface/              # Runtime Application Interface
 │   │   │   ├── include/JzRE/Runtime/
-│   │   │   │   └── JzRERuntime.h
+│   │   │   │   └── JzRERuntime.h   # Main runtime class with OnStart/OnUpdate/OnStop hooks
 │   │   │   └── src/
 │   │   │
-│   │   ├── Core/                   # Layer 1: Core Utilities
-│   │   │   ├── CMakeLists.txt
+│   │   ├── Core/                   # Layer 1: Core Utilities (zero dependencies)
 │   │   │   ├── include/JzRE/Runtime/Core/
-│   │   │   │   ├── JzRETypes.h
-│   │   │   │   ├── JzVector.h
-│   │   │   │   ├── JzMatrix.h
-│   │   │   │   ├── JzEvent.h
-│   │   │   │   ├── JzThreadPool.h
-│   │   │   │   └── JzLogger.h
+│   │   │   │   ├── JzRETypes.h, JzVertex.h
+│   │   │   │   ├── JzVector.h, JzMatrix.h
+│   │   │   │   ├── JzClock.h
+│   │   │   │   ├── JzThreadPool.h, JzTaskQueue.h
+│   │   │   │   ├── JzPlatformEvent.h, JzPlatformEventQueue.h
+│   │   │   │   ├── JzServiceContainer.h, JzDelegate.h
+│   │   │   │   ├── JzLogger.h, JzLogSink.h, JzELog.h
+│   │   │   │   └── JzFileSystemUtils.h
 │   │   │   └── src/
 │   │   │
 │   │   ├── Platform/               # Layer 2: Platform Abstraction
-│   │   │   ├── CMakeLists.txt
 │   │   │   ├── include/JzRE/Runtime/Platform/
-│   │   │   │   ├── JzDevice.h
-│   │   │   │   ├── JzRHI*.h
-│   │   │   │   ├── JzGPU*Object.h
-│   │   │   │   └── JzFileDialog.h
-│   │   │   ├── src/
-│   │   │   ├── OpenGL/             # OpenGL backend
-│   │   │   ├── Vulkan/             # Vulkan backend (planned)
-│   │   │   ├── Windows/
-│   │   │   ├── macOS/
-│   │   │   └── Linux/
+│   │   │   │   ├── RHI/            # Device, GPU objects, Pipeline, RenderPass
+│   │   │   │   ├── Command/        # RHI command pattern
+│   │   │   │   ├── Threading/      # Render thread pool, tasks
+│   │   │   │   ├── Window/         # IWindowBackend, GLFWWindowBackend
+│   │   │   │   ├── Dialog/         # File dialogs
+│   │   │   │   ├── OpenGL/         # OpenGL backend
+│   │   │   │   └── Vulkan/         # Vulkan backend (planned)
+│   │   │   └── src/
+│   │   │       ├── OpenGL/, Vulkan/
+│   │   │       └── Windows/, Linux/, macOS/
 │   │   │
 │   │   ├── Resource/               # Layer 3: Resource Management
-│   │   │   ├── CMakeLists.txt
 │   │   │   ├── include/JzRE/Runtime/Resource/
-│   │   │   │   ├── JzResourceManager.h
-│   │   │   │   ├── JzTexture.h
-│   │   │   │   ├── JzMesh.h
+│   │   │   │   ├── JzAssetId.h, JzAssetHandle.h
+│   │   │   │   ├── JzAssetRegistry.h, JzAssetManager.h
+│   │   │   │   ├── JzLRUCache.h, JzResource.h, JzResourceFactory.h
+│   │   │   │   ├── JzTexture.h, JzMesh.h, JzModel.h
+│   │   │   │   ├── JzMaterial.h, JzFont.h
+│   │   │   │   ├── JzShaderAsset.h, JzShaderProgram.h
+│   │   │   │   ├── JzShaderVariant.h, JzShaderVariantManager.h
 │   │   │   │   └── Jz*Factory.h
 │   │   │   └── src/
 │   │   │
 │   │   └── Function/               # Layer 4: Functional Systems
-│   │       ├── CMakeLists.txt
 │   │       ├── include/JzRE/Runtime/Function/
-│   │       │   ├── Rendering/
 │   │       │   ├── Scene/
-│   │       │   │   └── JzActor.h
+│   │       │   │   └── JzActor.h   # Legacy scene graph
 │   │       │   ├── ECS/
-│   │       │   │   └── JzEntityManager.h
+│   │       │   │   ├── JzEntity.h, JzWorld.h, JzSystem.h
+│   │       │   │   ├── Jz*Components.h (Entity, Transform, Camera, Light, Render, etc.)
+│   │       │   │   ├── JzCameraSystem.h, JzLightSystem.h, JzRenderSystem.h
+│   │       │   │   ├── JzInputSystem.h, JzWindowSystem.h
+│   │       │   │   ├── JzAssetSystem.h, JzMoveSystem.h
+│   │       │   │   └── JzAssetComponents.h
 │   │       │   └── Event/
-│   │       │       └── JzWindowEvents.h
-│   │       └── src/
+│   │       │       ├── JzEventSystem.h, JzEventQueue.h
+│   │       │       ├── JzECSEvent.h, JzIEventHandler.h
+│   │       │       ├── JzWindowEvents.h, JzInputEvents.h
+│   │       │       └── JzPlatformEventAdapter.h
+│   │       └── src/ECS/
 │   │
 │   ├── Editor/                     # Editor Application
-│   │   ├── CMakeLists.txt
-│   │   ├── Core/                   # Editor Core
-│   │   │   ├── CMakeLists.txt
-│   │   │   ├── include/JzRE/Editor/
-│   │   │   └── src/
-│   │   ├── Panels/                 # Editor Panels
-│   │   │   ├── CMakeLists.txt
-│   │   │   ├── include/JzRE/Editor/Panels/
-│   │   │   └── src/
-│   │   ├── UI/                     # Editor UI
-│   │   │   ├── CMakeLists.txt
-│   │   │   ├── include/JzRE/Editor/UI/
-│   │   │   └── src/
-│   │   └── main.cpp                # Main Entry Points
+│   │   ├── Application/            # JzEditor, JzREHub, JzREInstance, JzCanvas
+│   │   ├── Core/                   # Editor-specific events
+│   │   ├── Panels/                 # 30+ editor panels
+│   │   └── UI/                     # 40+ ImGui widget wrappers
 │
-├── tests/
-├── examples/
-├── docs/
-├── resources/
-└── CMakeLists.txt
+├── tests/                          # GTest-based tests
+├── examples/                       # Example applications
+├── docs/                           # Documentation
+├── resources/                      # Engine resources (shaders, textures)
+└── programs/JzREHeaderTool/        # Code generation tool (libclang)
 ```
 
 ---
@@ -138,8 +136,17 @@ target_link_libraries(JzRERuntime INTERFACE
 
 ```cpp
 // Cross-module: use full path
-#include <JzRE/Runtime/Core/JzLogger.h>
-#include <JzRE/Runtime/Platform/JzDevice.h>
+#include "JzRE/Runtime/Core/JzRETypes.h"
+#include "JzRE/Runtime/Core/JzLogger.h"
+#include "JzRE/Runtime/Platform/RHI/JzDevice.h"
+#include "JzRE/Runtime/Platform/Command/JzRHICommandList.h"
+#include "JzRE/Runtime/Platform/Window/IWindowBackend.h"
+#include "JzRE/Runtime/Resource/JzAssetManager.h"
+#include "JzRE/Runtime/Function/ECS/JzWorld.h"
+#include "JzRE/Runtime/Function/ECS/JzAssetSystem.h"
+#include "JzRE/Runtime/Function/Event/JzEventSystem.h"
+#include "JzRE/Runtime/JzRERuntime.h"
+#include "JzRE/Editor/JzEditor.h"
 
 // Within module: relative path allowed
 #include "JzInternalHelper.h"
@@ -183,10 +190,11 @@ cd build && ctest --output-on-failure
 
 | Target              | Type       | Dependencies                                        |
 | ------------------- | ---------- | --------------------------------------------------- |
-| `JzRuntimeCore`     | Static     | spdlog                                              |
+| `JzRuntimeCore`     | Static     | spdlog, fmt                                         |
 | `JzRuntimePlatform` | Static     | JzRuntimeCore, glad, glfw                           |
-| `JzRuntimeResource` | Static     | JzRuntimeCore, JzRuntimePlatform, assimp            |
-| `JzRuntimeFunction` | Static     | JzRuntimeCore, JzRuntimePlatform, JzRuntimeResource |
+| `JzRuntimeResource` | Static     | JzRuntimeCore, JzRuntimePlatform, assimp, stb, freetype |
+| `JzRuntimeFunction` | Static     | JzRuntimeCore, JzRuntimePlatform, JzRuntimeResource, entt |
 | `JzRERuntime`       | Interface  | All runtime layers                                  |
-| `JzEditor`          | Static     | JzRERuntime, imgui                                  |
+| `JzEditor`          | Static     | JzRERuntime, imgui (docking)                        |
 | `JzREInstance`      | Executable | JzRERuntime, JzEditor                               |
+| `TESTJzRECore`      | Executable | JzRuntimeCore, GTest::gtest_main                    |

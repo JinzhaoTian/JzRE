@@ -19,7 +19,7 @@ JzInputSystem (Input Phase)
   ├── Updates action values (JzInputActionComponent)
   └── Emits input events (JzKeyEvent, JzMouseButtonEvent, etc.)
         ↓
-JzEventDispatcherSystem (Input Phase)
+JzEventSystem (stored in JzWorld context)
   └── Dispatches queued events to registered handlers
         ↓
 Other Systems read Input Components OR subscribe to events
@@ -208,7 +208,7 @@ docs/architecture/
 
 ## Event-Driven Input
 
-In addition to the component-based polling approach, the input system emits typed ECS events through `JzEventDispatcherSystem`. This enables reactive event-driven patterns alongside the existing polling model.
+In addition to the component-based polling approach, the input system emits typed ECS events through `JzEventSystem` (stored in `JzWorld` context). This enables reactive event-driven patterns alongside the existing polling model.
 
 ### Input Events
 
@@ -238,15 +238,16 @@ Events are emitted at the end of `JzInputSystem::Update()` by comparing current 
 
 ```cpp
 void MySystem::OnInit(JzWorld &world) {
-    auto &dispatcher = JzServiceContainer::Get<JzEventDispatcherSystem>();
+    // Event system is stored in world context (not service container)
+    auto &eventSystem = world.GetContext<JzEventSystem>();
 
-    dispatcher.RegisterHandler<JzKeyEvent>([](const JzKeyEvent &event) {
+    eventSystem.RegisterHandler<JzKeyEvent>([](const JzKeyEvent &event) {
         if (event.key == JzEKeyCode::F5 && event.action == JzEKeyAction::Pressed) {
             // Quick save
         }
     });
 
-    dispatcher.RegisterHandler<JzInputActionTriggeredEvent>([](const JzInputActionTriggeredEvent &event) {
+    eventSystem.RegisterHandler<JzInputActionTriggeredEvent>([](const JzInputActionTriggeredEvent &event) {
         if (event.actionName == "jump") {
             // Handle jump action
         }
