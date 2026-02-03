@@ -5,7 +5,7 @@
 
 #ifdef __APPLE__
 
-#include "JzRE/Runtime/Platform/JzMessageBox.h"
+#include "JzRE/Runtime/Platform/Dialog/JzMessageBox.h"
 
 #import <Cocoa/Cocoa.h>
 

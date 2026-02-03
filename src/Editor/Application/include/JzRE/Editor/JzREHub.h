@@ -10,8 +10,8 @@
 #include "JzRE/Runtime/Core/JzRETypes.h"
 #include "JzRE/Runtime/Function/ECS/JzWindowSystem.h"
 #include "JzRE/Runtime/Platform/RHI/JzGraphicsContext.h"
-#include "JzRE/Editor/JzUIManager.h"
-#include "JzRE/Editor/JzCanvas.h"
+#include "JzRE/Editor/Panels/JzUIManager.h"
+#include "JzRE/Editor/Panels/JzCanvas.h"
 #include "JzRE/Editor/UI/JzPanelWindow.h"
 #include "JzRE/Editor/UI/JzButton.h"
 

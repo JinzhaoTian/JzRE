@@ -3,7 +3,7 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzRE/Editor/JzCanvas.h"
+#include "JzRE/Editor/Panels/JzCanvas.h"
 #include <imgui.h>
 
 void JzRE::JzCanvas::Draw()

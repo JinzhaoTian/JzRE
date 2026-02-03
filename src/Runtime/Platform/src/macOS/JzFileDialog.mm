@@ -5,7 +5,7 @@
 
 #ifdef __APPLE__
 
-#include "JzRE/Runtime/Platform/JzFileDialog.h"
+#include "JzRE/Runtime/Platform/Dialog/JzFileDialog.h"
 
 #include <Cocoa/Cocoa.h>
 #include <UniformTypeIdentifiers/UniformTypeIdentifiers.h>

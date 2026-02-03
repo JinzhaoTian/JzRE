@@ -5,8 +5,8 @@
 
 #pragma once
 
-#include "JzRE/Editor/JzCanvas.h"
-#include "JzRE/Editor/JzUIManager.h"
+#include "JzRE/Editor/Panels/JzCanvas.h"
+#include "JzRE/Editor/Panels/JzUIManager.h"
 #include "JzRE/Editor/Panels/JzPanelsManager.h"
 
 namespace JzRE {

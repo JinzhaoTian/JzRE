@@ -3,7 +3,7 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzRE/Editor/JzUIManager.h"
+#include "JzRE/Editor/Panels/JzUIManager.h"
 #include "JzRE/Runtime/Function/ECS/JzWindowSystem.h"
 #include <GLFW/glfw3.h>
 #include <imgui.h>

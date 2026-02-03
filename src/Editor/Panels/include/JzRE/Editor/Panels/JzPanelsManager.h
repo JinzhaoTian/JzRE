@@ -7,7 +7,7 @@
 
 #include <memory>
 #include "JzRE/Runtime/Core/JzRETypes.h"
-#include "JzRE/Editor/JzCanvas.h"
+#include "JzRE/Editor/Panels/JzCanvas.h"
 #include "JzRE/Editor/UI/JzPanel.h"
 #include "JzRE/Editor/UI/JzPanelWindow.h"
 #include "JzRE/Editor/Panels/JzMenuBar.h"
