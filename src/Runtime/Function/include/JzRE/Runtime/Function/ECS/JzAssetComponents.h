@@ -242,6 +242,32 @@ struct JzAssetReadyTag { };
  */
 struct JzAssetLoadFailedTag { };
 
+// ==================== Hot Reload Dirty Tags ====================
+
+/**
+ * @brief Tag component marking an entity as needing shader update
+ *
+ * Added by JzAssetSystem hot reload when a shader is reloaded.
+ * Should be processed by render systems to update GPU state.
+ */
+struct JzShaderDirtyTag { };
+
+/**
+ * @brief Tag component marking an entity as needing texture update
+ *
+ * Added by JzAssetSystem hot reload when a texture is reloaded.
+ * Reserved for future use.
+ */
+struct JzTextureDirtyTag { };
+
+/**
+ * @brief Tag component marking an entity as needing material update
+ *
+ * Added by JzAssetSystem hot reload when a material is reloaded.
+ * Reserved for future use.
+ */
+struct JzMaterialDirtyTag { };
+
 // ==================== Asset Lifecycle Component ====================
 
 /**

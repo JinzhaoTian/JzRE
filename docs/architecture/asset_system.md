@@ -162,7 +162,7 @@ The asset system follows strict layer separation:
 
 - **Resource Layer**: Pure C++ types, no ECS dependencies. Focus on asset operations.
 - **Function Layer**: ECS system that bridges Resource layer with ECS. Handles component sync.
-- **Backward Compatibility**: `JzAssetManager` still registered in `JzServiceContainer` for existing systems (`JzRenderSystem`, `JzShaderHotReloadSystem`, `JzAssetBrowser`).
+- **Backward Compatibility**: `JzAssetManager` still registered in `JzServiceContainer` for existing systems (`JzRenderSystem`, `JzAssetBrowser`).
 
 ## ECS Integration
 

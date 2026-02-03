@@ -48,6 +48,17 @@ void JzAssetSystem::Update(JzWorld &world, F32 delta)
     ProcessMeshAssets(world);
     ProcessMaterialAssets(world);
     ProcessShaderAssets(world);
+
+    // Hot reload check (development mode only)
+    if (m_hotReloadEnabled) {
+        m_timeSinceLastCheck += delta;
+
+        if (m_forceCheckNextFrame || m_timeSinceLastCheck >= m_hotReloadCheckInterval) {
+            CheckForHotReloadUpdates(world);
+            m_timeSinceLastCheck  = 0.0f;
+            m_forceCheckNextFrame = false;
+        }
+    }
 }
 
 void JzAssetSystem::OnShutdown(JzWorld &world)
@@ -62,10 +73,18 @@ void JzAssetSystem::Initialize(JzWorld &world, const JzAssetManagerConfig &confi
     m_assetManager = std::make_unique<JzAssetManager>(config);
     m_assetManager->Initialize();
 
+    // Initialize hot reload from config
+    m_hotReloadEnabled = config.enableHotReload;
+
     // Register JzAssetManager in service container and world context
-    // (JzRenderSystem, JzShaderHotReloadSystem, JzAssetBrowser use it)
+    // (JzRenderSystem, JzAssetBrowser use it)
     JzServiceContainer::Provide<JzAssetManager>(*m_assetManager);
     world.SetContext<JzAssetManager*>(m_assetManager.get());
+
+    if (m_hotReloadEnabled) {
+        JzRE_LOG_INFO("JzAssetSystem: Hot reload enabled with {}s check interval",
+                      m_hotReloadCheckInterval);
+    }
 }
 
 void JzAssetSystem::AddSearchPath(const String &path)
@@ -484,6 +503,174 @@ void JzAssetSystem::UpdateEntityAssetTags(JzWorld &world, JzEntity entity)
         world.RemoveComponent<JzAssetLoadFailedTag>(entity);
         world.AddOrReplaceComponent<JzAssetLoadingTag>(entity);
     }
+}
+
+// ==================== Hot Reload Configuration ====================
+
+void JzAssetSystem::SetHotReloadEnabled(Bool enabled)
+{
+    m_hotReloadEnabled = enabled;
+    if (enabled) {
+        JzRE_LOG_INFO("JzAssetSystem: Hot reload enabled");
+    } else {
+        JzRE_LOG_INFO("JzAssetSystem: Hot reload disabled");
+    }
+}
+
+Bool JzAssetSystem::IsHotReloadEnabled() const
+{
+    return m_hotReloadEnabled;
+}
+
+void JzAssetSystem::SetHotReloadCheckInterval(F32 seconds)
+{
+    m_hotReloadCheckInterval = seconds;
+}
+
+F32 JzAssetSystem::GetHotReloadCheckInterval() const
+{
+    return m_hotReloadCheckInterval;
+}
+
+void JzAssetSystem::ForceHotReloadCheck()
+{
+    m_forceCheckNextFrame = true;
+}
+
+Bool JzAssetSystem::ReloadShader(JzShaderAssetHandle shaderHandle)
+{
+    if (!m_assetManager || !m_assetManager->IsInitialized()) {
+        JzRE_LOG_WARN("JzAssetSystem: AssetManager not available for shader reload");
+        return false;
+    }
+
+    JzShaderAsset *shader = m_assetManager->Get(shaderHandle);
+    if (!shader) {
+        JzRE_LOG_WARN("JzAssetSystem: Shader not found for reload");
+        return false;
+    }
+
+    Bool success = shader->Reload();
+    if (success) {
+        ++m_shaderReloadCount;
+        ++m_totalReloadCount;
+        JzRE_LOG_INFO("JzAssetSystem: Reloaded shader '{}'", shader->GetName());
+    } else {
+        JzRE_LOG_ERROR("JzAssetSystem: Failed to reload shader '{}'", shader->GetName());
+    }
+
+    return success;
+}
+
+// ==================== Hot Reload Statistics ====================
+
+Size JzAssetSystem::GetHotReloadCount() const
+{
+    return m_totalReloadCount;
+}
+
+Size JzAssetSystem::GetShaderReloadCount() const
+{
+    return m_shaderReloadCount;
+}
+
+// ==================== Hot Reload Internal ====================
+
+void JzAssetSystem::CheckForHotReloadUpdates(JzWorld &world)
+{
+    // Check shaders (currently the only asset type with hot reload support)
+    CheckShaderHotReload(world);
+
+    // Future: Add CheckTextureHotReload(world);
+    // Future: Add CheckMaterialHotReload(world);
+}
+
+void JzAssetSystem::CheckShaderHotReload(JzWorld &world)
+{
+    auto usedShaders = CollectUsedShaders(world);
+
+    for (auto shaderHandle : usedShaders) {
+        JzShaderAsset *shader = m_assetManager->Get(shaderHandle);
+        if (!shader) {
+            continue;
+        }
+
+        if (shader->NeedsReload()) {
+            JzRE_LOG_INFO("JzAssetSystem: Detected change in shader '{}'", shader->GetName());
+
+            if (shader->Reload()) {
+                ++m_shaderReloadCount;
+                ++m_totalReloadCount;
+                NotifyShaderReloaded(shaderHandle, world);
+                JzRE_LOG_INFO("JzAssetSystem: Successfully reloaded shader '{}'",
+                              shader->GetName());
+            } else {
+                JzRE_LOG_ERROR("JzAssetSystem: Failed to reload shader '{}'", shader->GetName());
+            }
+        }
+    }
+}
+
+void JzAssetSystem::NotifyShaderReloaded(JzShaderAssetHandle shaderHandle, JzWorld &world)
+{
+    // Mark all entities with this shader as dirty
+    auto shaderView = world.View<JzShaderAssetComponent>();
+    for (auto entity : shaderView) {
+        auto &shaderComp = shaderView.get<JzShaderAssetComponent>(entity);
+        if (shaderComp.shaderHandle == shaderHandle) {
+            // Reset ready state to trigger recompilation
+            shaderComp.isReady       = false;
+            shaderComp.cachedVariant = nullptr;
+
+            // Add dirty tag for render systems
+            world.AddOrReplaceComponent<JzShaderDirtyTag>(entity);
+
+            JzRE_LOG_DEBUG("JzAssetSystem: Marked entity {} for shader update",
+                           static_cast<U32>(entity));
+        }
+    }
+
+    // Also check material components that reference this shader
+    auto materialView = world.View<JzMaterialAssetComponent>();
+    for (auto entity : materialView) {
+        auto &matComp = materialView.get<JzMaterialAssetComponent>(entity);
+        if (matComp.shaderHandle == shaderHandle) {
+            // Reset cached variant
+            matComp.cachedShaderVariant = nullptr;
+
+            // Add dirty tag
+            world.AddOrReplaceComponent<JzShaderDirtyTag>(entity);
+
+            JzRE_LOG_DEBUG("JzAssetSystem: Marked material entity {} for shader update",
+                           static_cast<U32>(entity));
+        }
+    }
+}
+
+std::unordered_set<JzShaderAssetHandle, JzAssetHandle<JzShaderAsset>::Hash>
+JzAssetSystem::CollectUsedShaders(JzWorld &world)
+{
+    std::unordered_set<JzShaderAssetHandle, JzAssetHandle<JzShaderAsset>::Hash> usedShaders;
+
+    // Collect from shader components
+    auto shaderView = world.View<JzShaderAssetComponent>();
+    for (auto entity : shaderView) {
+        auto &shaderComp = shaderView.get<JzShaderAssetComponent>(entity);
+        if (shaderComp.shaderHandle.IsValid()) {
+            usedShaders.insert(shaderComp.shaderHandle);
+        }
+    }
+
+    // Collect from material components
+    auto materialView = world.View<JzMaterialAssetComponent>();
+    for (auto entity : materialView) {
+        auto &matComp = materialView.get<JzMaterialAssetComponent>(entity);
+        if (matComp.shaderHandle.IsValid()) {
+            usedShaders.insert(matComp.shaderHandle);
+        }
+    }
+
+    return usedShaders;
 }
 
 } // namespace JzRE

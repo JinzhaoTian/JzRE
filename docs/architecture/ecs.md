@@ -669,9 +669,8 @@ src/Runtime/Function/
 │   ├── JzLightSystem.h
 │   ├── JzRenderSystem.h
 │   ├── JzInputSystem.h
-│   ├── JzAssetSystem.h
-│   ├── JzMoveSystem.h
-│   └── JzShaderHotReloadSystem.h
+│   ├── JzAssetSystem.h            # Includes hot reload functionality
+│   └── JzMoveSystem.h
 └── src/ECS/
     ├── JzWorld.cpp
     ├── JzCameraSystem.cpp

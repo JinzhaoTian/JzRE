@@ -32,6 +32,7 @@
 #pragma once
 
 #include <memory>
+#include <unordered_set>
 #include <vector>
 
 #include "JzRE/Runtime/Function/ECS/JzEntity.h"
@@ -269,6 +270,63 @@ public:
     [[nodiscard]] Size GetTotalMemoryUsage() const;
     [[nodiscard]] Size GetPendingLoadCount() const;
 
+    // ==================== Hot Reload Configuration ====================
+
+    /**
+     * @brief Enable or disable hot reload functionality
+     *
+     * Hot reload monitors asset files for changes and automatically
+     * reloads them during runtime. This is intended for editor/development
+     * mode and should be disabled in release builds.
+     *
+     * @param enabled True to enable hot reload
+     */
+    void SetHotReloadEnabled(Bool enabled);
+
+    /**
+     * @brief Check if hot reload is enabled
+     */
+    [[nodiscard]] Bool IsHotReloadEnabled() const;
+
+    /**
+     * @brief Set the interval between hot reload checks
+     *
+     * @param seconds Time in seconds between file modification checks (default: 1.0)
+     */
+    void SetHotReloadCheckInterval(F32 seconds);
+
+    /**
+     * @brief Get the current hot reload check interval
+     */
+    [[nodiscard]] F32 GetHotReloadCheckInterval() const;
+
+    /**
+     * @brief Force an immediate hot reload check on all tracked assets
+     *
+     * Useful for triggering reload via editor UI button.
+     */
+    void ForceHotReloadCheck();
+
+    /**
+     * @brief Manually reload a specific shader asset
+     *
+     * @param handle Handle to the shader to reload
+     * @return True if reload succeeded
+     */
+    Bool ReloadShader(JzShaderAssetHandle handle);
+
+    // ==================== Hot Reload Statistics ====================
+
+    /**
+     * @brief Get total number of assets reloaded since initialization
+     */
+    [[nodiscard]] Size GetHotReloadCount() const;
+
+    /**
+     * @brief Get shader reload count specifically
+     */
+    [[nodiscard]] Size GetShaderReloadCount() const;
+
     // ==================== Internal Access ====================
 
     /**
@@ -294,9 +352,26 @@ private:
 
     void UpdateEntityAssetTags(JzWorld &world, JzEntity entity);
 
+    // ==================== Hot Reload Internal ====================
+
+    void CheckForHotReloadUpdates(JzWorld &world);
+    void CheckShaderHotReload(JzWorld &world);
+    void NotifyShaderReloaded(JzShaderAssetHandle handle, JzWorld &world);
+
+    std::unordered_set<JzShaderAssetHandle, JzAssetHandle<JzShaderAsset>::Hash>
+    CollectUsedShaders(JzWorld &world);
+
     // ==================== Member Variables ====================
 
     std::unique_ptr<JzAssetManager> m_assetManager;
+
+    // Hot Reload State
+    Bool m_hotReloadEnabled       = false;
+    F32  m_hotReloadCheckInterval = 1.0f;
+    F32  m_timeSinceLastCheck     = 0.0f;
+    Bool m_forceCheckNextFrame    = false;
+    Size m_totalReloadCount       = 0;
+    Size m_shaderReloadCount      = 0;
 };
 
 } // namespace JzRE
