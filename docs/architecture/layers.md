@@ -96,8 +96,8 @@ Provides platform-agnostic services through abstraction:
 ```
 Platform/
 ├── include/JzRE/Runtime/Platform/
-│   ├── RHI/          # Device, GPU objects, Pipeline, RenderPass, Capabilities, Stats
-│   │   ├── JzDevice.h, JzDeviceFactory.h
+│   ├── RHI/          # Device, GPU objects, Pipeline, RenderPass, Context, Stats
+│   │   ├── JzDevice.h, JzDeviceFactory.h, JzGraphicsContext.h
 │   │   ├── JzRHIPipeline.h, JzRHIRenderPass.h
 │   │   ├── JzRHICapabilities.h, JzRHIStats.h
 │   │   └── JzGPU*Object.h (Buffer, Texture, Shader, Framebuffer, VertexArray)
@@ -121,7 +121,7 @@ Platform/
     └── Windows/, Linux/, macOS/  # Platform-specific code
 ```
 
-**Key Classes**: `JzDevice`, `JzDeviceFactory`, `JzRHICommandList`, `JzGPU*Object`, `JzIWindowBackend`
+**Key Classes**: `JzGraphicsContext`, `JzDevice`, `JzDeviceFactory`, `JzRHICommandList`, `JzGPU*Object`, `JzIWindowBackend`
 
 ### 3. Resource Layer (`src/Runtime/Resource/`)
 
@@ -150,6 +150,14 @@ High-level engine systems:
 | Window    | `ECS/`    | `JzWindowSystem`, `JzWindowComponents`, `JzWindowEvents`       |
 | Asset     | `ECS/`    | `JzAssetSystem`, `JzAssetComponents` (hot reload, ECS integration) |
 | Render    | `ECS/`    | `JzRenderSystem`, `JzCameraSystem`, `JzLightSystem`            |
+
+### 5. Interface Layer (`src/Runtime/Interface/`)
+
+High-level runtime entry point and graphics context coordination.
+
+| Component          | Description                                           |
+| ------------------ | ----------------------------------------------------- |
+| `JzRERuntime`      | Runtime application lifecycle and system orchestration |
 
 ---
 

@@ -47,6 +47,29 @@ public:
         return *std::any_cast<T *>(__SERVICES[typeid(T).hash_code()]);
     }
 
+    /**
+     * @brief Check whether a service is registered.
+     *
+     * @tparam T The type of the service
+     * @return Bool True if registered.
+     */
+    template <typename T>
+    static Bool Has()
+    {
+        return __SERVICES.find(typeid(T).hash_code()) != __SERVICES.end();
+    }
+
+    /**
+     * @brief Remove a service.
+     *
+     * @tparam T The type of the service
+     */
+    template <typename T>
+    static void Remove()
+    {
+        __SERVICES.erase(typeid(T).hash_code());
+    }
+
 private:
     static std::unordered_map<I32, std::any> __SERVICES;
 };

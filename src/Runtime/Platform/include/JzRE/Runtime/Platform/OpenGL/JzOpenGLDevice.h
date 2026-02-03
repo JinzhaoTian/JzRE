@@ -124,11 +124,6 @@ public:
     void EndFrame() override;
 
     /**
-     * @brief Present
-     */
-    void Present() override;
-
-    /**
      * @brief Set Render State
      *
      * @param state Render State
@@ -228,13 +223,6 @@ public:
      * @return Bool
      */
     Bool SupportsMultithreading() const override;
-
-    /**
-     * @brief Make Context Current
-     *
-     * @param threadIndex Thread Index
-     */
-    void MakeContextCurrent(U32 threadIndex = 0) override;
 
     /**
      * @brief Get Capabilities

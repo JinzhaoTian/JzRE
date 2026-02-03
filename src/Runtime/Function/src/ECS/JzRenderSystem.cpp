@@ -10,6 +10,7 @@
 #include "JzRE/Runtime/Function/ECS/JzTransformComponents.h"
 #include "JzRE/Runtime/Function/ECS/JzCameraComponents.h"
 #include "JzRE/Runtime/Function/ECS/JzWindowComponents.h"
+#include "JzRE/Runtime/Platform/RHI/JzGraphicsContext.h"
 #include "JzRE/Runtime/Platform/RHI/JzDevice.h"
 #include "JzRE/Runtime/Resource/JzShaderAsset.h"
 #include "JzRE/Runtime/Resource/JzAssetManager.h"
@@ -100,14 +101,30 @@ std::shared_ptr<JzRHIPipeline> JzRenderSystem::GetDefaultPipeline() const
 
 void JzRenderSystem::BeginFrame()
 {
-    auto &device = JzServiceContainer::Get<JzDevice>();
-    device.BeginFrame();
+    if (!JzServiceContainer::Has<JzGraphicsContext>()) {
+        return;
+    }
+
+    auto &context = JzServiceContainer::Get<JzGraphicsContext>();
+    if (!context.IsInitialized()) {
+        return;
+    }
+
+    context.BeginFrame();
 }
 
 void JzRenderSystem::EndFrame()
 {
-    auto &device = JzServiceContainer::Get<JzDevice>();
-    device.EndFrame();
+    if (!JzServiceContainer::Has<JzGraphicsContext>()) {
+        return;
+    }
+
+    auto &context = JzServiceContainer::Get<JzGraphicsContext>();
+    if (!context.IsInitialized()) {
+        return;
+    }
+
+    context.EndFrame();
 }
 
 void JzRenderSystem::BlitToScreen(U32 screenWidth, U32 screenHeight)

@@ -18,6 +18,7 @@
 #include "JzRE/Runtime/Function/ECS/JzAssetSystem.h"
 #include "JzRE/Runtime/Function/Event/JzEventSystem.h"
 #include "JzRE/Runtime/Platform/RHI/JzDevice.h"
+#include "JzRE/Runtime/Platform/RHI/JzGraphicsContext.h"
 
 namespace JzRE {
 
@@ -161,7 +162,7 @@ private:
 protected:
     JzRERuntimeSettings m_settings;
 
-    std::unique_ptr<JzDevice> m_device;
+    std::unique_ptr<JzGraphicsContext> m_graphicsContext;
 
     // ECS world and systems
     std::unique_ptr<JzWorld>        m_world;

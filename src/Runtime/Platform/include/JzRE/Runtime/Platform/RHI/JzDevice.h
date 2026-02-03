@@ -160,11 +160,6 @@ public:
     virtual void EndFrame() = 0;
 
     /**
-     * @brief Present
-     */
-    virtual void Present() = 0;
-
-    /**
      * @brief Set Render State
      *
      * @param state Render State
@@ -264,13 +259,6 @@ public:
      * @return Bool
      */
     virtual Bool SupportsMultithreading() const = 0;
-
-    /**
-     * @brief Make Context Current
-     *
-     * @param threadIndex Thread Index
-     */
-    virtual void MakeContextCurrent(U32 threadIndex = 0) = 0;
 
 protected:
     JzERHIType rhiType;

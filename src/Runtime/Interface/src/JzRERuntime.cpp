@@ -7,13 +7,14 @@
 
 #include "JzRE/Runtime/Core/JzClock.h"
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
+
 #include "JzRE/Runtime/Function/ECS/JzTransformComponents.h"
 #include "JzRE/Runtime/Function/ECS/JzCameraComponents.h"
 #include "JzRE/Runtime/Function/ECS/JzLightComponents.h"
 #include "JzRE/Runtime/Function/ECS/JzInputComponents.h"
 #include "JzRE/Runtime/Function/ECS/JzWindowComponents.h"
 
-#include "JzRE/Runtime/Platform/RHI/JzDeviceFactory.h"
+#include "JzRE/Runtime/Platform/RHI/JzGraphicsContext.h"
 
 // Resource factories for JzAssetManager
 #include "JzRE/Runtime/Resource/JzShaderAssetFactory.h"
@@ -80,7 +81,7 @@ void JzRE::JzRERuntime::CreateSubsystems()
     // aiSystem      = CreateAISystem();
     // uiSystem      = CreateUISystem();
 
-    // Create device (after window is created in RegisterSystems)
+    // Create graphics context (after window is created in RegisterSystems)
     // Note: device creation is deferred until after window system initialization
 
     // Initialize ECS world first (needed for system registration)
@@ -123,19 +124,23 @@ void JzRE::JzRERuntime::RegisterSystems()
     windowConfig.width  = m_settings.windowSize.x;
     windowConfig.height = m_settings.windowSize.y;
     m_windowSystem->InitializeWindow(m_settings.rhiType, windowConfig);
-    m_windowSystem->MakeCurrentContext();
     m_windowSystem->SetAlignCentered();
 
-    // Create device (requires GL context to be current)
-    m_device = JzDeviceFactory::CreateDevice(m_settings.rhiType);
-    JzServiceContainer::Provide<JzDevice>(*m_device);
+    // Create graphics context (requires GL context to be current)
+    m_graphicsContext   = std::make_unique<JzGraphicsContext>();
+    auto *windowBackend = m_windowSystem->GetBackend();
+    if (windowBackend) {
+        m_graphicsContext->Initialize(*windowBackend, m_settings.rhiType);
+        JzServiceContainer::Provide<JzGraphicsContext>(*m_graphicsContext);
+        JzServiceContainer::Provide<JzDevice>(m_graphicsContext->GetDevice());
+    }
 
     m_inputSystem = m_world->RegisterSystem<JzInputSystem>();
 
     // Event dispatcher runs after window/input so events queued this frame are dispatched this frame
     m_eventSystem = m_world->RegisterSystem<JzEventSystem>();
     JzServiceContainer::Provide<JzEventSystem>(*m_eventSystem);
-    m_world->SetContext<JzEventSystem*>(m_eventSystem.get());
+    m_world->SetContext<JzEventSystem *>(m_eventSystem.get());
 
     m_assetSystem = m_world->RegisterSystem<JzAssetSystem>();
     JzServiceContainer::Provide<JzAssetSystem>(*m_assetSystem);
@@ -224,7 +229,12 @@ void JzRE::JzRERuntime::ShutdownSubsystems()
     m_assetSystem.reset();
     m_eventSystem.reset();
     m_inputSystem.reset();
-    m_device.reset();
+    if (m_graphicsContext) {
+        JzServiceContainer::Remove<JzGraphicsContext>();
+        JzServiceContainer::Remove<JzDevice>();
+        m_graphicsContext->Shutdown();
+        m_graphicsContext.reset();
+    }
 
     m_windowSystem.reset();
     m_world.reset();
@@ -336,8 +346,10 @@ void JzRE::JzRERuntime::Run()
             m_inputSystem->ClearFrameState(*m_world);
         }
 
-        // Swap buffers
-        m_windowSystem->SwapWindowBuffers();
+        // Present frame
+        if (m_graphicsContext) {
+            m_graphicsContext->Present();
+        }
 
         // Update clock for next frame
         clock.Update();

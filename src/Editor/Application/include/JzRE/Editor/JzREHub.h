@@ -9,7 +9,7 @@
 #include <optional>
 #include "JzRE/Runtime/Core/JzRETypes.h"
 #include "JzRE/Runtime/Function/ECS/JzWindowSystem.h"
-#include "JzRE/Runtime/Platform/RHI/JzDevice.h"
+#include "JzRE/Runtime/Platform/RHI/JzGraphicsContext.h"
 #include "JzRE/Editor/JzUIManager.h"
 #include "JzRE/Editor/JzCanvas.h"
 #include "JzRE/Editor/UI/JzPanelWindow.h"
@@ -43,12 +43,12 @@ public:
     std::optional<std::filesystem::path> Run();
 
 private:
-    std::unique_ptr<JzWindowSystem> m_windowSystem;
-    std::unique_ptr<JzDevice>       m_device;
-    std::unique_ptr<JzUIManager>    m_uiManager;
-    std::unique_ptr<JzCanvas>       m_canvas;
-    std::unique_ptr<JzREHubMenuBar> m_menuBar;
-    std::unique_ptr<JzREHubPanel>   m_hubPanel;
+    std::unique_ptr<JzWindowSystem>    m_windowSystem;
+    std::unique_ptr<JzGraphicsContext> m_graphicsContext;
+    std::unique_ptr<JzUIManager>       m_uiManager;
+    std::unique_ptr<JzCanvas>          m_canvas;
+    std::unique_ptr<JzREHubMenuBar>    m_menuBar;
+    std::unique_ptr<JzREHubPanel>      m_hubPanel;
 };
 
 /**
@@ -72,11 +72,11 @@ private:
 
 private:
     JzWindowSystem &m_windowSystem;
-    JzVec2    m_buttonSize;
-    String    m_backgroudColor;
-    Bool      m_isDragging;
-    JzIVec2   m_dragStartMousePos;
-    JzIVec2   m_dragStartWindowPos;
+    JzVec2          m_buttonSize;
+    String          m_backgroudColor;
+    Bool            m_isDragging;
+    JzIVec2         m_dragStartMousePos;
+    JzIVec2         m_dragStartWindowPos;
 };
 
 /**

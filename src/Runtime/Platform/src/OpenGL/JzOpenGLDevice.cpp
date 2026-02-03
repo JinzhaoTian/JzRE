@@ -104,13 +104,6 @@ void JzRE::JzOpenGLDevice::EndFrame()
     glFlush();
 }
 
-void JzRE::JzOpenGLDevice::Present()
-{
-    // 交换缓冲区通常由窗口系统处理
-    // 这里可以执行一些额外的同步操作
-    glFinish();
-}
-
 void JzRE::JzOpenGLDevice::SetRenderState(const JzRE::JzRenderState &state)
 {
     m_currentRenderState = state;
@@ -283,13 +276,6 @@ void JzRE::JzOpenGLDevice::Finish()
 JzRE::Bool JzRE::JzOpenGLDevice::SupportsMultithreading() const
 {
     return false;
-}
-
-void JzRE::JzOpenGLDevice::MakeContextCurrent(JzRE::U32 threadIndex)
-{
-    // OpenGL 上下文切换通常由窗口系统处理
-    // 这里可以执行一些必要的检查或初始化
-    (void)threadIndex; // 抑制未使用参数警告
 }
 
 const JzRE::JzRHICapabilities &JzRE::JzOpenGLDevice::GetCapabilities() const

@@ -75,6 +75,7 @@ Abstracts platform-specific functionality and graphics APIs.
 **Key Components:**
 
 - **RHI (Render Hardware Interface)** - Graphics API abstraction
+- `JzGraphicsContext` - Owns device and presentation/context switching
 - `JzDevice` - Unified device interface for resource creation
 - `JzDeviceFactory` - Device creation factory (backend selection)
 - `JzRHICommandList` - Command buffer for deferred rendering

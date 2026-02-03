@@ -26,7 +26,7 @@
 #include "JzRE/Editor/UI/JzColumns.h"
 #include "JzRE/Editor/UI/JzConverter.h"
 #include "JzRE/Runtime/Platform/Dialog/JzOpenFileDialog.h"
-#include "JzRE/Runtime/Platform/RHI/JzDeviceFactory.h"
+#include "JzRE/Runtime/Platform/RHI/JzGraphicsContext.h"
 
 JzRE::JzREHub::JzREHub(JzERHIType rhiType)
 {
@@ -41,11 +41,15 @@ JzRE::JzREHub::JzREHub(JzERHIType rhiType)
 
     m_windowSystem = std::make_unique<JzWindowSystem>();
     m_windowSystem->InitializeWindow(rhiType, windowConfig);
-    m_windowSystem->MakeCurrentContext();
     m_windowSystem->SetAlignCentered();
 
-    m_device = JzDeviceFactory::CreateDevice(rhiType);
-    JzServiceContainer::Provide<JzDevice>(*m_device);
+    m_graphicsContext   = std::make_unique<JzGraphicsContext>();
+    auto *windowBackend = m_windowSystem->GetBackend();
+    if (windowBackend) {
+        m_graphicsContext->Initialize(*windowBackend, rhiType);
+        JzServiceContainer::Provide<JzGraphicsContext>(*m_graphicsContext);
+        JzServiceContainer::Provide<JzDevice>(m_graphicsContext->GetDevice());
+    }
 
     m_uiManager = std::make_unique<JzUIManager>(*m_windowSystem);
 
@@ -80,8 +84,11 @@ JzRE::JzREHub::~JzREHub()
         m_uiManager.reset();
     }
 
-    if (m_device) {
-        m_device.reset();
+    if (m_graphicsContext) {
+        JzServiceContainer::Remove<JzGraphicsContext>();
+        JzServiceContainer::Remove<JzDevice>();
+        m_graphicsContext->Shutdown();
+        m_graphicsContext.reset();
     }
 
     if (m_windowSystem) {
@@ -94,7 +101,9 @@ std::optional<std::filesystem::path> JzRE::JzREHub::Run()
     while (!m_windowSystem->ShouldClose()) {
         m_windowSystem->PollWindowEvents();
         m_uiManager->Render();
-        m_windowSystem->SwapWindowBuffers();
+        if (m_graphicsContext) {
+            m_graphicsContext->Present();
+        }
 
         if (!m_hubPanel->IsOpened()) {
             m_windowSystem->SetShouldClose(true);

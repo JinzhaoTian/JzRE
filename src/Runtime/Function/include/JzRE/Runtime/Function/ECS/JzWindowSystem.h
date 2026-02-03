@@ -114,9 +114,14 @@ public:
     void PollWindowEvents() const;
 
     /**
-     * @brief Swap the front and back buffers.
+     * @brief Get the underlying window backend.
+     *
+     * @return JzIWindowBackend* Backend pointer or nullptr if not initialized.
      */
-    void SwapWindowBuffers() const;
+    JzIWindowBackend *GetBackend() const
+    {
+        return m_backend.get();
+    }
 
     // ==================== Window Properties ====================
 
@@ -219,6 +224,7 @@ private:
     void SyncInputFromBackend(JzWorld &world, JzEntity windowEntity);
     void EmitWindowEvents(JzWorld &world);
     void ProcessPlatformEvents(JzWorld &world);
+    void SwapWindowBuffers() const;
 
 private:
     // ==================== Backend ====================

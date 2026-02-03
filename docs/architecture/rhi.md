@@ -24,6 +24,7 @@ graph TB
     end
 
     subgraph "RHI Abstraction Layer"
+        Context[JzGraphicsContext]
         Device[JzDevice]
         CmdList[JzRHICommandList]
         Pipeline[JzRHIPipeline]
@@ -48,7 +49,8 @@ graph TB
         VKDevice["JzVulkanDevice (TODO)"]
     end
 
-    App --> Device
+    App --> Context
+    Context --> Device
     Device --> CmdList
     Device --> Pipeline
     Device --> Buffer
@@ -71,6 +73,26 @@ graph TB
 ---
 
 ## Core Components
+
+### JzGraphicsContext (Context Abstraction)
+
+Owns the device and bridges the window context with the RHI layer. It is responsible for
+context switching and presentation, while the device focuses on GPU resources and draw calls.
+
+```cpp
+class JzGraphicsContext {
+public:
+    void Initialize(JzIWindowBackend& windowBackend, JzERHIType rhiType);
+    void Shutdown();
+
+    JzDevice& GetDevice();
+    Bool IsInitialized() const;
+    void MakeCurrentContext(U32 threadIndex = 0);
+    void BeginFrame();
+    void EndFrame();
+    void Present();
+};
+```
 
 ### JzDevice (Device Abstraction)
 
@@ -100,7 +122,6 @@ public:
     // Frame Management
     virtual void BeginFrame() = 0;
     virtual void EndFrame() = 0;
-    virtual void Present() = 0;
 
     // Immediate Mode Rendering
     virtual void Clear(const JzClearParams&) = 0;
@@ -115,7 +136,6 @@ public:
 
     // Multi-threading Support
     virtual Bool SupportsMultithreading() const = 0;
-    virtual void MakeContextCurrent(U32 threadIndex = 0) = 0;
 };
 ```
 
@@ -257,8 +277,11 @@ Currently completed OpenGL backend implementation:
 ### Basic Initialization
 
 ```cpp
-// Create OpenGL device
-auto device = std::make_unique<JzOpenGLDevice>();
+// Create graphics context and device
+JzGraphicsContext context;
+auto* backend = windowSystem.GetBackend();
+context.Initialize(*backend, JzERHIType::OpenGL);
+auto& device = context.GetDevice();
 
 // Get device information
 std::cout << "Device: " << device->GetDeviceName() << std::endl;
@@ -288,7 +311,7 @@ auto texture = device->CreateTexture(texDesc);
 ### Immediate Mode Rendering
 
 ```cpp
-device->BeginFrame();
+context.BeginFrame();
 
 // Clear
 JzClearParams clearParams;
@@ -297,15 +320,15 @@ clearParams.colorR = 0.2f;
 clearParams.colorG = 0.3f;
 clearParams.colorB = 0.8f;
 clearParams.colorA = 1.0f;
-device->Clear(clearParams);
+device.Clear(clearParams);
 
 // Bind and draw
-device->BindPipeline(pipeline);
-device->BindVertexArray(vertexArray);
-device->DrawIndexed(drawParams);
+device.BindPipeline(pipeline);
+device.BindVertexArray(vertexArray);
+device.DrawIndexed(drawParams);
 
-device->EndFrame();
-device->Present();
+context.EndFrame();
+context.Present();
 ```
 
 ### Command Buffer Mode

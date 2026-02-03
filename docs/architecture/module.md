@@ -15,7 +15,7 @@ JzRE/
 │   │   ├── CMakeLists.txt
 │   │   ├── Interface/              # Runtime Application Interface
 │   │   │   ├── include/JzRE/Runtime/
-│   │   │   │   └── JzRERuntime.h   # Main runtime class with OnStart/OnUpdate/OnStop hooks
+│   │   │   │   ├── JzRERuntime.h   # Main runtime class with OnStart/OnUpdate/OnStop hooks
 │   │   │   └── src/
 │   │   │
 │   │   ├── Core/                   # Layer 1: Core Utilities (zero dependencies)
@@ -32,7 +32,7 @@ JzRE/
 │   │   │
 │   │   ├── Platform/               # Layer 2: Platform Abstraction
 │   │   │   ├── include/JzRE/Runtime/Platform/
-│   │   │   │   ├── RHI/            # Device, GPU objects, Pipeline, RenderPass
+│   │   │   │   ├── RHI/            # Device, GPU objects, Pipeline, RenderPass, Context
 │   │   │   │   ├── Command/        # RHI command pattern
 │   │   │   │   ├── Threading/      # Render thread pool, tasks
 │   │   │   │   ├── Window/         # IWindowBackend, GLFWWindowBackend
@@ -141,6 +141,7 @@ target_link_libraries(JzRERuntime INTERFACE
 #include "JzRE/Runtime/Platform/RHI/JzDevice.h"
 #include "JzRE/Runtime/Platform/Command/JzRHICommandList.h"
 #include "JzRE/Runtime/Platform/Window/IWindowBackend.h"
+#include "JzRE/Runtime/Platform/RHI/JzGraphicsContext.h"
 #include "JzRE/Runtime/Resource/JzAssetManager.h"
 #include "JzRE/Runtime/Function/ECS/JzWorld.h"
 #include "JzRE/Runtime/Function/ECS/JzAssetSystem.h"

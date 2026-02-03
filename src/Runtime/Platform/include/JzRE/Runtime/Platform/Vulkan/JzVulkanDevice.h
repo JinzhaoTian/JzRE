@@ -43,7 +43,6 @@ public:
     // 立即渲染模式
     void BeginFrame() override;
     void EndFrame() override;
-    void Present() override;
 
     // 渲染状态管理
     void SetRenderState(const JzRenderState &state) override;
@@ -67,7 +66,6 @@ public:
 
     // 多线程支持
     Bool SupportsMultithreading() const override;
-    void MakeContextCurrent(U32 threadIndex = 0) override;
 
 private:
     // VkInstance instance;
