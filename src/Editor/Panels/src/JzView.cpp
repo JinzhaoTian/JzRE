@@ -86,8 +86,7 @@ void JzView::RegisterRenderTarget()
     desc.passName       = GetPassName();
     desc.outputName     = GetOutputName();
     desc.camera         = GetCameraEntity();
-    desc.includeEditor  = IncludeEditorOnly();
-    desc.includePreview = IncludePreviewOnly();
+    desc.visibility     = GetVisibility();
     desc.shouldRender   = [this]() { return IsOpened() && IsVisible(); };
     desc.getDesiredSize = [this]() { return GetSafeSize(); };
 

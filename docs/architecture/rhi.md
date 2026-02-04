@@ -72,6 +72,12 @@ graph TB
 
 ---
 
+## Integration Notes
+
+`JzRenderSystem` can register multiple view targets and render to them through `JzDevice`. Each view can filter entities by a tag mask, allowing editor-only, preview-only, and untagged objects to be rendered to different targets without changing RHI APIs.
+
+---
+
 ## Core Components
 
 ### JzGraphicsContext (Context Abstraction)

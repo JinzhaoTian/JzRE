@@ -63,11 +63,11 @@ protected:
     JzEntity GetCameraEntity() override;
 
     /**
-     * @brief SceneView includes editor-only entities (grid, gizmos).
+     * @brief SceneView renders game objects and editor helpers.
      */
-    Bool IncludeEditorOnly() const override
+    JzRenderVisibility GetVisibility() const override
     {
-        return true;
+        return JzRenderVisibility::Untagged | JzRenderVisibility::EditorOnly;
     }
 
     String GetPassName() const override

@@ -31,11 +31,11 @@ public:
 
 protected:
     /**
-     * @brief AssetView includes preview-only entities.
+     * @brief AssetView only renders preview entities.
      */
-    Bool IncludePreviewOnly() const override
+    JzRenderVisibility GetVisibility() const override
     {
-        return true;
+        return JzRenderVisibility::PreviewOnly;
     }
 
     String GetPassName() const override

@@ -116,10 +116,13 @@ The main loop in `JzRERuntime::Run()` executes in 8 distinct phases:
                │
                │     ├── For each registered view target:
                │     │     ├── Ensure target size
-                │     │     ├── Bind target framebuffer
-                │     │     ├── Set viewport and clear
-               │     │     ├── Render filtered entities (editor/preview tag rules)
-                │     │     └── Unbind framebuffer
+               │     │     ├── Bind target framebuffer
+               │     │     ├── Set viewport and clear
+               │     │     ├── Render filtered entities by tag mask
+               │     │     │     - JzEditorOnlyTag
+               │     │     │     - JzPreviewOnlyTag
+               │     │     │     - Untagged (game objects)
+               │     │     └── Unbind framebuffer
                └── Execute RenderGraph passes
    |
    v

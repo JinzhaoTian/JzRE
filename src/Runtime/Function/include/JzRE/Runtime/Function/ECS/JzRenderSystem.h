@@ -19,6 +19,7 @@
 #include "JzRE/Runtime/Function/Rendering/JzRenderOutput.h"
 #include "JzRE/Runtime/Function/Rendering/JzRenderOutputCache.h"
 #include "JzRE/Runtime/Function/Rendering/JzRenderTarget.h"
+#include "JzRE/Runtime/Function/Rendering/JzRenderVisibility.h"
 #include "JzRE/Runtime/Platform/RHI/JzGPUFramebufferObject.h"
 #include "JzRE/Runtime/Platform/RHI/JzGPUTextureObject.h"
 #include "JzRE/Runtime/Platform/RHI/JzRHIPipeline.h"
@@ -132,9 +133,8 @@ public:
         String                   name;
         String                   passName;
         String                   outputName;
-        JzEntity                 camera         = INVALID_ENTITY;
-        Bool                     includeEditor  = false;
-        Bool                     includePreview = false;
+        JzEntity                 camera     = INVALID_ENTITY;
+        JzRenderVisibility       visibility = JzRenderVisibility::Untagged;
         std::function<Bool()>    shouldRender;
         std::function<JzIVec2()> getDesiredSize;
     };
@@ -184,25 +184,23 @@ private:
     void RenderEntities(JzWorld &world);
 
     /**
-     * @brief Render to a target with entity filtering based on tags.
+     * @brief Render to a target with entity filtering based on visibility.
      *
      * @param world The ECS world
      * @param target The render target
      * @param camera The camera entity
-     * @param includeEditor Whether to include JzEditorOnlyTag entities
-     * @param includePreview Whether to include JzPreviewOnlyTag entities
+     * @param visibility Visibility mask for entity filtering
      */
     void RenderToTargetFiltered(JzWorld &world, JzRenderTarget &target, JzEntity camera,
-                                Bool includeEditor, Bool includePreview);
+                                JzRenderVisibility visibility);
 
     /**
-     * @brief Render entities with tag filtering.
+     * @brief Render entities with visibility filtering.
      *
      * @param world The ECS world
-     * @param includeEditor Whether to include JzEditorOnlyTag entities
-     * @param includePreview Whether to include JzPreviewOnlyTag entities
+     * @param visibility Visibility mask for entity filtering
      */
-    void RenderEntitiesFiltered(JzWorld &world, Bool includeEditor, Bool includePreview);
+    void RenderEntitiesFiltered(JzWorld &world, JzRenderVisibility visibility);
 
     /**
      * @brief Apply render graph transitions (backend-specific).

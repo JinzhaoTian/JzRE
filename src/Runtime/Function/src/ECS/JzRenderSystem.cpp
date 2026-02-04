@@ -163,8 +163,7 @@ void JzRenderSystem::Update(JzWorld &world, F32 delta)
                 }
 
                 auto &target = *targetIter->second;
-                RenderToTargetFiltered(world, target, entry.camera, entry.includeEditor,
-                                       entry.includePreview);
+                RenderToTargetFiltered(world, target, entry.camera, entry.visibility);
             },
         });
     }
@@ -526,7 +525,7 @@ void JzRenderSystem::UpdateViewCamera(JzRenderSystem::ViewHandle handle, JzEntit
 }
 
 void JzRenderSystem::RenderToTargetFiltered(JzWorld &world, JzRenderTarget &target,
-                                            JzEntity camera, Bool includeEditor, Bool includePreview)
+                                            JzEntity camera, JzRenderVisibility visibility)
 {
     // Ensure pipeline is initialized
     if (!m_isInitialized) {
@@ -603,42 +602,45 @@ void JzRenderSystem::RenderToTargetFiltered(JzWorld &world, JzRenderTarget &targ
     m_defaultPipeline->SetUniform("projection", projectionMatrix);
 
     // Render entities with filtering
-    RenderEntitiesFiltered(world, includeEditor, includePreview);
+    RenderEntitiesFiltered(world, visibility);
 
     // Unbind framebuffer
     device.BindFramebuffer(nullptr);
 }
 
-void JzRenderSystem::RenderEntitiesFiltered(JzWorld &world, Bool includeEditor, Bool includePreview)
+void JzRenderSystem::RenderEntitiesFiltered(JzWorld &world, JzRenderVisibility visibility)
 {
     auto &device       = JzServiceContainer::Get<JzDevice>();
     auto &assetManager = JzServiceContainer::Get<JzAssetManager>();
+
+    const Bool allowEditorOnly  = HasVisibility(visibility, JzRenderVisibility::EditorOnly);
+    const Bool allowPreviewOnly = HasVisibility(visibility, JzRenderVisibility::PreviewOnly);
+    const Bool allowUntagged    = HasVisibility(visibility, JzRenderVisibility::Untagged);
 
     // Get all renderable entities
     auto views = world.View<JzTransformComponent, JzMeshAssetComponent, JzMaterialAssetComponent, JzAssetReadyTag>();
 
     for (auto entity : views) {
         // Tag-based filtering:
-        // - JzEditorOnlyTag: only render if includeEditor is true
-        // - JzPreviewOnlyTag: only render if includePreview is true
-        // - No tag (game object): always render unless it's preview-only view
+        // - JzEditorOnlyTag: render if tag mask includes EditorOnly
+        // - JzPreviewOnlyTag: render if tag mask includes PreviewOnly
+        // - Untagged (game object): render if tag mask includes Untagged
 
         Bool hasEditorTag  = world.HasComponent<JzEditorOnlyTag>(entity);
         Bool hasPreviewTag = world.HasComponent<JzPreviewOnlyTag>(entity);
 
         // Skip editor-only entities if not including editor
-        if (hasEditorTag && !includeEditor) {
+        if (hasEditorTag && !allowEditorOnly) {
             continue;
         }
 
         // Skip preview-only entities if not including preview
-        if (hasPreviewTag && !includePreview) {
+        if (hasPreviewTag && !allowPreviewOnly) {
             continue;
         }
 
-        // For preview-only views, skip game objects (entities without preview tag)
-        // Preview view should only show preview entities
-        if (includePreview && !includeEditor && !hasPreviewTag) {
+        // Skip untagged entities if not allowed
+        if (!hasEditorTag && !hasPreviewTag && !allowUntagged) {
             continue;
         }
 

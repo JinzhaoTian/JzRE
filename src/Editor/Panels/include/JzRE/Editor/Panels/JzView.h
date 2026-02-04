@@ -67,25 +67,16 @@ protected:
     virtual JzEntity GetCameraEntity();
 
     /**
-     * @brief Whether to include editor-only entities (JzEditorOnlyTag).
+     * @brief Get the visibility mask for entity filtering.
      *
-     * Override in subclasses. Default is false.
-     * SceneView should return true.
+     * Override in subclasses to control which entities are rendered:
+     * - GameView: Untagged (default)
+     * - SceneView: Untagged | EditorOnly
+     * - AssetView: PreviewOnly
      */
-    virtual Bool IncludeEditorOnly() const
+    virtual JzRenderVisibility GetVisibility() const
     {
-        return false;
-    }
-
-    /**
-     * @brief Whether to include preview-only entities (JzPreviewOnlyTag).
-     *
-     * Override in subclasses. Default is false.
-     * AssetView should return true.
-     */
-    virtual Bool IncludePreviewOnly() const
-    {
-        return false;
+        return JzRenderVisibility::Untagged;
     }
 
     /**
