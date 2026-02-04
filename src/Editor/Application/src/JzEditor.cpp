@@ -92,10 +92,8 @@ void JzRE::JzEditor::Update(JzRE::F32 deltaTime)
 void JzRE::JzEditor::Render(JzRE::F32 deltaTime)
 {
     // Rendering phase:
-    // 1. Game scene is rendered by RenderSystem (already done in UpdateSystems)
-    // 2. Render SceneView (captures game scene to framebuffer)
-    // 3. Render ImGui UI on top
-    RenderViews(deltaTime);
+    // Views are now rendered by RenderSystem during World::Update()
+    // Here we only render the ImGui UI
     RenderEditorUI(deltaTime);
 }
 
@@ -112,21 +110,6 @@ void JzRE::JzEditor::HandleGlobalShortcuts()
 void JzRE::JzEditor::UpdateCurrentEditorMode(JzRE::F32 deltaTime)
 {
     // TODO
-}
-
-void JzRE::JzEditor::RenderViews([[maybe_unused]] JzRE::F32 deltaTime)
-{
-    // Render SceneView
-    auto &sceneView = m_panelsManager->GetPanelAs<JzSceneView>("Scene View");
-    if (sceneView.IsOpened() && sceneView.IsVisible()) {
-        sceneView.Render();
-    }
-
-    // Render GameView
-    auto &gameView = m_panelsManager->GetPanelAs<JzGameView>("Game View");
-    if (gameView.IsOpened() && gameView.IsVisible()) {
-        gameView.Render();
-    }
 }
 
 void JzRE::JzEditor::UpdateEditorPanels(JzRE::F32 deltaTime)

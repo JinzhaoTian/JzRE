@@ -74,7 +74,6 @@ private:
     void InitializePanels();
     void HandleGlobalShortcuts();
     void UpdateCurrentEditorMode(F32 deltaTime);
-    void RenderViews(F32 deltaTime);
     void UpdateEditorPanels(F32 deltaTime);
     void RenderEditorUI(F32 deltaTime);
 

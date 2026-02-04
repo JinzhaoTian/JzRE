@@ -3,72 +3,109 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include <imgui.h>
 #include "JzRE/Editor/Panels/JzView.h"
-#include "JzRE/Runtime/Function/ECS/JzRenderSystem.h"
-#include "JzRE/Runtime/Function/ECS/JzWorld.h"
-#include "JzRE/Runtime/Core/JzServiceContainer.h"
 
-JzRE::JzView::JzView(const JzRE::String &name, JzRE::Bool is_opened) :
-    JzRE::JzPanelWindow(name, is_opened)
+#include <imgui.h>
+
+#include "JzRE/Runtime/Core/JzServiceContainer.h"
+#include "JzRE/Runtime/Function/ECS/JzRenderSystem.h"
+
+namespace JzRE {
+
+JzView::JzView(const String &name, Bool is_opened) :
+    JzPanelWindow(name, is_opened),
+    m_name(name)
 {
     m_frame        = &CreateWidget<JzFrame>();
     m_renderTarget = std::make_unique<JzRenderTarget>(name + "_RT");
 
     scrollable = false;
+
+    // Register render target if view is opened
+    if (is_opened) {
+        RegisterRenderTarget();
+    }
 }
 
-void JzRE::JzView::Update(JzRE::F32 deltaTime)
+JzView::~JzView()
+{
+    UnregisterRenderTarget();
+}
+
+void JzView::Update(F32 deltaTime)
 {
     // Base implementation - override in subclasses
 }
 
-void JzRE::JzView::Render()
-{
-    auto viewSize = GetSafeSize();
-
-    // Skip if invalid size
-    if (viewSize.x <= 0 || viewSize.y <= 0) {
-        return;
-    }
-
-    // Ensure render target matches view size
-    m_renderTarget->EnsureSize(viewSize);
-
-    // Check if services are available
-    if (!JzServiceContainer::Has<JzRenderSystem>() || !JzServiceContainer::Has<JzWorld>()) {
-        return;
-    }
-
-    auto &renderSystem = JzServiceContainer::Get<JzRenderSystem>();
-    auto &world        = JzServiceContainer::Get<JzWorld>();
-
-    // Render scene to this view's render target
-    renderSystem.RenderToTarget(world, *m_renderTarget, GetCameraEntity());
-
-    // Update frame widget with rendered texture
-    m_frame->frameTextureId = m_renderTarget->GetTextureID();
-    m_frame->frameSize      = JzVec2(static_cast<F32>(viewSize.x), static_cast<F32>(viewSize.y));
-}
-
-JzRE::JzEntity JzRE::JzView::GetCameraEntity()
+JzEntity JzView::GetCameraEntity()
 {
     // Default: use main camera
     return INVALID_ENTITY;
 }
 
-void JzRE::JzView::_Draw_Impl()
+void JzView::_Draw_Impl()
 {
+    UpdateFrameTexture();
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
     JzPanelWindow::_Draw_Impl();
     ImGui::PopStyleVar();
 }
 
-JzRE::JzIVec2 JzRE::JzView::GetSafeSize() const
+JzIVec2 JzView::GetSafeSize() const
 {
-    constexpr float kTitleBarHeight = 20.0f; // <--- this takes into account the imgui window title bar
+    constexpr float kTitleBarHeight = 20.0f;
     const auto     &size            = GetSize();
     return {
-        static_cast<JzRE::I32>(size.x),
-        static_cast<JzRE::I32>(std::max(0.0f, size.y - kTitleBarHeight))};
+        static_cast<I32>(size.x),
+        static_cast<I32>(std::max(0.0f, size.y - kTitleBarHeight))};
 }
+
+void JzView::RegisterRenderTarget()
+{
+    if (m_registryHandle != JzRenderTargetRegistry::INVALID_HANDLE) {
+        return;
+    }
+
+    if (!JzServiceContainer::Has<JzRenderSystem>()) {
+        return;
+    }
+
+    auto &renderSystem = JzServiceContainer::Get<JzRenderSystem>();
+
+    JzRenderTargetEntry entry;
+    entry.target         = m_renderTarget.get();
+    entry.camera         = GetCameraEntity();
+    entry.includeEditor  = IncludeEditorOnly();
+    entry.includePreview = IncludePreviewOnly();
+    entry.shouldRender   = [this]() { return IsOpened() && IsVisible(); };
+    entry.getDesiredSize = [this]() { return GetSafeSize(); };
+    entry.name           = m_name;
+
+    m_registryHandle = renderSystem.RegisterTarget(std::move(entry));
+}
+
+void JzView::UnregisterRenderTarget()
+{
+    if (m_registryHandle == JzRenderTargetRegistry::INVALID_HANDLE) {
+        return;
+    }
+
+    if (!JzServiceContainer::Has<JzRenderSystem>()) {
+        return;
+    }
+
+    auto &renderSystem = JzServiceContainer::Get<JzRenderSystem>();
+    renderSystem.UnregisterTarget(m_registryHandle);
+    m_registryHandle = JzRenderTargetRegistry::INVALID_HANDLE;
+}
+
+void JzView::UpdateFrameTexture()
+{
+    auto size = GetSafeSize();
+    if (size.x > 0 && size.y > 0 && m_renderTarget && m_renderTarget->IsValid()) {
+        m_frame->frameTextureId = m_renderTarget->GetTextureID();
+        m_frame->frameSize      = JzVec2(static_cast<F32>(size.x), static_cast<F32>(size.y));
+    }
+}
+
+} // namespace JzRE

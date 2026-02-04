@@ -62,6 +62,14 @@ protected:
      */
     JzEntity GetCameraEntity() override;
 
+    /**
+     * @brief SceneView includes editor-only entities (grid, gizmos).
+     */
+    Bool IncludeEditorOnly() const override
+    {
+        return true;
+    }
+
 private:
     void HandleActorPicking();
 

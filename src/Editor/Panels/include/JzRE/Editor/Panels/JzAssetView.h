@@ -28,5 +28,14 @@ public:
      * @param deltaTime
      */
     void Update(F32 deltaTime) override;
+
+protected:
+    /**
+     * @brief AssetView includes preview-only entities.
+     */
+    Bool IncludePreviewOnly() const override
+    {
+        return true;
+    }
 };
 } // namespace JzRE

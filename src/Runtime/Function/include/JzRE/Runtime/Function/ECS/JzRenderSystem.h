@@ -13,6 +13,7 @@
 #include "JzRE/Runtime/Function/ECS/JzSystem.h"
 #include "JzRE/Runtime/Function/ECS/JzWorld.h"
 #include "JzRE/Runtime/Function/Rendering/JzRenderTarget.h"
+#include "JzRE/Runtime/Function/Rendering/JzRenderTargetRegistry.h"
 #include "JzRE/Runtime/Platform/RHI/JzGPUFramebufferObject.h"
 #include "JzRE/Runtime/Platform/RHI/JzGPUTextureObject.h"
 #include "JzRE/Runtime/Platform/RHI/JzRHIPipeline.h"
@@ -99,19 +100,33 @@ public:
      */
     Bool IsInitialized() const;
 
-    // ==================== View Rendering ====================
+    // ==================== RenderTarget Registration ====================
 
     /**
-     * @brief Render the scene to a specific render target with a specific camera.
+     * @brief Register a render target entry.
      *
-     * This method is used by editor view panels to render the scene to their
-     * own framebuffers, allowing multiple views with different cameras.
+     * Views should call this during initialization to register their
+     * render targets for unified rendering.
      *
-     * @param world The ECS world
-     * @param renderTarget The target to render to
-     * @param cameraEntity The camera entity to use (or INVALID_ENTITY for main camera)
+     * @param entry The entry containing target, camera, and filter settings
+     * @return Handle to the registered entry
      */
-    void RenderToTarget(JzWorld &world, JzRenderTarget &renderTarget, JzEntity cameraEntity = INVALID_ENTITY);
+    JzRenderTargetRegistry::Handle RegisterTarget(JzRenderTargetEntry entry);
+
+    /**
+     * @brief Unregister a render target.
+     *
+     * @param handle Handle returned from RegisterTarget()
+     */
+    void UnregisterTarget(JzRenderTargetRegistry::Handle handle);
+
+    /**
+     * @brief Update the camera for a registered target.
+     *
+     * @param handle Handle returned from RegisterTarget()
+     * @param camera New camera entity
+     */
+    void UpdateTargetCamera(JzRenderTargetRegistry::Handle handle, JzEntity camera);
 
 private:
     /**
@@ -135,6 +150,34 @@ private:
     void RenderEntities(JzWorld &world);
 
     /**
+     * @brief Render all registered targets.
+     *
+     * Called during Update() to render all View targets.
+     */
+    void RenderAllTargets(JzWorld &world);
+
+    /**
+     * @brief Render to a target with entity filtering based on tags.
+     *
+     * @param world The ECS world
+     * @param target The render target
+     * @param camera The camera entity
+     * @param includeEditor Whether to include JzEditorOnlyTag entities
+     * @param includePreview Whether to include JzPreviewOnlyTag entities
+     */
+    void RenderToTargetFiltered(JzWorld &world, JzRenderTarget &target, JzEntity camera,
+                                Bool includeEditor, Bool includePreview);
+
+    /**
+     * @brief Render entities with tag filtering.
+     *
+     * @param world The ECS world
+     * @param includeEditor Whether to include JzEditorOnlyTag entities
+     * @param includePreview Whether to include JzPreviewOnlyTag entities
+     */
+    void RenderEntitiesFiltered(JzWorld &world, Bool includeEditor, Bool includePreview);
+
+    /**
      * @brief Clean up all GPU resources.
      */
     void CleanupResources();
@@ -150,6 +193,9 @@ private:
     JzIVec2 m_frameSize{1280, 720};
     Bool    m_frameSizeChanged = true;
     Bool    m_isInitialized    = false;
+
+    // Render target registry for unified View rendering
+    JzRenderTargetRegistry m_targetRegistry;
 };
 
 } // namespace JzRE

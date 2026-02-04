@@ -7,8 +7,9 @@
 
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
 #include "JzRE/Runtime/Function/ECS/JzAssetComponents.h"
-#include "JzRE/Runtime/Function/ECS/JzTransformComponents.h"
 #include "JzRE/Runtime/Function/ECS/JzCameraComponents.h"
+#include "JzRE/Runtime/Function/ECS/JzRenderComponents.h"
+#include "JzRE/Runtime/Function/ECS/JzTransformComponents.h"
 #include "JzRE/Runtime/Function/ECS/JzWindowComponents.h"
 #include "JzRE/Runtime/Function/Rendering/JzRenderTarget.h"
 #include "JzRE/Runtime/Platform/RHI/JzGraphicsContext.h"
@@ -57,12 +58,15 @@ void JzRenderSystem::Update(JzWorld &world, F32 delta)
     // Setup viewport and clear
     SetupViewportAndClear(world);
 
-    // Render all entities
+    // Render all entities to main framebuffer
     RenderEntities(world);
 
     // Unbind framebuffer
     auto &device = JzServiceContainer::Get<JzDevice>();
     device.BindFramebuffer(nullptr);
+
+    // Render all registered View targets
+    RenderAllTargets(world);
 
     // Blit to screen if requested
     if (shouldBlit) {
@@ -345,13 +349,52 @@ void JzRenderSystem::CleanupResources()
     m_isInitialized = false;
 }
 
-void JzRenderSystem::RenderToTarget(JzWorld &world, JzRenderTarget &renderTarget, JzEntity cameraEntity)
-{
-    // Ensure render target is valid
-    if (!renderTarget.IsValid()) {
-        return;
-    }
+// ==================== RenderTarget Registration ====================
 
+JzRenderTargetRegistry::Handle JzRenderSystem::RegisterTarget(JzRenderTargetEntry entry)
+{
+    return m_targetRegistry.Register(std::move(entry));
+}
+
+void JzRenderSystem::UnregisterTarget(JzRenderTargetRegistry::Handle handle)
+{
+    m_targetRegistry.Unregister(handle);
+}
+
+void JzRenderSystem::UpdateTargetCamera(JzRenderTargetRegistry::Handle handle, JzEntity camera)
+{
+    m_targetRegistry.UpdateCamera(handle, camera);
+}
+
+// ==================== Unified Rendering ====================
+
+void JzRenderSystem::RenderAllTargets(JzWorld &world)
+{
+    for (auto &[handle, entry] : m_targetRegistry.GetEntries()) {
+        // Check if this target should be rendered this frame
+        if (entry.shouldRender && !entry.shouldRender()) {
+            continue;
+        }
+
+        // Update target size if needed
+        if (entry.getDesiredSize && entry.target) {
+            entry.target->EnsureSize(entry.getDesiredSize());
+        }
+
+        // Skip invalid targets
+        if (!entry.target || !entry.target->IsValid()) {
+            continue;
+        }
+
+        // Render to target with filtering
+        RenderToTargetFiltered(world, *entry.target, entry.camera,
+                               entry.includeEditor, entry.includePreview);
+    }
+}
+
+void JzRenderSystem::RenderToTargetFiltered(JzWorld &world, JzRenderTarget &target,
+                                            JzEntity camera, Bool includeEditor, Bool includePreview)
+{
     // Ensure pipeline is initialized
     if (!m_isInitialized) {
         CreateDefaultPipeline();
@@ -363,10 +406,10 @@ void JzRenderSystem::RenderToTarget(JzWorld &world, JzRenderTarget &renderTarget
     }
 
     auto &device     = JzServiceContainer::Get<JzDevice>();
-    auto  targetSize = renderTarget.GetSize();
+    auto  targetSize = target.GetSize();
 
     // Bind render target's framebuffer
-    device.BindFramebuffer(renderTarget.GetFramebuffer());
+    device.BindFramebuffer(target.GetFramebuffer());
 
     // Bind pipeline
     device.BindPipeline(m_defaultPipeline);
@@ -388,20 +431,20 @@ void JzRenderSystem::RenderToTarget(JzWorld &world, JzRenderTarget &renderTarget
 
     auto cameraView = world.View<JzCameraComponent>();
 
-    if (IsValidEntity(cameraEntity) && world.HasComponent<JzCameraComponent>(cameraEntity)) {
+    if (IsValidEntity(camera) && world.HasComponent<JzCameraComponent>(camera)) {
         // Use specified camera
-        const auto &camera = world.GetComponent<JzCameraComponent>(cameraEntity);
-        viewMatrix         = camera.viewMatrix;
-        projectionMatrix   = camera.projectionMatrix;
-        clearColor         = camera.clearColor;
+        const auto &cam  = world.GetComponent<JzCameraComponent>(camera);
+        viewMatrix       = cam.viewMatrix;
+        projectionMatrix = cam.projectionMatrix;
+        clearColor       = cam.clearColor;
     } else {
         // Fall back to main camera
         for (auto entity : cameraView) {
-            const auto &camera = world.GetComponent<JzCameraComponent>(entity);
-            if (camera.isMainCamera) {
-                viewMatrix       = camera.viewMatrix;
-                projectionMatrix = camera.projectionMatrix;
-                clearColor       = camera.clearColor;
+            const auto &cam = world.GetComponent<JzCameraComponent>(entity);
+            if (cam.isMainCamera) {
+                viewMatrix       = cam.viewMatrix;
+                projectionMatrix = cam.projectionMatrix;
+                clearColor       = cam.clearColor;
                 break;
             }
         }
@@ -426,11 +469,46 @@ void JzRenderSystem::RenderToTarget(JzWorld &world, JzRenderTarget &renderTarget
     m_defaultPipeline->SetUniform("view", viewMatrix);
     m_defaultPipeline->SetUniform("projection", projectionMatrix);
 
-    // Render entities with Asset Components
+    // Render entities with filtering
+    RenderEntitiesFiltered(world, includeEditor, includePreview);
+
+    // Unbind framebuffer
+    device.BindFramebuffer(nullptr);
+}
+
+void JzRenderSystem::RenderEntitiesFiltered(JzWorld &world, Bool includeEditor, Bool includePreview)
+{
+    auto &device       = JzServiceContainer::Get<JzDevice>();
     auto &assetManager = JzServiceContainer::Get<JzAssetManager>();
-    auto  views        = world.View<JzTransformComponent, JzMeshAssetComponent, JzMaterialAssetComponent, JzAssetReadyTag>();
+
+    // Get all renderable entities
+    auto views = world.View<JzTransformComponent, JzMeshAssetComponent, JzMaterialAssetComponent, JzAssetReadyTag>();
 
     for (auto entity : views) {
+        // Tag-based filtering:
+        // - JzEditorOnlyTag: only render if includeEditor is true
+        // - JzPreviewOnlyTag: only render if includePreview is true
+        // - No tag (game object): always render unless it's preview-only view
+
+        Bool hasEditorTag  = world.HasComponent<JzEditorOnlyTag>(entity);
+        Bool hasPreviewTag = world.HasComponent<JzPreviewOnlyTag>(entity);
+
+        // Skip editor-only entities if not including editor
+        if (hasEditorTag && !includeEditor) {
+            continue;
+        }
+
+        // Skip preview-only entities if not including preview
+        if (hasPreviewTag && !includePreview) {
+            continue;
+        }
+
+        // For preview-only views, skip game objects (entities without preview tag)
+        // Preview view should only show preview entities
+        if (includePreview && !includeEditor && !hasPreviewTag) {
+            continue;
+        }
+
         auto &transform = world.GetComponent<JzTransformComponent>(entity);
         auto &meshComp  = world.GetComponent<JzMeshAssetComponent>(entity);
         auto &matComp   = world.GetComponent<JzMaterialAssetComponent>(entity);
@@ -475,9 +553,6 @@ void JzRenderSystem::RenderToTarget(JzWorld &world, JzRenderTarget &renderTarget
 
         device.DrawIndexed(drawParams);
     }
-
-    // Unbind framebuffer
-    device.BindFramebuffer(nullptr);
 }
 
 } // namespace JzRE

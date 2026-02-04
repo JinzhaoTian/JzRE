@@ -141,6 +141,22 @@ struct JzMaterialComponent {
 struct JzRenderableTag { };
 
 /**
+ * @brief Tag for editor-only entities (grid, gizmo, selection box).
+ *
+ * Only visible in SceneView, hidden in GameView.
+ * Used for editor visualization that should not appear in the final game.
+ */
+struct JzEditorOnlyTag { };
+
+/**
+ * @brief Tag for preview-only entities.
+ *
+ * Only visible in AssetView, hidden in SceneView and GameView.
+ * Used for asset preview rendering (e.g., material preview spheres).
+ */
+struct JzPreviewOnlyTag { };
+
+/**
  * @brief Component for skybox
  */
 struct JzSkyboxComponent { };
