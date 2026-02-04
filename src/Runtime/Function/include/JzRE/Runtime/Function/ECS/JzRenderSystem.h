@@ -9,8 +9,10 @@
 
 #include "JzRE/Runtime/Core/JzRETypes.h"
 #include "JzRE/Runtime/Core/JzVector.h"
+#include "JzRE/Runtime/Function/ECS/JzEntity.h"
 #include "JzRE/Runtime/Function/ECS/JzSystem.h"
 #include "JzRE/Runtime/Function/ECS/JzWorld.h"
+#include "JzRE/Runtime/Function/Rendering/JzRenderTarget.h"
 #include "JzRE/Runtime/Platform/RHI/JzGPUFramebufferObject.h"
 #include "JzRE/Runtime/Platform/RHI/JzGPUTextureObject.h"
 #include "JzRE/Runtime/Platform/RHI/JzRHIPipeline.h"
@@ -96,6 +98,20 @@ public:
      * @brief Check if the render system is initialized.
      */
     Bool IsInitialized() const;
+
+    // ==================== View Rendering ====================
+
+    /**
+     * @brief Render the scene to a specific render target with a specific camera.
+     *
+     * This method is used by editor view panels to render the scene to their
+     * own framebuffers, allowing multiple views with different cameras.
+     *
+     * @param world The ECS world
+     * @param renderTarget The target to render to
+     * @param cameraEntity The camera entity to use (or INVALID_ENTITY for main camera)
+     */
+    void RenderToTarget(JzWorld &world, JzRenderTarget &renderTarget, JzEntity cameraEntity = INVALID_ENTITY);
 
 private:
     /**

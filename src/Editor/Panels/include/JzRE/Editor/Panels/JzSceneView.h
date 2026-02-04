@@ -52,6 +52,16 @@ public:
      */
     JzEGizmoOperation GetGizmoOperation() const;
 
+protected:
+    /**
+     * @brief Get the camera entity for scene view rendering.
+     *
+     * Uses the main camera with orbit controller.
+     *
+     * @return The camera entity
+     */
+    JzEntity GetCameraEntity() override;
+
 private:
     void HandleActorPicking();
 

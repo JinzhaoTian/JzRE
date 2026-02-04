@@ -10,11 +10,15 @@ file(GLOB ECS_SOURCES CONFIGURE_DEPENDS "src/ECS/*.cpp")
 # Scene sources
 file(GLOB SCENE_SOURCES CONFIGURE_DEPENDS "src/Scene/*.cpp")
 
+# Rendering sources
+file(GLOB RENDERING_SOURCES CONFIGURE_DEPENDS "src/Rendering/*.cpp")
+
 # Combine all sources
 set(ALL_FUNCTION_SOURCES
     ${FUNCTION_HEADERS}
     ${ECS_SOURCES}
     ${SCENE_SOURCES}
+    ${RENDERING_SOURCES}
 )
 
 target_sources(JzRuntimeFunction PRIVATE ${ALL_FUNCTION_SOURCES})

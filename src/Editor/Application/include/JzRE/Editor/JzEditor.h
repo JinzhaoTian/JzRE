@@ -70,20 +70,6 @@ public:
      */
     void PostUpdate();
 
-    /**
-     * @brief Get the panels manager
-     *
-     * @return JzPanelsManager& Reference to the panels manager
-     */
-    JzPanelsManager &GetPanelsManager();
-
-    /**
-     * @brief Get the UI manager
-     *
-     * @return JzUIManager& Reference to the UI manager
-     */
-    JzUIManager &GetUIManager();
-
 private:
     void InitializePanels();
     void HandleGlobalShortcuts();

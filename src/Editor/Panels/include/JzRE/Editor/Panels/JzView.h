@@ -5,7 +5,11 @@
 
 #pragma once
 
+#include <memory>
+
 #include "JzRE/Runtime/Core/JzRETypes.h"
+#include "JzRE/Runtime/Function/ECS/JzEntity.h"
+#include "JzRE/Runtime/Function/Rendering/JzRenderTarget.h"
 #include "JzRE/Editor/UI/JzFrame.h"
 #include "JzRE/Editor/UI/JzPanelWindow.h"
 
@@ -47,8 +51,18 @@ protected:
      */
     void _Draw_Impl() override;
 
+    /**
+     * @brief Get the camera entity to use for rendering.
+     *
+     * Override in subclasses to use a specific camera.
+     *
+     * @return The camera entity, or INVALID_ENTITY for main camera
+     */
+    virtual JzEntity GetCameraEntity();
+
 protected:
-    JzFrame *m_frame;
+    JzFrame                        *m_frame;
+    std::unique_ptr<JzRenderTarget> m_renderTarget;
 };
 
 } // namespace JzRE

@@ -104,16 +104,6 @@ void JzRE::JzEditor::PostUpdate()
     ++m_elapsedFrames;
 }
 
-JzRE::JzPanelsManager &JzRE::JzEditor::GetPanelsManager()
-{
-    return *m_panelsManager;
-}
-
-JzRE::JzUIManager &JzRE::JzEditor::GetUIManager()
-{
-    return *m_uiManager;
-}
-
 void JzRE::JzEditor::HandleGlobalShortcuts()
 {
     // TODO
@@ -126,12 +116,16 @@ void JzRE::JzEditor::UpdateCurrentEditorMode(JzRE::F32 deltaTime)
 
 void JzRE::JzEditor::RenderViews([[maybe_unused]] JzRE::F32 deltaTime)
 {
-    // Render SceneView (and other view panels in the future)
-    // Note: SceneView.Update() is called in JzEditor::Update() for logic updates
+    // Render SceneView
     auto &sceneView = m_panelsManager->GetPanelAs<JzSceneView>("Scene View");
-
     if (sceneView.IsOpened() && sceneView.IsVisible()) {
         sceneView.Render();
+    }
+
+    // Render GameView
+    auto &gameView = m_panelsManager->GetPanelAs<JzGameView>("Game View");
+    if (gameView.IsOpened() && gameView.IsVisible()) {
+        gameView.Render();
     }
 }
 

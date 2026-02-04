@@ -10,6 +10,7 @@
 #include "JzRE/Runtime/Function/ECS/JzTransformComponents.h"
 #include "JzRE/Runtime/Function/ECS/JzCameraComponents.h"
 #include "JzRE/Runtime/Function/ECS/JzWindowComponents.h"
+#include "JzRE/Runtime/Function/Rendering/JzRenderTarget.h"
 #include "JzRE/Runtime/Platform/RHI/JzGraphicsContext.h"
 #include "JzRE/Runtime/Platform/RHI/JzDevice.h"
 #include "JzRE/Runtime/Resource/JzShaderAsset.h"
@@ -342,6 +343,141 @@ void JzRenderSystem::CleanupResources()
     m_colorTexture.reset();
     m_framebuffer.reset();
     m_isInitialized = false;
+}
+
+void JzRenderSystem::RenderToTarget(JzWorld &world, JzRenderTarget &renderTarget, JzEntity cameraEntity)
+{
+    // Ensure render target is valid
+    if (!renderTarget.IsValid()) {
+        return;
+    }
+
+    // Ensure pipeline is initialized
+    if (!m_isInitialized) {
+        CreateDefaultPipeline();
+        m_isInitialized = true;
+    }
+
+    if (!m_defaultPipeline) {
+        return;
+    }
+
+    auto &device     = JzServiceContainer::Get<JzDevice>();
+    auto  targetSize = renderTarget.GetSize();
+
+    // Bind render target's framebuffer
+    device.BindFramebuffer(renderTarget.GetFramebuffer());
+
+    // Bind pipeline
+    device.BindPipeline(m_defaultPipeline);
+
+    // Set viewport to render target size
+    JzViewport viewport;
+    viewport.x        = 0.0f;
+    viewport.y        = 0.0f;
+    viewport.width    = static_cast<F32>(targetSize.x);
+    viewport.height   = static_cast<F32>(targetSize.y);
+    viewport.minDepth = 0.0f;
+    viewport.maxDepth = 1.0f;
+    device.SetViewport(viewport);
+
+    // Get camera matrices - use specified camera or find main camera
+    JzMat4 viewMatrix       = JzMat4x4::Identity();
+    JzMat4 projectionMatrix = JzMat4x4::Identity();
+    JzVec3 clearColor(0.1f, 0.1f, 0.1f);
+
+    auto cameraView = world.View<JzCameraComponent>();
+
+    if (IsValidEntity(cameraEntity) && world.HasComponent<JzCameraComponent>(cameraEntity)) {
+        // Use specified camera
+        const auto &camera = world.GetComponent<JzCameraComponent>(cameraEntity);
+        viewMatrix         = camera.viewMatrix;
+        projectionMatrix   = camera.projectionMatrix;
+        clearColor         = camera.clearColor;
+    } else {
+        // Fall back to main camera
+        for (auto entity : cameraView) {
+            const auto &camera = world.GetComponent<JzCameraComponent>(entity);
+            if (camera.isMainCamera) {
+                viewMatrix       = camera.viewMatrix;
+                projectionMatrix = camera.projectionMatrix;
+                clearColor       = camera.clearColor;
+                break;
+            }
+        }
+    }
+
+    // Clear the framebuffer
+    JzClearParams clearParams;
+    clearParams.clearColor   = true;
+    clearParams.clearDepth   = true;
+    clearParams.clearStencil = false;
+    clearParams.colorR       = clearColor.x;
+    clearParams.colorG       = clearColor.y;
+    clearParams.colorB       = clearColor.z;
+    clearParams.colorA       = 1.0f;
+    clearParams.depth        = 1.0f;
+    clearParams.stencil      = 0;
+    device.Clear(clearParams);
+
+    // Set common uniforms
+    JzMat4 modelMatrix = JzMat4x4::Identity();
+    m_defaultPipeline->SetUniform("model", modelMatrix);
+    m_defaultPipeline->SetUniform("view", viewMatrix);
+    m_defaultPipeline->SetUniform("projection", projectionMatrix);
+
+    // Render entities with Asset Components
+    auto &assetManager = JzServiceContainer::Get<JzAssetManager>();
+    auto  views        = world.View<JzTransformComponent, JzMeshAssetComponent, JzMaterialAssetComponent, JzAssetReadyTag>();
+
+    for (auto entity : views) {
+        auto &transform = world.GetComponent<JzTransformComponent>(entity);
+        auto &meshComp  = world.GetComponent<JzMeshAssetComponent>(entity);
+        auto &matComp   = world.GetComponent<JzMaterialAssetComponent>(entity);
+
+        // Get Mesh Asset
+        JzMesh *mesh = assetManager.Get(meshComp.meshHandle);
+        if (!mesh) continue;
+
+        auto vertexArray = mesh->GetVertexArray();
+        if (!vertexArray) continue;
+
+        // Get world matrix
+        const JzMat4 &entityModelMatrix = transform.GetWorldMatrix();
+        m_defaultPipeline->SetUniform("model", entityModelMatrix);
+
+        // Set Material Uniforms
+        m_defaultPipeline->SetUniform("material.ambient", matComp.ambientColor);
+        m_defaultPipeline->SetUniform("material.diffuse", matComp.diffuseColor);
+        m_defaultPipeline->SetUniform("material.specular", matComp.specularColor);
+        m_defaultPipeline->SetUniform("material.shininess", matComp.shininess);
+
+        // Bind diffuse texture if available
+        JzMaterial *mat               = assetManager.Get(matComp.materialHandle);
+        bool        hasDiffuseTexture = mat && mat->HasDiffuseTexture();
+        m_defaultPipeline->SetUniform("hasDiffuseTexture", hasDiffuseTexture);
+
+        if (hasDiffuseTexture) {
+            device.BindTexture(mat->GetDiffuseTexture(), 0);
+            m_defaultPipeline->SetUniform("diffuseTexture", 0);
+        }
+
+        // Bind and Draw
+        device.BindVertexArray(vertexArray);
+
+        JzDrawIndexedParams drawParams;
+        drawParams.primitiveType = JzEPrimitiveType::Triangles;
+        drawParams.indexCount    = mesh->GetIndexCount();
+        drawParams.instanceCount = 1;
+        drawParams.firstIndex    = 0;
+        drawParams.vertexOffset  = 0;
+        drawParams.firstInstance = 0;
+
+        device.DrawIndexed(drawParams);
+    }
+
+    // Unbind framebuffer
+    device.BindFramebuffer(nullptr);
 }
 
 } // namespace JzRE

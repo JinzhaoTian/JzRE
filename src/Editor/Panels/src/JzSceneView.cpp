@@ -259,3 +259,23 @@ void JzRE::JzSceneView::UpdateCameraFromOrbit()
         }
     }
 }
+
+JzRE::JzEntity JzRE::JzSceneView::GetCameraEntity()
+{
+    if (!JzServiceContainer::Has<JzWorld>()) {
+        return INVALID_ENTITY;
+    }
+
+    auto &world = JzServiceContainer::Get<JzWorld>();
+
+    // Find the main camera with orbit controller (editor camera)
+    auto view = world.View<JzCameraComponent, JzOrbitControllerComponent>();
+    for (auto entity : view) {
+        auto &camera = world.GetComponent<JzCameraComponent>(entity);
+        if (camera.isMainCamera) {
+            return entity;
+        }
+    }
+
+    return INVALID_ENTITY;
+}
