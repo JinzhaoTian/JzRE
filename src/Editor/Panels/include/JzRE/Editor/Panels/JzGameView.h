@@ -28,5 +28,16 @@ public:
      * @param deltaTime
      */
     void Update(F32 deltaTime) override;
+
+protected:
+    String GetPassName() const override
+    {
+        return "GameViewPass";
+    }
+
+    String GetOutputName() const override
+    {
+        return "GameView_Color";
+    }
 };
 } // namespace JzRE

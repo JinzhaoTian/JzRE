@@ -14,6 +14,8 @@
 #include "JzRE/Runtime/Platform/Command/JzRHIDrawIndexedCommand.h"
 #include "JzRE/Runtime/Platform/Command/JzRHISetViewportCommand.h"
 #include "JzRE/Runtime/Platform/Command/JzRHISetScissorCommand.h"
+#include "JzRE/Runtime/Platform/Command/JzRHIRenderPassCommand.h"
+#include "JzRE/Runtime/Platform/RHI/JzRHIRenderPass.h"
 #include "JzRE/Runtime/Platform/RHI/JzRHIPipeline.h"
 #include "JzRE/Runtime/Platform/RHI/JzGPUFramebufferObject.h"
 #include "JzRE/Runtime/Platform/RHI/JzGPUVertexArrayObject.h"
@@ -140,9 +142,25 @@ public:
     void BeginRenderPass(std::shared_ptr<JzGPUFramebufferObject> framebuffer);
 
     /**
+     * @brief Buffer Begin Render Pass Command
+     *
+     * @param renderPass Render pass metadata
+     * @param framebuffer The framebuffer to begin the render pass
+     */
+    void BeginRenderPass(std::shared_ptr<JzRHIRenderPass>        renderPass,
+                         std::shared_ptr<JzGPUFramebufferObject> framebuffer);
+
+    /**
      * @brief Buffer End Render Pass Command
      */
     void EndRenderPass();
+
+    /**
+     * @brief Buffer End Render Pass Command
+     *
+     * @param renderPass Render pass metadata
+     */
+    void EndRenderPass(std::shared_ptr<JzRHIRenderPass> renderPass);
 
 private:
     template <typename T, typename... Args>

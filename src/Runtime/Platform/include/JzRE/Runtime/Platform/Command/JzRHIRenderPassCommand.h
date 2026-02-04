@@ -7,6 +7,7 @@
 
 #include "JzRE/Runtime/Platform/Command/JzRHICommand.h"
 #include "JzRE/Runtime/Platform/RHI/JzGPUFramebufferObject.h"
+#include "JzRE/Runtime/Platform/RHI/JzRHIRenderPass.h"
 
 namespace JzRE {
 
@@ -19,7 +20,8 @@ public:
      * @brief Constructor
      * @param renderPass The render pass to begin
      */
-    JzRHIBeginRenderPassCommand(std::shared_ptr<JzGPUFramebufferObject> framebuffer);
+    JzRHIBeginRenderPassCommand(std::shared_ptr<JzGPUFramebufferObject> framebuffer,
+                                std::shared_ptr<JzRHIRenderPass>        renderPass = nullptr);
 
     /**
      * @brief Execute the command
@@ -28,6 +30,7 @@ public:
 
 private:
     std::shared_ptr<JzGPUFramebufferObject> m_framebuffer;
+    std::shared_ptr<JzRHIRenderPass>        m_renderPass;
 };
 
 /**
@@ -38,7 +41,7 @@ public:
     /**
      * @brief Constructor
      */
-    JzRHIEndRenderPassCommand();
+    JzRHIEndRenderPassCommand(std::shared_ptr<JzRHIRenderPass> renderPass = nullptr);
 
     /**
      * @brief Execute the command
@@ -47,6 +50,7 @@ public:
 
 private:
     std::shared_ptr<JzGPUFramebufferObject> m_framebuffer;
+    std::shared_ptr<JzRHIRenderPass>        m_renderPass;
 };
 
 } // namespace JzRE

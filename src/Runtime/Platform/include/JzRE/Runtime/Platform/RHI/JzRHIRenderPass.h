@@ -6,8 +6,11 @@
 #pragma once
 
 #include "JzRE/Runtime/Core/JzRETypes.h"
+#include "JzRE/Runtime/Platform/RHI/JzGPUFramebufferObject.h"
 
 namespace JzRE {
+
+class JzDevice;
 
 /**
  * @brief Render pass type
@@ -43,6 +46,28 @@ public:
      * @param scene The scene to render
      */
     // virtual void Execute(std::shared_ptr<JzScene> scene) = 0;
+
+    /**
+     * @brief Hook before pass execution.
+     *
+     * Default implementation is no-op.
+     */
+    virtual void OnBegin(JzDevice                               &device,
+                         std::shared_ptr<JzGPUFramebufferObject> framebuffer)
+    {
+        (void)device;
+        (void)framebuffer;
+    }
+
+    /**
+     * @brief Hook after pass execution.
+     *
+     * Default implementation is no-op.
+     */
+    virtual void OnEnd(JzDevice &device)
+    {
+        (void)device;
+    }
 
     /**
      * @brief Get the type of the render pass

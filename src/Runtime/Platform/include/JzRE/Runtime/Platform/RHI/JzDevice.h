@@ -6,11 +6,13 @@
 #pragma once
 
 #include <memory>
+#include <vector>
 #include "JzRE/Runtime/Core/JzRETypes.h"
 #include "JzRE/Runtime/Platform/Command/JzRHICommandList.h"
 #include "JzRE/Runtime/Platform/RHI/JzGPUBufferObject.h"
 #include "JzRE/Runtime/Platform/RHI/JzGPUTextureObject.h"
 #include "JzRE/Runtime/Platform/RHI/JzGPUFramebufferObject.h"
+#include "JzRE/Runtime/Platform/RHI/JzGPUResource.h"
 #include "JzRE/Runtime/Platform/RHI/JzGPUVertexArrayObject.h"
 #include "JzRE/Runtime/Platform/RHI/JzGPUShaderProgramObject.h"
 #include "JzRE/Runtime/Platform/RHI/JzRHIPipeline.h"
@@ -35,6 +37,25 @@ enum class JzERHIType : U8 {
 enum class JzERenderMode : U8 {
     Immediate,
     CommandBuffer
+};
+
+enum class JzEResourceType : U8 {
+    Texture,
+    Buffer
+};
+
+enum class JzERHIResourceState : U8 {
+    Unknown,
+    Read,
+    Write,
+    ReadWrite
+};
+
+struct JzRHIResourceBarrier {
+    JzEResourceType                type;
+    std::shared_ptr<JzGPUResource> resource;
+    JzERHIResourceState            before = JzERHIResourceState::Unknown;
+    JzERHIResourceState            after  = JzERHIResourceState::Unknown;
 };
 
 /**
@@ -242,6 +263,13 @@ public:
     virtual void BlitFramebufferToScreen(std::shared_ptr<JzGPUFramebufferObject> framebuffer,
                                          U32 srcWidth, U32 srcHeight,
                                          U32 dstWidth, U32 dstHeight) = 0;
+
+    /**
+     * @brief Resource barrier/state transition (optional on some backends).
+     *
+     * @param barriers Barrier list
+     */
+    virtual void ResourceBarrier(const std::vector<JzRHIResourceBarrier> &barriers) = 0;
 
     /**
      * @brief Flush

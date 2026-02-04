@@ -5,6 +5,8 @@
 
 #include "JzRE/Runtime/Function/ECS/JzRenderSystem.h"
 
+#include <algorithm>
+
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
 #include "JzRE/Runtime/Function/ECS/JzAssetComponents.h"
 #include "JzRE/Runtime/Function/ECS/JzCameraComponents.h"
@@ -56,17 +58,124 @@ void JzRenderSystem::Update(JzWorld &world, F32 delta)
     }
 
     // Setup viewport and clear
-    SetupViewportAndClear(world);
+    m_renderGraph.SetTransitionCallback(
+        [this](const JzRGPassDesc &passDesc, const std::vector<JzRGTransition> &transitions) {
+            ApplyRenderGraphTransitions(passDesc, transitions);
+        });
 
-    // Render all entities to main framebuffer
-    RenderEntities(world);
-
-    // Unbind framebuffer
     auto &device = JzServiceContainer::Get<JzDevice>();
-    device.BindFramebuffer(nullptr);
+    m_renderGraph.SetTextureAllocator([&device](const JzRGTextureDesc &desc) {
+        JzGPUTextureObjectDesc texDesc;
+        texDesc.type      = JzETextureResourceType::Texture2D;
+        texDesc.format    = desc.format;
+        texDesc.width     = static_cast<U32>(desc.size.x);
+        texDesc.height    = static_cast<U32>(desc.size.y);
+        texDesc.debugName = desc.name;
+        return device.CreateTexture(texDesc);
+    });
+    m_renderGraph.SetBufferAllocator([&device](const JzRGBufferDesc &desc) {
+        JzGPUBufferObjectDesc bufDesc;
+        bufDesc.type      = desc.type;
+        bufDesc.usage     = desc.usage;
+        bufDesc.size      = desc.size;
+        bufDesc.data      = nullptr;
+        bufDesc.debugName = desc.name;
+        return device.CreateBuffer(bufDesc);
+    });
 
-    // Render all registered View targets
-    RenderAllTargets(world);
+    m_renderGraph.Reset();
+
+    // Main scene logical outputs
+    JzRGTexture mainColor = m_renderGraph.CreateTexture(
+        {m_frameSize, JzETextureResourceFormat::RGBA8, false, "MainScene_Color"});
+    JzRGTexture mainDepth = m_renderGraph.CreateTexture(
+        {m_frameSize, JzETextureResourceFormat::Depth24, false, "MainScene_Depth"});
+    m_renderGraph.BindTexture(mainColor, m_colorTexture);
+    m_renderGraph.BindTexture(mainDepth, m_depthTexture);
+
+    m_renderGraph.AddPass({
+        "MainScenePass",
+        nullptr,
+        [this, mainColor, mainDepth](JzRGBuilder &builder) {
+            builder.Write(mainColor, JzRGUsage::Write);
+            builder.Write(mainDepth, JzRGUsage::Write);
+            builder.SetRenderTarget(mainColor, mainDepth);
+            builder.SetViewport(m_frameSize);
+        },
+        [this, &world]() {
+            SetupViewportAndClear(world);
+            RenderEntities(world);
+
+            auto &deviceRef = JzServiceContainer::Get<JzDevice>();
+            deviceRef.BindFramebuffer(nullptr);
+        },
+    });
+
+    // Build view target passes (Phase 2: still driven by registry)
+    for (auto &[handle, entry] : m_views) {
+        if (!entry.outputName.empty()) {
+            auto targetIter = m_targets.find(handle);
+            if (targetIter != m_targets.end()) {
+                m_renderGraph.RegisterOutput(entry.outputName, targetIter->second.get());
+                m_outputCache.Update(entry.outputName, targetIter->second);
+            }
+        }
+
+        auto targetIter = m_targets.find(handle);
+        if (targetIter == m_targets.end()) {
+            continue;
+        }
+
+        auto   &target      = *targetIter->second;
+        JzIVec2 desiredSize = target.GetSize();
+        if (entry.getDesiredSize) {
+            desiredSize = entry.getDesiredSize();
+            target.EnsureSize(desiredSize);
+        }
+
+        if (!target.IsValid()) {
+            continue;
+        }
+
+        const String colorName = entry.outputName.empty() ? entry.name + "_Color" : entry.outputName;
+        const String depthName = colorName + "_Depth";
+        JzRGTexture  viewColor = m_renderGraph.CreateTexture(
+            {desiredSize, JzETextureResourceFormat::RGBA8, false, colorName});
+        JzRGTexture viewDepth = m_renderGraph.CreateTexture(
+            {desiredSize, JzETextureResourceFormat::Depth24, false, depthName});
+
+        m_renderGraph.BindTexture(viewColor, target.GetColorTexture());
+        m_renderGraph.BindTexture(viewDepth, target.GetDepthTexture());
+
+        m_renderGraph.AddPass({
+            entry.passName.empty() ? entry.name : entry.passName,
+            entry.shouldRender ? entry.shouldRender : nullptr,
+            [desiredSize, viewColor, viewDepth](JzRGBuilder &builder) {
+                builder.Write(viewColor, JzRGUsage::Write);
+                builder.Write(viewDepth, JzRGUsage::Write);
+                builder.SetRenderTarget(viewColor, viewDepth);
+                builder.SetViewport(desiredSize);
+            },
+            [this, &world, &entry, handle]() {
+                auto targetIter = m_targets.find(handle);
+                if (targetIter == m_targets.end()) {
+                    return;
+                }
+
+                auto &target = *targetIter->second;
+                RenderToTargetFiltered(world, target, entry.camera, entry.includeEditor,
+                                       entry.includePreview);
+            },
+        });
+    }
+
+    m_renderGraph.Compile();
+    static Bool s_dumpedGraph = false;
+    if (!s_dumpedGraph) {
+        m_renderGraph.DumpGraph("docs/architecture/render_graph_dump.md");
+        s_dumpedGraph = true;
+    }
+    m_renderGraph.Execute();
 
     // Blit to screen if requested
     if (shouldBlit) {
@@ -102,6 +211,24 @@ std::shared_ptr<JzGPUTextureObject> JzRenderSystem::GetDepthTexture() const
 std::shared_ptr<JzRHIPipeline> JzRenderSystem::GetDefaultPipeline() const
 {
     return m_defaultPipeline;
+}
+
+JzRenderOutput *JzRenderSystem::GetRenderOutput(ViewHandle handle) const
+{
+    auto iter = m_targets.find(handle);
+    if (iter == m_targets.end()) {
+        return nullptr;
+    }
+
+    return iter->second.get();
+}
+
+JzRenderOutput *JzRenderSystem::GetRenderOutput(const String &name) const
+{
+    if (auto *cached = m_outputCache.Get(name)) {
+        return cached;
+    }
+    return m_renderGraph.GetOutput(name);
 }
 
 void JzRenderSystem::BeginFrame()
@@ -346,49 +473,55 @@ void JzRenderSystem::CleanupResources()
     m_depthTexture.reset();
     m_colorTexture.reset();
     m_framebuffer.reset();
+    m_targets.clear();
+    m_outputCache.Clear();
     m_isInitialized = false;
 }
 
-// ==================== RenderTarget Registration ====================
+// ==================== View Registration ====================
 
-JzRenderTargetRegistry::Handle JzRenderSystem::RegisterTarget(JzRenderTargetEntry entry)
+JzRenderSystem::ViewHandle JzRenderSystem::RegisterView(JzRenderViewDesc desc)
 {
-    return m_targetRegistry.Register(std::move(entry));
+    const auto handle = m_nextViewHandle++;
+    const auto name   = desc.name.empty() ? "RenderTarget" : desc.name;
+
+    if (desc.passName.empty()) {
+        desc.passName = name + "Pass";
+    }
+    if (desc.outputName.empty()) {
+        desc.outputName = name + "_Color";
+    }
+
+    m_views.emplace_back(handle, std::move(desc));
+    m_targets.emplace(handle, std::make_shared<JzRenderTarget>(name + "_RT"));
+    return handle;
 }
 
-void JzRenderSystem::UnregisterTarget(JzRenderTargetRegistry::Handle handle)
+void JzRenderSystem::UnregisterView(JzRenderSystem::ViewHandle handle)
 {
-    m_targetRegistry.Unregister(handle);
+    auto it = std::find_if(m_views.begin(), m_views.end(),
+                           [handle](const auto &pair) { return pair.first == handle; });
+    if (it != m_views.end()) {
+        m_views.erase(it);
+    }
+
+    for (auto &entry : m_views) {
+        if (entry.first == handle) {
+            if (!entry.second.outputName.empty()) {
+                m_outputCache.Remove(entry.second.outputName);
+            }
+            break;
+        }
+    }
+    m_targets.erase(handle);
 }
 
-void JzRenderSystem::UpdateTargetCamera(JzRenderTargetRegistry::Handle handle, JzEntity camera)
+void JzRenderSystem::UpdateViewCamera(JzRenderSystem::ViewHandle handle, JzEntity camera)
 {
-    m_targetRegistry.UpdateCamera(handle, camera);
-}
-
-// ==================== Unified Rendering ====================
-
-void JzRenderSystem::RenderAllTargets(JzWorld &world)
-{
-    for (auto &[handle, entry] : m_targetRegistry.GetEntries()) {
-        // Check if this target should be rendered this frame
-        if (entry.shouldRender && !entry.shouldRender()) {
-            continue;
-        }
-
-        // Update target size if needed
-        if (entry.getDesiredSize && entry.target) {
-            entry.target->EnsureSize(entry.getDesiredSize());
-        }
-
-        // Skip invalid targets
-        if (!entry.target || !entry.target->IsValid()) {
-            continue;
-        }
-
-        // Render to target with filtering
-        RenderToTargetFiltered(world, *entry.target, entry.camera,
-                               entry.includeEditor, entry.includePreview);
+    auto it = std::find_if(m_views.begin(), m_views.end(),
+                           [handle](const auto &pair) { return pair.first == handle; });
+    if (it != m_views.end()) {
+        it->second.camera = camera;
     }
 }
 
@@ -552,6 +685,68 @@ void JzRenderSystem::RenderEntitiesFiltered(JzWorld &world, Bool includeEditor, 
         drawParams.firstInstance = 0;
 
         device.DrawIndexed(drawParams);
+    }
+}
+
+void JzRenderSystem::ApplyRenderGraphTransitions(
+    const JzRGPassDesc &passDesc, const std::vector<JzRGTransition> &transitions)
+{
+    (void)passDesc;
+
+    if (transitions.empty()) {
+        return;
+    }
+
+    auto                             &device = JzServiceContainer::Get<JzDevice>();
+    std::vector<JzRHIResourceBarrier> barriers;
+    barriers.reserve(transitions.size());
+
+    auto toState = [](JzRGUsage usage) {
+        switch (usage) {
+            case JzRGUsage::Read:
+                return JzERHIResourceState::Read;
+            case JzRGUsage::Write:
+                return JzERHIResourceState::Write;
+            case JzRGUsage::ReadWrite:
+                return JzERHIResourceState::ReadWrite;
+        }
+        return JzERHIResourceState::Unknown;
+    };
+
+    for (const auto &transition : transitions) {
+        if (transition.id == 0) {
+            continue;
+        }
+
+        if (transition.type == JzRGResourceType::Texture) {
+            auto resource = m_renderGraph.GetTextureResource(JzRGTexture{transition.id});
+            if (!resource) {
+                continue;
+            }
+
+            JzRHIResourceBarrier barrier;
+            barrier.type     = JzEResourceType::Texture;
+            barrier.resource = std::static_pointer_cast<JzGPUResource>(resource);
+            barrier.before   = toState(transition.before);
+            barrier.after    = toState(transition.after);
+            barriers.push_back(std::move(barrier));
+        } else {
+            auto resource = m_renderGraph.GetBufferResource(JzRGBuffer{transition.id});
+            if (!resource) {
+                continue;
+            }
+
+            JzRHIResourceBarrier barrier;
+            barrier.type     = JzEResourceType::Buffer;
+            barrier.resource = std::static_pointer_cast<JzGPUResource>(resource);
+            barrier.before   = toState(transition.before);
+            barrier.after    = toState(transition.after);
+            barriers.push_back(std::move(barrier));
+        }
+    }
+
+    if (!barriers.empty()) {
+        device.ResourceBarrier(barriers);
     }
 }
 

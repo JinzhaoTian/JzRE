@@ -5,13 +5,15 @@
 
 #pragma once
 
+#include <vector>
+
 #include "JzRE/Runtime/Core/JzRETypes.h"
 #include "JzRE/Runtime/Platform/RHI/JzRHICapabilities.h"
 #include "JzRE/Runtime/Platform/RHI/JzDevice.h"
 #include "JzRE/Runtime/Platform/RHI/JzRHIStats.h"
-#include "JzOpenGLFramebuffer.h"
-#include "JzOpenGLPipeline.h"
-#include "JzOpenGLVertexArray.h"
+#include "JzRE/Runtime/Platform/OpenGL/JzOpenGLFramebuffer.h"
+#include "JzRE/Runtime/Platform/OpenGL/JzOpenGLPipeline.h"
+#include "JzRE/Runtime/Platform/OpenGL/JzOpenGLVertexArray.h"
 
 namespace JzRE {
 /**
@@ -206,6 +208,13 @@ public:
     void BlitFramebufferToScreen(std::shared_ptr<JzGPUFramebufferObject> framebuffer,
                                  U32 srcWidth, U32 srcHeight,
                                  U32 dstWidth, U32 dstHeight) override;
+
+    /**
+     * @brief Resource barrier/state transition (OpenGL no-op).
+     *
+     * @param barriers Barrier list
+     */
+    void ResourceBarrier(const std::vector<JzRHIResourceBarrier> &barriers) override;
 
     /**
      * @brief Flush

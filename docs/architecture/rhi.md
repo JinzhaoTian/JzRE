@@ -134,6 +134,9 @@ public:
     // Command List Execution
     virtual void ExecuteCommandList(std::shared_ptr<JzRHICommandList>) = 0;
 
+    // Resource Barriers
+    virtual void ResourceBarrier(const std::vector<JzRHIResourceBarrier>&) = 0;
+
     // Multi-threading Support
     virtual Bool SupportsMultithreading() const = 0;
 };
@@ -269,6 +272,7 @@ Currently completed OpenGL backend implementation:
 - **Version Requirement**: OpenGL 3.3+
 - **Multi-threading**: Not supported (`SupportsMultithreading()` returns `false`)
 - **Extensions**: Loaded via glad
+- **Resource Barriers**: No-op (implicit state transitions)
 
 ---
 

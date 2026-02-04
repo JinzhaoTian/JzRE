@@ -9,6 +9,7 @@
 
 #include "JzRE/Runtime/Core/JzRETypes.h"
 #include "JzRE/Runtime/Core/JzVector.h"
+#include "JzRE/Runtime/Function/Rendering/JzRenderOutput.h"
 #include "JzRE/Runtime/Platform/RHI/JzGPUFramebufferObject.h"
 #include "JzRE/Runtime/Platform/RHI/JzGPUTextureObject.h"
 
@@ -20,7 +21,8 @@ namespace JzRE {
  * This class encapsulates the GPU resources needed to render to an offscreen
  * target that can be displayed in an ImGui view panel via ImGui::Image().
  */
-class JzRenderTarget {
+class JzRenderTarget : public JzRenderOutput,
+                       public std::enable_shared_from_this<JzRenderTarget> {
 public:
     /**
      * @brief Constructor
@@ -70,21 +72,21 @@ public:
      *
      * @return The native texture ID (e.g., GLuint cast to void*)
      */
-    void *GetTextureID() const;
+    void *GetTextureID() const override;
 
     /**
      * @brief Get current size.
      *
      * @return The current render target size
      */
-    JzIVec2 GetSize() const;
+    JzIVec2 GetSize() const override;
 
     /**
      * @brief Check if the render target is valid and ready for use.
      *
      * @return true if framebuffer and textures are created
      */
-    Bool IsValid() const;
+    Bool IsValid() const override;
 
 private:
     /**

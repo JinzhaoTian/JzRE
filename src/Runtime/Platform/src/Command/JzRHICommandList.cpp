@@ -125,9 +125,20 @@ void JzRE::JzRHICommandList::BeginRenderPass(std::shared_ptr<JzRE::JzGPUFramebuf
     AddCommand<JzRHIBeginRenderPassCommand>(framebuffer);
 }
 
+void JzRE::JzRHICommandList::BeginRenderPass(std::shared_ptr<JzRE::JzRHIRenderPass>        renderPass,
+                                             std::shared_ptr<JzRE::JzGPUFramebufferObject> framebuffer)
+{
+    AddCommand<JzRHIBeginRenderPassCommand>(std::move(framebuffer), std::move(renderPass));
+}
+
 void JzRE::JzRHICommandList::EndRenderPass()
 {
     AddCommand<JzRHIEndRenderPassCommand>();
+}
+
+void JzRE::JzRHICommandList::EndRenderPass(std::shared_ptr<JzRE::JzRHIRenderPass> renderPass)
+{
+    AddCommand<JzRHIEndRenderPassCommand>(std::move(renderPass));
 }
 
 template <typename T, typename... Args>

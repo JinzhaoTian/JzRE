@@ -66,6 +66,8 @@ JzRE/
 │   │       │   │   ├── JzInputSystem.h, JzWindowSystem.h
 │   │       │   │   ├── JzAssetSystem.h, JzMoveSystem.h
 │   │       │   │   └── JzAssetComponents.h
+│   │       │   ├── Rendering/
+│   │       │   │   └── JzRenderGraph.h, JzRenderTarget.h, JzRenderOutput.h, JzRenderOutputCache.h
 │   │       │   └── Event/
 │   │       │       ├── JzEventSystem.h, JzEventQueue.h
 │   │       │       ├── JzECSEvent.h, JzIEventHandler.h

@@ -45,7 +45,7 @@ Systems execute in 8 phases grouped into 3 categories:
 | ---------------------- | --------- | ---------------------------------------------------------------- |
 | **JzCameraSystem** | PreRender | Process orbit controller input, compute view/projection matrices |
 | **JzLightSystem**  | PreRender | Collect light entities, provide primary light direction/color    |
-| **JzRenderSystem** | Render    | Manage framebuffer/textures, create pipeline, render entities    |
+| **JzRenderSystem** | Render    | Manage framebuffer/textures, build RenderGraph, render entities and view targets |
 
 ---
 
@@ -99,19 +99,28 @@ The main loop in `JzRERuntime::Run()` executes in 8 distinct phases:
      └── m_world->UpdateRender(deltaTime)
          └── JzRenderSystem::Update
                ├── Create/resize framebuffer if needed
-               ├── Bind framebuffer
-               ├── Set viewport
-               ├── Clear (color from camera)
-               ├── Get camera matrices from CameraSystem
-               ├── Get light data from LightSystem
-               ├── Set common uniforms
-               ├── Query entities with Transform + Mesh + Material
-               ├── For each entity:
-               │     ├── Compute model matrix
-               │     ├── Set material uniforms
-               │     ├── Bind vertex array
-               │     └── DrawIndexed
-               └── Unbind framebuffer
+               ├── Build RenderGraph (phase 2: main pass + view passes)
+               │     ├── Bind framebuffer
+               │     ├── Set viewport
+               │     ├── Clear (color from camera)
+               │     ├── Get camera matrices from CameraSystem
+               │     ├── Get light data from LightSystem
+               │     ├── Set common uniforms
+               │     ├── Query entities with Transform + Mesh + Material
+               │     ├── For each entity:
+               │     │     ├── Compute model matrix
+               │     │     ├── Set material uniforms
+               │     │     ├── Bind vertex array
+               │     │     └── DrawIndexed
+               │     └── Unbind framebuffer
+               │
+               │     ├── For each registered view target:
+               │     │     ├── Ensure target size
+                │     │     ├── Bind target framebuffer
+                │     │     ├── Set viewport and clear
+               │     │     ├── Render filtered entities (editor/preview tag rules)
+                │     │     └── Unbind framebuffer
+               └── Execute RenderGraph passes
    |
    v
 [Phase 7: Execute Rendering]
@@ -290,17 +299,14 @@ auto entities = JzModelSpawner::SpawnModel(world, model);
 
 ## Editor Integration
 
-The Editor accesses the rendered frame via `JzRenderSystem`:
+Editor views register a render view and retrieve the output via `JzRenderSystem`:
 
 ```cpp
-// In Editor: get rendered texture
-auto colorTexture = runtime.GetRenderSystem()->GetColorTexture();
-
-// Display in ImGui
-ImGui::Image(
-    (ImTextureID)(intptr_t)colorTexture->GetHandle(),
-    ImVec2(viewportWidth, viewportHeight)
-);
+// In JzView: after registration
+auto *output = renderSystem.GetRenderOutput(GetOutputName());
+if (output && output->IsValid()) {
+    ImGui::Image(output->GetTextureID(), ImVec2(viewportWidth, viewportHeight));
+}
 ```
 
 The Editor overrides `ShouldBlitToScreen()` to return `false`, preventing automatic screen blit.

@@ -125,6 +125,7 @@ High-level engine systems built on lower layers.
 | **Input**  | `JzInputSystem` - ECS-based keyboard/mouse/gamepad input processing |
 | **Window** | `JzWindowSystem` - ECS-integrated GLFW window management |
 | **Asset**  | `JzAssetSystem` - Asset loading, hot reload, ECS integration |
+| **Rendering** | `JzRenderSystem`, `JzRenderGraph`, `JzRenderTarget`, `JzRenderOutput` - ECS-driven rendering outputs |
 
 📄 See: [ECS Integration](ecs.md), [Rendering Pipeline](rendering_pipeline.md)
 

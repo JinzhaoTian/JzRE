@@ -6,14 +6,19 @@
 #pragma once
 
 #include <memory>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 
 #include "JzRE/Runtime/Core/JzRETypes.h"
 #include "JzRE/Runtime/Core/JzVector.h"
 #include "JzRE/Runtime/Function/ECS/JzEntity.h"
 #include "JzRE/Runtime/Function/ECS/JzSystem.h"
 #include "JzRE/Runtime/Function/ECS/JzWorld.h"
+#include "JzRE/Runtime/Function/Rendering/JzRenderGraph.h"
+#include "JzRE/Runtime/Function/Rendering/JzRenderOutput.h"
+#include "JzRE/Runtime/Function/Rendering/JzRenderOutputCache.h"
 #include "JzRE/Runtime/Function/Rendering/JzRenderTarget.h"
-#include "JzRE/Runtime/Function/Rendering/JzRenderTargetRegistry.h"
 #include "JzRE/Runtime/Platform/RHI/JzGPUFramebufferObject.h"
 #include "JzRE/Runtime/Platform/RHI/JzGPUTextureObject.h"
 #include "JzRE/Runtime/Platform/RHI/JzRHIPipeline.h"
@@ -31,6 +36,8 @@ namespace JzRE {
  */
 class JzRenderSystem : public JzSystem {
 public:
+    using ViewHandle                                = U32;
+    static constexpr ViewHandle INVALID_VIEW_HANDLE = 0;
     /**
      * @brief Constructs the render system.
      */
@@ -75,6 +82,22 @@ public:
      */
     std::shared_ptr<JzRHIPipeline> GetDefaultPipeline() const;
 
+    /**
+     * @brief Get a render output by view handle.
+     *
+     * @param handle Handle returned from RegisterView()
+     * @return Render output if available, otherwise nullptr
+     */
+    JzRenderOutput *GetRenderOutput(ViewHandle handle) const;
+
+    /**
+     * @brief Get a render output by name.
+     *
+     * @param name Output name
+     * @return Render output if available, otherwise nullptr
+     */
+    JzRenderOutput *GetRenderOutput(const String &name) const;
+
     // ==================== Frame Control ====================
 
     /**
@@ -100,33 +123,44 @@ public:
      */
     Bool IsInitialized() const;
 
-    // ==================== RenderTarget Registration ====================
+    // ==================== View Registration ====================
 
     /**
-     * @brief Register a render target entry.
-     *
-     * Views should call this during initialization to register their
-     * render targets for unified rendering.
-     *
-     * @param entry The entry containing target, camera, and filter settings
-     * @return Handle to the registered entry
+     * @brief View description for RenderSystem-managed outputs.
      */
-    JzRenderTargetRegistry::Handle RegisterTarget(JzRenderTargetEntry entry);
+    struct JzRenderViewDesc {
+        String                   name;
+        String                   passName;
+        String                   outputName;
+        JzEntity                 camera         = INVALID_ENTITY;
+        Bool                     includeEditor  = false;
+        Bool                     includePreview = false;
+        std::function<Bool()>    shouldRender;
+        std::function<JzIVec2()> getDesiredSize;
+    };
 
     /**
-     * @brief Unregister a render target.
+     * @brief Register a view for rendering.
      *
-     * @param handle Handle returned from RegisterTarget()
+     * @param desc View description
+     * @return Handle to the registered view
      */
-    void UnregisterTarget(JzRenderTargetRegistry::Handle handle);
+    ViewHandle RegisterView(JzRenderViewDesc desc);
 
     /**
-     * @brief Update the camera for a registered target.
+     * @brief Unregister a view.
      *
-     * @param handle Handle returned from RegisterTarget()
+     * @param handle Handle returned from RegisterView()
+     */
+    void UnregisterView(ViewHandle handle);
+
+    /**
+     * @brief Update the camera for a registered view.
+     *
+     * @param handle Handle returned from RegisterView()
      * @param camera New camera entity
      */
-    void UpdateTargetCamera(JzRenderTargetRegistry::Handle handle, JzEntity camera);
+    void UpdateViewCamera(ViewHandle handle, JzEntity camera);
 
 private:
     /**
@@ -150,13 +184,6 @@ private:
     void RenderEntities(JzWorld &world);
 
     /**
-     * @brief Render all registered targets.
-     *
-     * Called during Update() to render all View targets.
-     */
-    void RenderAllTargets(JzWorld &world);
-
-    /**
      * @brief Render to a target with entity filtering based on tags.
      *
      * @param world The ECS world
@@ -178,6 +205,12 @@ private:
     void RenderEntitiesFiltered(JzWorld &world, Bool includeEditor, Bool includePreview);
 
     /**
+     * @brief Apply render graph transitions (backend-specific).
+     */
+    void ApplyRenderGraphTransitions(const JzRGPassDesc                &passDesc,
+                                     const std::vector<JzRGTransition> &transitions);
+
+    /**
      * @brief Clean up all GPU resources.
      */
     void CleanupResources();
@@ -194,8 +227,14 @@ private:
     Bool    m_frameSizeChanged = true;
     Bool    m_isInitialized    = false;
 
-    // Render target registry for unified View rendering
-    JzRenderTargetRegistry m_targetRegistry;
+    // View registry for unified rendering
+    std::vector<std::pair<ViewHandle, JzRenderViewDesc>>            m_views;
+    ViewHandle                                                      m_nextViewHandle = 1;
+    std::unordered_map<ViewHandle, std::shared_ptr<JzRenderTarget>> m_targets;
+    JzRenderOutputCache                                             m_outputCache;
+
+    // Phase 1 RenderGraph (single-pass integration)
+    JzRenderGraph m_renderGraph;
 };
 
 } // namespace JzRE

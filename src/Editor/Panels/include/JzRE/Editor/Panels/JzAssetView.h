@@ -37,5 +37,15 @@ protected:
     {
         return true;
     }
+
+    String GetPassName() const override
+    {
+        return "AssetPreviewPass";
+    }
+
+    String GetOutputName() const override
+    {
+        return "AssetPreview_Color";
+    }
 };
 } // namespace JzRE

@@ -9,6 +9,7 @@
 
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
 #include "JzRE/Runtime/Function/ECS/JzRenderSystem.h"
+#include "JzRE/Runtime/Function/Rendering/JzRenderOutput.h"
 
 namespace JzRE {
 
@@ -16,9 +17,7 @@ JzView::JzView(const String &name, Bool is_opened) :
     JzPanelWindow(name, is_opened),
     m_name(name)
 {
-    m_frame        = &CreateWidget<JzFrame>();
-    m_renderTarget = std::make_unique<JzRenderTarget>(name + "_RT");
-
+    m_frame    = &CreateWidget<JzFrame>();
     scrollable = false;
 
     // Register render target if view is opened
@@ -43,6 +42,16 @@ JzEntity JzView::GetCameraEntity()
     return INVALID_ENTITY;
 }
 
+String JzView::GetPassName() const
+{
+    return m_name + "Pass";
+}
+
+String JzView::GetOutputName() const
+{
+    return m_name + "_Color";
+}
+
 void JzView::_Draw_Impl()
 {
     UpdateFrameTexture();
@@ -62,7 +71,7 @@ JzIVec2 JzView::GetSafeSize() const
 
 void JzView::RegisterRenderTarget()
 {
-    if (m_registryHandle != JzRenderTargetRegistry::INVALID_HANDLE) {
+    if (m_viewHandle != JzRenderSystem::INVALID_VIEW_HANDLE) {
         return;
     }
 
@@ -72,21 +81,22 @@ void JzView::RegisterRenderTarget()
 
     auto &renderSystem = JzServiceContainer::Get<JzRenderSystem>();
 
-    JzRenderTargetEntry entry;
-    entry.target         = m_renderTarget.get();
-    entry.camera         = GetCameraEntity();
-    entry.includeEditor  = IncludeEditorOnly();
-    entry.includePreview = IncludePreviewOnly();
-    entry.shouldRender   = [this]() { return IsOpened() && IsVisible(); };
-    entry.getDesiredSize = [this]() { return GetSafeSize(); };
-    entry.name           = m_name;
+    JzRenderSystem::JzRenderViewDesc desc;
+    desc.name           = m_name;
+    desc.passName       = GetPassName();
+    desc.outputName     = GetOutputName();
+    desc.camera         = GetCameraEntity();
+    desc.includeEditor  = IncludeEditorOnly();
+    desc.includePreview = IncludePreviewOnly();
+    desc.shouldRender   = [this]() { return IsOpened() && IsVisible(); };
+    desc.getDesiredSize = [this]() { return GetSafeSize(); };
 
-    m_registryHandle = renderSystem.RegisterTarget(std::move(entry));
+    m_viewHandle = renderSystem.RegisterView(std::move(desc));
 }
 
 void JzView::UnregisterRenderTarget()
 {
-    if (m_registryHandle == JzRenderTargetRegistry::INVALID_HANDLE) {
+    if (m_viewHandle == JzRenderSystem::INVALID_VIEW_HANDLE) {
         return;
     }
 
@@ -95,17 +105,29 @@ void JzView::UnregisterRenderTarget()
     }
 
     auto &renderSystem = JzServiceContainer::Get<JzRenderSystem>();
-    renderSystem.UnregisterTarget(m_registryHandle);
-    m_registryHandle = JzRenderTargetRegistry::INVALID_HANDLE;
+    renderSystem.UnregisterView(m_viewHandle);
+    m_viewHandle = JzRenderSystem::INVALID_VIEW_HANDLE;
 }
 
 void JzView::UpdateFrameTexture()
 {
     auto size = GetSafeSize();
-    if (size.x > 0 && size.y > 0 && m_renderTarget && m_renderTarget->IsValid()) {
-        m_frame->frameTextureId = m_renderTarget->GetTextureID();
-        m_frame->frameSize      = JzVec2(static_cast<F32>(size.x), static_cast<F32>(size.y));
+    if (size.x <= 0 || size.y <= 0) {
+        return;
     }
+
+    if (!JzServiceContainer::Has<JzRenderSystem>()) {
+        return;
+    }
+
+    auto &renderSystem = JzServiceContainer::Get<JzRenderSystem>();
+    auto *output       = renderSystem.GetRenderOutput(GetOutputName());
+    if (!output || !output->IsValid()) {
+        return;
+    }
+
+    m_frame->frameTextureId = output->GetTextureID();
+    m_frame->frameSize      = JzVec2(static_cast<F32>(size.x), static_cast<F32>(size.y));
 }
 
 } // namespace JzRE

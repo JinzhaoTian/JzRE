@@ -5,14 +5,11 @@
 
 #pragma once
 
-#include <memory>
-
 #include "JzRE/Editor/UI/JzFrame.h"
 #include "JzRE/Editor/UI/JzPanelWindow.h"
 #include "JzRE/Runtime/Core/JzRETypes.h"
 #include "JzRE/Runtime/Function/ECS/JzEntity.h"
-#include "JzRE/Runtime/Function/Rendering/JzRenderTarget.h"
-#include "JzRE/Runtime/Function/Rendering/JzRenderTargetRegistry.h"
+#include "JzRE/Runtime/Function/ECS/JzRenderSystem.h"
 
 namespace JzRE {
 
@@ -75,7 +72,10 @@ protected:
      * Override in subclasses. Default is false.
      * SceneView should return true.
      */
-    virtual Bool IncludeEditorOnly() const { return false; }
+    virtual Bool IncludeEditorOnly() const
+    {
+        return false;
+    }
 
     /**
      * @brief Whether to include preview-only entities (JzPreviewOnlyTag).
@@ -83,7 +83,24 @@ protected:
      * Override in subclasses. Default is false.
      * AssetView should return true.
      */
-    virtual Bool IncludePreviewOnly() const { return false; }
+    virtual Bool IncludePreviewOnly() const
+    {
+        return false;
+    }
+
+    /**
+     * @brief Get the render pass name for this view.
+     *
+     * Override in subclasses to provide explicit pass names.
+     */
+    virtual String GetPassName() const;
+
+    /**
+     * @brief Get the output name for this view.
+     *
+     * Override in subclasses to provide explicit output names.
+     */
+    virtual String GetOutputName() const;
 
     /**
      * @brief Register this view's render target with RenderSystem.
@@ -106,10 +123,9 @@ private:
     void UpdateFrameTexture();
 
 protected:
-    String                              m_name;
-    JzFrame                            *m_frame;
-    std::unique_ptr<JzRenderTarget>     m_renderTarget;
-    JzRenderTargetRegistry::Handle      m_registryHandle = JzRenderTargetRegistry::INVALID_HANDLE;
+    String                     m_name;
+    JzFrame                   *m_frame;
+    JzRenderSystem::ViewHandle m_viewHandle = JzRenderSystem::INVALID_VIEW_HANDLE;
 };
 
 } // namespace JzRE

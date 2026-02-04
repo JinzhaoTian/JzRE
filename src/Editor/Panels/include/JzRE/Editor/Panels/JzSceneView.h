@@ -70,6 +70,16 @@ protected:
         return true;
     }
 
+    String GetPassName() const override
+    {
+        return "SceneViewPass";
+    }
+
+    String GetOutputName() const override
+    {
+        return "SceneView_Color";
+    }
+
 private:
     void HandleActorPicking();
 

@@ -263,6 +263,12 @@ void JzRE::JzOpenGLDevice::BlitFramebufferToScreen(std::shared_ptr<JzRE::JzGPUFr
     m_currentFramebuffer = nullptr;
 }
 
+void JzRE::JzOpenGLDevice::ResourceBarrier(const std::vector<JzRHIResourceBarrier> &barriers)
+{
+    // OpenGL backend relies on implicit state transitions.
+    (void)barriers;
+}
+
 void JzRE::JzOpenGLDevice::Flush()
 {
     glFlush();
