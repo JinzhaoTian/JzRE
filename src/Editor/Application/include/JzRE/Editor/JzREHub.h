@@ -13,12 +13,13 @@
 #include "JzRE/Editor/Panels/JzUIManager.h"
 #include "JzRE/Editor/Panels/JzCanvas.h"
 #include "JzRE/Editor/UI/JzPanelWindow.h"
-#include "JzRE/Editor/UI/JzButton.h"
 
 namespace JzRE {
 
 class JzREHubMenuBar;
 class JzREHubPanel;
+class JzText;
+class JzGroup;
 
 /**
  * @brief JzRE Hub
@@ -112,19 +113,27 @@ private:
     void                  _DeleteFromHistory(const std::filesystem::path &path);
     String                _PathToUtf8(const std::filesystem::path &path) const;
     std::filesystem::path _Utf8ToPath(const String &utf8Str) const;
-    void                  _OnUpdateGoButton(const String &path);
     void                  _OnFailedToOpenPath(const std::filesystem::path &path);
     Bool                  _OnFinish(const std::filesystem::path path);
+    void                  _FilterHistory(const String &searchText);
+    Bool                  _FuzzyMatch(const String &text, const String &pattern) const;
+
+private:
+    struct HistoryEntry {
+        std::filesystem::path path;
+        JzText               *textWidget    = nullptr;
+        JzGroup              *actionsWidget = nullptr;
+    };
 
 private:
     std::optional<std::filesystem::path> m_result;
-    JzButton                            *m_goButton        = nullptr;
     JzVec2                               m_windowSize      = {800.0f, 480.0f};
     JzVec2                               m_windowPosition  = {0.0f, 20.0f};
     String                               m_backgroudColor  = "#2A2A2A";
     JzVec2                               m_buttonSize      = {90.0f, 0.0f};
     F32                                  m_inputFieldWidth = 504.0f;
     std::vector<std::filesystem::path>   m_history;
+    std::vector<HistoryEntry>            m_historyEntries;
     const Size                           m_maxHistorySize = 10;
     const std::filesystem::path          m_workspaceFilePath;
 };

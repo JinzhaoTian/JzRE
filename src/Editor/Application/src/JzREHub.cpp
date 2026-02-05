@@ -4,6 +4,8 @@
  */
 
 #include "JzRE/Editor/JzREHub.h"
+#include <algorithm>
+#include <cctype>
 #include <fstream>
 #include <memory>
 #ifdef _WIN32
@@ -17,16 +19,19 @@
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
 #include "JzRE/Runtime/Core/JzLogger.h"
 #include "JzRE/Runtime/Resource/JzTexture.h"
+#include "JzRE/Editor/UI/JzButton.h"
 #include "JzRE/Editor/UI/JzIconButton.h"
 #include "JzRE/Editor/UI/JzGroup.h"
 #include "JzRE/Editor/UI/JzText.h"
 #include "JzRE/Editor/UI/JzInputText.h"
 #include "JzRE/Editor/UI/JzSpacing.h"
 #include "JzRE/Editor/UI/JzSeparator.h"
+#include "JzRE/Editor/UI/JzInputText.h"
 #include "JzRE/Editor/UI/JzColumns.h"
 #include "JzRE/Editor/UI/JzConverter.h"
 #include "JzRE/Runtime/Platform/Dialog/JzOpenFileDialog.h"
 #include "JzRE/Runtime/Platform/RHI/JzGraphicsContext.h"
+#include "JzRE/Runtime/Function/Project/JzProjectManager.h"
 
 JzRE::JzREHub::JzREHub(JzERHIType rhiType)
 {
@@ -212,23 +217,23 @@ JzRE::JzREHubPanel::JzREHubPanel() :
     movable   = false;
     titleBar  = false;
 
-    auto &pathField                = CreateWidget<JzInputText>("");
-    pathField.width                = m_inputFieldWidth;
-    pathField.lineBreak            = false;
-    pathField.ContentChangedEvent += [this, &pathField](String p_content) {
-        pathField.content = std::filesystem::path(p_content).make_preferred().string();
-        _OnUpdateGoButton(pathField.content);
+    auto &searchBar                = CreateWidget<JzInputText>("");
+    searchBar.width                = m_inputFieldWidth;
+    searchBar.lineBreak            = false;
+    searchBar.tooltip              = "Search projects...";
+    searchBar.ContentChangedEvent += [this](const String &searchText) {
+        _FilterHistory(searchText);
     };
 
-    auto &openButton             = CreateWidget<JzButton>("Open Folder");
+    auto &openButton             = CreateWidget<JzButton>("Open Project");
     openButton.buttonIdleColor   = "#e3c79f";
     openButton.buttonSize        = m_buttonSize;
     openButton.buttonLabelColor  = "#003153";
     openButton.lineBreak         = false;
     openButton.ClickedEvent     += [this] {
-        JzOpenFileDialog dialog("Open Folder");
-        dialog.AddFileType("*", "*.*");
-        dialog.Show(JzEFileDialogType::OpenFolder);
+        JzOpenFileDialog dialog("Open Project");
+        dialog.AddFileType("JzRE Project", "*.jzreproject");
+        dialog.Show(JzEFileDialogType::OpenFile);
 
         const std::filesystem::path openPath = dialog.GetSelectedFilePath();
 
@@ -239,16 +244,30 @@ JzRE::JzREHubPanel::JzREHubPanel() :
         }
     };
 
-    m_goButton                   = &CreateWidget<JzButton>("GO");
-    m_goButton->buttonIdleColor  = "#36373a";
-    m_goButton->buttonSize       = m_buttonSize;
-    m_goButton->disabled         = true;
-    m_goButton->lineBreak        = true;
-    m_goButton->ClickedEvent    += [this, &pathField] {
-        const std::filesystem::path path = std::filesystem::path(pathField.content);
+    auto &createButton             = CreateWidget<JzButton>("Create new Project");
+    createButton.buttonIdleColor   = "#d3674d";
+    createButton.buttonSize        = m_buttonSize;
+    createButton.buttonLabelColor  = "#003153";
+    createButton.lineBreak         = true;
+    createButton.ClickedEvent     += [this] {
+        JzOpenFileDialog dialog("Select Project Folder");
+        dialog.AddFileType("*", "*.*");
+        dialog.Show(JzEFileDialogType::OpenFolder);
 
-        if (!_OnFinish({path})) {
-            _OnFailedToOpenPath(path);
+        if (dialog.HasSucceeded()) {
+            const std::filesystem::path projectDir = dialog.GetSelectedFilePath();
+
+            // Use folder name as project name
+            const String projectName = projectDir.filename().string();
+
+            JzProjectManager projectManager;
+            auto             result = projectManager.CreateProject(projectDir, projectName);
+
+            if (result == JzEProjectResult::Success) {
+                _OnFinish(projectDir);
+            } else {
+                JzRE_LOG_ERROR("Failed to create project at: {}", projectDir.string());
+            }
         }
     };
 
@@ -288,6 +307,8 @@ JzRE::JzREHubPanel::JzREHubPanel() :
             _actions.Destroy();
             _DeleteFromHistory(path);
         };
+
+        m_historyEntries.push_back({path, &_text, &_actions});
     }
 }
 
@@ -442,13 +463,6 @@ std::filesystem::path JzRE::JzREHubPanel::_Utf8ToPath(const JzRE::String &utf8St
     return std::filesystem::path(utf8Str);
 }
 
-void JzRE::JzREHubPanel::_OnUpdateGoButton(const JzRE::String &p_path)
-{
-    const Bool validPath        = !p_path.empty();
-    m_goButton->disabled        = !validPath;
-    m_goButton->buttonIdleColor = validPath ? "#26bbff" : "#36373a";
-}
-
 void JzRE::JzREHubPanel::_OnFailedToOpenPath(const std::filesystem::path &p_path)
 {
     // TODO
@@ -466,4 +480,37 @@ JzRE::Bool JzRE::JzREHubPanel::_OnFinish(const std::filesystem::path path)
     m_result = path;
     Close();
     return true;
+}
+
+void JzRE::JzREHubPanel::_FilterHistory(const JzRE::String &searchText)
+{
+    for (auto &entry : m_historyEntries) {
+        if (entry.textWidget && entry.actionsWidget) {
+            const Bool visible           = searchText.empty() || _FuzzyMatch(_PathToUtf8(entry.path), searchText);
+            entry.textWidget->enabled    = visible;
+            entry.actionsWidget->enabled = visible;
+        }
+    }
+}
+
+JzRE::Bool JzRE::JzREHubPanel::_FuzzyMatch(const JzRE::String &text, const JzRE::String &pattern) const
+{
+    // Case-insensitive fuzzy matching
+    String lowerText    = text;
+    String lowerPattern = pattern;
+
+    std::transform(lowerText.begin(), lowerText.end(), lowerText.begin(),
+                   [](unsigned char c) { return std::tolower(c); });
+    std::transform(lowerPattern.begin(), lowerPattern.end(), lowerPattern.begin(),
+                   [](unsigned char c) { return std::tolower(c); });
+
+    // Check if pattern characters appear in order in text
+    Size patternIdx = 0;
+    for (Size textIdx = 0; textIdx < lowerText.size() && patternIdx < lowerPattern.size(); ++textIdx) {
+        if (lowerText[textIdx] == lowerPattern[patternIdx]) {
+            ++patternIdx;
+        }
+    }
+
+    return patternIdx == lowerPattern.size();
 }
