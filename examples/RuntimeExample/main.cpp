@@ -13,6 +13,7 @@
  */
 struct CommandLineArgs {
     std::string      inputModel;
+    std::string      projectFile;
     JzRE::JzERHIType graphicApi = JzRE::JzERHIType::OpenGL;
 };
 
@@ -23,15 +24,18 @@ struct CommandLineArgs {
  */
 void PrintUsage(const char *programName)
 {
-    std::cout << "Usage: " << programName << " --input <model_file> [--graphic_api <api>]\n"
+    std::cout << "Usage: " << programName << " [--project <project_file>] [--input <model_file>] [--graphic_api <api>]\n"
               << "\n"
               << "Options:\n"
-              << "  --input, -i        Path to the model file to open (required)\n"
+              << "  --project, -p      Path to .jzreproject file (optional, auto-configures paths)\n"
+              << "  --input, -i        Path to the model file to open (required if no project)\n"
               << "  --graphic_api, -g  Graphics API to use: opengl, vulkan (default: opengl)\n"
               << "  --help, -h         Show this help message\n"
               << "\n"
               << "Examples:\n"
+              << "  " << programName << " --project MyGame.jzreproject\n"
               << "  " << programName << " --input model.obj\n"
+              << "  " << programName << " -p MyGame.jzreproject -i model.fbx\n"
               << "  " << programName << " -i model.fbx --graphic_api vulkan\n";
 }
 
@@ -51,6 +55,12 @@ bool ParseCommandLine(int argc, char *argv[], CommandLineArgs &args)
         if (arg == "--help" || arg == "-h") {
             PrintUsage(argv[0]);
             return false;
+        } else if (arg == "--project" || arg == "-p") {
+            if (i + 1 >= argc) {
+                std::cerr << "Error: --project requires a file path argument\n";
+                return false;
+            }
+            args.projectFile = argv[++i];
         } else if (arg == "--input" || arg == "-i") {
             if (i + 1 >= argc) {
                 std::cerr << "Error: --input requires a file path argument\n";
@@ -78,8 +88,9 @@ bool ParseCommandLine(int argc, char *argv[], CommandLineArgs &args)
         }
     }
 
-    if (args.inputModel.empty()) {
-        std::cerr << "Error: --input is required\n";
+    // Either project file or input model is required
+    if (args.inputModel.empty() && args.projectFile.empty()) {
+        std::cerr << "Error: --project or --input is required\n";
         PrintUsage(argv[0]);
         return false;
     }
@@ -94,6 +105,7 @@ bool ParseCommandLine(int argc, char *argv[], CommandLineArgs &args)
  * a model file using the ECS-based asset management system.
  *
  * This example demonstrates:
+ * - Loading projects via JzProjectManager
  * - Loading models via JzAssetSystem
  * - Spawning entities from models with SpawnModel()
  * - Automatic asset lifecycle management with DetachAllAssets()
@@ -106,8 +118,25 @@ public:
      * @param args Parsed command line arguments
      */
     explicit RuntimeExample(const CommandLineArgs &args) :
-        JzRERuntime(JzRE::JzRERuntimeSettings{"JzRE Example", {1280, 720}, args.graphicApi}),
+        JzRERuntime(CreateSettings(args)),
         m_modelPath(args.inputModel) { }
+
+private:
+    static JzRE::JzRERuntimeSettings CreateSettings(const CommandLineArgs &args)
+    {
+        JzRE::JzRERuntimeSettings settings;
+        settings.windowTitle = "JzRE Example";
+        settings.windowSize  = {1280, 720};
+        settings.rhiType     = args.graphicApi;
+
+        if (!args.projectFile.empty()) {
+            settings.projectFile = args.projectFile;
+        }
+
+        return settings;
+    }
+
+public:
 
 protected:
     /**
@@ -115,6 +144,30 @@ protected:
      */
     void OnStart() override
     {
+        // Print project info if loaded
+        if (HasProject()) {
+            const auto *config = GetProjectConfig();
+            std::cout << "Project loaded: " << config->projectName << "\n";
+            std::cout << "  Content path: " << config->GetContentPath().string() << "\n";
+        }
+
+        // If no model path specified, try to load default scene from project
+        if (m_modelPath.empty() && HasProject()) {
+            const auto *config = GetProjectConfig();
+            if (!config->defaultScene.empty()) {
+                m_modelPath = config->defaultScene;
+                std::cout << "Using default scene from project: " << m_modelPath << "\n";
+            } else {
+                std::cout << "No model specified and no default scene in project.\n";
+                return;
+            }
+        }
+
+        if (m_modelPath.empty()) {
+            std::cout << "No model to load.\n";
+            return;
+        }
+
         std::cout << "Loading model via Asset system: " << m_modelPath << "\n";
 
         auto &assetSystem = GetAssetSystem();
@@ -196,9 +249,14 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    std::cout << "Starting JzRE Example\n"
-              << "  Model: " << args.inputModel << "\n"
-              << "  Graphics API: " << (args.graphicApi == JzRE::JzERHIType::OpenGL ? "OpenGL" : "Vulkan") << "\n";
+    std::cout << "Starting JzRE Example\n";
+    if (!args.projectFile.empty()) {
+        std::cout << "  Project: " << args.projectFile << "\n";
+    }
+    if (!args.inputModel.empty()) {
+        std::cout << "  Model: " << args.inputModel << "\n";
+    }
+    std::cout << "  Graphics API: " << (args.graphicApi == JzRE::JzERHIType::OpenGL ? "OpenGL" : "Vulkan") << "\n";
 
     RuntimeExample app(args);
     app.Run();

@@ -141,15 +141,16 @@ Asset loading, caching, and lifecycle management.
 
 High-level engine systems:
 
-| Subsystem | Directory | Key Classes                                                    |
-| --------- | --------- | -------------------------------------------------------------- |
-| Scene     | `Scene/`  | `JzActor` (legacy)                                             |
-| ECS       | `ECS/`    | `JzWorld`, `JzSystem`, `Jz*Component` (EnTT-based)             |
-| Event     | `Event/`  | `JzEventSystem`, `JzEventQueue`, `JzECSEvent`, `JzPlatformEventAdapter` |
-| Input     | `ECS/`    | `JzInputSystem`, `JzInputComponents`, `JzInputEvents`          |
-| Window    | `ECS/`    | `JzWindowSystem`, `JzWindowComponents`, `JzWindowEvents`       |
-| Asset     | `ECS/`    | `JzAssetSystem`, `JzAssetComponents` (hot reload, ECS integration) |
-| Render    | `ECS/`    | `JzRenderSystem`, `JzCameraSystem`, `JzLightSystem`            |
+| Subsystem | Directory   | Key Classes                                                    |
+| --------- | ----------- | -------------------------------------------------------------- |
+| Scene     | `Scene/`    | `JzActor` (legacy)                                             |
+| ECS       | `ECS/`      | `JzWorld`, `JzSystem`, `Jz*Component` (EnTT-based)             |
+| Event     | `Event/`    | `JzEventSystem`, `JzEventQueue`, `JzECSEvent`, `JzPlatformEventAdapter` |
+| Input     | `ECS/`      | `JzInputSystem`, `JzInputComponents`, `JzInputEvents`          |
+| Window    | `ECS/`      | `JzWindowSystem`, `JzWindowComponents`, `JzWindowEvents`       |
+| Asset     | `ECS/`      | `JzAssetSystem`, `JzAssetComponents` (hot reload, ECS integration) |
+| Render    | `ECS/`      | `JzRenderSystem`, `JzCameraSystem`, `JzLightSystem`            |
+| Project   | `Project/`  | `JzProjectConfig`, `JzProjectManager` (project lifecycle)      |
 
 ### 5. Interface Layer (`src/Runtime/Interface/`)
 

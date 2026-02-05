@@ -68,6 +68,8 @@ JzRE/
 │   │       │   │   └── JzAssetComponents.h
 │   │       │   ├── Rendering/
 │   │       │   │   └── JzRenderGraph.h, JzRenderTarget.h, JzRenderOutput.h, JzRenderOutputCache.h
+│   │       │   ├── Project/
+│   │       │   │   └── JzProjectConfig.h, JzProjectManager.h
 │   │       │   └── Event/
 │   │       │       ├── JzEventSystem.h, JzEventQueue.h
 │   │       │       ├── JzECSEvent.h, JzIEventHandler.h

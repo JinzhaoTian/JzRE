@@ -5,9 +5,59 @@
 
 #include "JzRE/Editor/JzREInstance.h"
 
-JzRE::JzREInstance::JzREInstance(JzERHIType rhiType, std::filesystem::path &openDirectory) :
-    JzRERuntime(JzRERuntimeSettings{"JzRE", {1280, 720}, rhiType}),
-    m_openDirectory(openDirectory)
+namespace {
+
+JzRE::JzRERuntimeSettings CreateSettingsFromPath(JzRE::JzERHIType rhiType,
+                                                  const std::filesystem::path &openPath)
+{
+    JzRE::JzRERuntimeSettings settings;
+    settings.windowTitle = "JzRE";
+    settings.windowSize  = {1280, 720};
+    settings.rhiType     = rhiType;
+
+    // Check if path is a project file or directory
+    if (!openPath.empty()) {
+        auto projectFile = JzRE::JzREInstance::FindProjectFile(openPath);
+        if (!projectFile.empty()) {
+            settings.projectFile = projectFile;
+        }
+    }
+
+    return settings;
+}
+
+} // anonymous namespace
+
+std::filesystem::path JzRE::JzREInstance::FindProjectFile(const std::filesystem::path &path)
+{
+    if (path.empty()) {
+        return {};
+    }
+
+    // If path is a file with .jzreproject extension, use it directly
+    if (std::filesystem::is_regular_file(path)) {
+        if (path.extension() == JzProjectManager::GetProjectFileExtension()) {
+            return path;
+        }
+        return {};
+    }
+
+    // If path is a directory, search for .jzreproject file
+    if (std::filesystem::is_directory(path)) {
+        for (const auto &entry : std::filesystem::directory_iterator(path)) {
+            if (entry.is_regular_file() &&
+                entry.path().extension() == JzProjectManager::GetProjectFileExtension()) {
+                return entry.path();
+            }
+        }
+    }
+
+    return {};
+}
+
+JzRE::JzREInstance::JzREInstance(JzERHIType rhiType, const std::filesystem::path &openPath) :
+    JzRERuntime(CreateSettingsFromPath(rhiType, openPath)),
+    m_openPath(openPath)
 {
     // Create editor with runtime reference
     m_editor = std::make_unique<JzEditor>(*this);

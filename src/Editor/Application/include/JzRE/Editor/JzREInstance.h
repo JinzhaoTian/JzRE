@@ -21,6 +21,11 @@ namespace JzRE {
  * - Reusing all runtime functionality (window, device, renderer, scene, input)
  * - Injecting editor UI rendering via the OnRender hook
  * - Sharing the same architecture for both standalone and editor modes
+ *
+ * Project Loading:
+ * - If openPath is a .jzreproject file, loads the project directly
+ * - If openPath is a directory, searches for .jzreproject file in that directory
+ * - Project configuration drives asset paths and runtime settings
  */
 class JzREInstance : public JzRERuntime {
 public:
@@ -28,9 +33,9 @@ public:
      * @brief Constructor
      *
      * @param rhiType The RHI type to use for rendering
-     * @param openDirectory The directory to open in the editor
+     * @param openPath Path to a .jzreproject file or a directory containing one
      */
-    JzREInstance(JzERHIType rhiType, std::filesystem::path &openDirectory);
+    JzREInstance(JzERHIType rhiType, const std::filesystem::path &openPath);
 
     /**
      * @brief Destructor
@@ -79,8 +84,17 @@ protected:
      */
     void OnStop() override;
 
+public:
+    /**
+     * @brief Find a .jzreproject file in the given path
+     *
+     * @param path Directory or file path
+     * @return std::filesystem::path Path to project file, or empty if not found
+     */
+    static std::filesystem::path FindProjectFile(const std::filesystem::path &path);
+
 private:
-    std::filesystem::path     m_openDirectory;
+    std::filesystem::path     m_openPath;
     std::unique_ptr<JzEditor> m_editor;
 };
 } // namespace JzRE

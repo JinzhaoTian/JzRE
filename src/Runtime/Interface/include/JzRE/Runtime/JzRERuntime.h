@@ -5,9 +5,11 @@
 
 #pragma once
 
+#include <filesystem>
 #include <memory>
 
 #include "JzRE/Runtime/Core/JzRETypes.h"
+#include "JzRE/Runtime/Function/Project/JzProjectManager.h"
 #include "JzRE/Runtime/Function/ECS/JzEntity.h"
 #include "JzRE/Runtime/Function/ECS/JzWorld.h"
 #include "JzRE/Runtime/Function/ECS/JzInputSystem.h"
@@ -23,9 +25,10 @@
 namespace JzRE {
 
 struct JzRERuntimeSettings {
-    String     windowTitle = "JzRE Runtime";
-    JzIVec2    windowSize  = {1280, 720};
-    JzERHIType rhiType     = JzERHIType::OpenGL;
+    String                windowTitle = "JzRE Runtime";
+    JzIVec2               windowSize  = {1280, 720};
+    JzERHIType            rhiType     = JzERHIType::OpenGL;
+    std::filesystem::path projectFile; // Optional: path to .jzreproject file
 };
 
 /**
@@ -77,6 +80,27 @@ public:
      * @return JzAssetSystem& Reference to the asset system
      */
     JzAssetSystem &GetAssetSystem();
+
+    /**
+     * @brief Get the project manager
+     *
+     * @return JzProjectManager& Reference to the project manager
+     */
+    JzProjectManager &GetProjectManager();
+
+    /**
+     * @brief Check if a project is currently loaded
+     *
+     * @return Bool True if a project is loaded
+     */
+    Bool HasProject() const;
+
+    /**
+     * @brief Get the current project configuration
+     *
+     * @return const JzProjectConfig* Pointer to config, or nullptr if no project
+     */
+    const JzProjectConfig *GetProjectConfig() const;
 
 protected:
     /**
@@ -161,6 +185,9 @@ private:
 
 protected:
     JzRERuntimeSettings m_settings;
+
+    // Project management
+    JzProjectManager m_projectManager;
 
     std::unique_ptr<JzGraphicsContext> m_graphicsContext;
 

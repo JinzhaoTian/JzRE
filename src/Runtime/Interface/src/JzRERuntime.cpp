@@ -6,6 +6,7 @@
 #include "JzRE/Runtime/JzRERuntime.h"
 
 #include "JzRE/Runtime/Core/JzClock.h"
+#include "JzRE/Runtime/Function/Project/JzProjectConfig.h"
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
 
 #include "JzRE/Runtime/Function/ECS/JzTransformComponents.h"
@@ -37,6 +38,25 @@ JzRE::JzRERuntime::~JzRERuntime()
 void JzRE::JzRERuntime::Startup()
 {
     JzServiceContainer::Init();
+
+    // Load project if specified
+    if (!m_settings.projectFile.empty()) {
+        auto result = m_projectManager.LoadProject(m_settings.projectFile);
+        if (result == JzEProjectResult::Success) {
+            // Apply project settings
+            const auto &config = m_projectManager.GetConfig();
+
+            // Override window title with project name if not explicitly set
+            if (m_settings.windowTitle == "JzRE Runtime") {
+                m_settings.windowTitle = config.projectName;
+            }
+
+            // Apply render API from project config
+            if (config.renderAPI != JzERenderAPI::Auto) {
+                m_settings.rhiType = (config.renderAPI == JzERenderAPI::Vulkan) ? JzERHIType::Vulkan : JzERHIType::OpenGL;
+            }
+        }
+    }
 
     // coordinator.Initialize();
 
@@ -165,13 +185,26 @@ void JzRE::JzRERuntime::InitializeSubsystems()
     m_assetSystem->RegisterFactory<JzTexture>(std::make_unique<JzTextureFactory>());
     m_assetSystem->RegisterFactory<JzMaterial>(std::make_unique<JzMaterialFactory>());
 
-    // Add search paths
-    auto enginePath = std::filesystem::current_path();
-    m_assetSystem->AddSearchPath(enginePath.string());
-    m_assetSystem->AddSearchPath((enginePath / "resources").string());
-    m_assetSystem->AddSearchPath((enginePath / "resources" / "models").string());
-    m_assetSystem->AddSearchPath((enginePath / "resources" / "textures").string());
-    m_assetSystem->AddSearchPath((enginePath / "resources" / "shaders").string());
+    // Add search paths based on project or engine defaults
+    if (m_projectManager.HasLoadedProject()) {
+        const auto &config      = m_projectManager.GetConfig();
+        auto        contentPath = config.GetContentPath();
+
+        m_assetSystem->AddSearchPath(config.rootPath.string());
+        m_assetSystem->AddSearchPath(contentPath.string());
+        m_assetSystem->AddSearchPath((contentPath / "Models").string());
+        m_assetSystem->AddSearchPath((contentPath / "Textures").string());
+        m_assetSystem->AddSearchPath((contentPath / "Shaders").string());
+        m_assetSystem->AddSearchPath((contentPath / "Materials").string());
+    } else {
+        // Default engine paths when no project is loaded
+        auto enginePath = std::filesystem::current_path();
+        m_assetSystem->AddSearchPath(enginePath.string());
+        m_assetSystem->AddSearchPath((enginePath / "resources").string());
+        m_assetSystem->AddSearchPath((enginePath / "resources" / "models").string());
+        m_assetSystem->AddSearchPath((enginePath / "resources" / "textures").string());
+        m_assetSystem->AddSearchPath((enginePath / "resources" / "shaders").string());
+    }
 }
 
 void JzRE::JzRERuntime::PreloadAssets()
@@ -371,6 +404,24 @@ JzRE::JzWorld &JzRE::JzRERuntime::GetWorld()
 JzRE::JzAssetSystem &JzRE::JzRERuntime::GetAssetSystem()
 {
     return *m_assetSystem;
+}
+
+JzRE::JzProjectManager &JzRE::JzRERuntime::GetProjectManager()
+{
+    return m_projectManager;
+}
+
+JzRE::Bool JzRE::JzRERuntime::HasProject() const
+{
+    return m_projectManager.HasLoadedProject();
+}
+
+const JzRE::JzProjectConfig *JzRE::JzRERuntime::GetProjectConfig() const
+{
+    if (m_projectManager.HasLoadedProject()) {
+        return &m_projectManager.GetConfig();
+    }
+    return nullptr;
 }
 
 void JzRE::JzRERuntime::OnStart()
