@@ -73,8 +73,6 @@ JzRE::JzEditorUI::~JzEditorUI()
     }
 }
 
-void JzRE::JzEditorUI::PreUpdate() { }
-
 void JzRE::JzEditorUI::Update(JzRE::F32 deltaTime)
 {
     // Editor logic updates only - no rendering
@@ -95,11 +93,6 @@ void JzRE::JzEditorUI::Render(JzRE::F32 deltaTime)
     // Views are now rendered by RenderSystem during World::Update()
     // Here we only render the ImGui UI
     RenderEditorUI(deltaTime);
-}
-
-void JzRE::JzEditorUI::PostUpdate()
-{
-    ++m_elapsedFrames;
 }
 
 void JzRE::JzEditorUI::HandleGlobalShortcuts()

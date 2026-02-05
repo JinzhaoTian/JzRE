@@ -44,11 +44,6 @@ public:
     ~JzEditorUI();
 
     /**
-     * @brief Prepare the frame
-     */
-    void PreUpdate();
-
-    /**
      * @brief Update editor logic (shortcuts, mode updates, panel updates)
      *
      * @param deltaTime Time since last frame in seconds
@@ -65,11 +60,6 @@ public:
      */
     void Render(F32 deltaTime);
 
-    /**
-     * @brief Swapping the buffers
-     */
-    void PostUpdate();
-
 private:
     void InitializePanels();
     void HandleGlobalShortcuts();
@@ -82,6 +72,5 @@ private:
     std::unique_ptr<JzCanvas>        m_canvas;
     std::unique_ptr<JzPanelsManager> m_panelsManager;
     std::unique_ptr<JzUIManager>     m_uiManager;
-    U64                              m_elapsedFrames = 0;
 };
 } // namespace JzRE

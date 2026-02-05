@@ -7,8 +7,8 @@
 
 namespace {
 
-JzRE::JzRERuntimeSettings CreateSettingsFromPath(JzRE::JzERHIType rhiType,
-                                                  const std::filesystem::path &openPath)
+JzRE::JzRERuntimeSettings CreateSettingsFromPath(JzRE::JzERHIType             rhiType,
+                                                 const std::filesystem::path &openPath)
 {
     JzRE::JzRERuntimeSettings settings;
     settings.windowTitle = "JzRE";
@@ -45,8 +45,7 @@ std::filesystem::path JzRE::JzREEditor::FindProjectFile(const std::filesystem::p
     // If path is a directory, search for .jzreproject file
     if (std::filesystem::is_directory(path)) {
         for (const auto &entry : std::filesystem::directory_iterator(path)) {
-            if (entry.is_regular_file() &&
-                entry.path().extension() == JzProjectManager::GetProjectFileExtension()) {
+            if (entry.is_regular_file() && entry.path().extension() == JzProjectManager::GetProjectFileExtension()) {
                 return entry.path();
             }
         }
