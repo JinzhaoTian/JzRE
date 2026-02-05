@@ -14,9 +14,9 @@ The engine follows a strict **Runtime + Editor** architecture where dependencies
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│              JzREInstance (JzRE Executable)                 │
+│              JzREEditor (JzRE Executable)                   │
 ├─────────────────────────────────────────────────────────────┤
-│                     Editor (JzEditor)                       │
+│                     Editor (JzEditorUI)                     │
 │              ImGui-based development tools                  │
 ├─────────────────────────────────────────────────────────────┤
 │                  JzRERuntime (Interface)                    │
@@ -135,7 +135,7 @@ Development tools built with ImGui.
 
 **Key Components:**
 
-- `JzEditor` - Main editor loop
+- `JzEditorUI` - Main editor loop
 - `JzPanelsManager` - Panel layout management
 - `JzUIManager` - ImGui integration
 - Panels: `JzSceneView`, `JzHierarchy`, `JzAssetBrowser`, `JzConsole`
@@ -218,7 +218,7 @@ auto& eventSystem = world.GetContext<JzEventSystem>();
 | `JzRuntimeFunction` | Static Library    | High-level systems       |
 | `JzRERuntime`       | Interface Library | Links all runtime layers |
 | `JzEditor`          | Static Library    | Editor logic             |
-| `JzREInstance`      | Executable        | Main application         |
+| `JzREEditor`        | Executable        | Main application         |
 
 ---
 
@@ -287,7 +287,7 @@ cd build && ctest --output-on-failure
 #include "JzRE/Runtime/Function/Event/JzEventSystem.h"
 
 // Editor modules
-#include "JzRE/Editor/JzEditor.h"
+#include "JzRE/Editor/JzEditorUI.h"
 ```
 
 ---

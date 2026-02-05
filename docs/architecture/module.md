@@ -78,7 +78,7 @@ JzRE/
 │   │       └── src/ECS/
 │   │
 │   ├── Editor/                     # Editor Application
-│   │   ├── Application/            # JzEditor, JzREHub, JzREInstance, JzCanvas
+│   │   ├── Application/            # JzEditorUI, JzREHub, JzREEditor, JzCanvas
 │   │   ├── Core/                   # Editor-specific events
 │   │   ├── Panels/                 # 30+ editor panels
 │   │   └── UI/                     # 40+ ImGui widget wrappers
@@ -151,7 +151,7 @@ target_link_libraries(JzRERuntime INTERFACE
 #include "JzRE/Runtime/Function/ECS/JzAssetSystem.h"
 #include "JzRE/Runtime/Function/Event/JzEventSystem.h"
 #include "JzRE/Runtime/JzRERuntime.h"
-#include "JzRE/Editor/JzEditor.h"
+#include "JzRE/Editor/JzEditorUI.h"
 
 // Within module: relative path allowed
 #include "JzInternalHelper.h"
@@ -201,5 +201,5 @@ cd build && ctest --output-on-failure
 | `JzRuntimeFunction` | Static     | JzRuntimeCore, JzRuntimePlatform, JzRuntimeResource, entt |
 | `JzRERuntime`       | Interface  | All runtime layers                                  |
 | `JzEditor`          | Static     | JzRERuntime, imgui (docking)                        |
-| `JzREInstance`      | Executable | JzRERuntime, JzEditor                               |
+| `JzREEditor`        | Executable | JzRERuntime, JzEditor                               |
 | `TESTJzRECore`      | Executable | JzRuntimeCore, GTest::gtest_main                    |

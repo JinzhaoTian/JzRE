@@ -22,10 +22,10 @@ class JzRERuntime;
  * complete editor experience.
  *
  * Usage:
- * JzEditor(runtime) - integrates with runtime's render loop.
+ * JzEditorUI(runtime) - integrates with runtime's render loop.
  * JzWindowSystem is retrieved via JzServiceContainer (dependency injection).
  */
-class JzEditor {
+class JzEditorUI {
 public:
     /**
      * @brief Construct editor with a runtime reference
@@ -36,12 +36,12 @@ public:
      *
      * @param runtime Reference to the runtime
      */
-    explicit JzEditor(JzRERuntime &runtime);
+    explicit JzEditorUI(JzRERuntime &runtime);
 
     /**
      * @brief Destroy the Editor object
      */
-    ~JzEditor();
+    ~JzEditorUI();
 
     /**
      * @brief Prepare the frame

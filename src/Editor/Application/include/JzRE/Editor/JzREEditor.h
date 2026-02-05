@@ -7,15 +7,15 @@
 
 #include <filesystem>
 #include "JzRE/Runtime/JzRERuntime.h"
-#include "JzRE/Editor/JzEditor.h"
+#include "JzRE/Editor/JzEditorUI.h"
 
 namespace JzRE {
 
 /**
- * @brief JzRE Editor Instance
+ * @brief JzRE Editor
  *
  * This class extends JzRERuntime to provide a complete editor experience.
- * It integrates the JzEditor UI with the runtime's rendering pipeline.
+ * It integrates the JzEditorUI with the runtime's rendering pipeline.
  *
  * The inheritance from JzRERuntime allows:
  * - Reusing all runtime functionality (window, device, renderer, scene, input)
@@ -27,7 +27,7 @@ namespace JzRE {
  * - If openPath is a directory, searches for .jzreproject file in that directory
  * - Project configuration drives asset paths and runtime settings
  */
-class JzREInstance : public JzRERuntime {
+class JzREEditor : public JzRERuntime {
 public:
     /**
      * @brief Constructor
@@ -35,19 +35,19 @@ public:
      * @param rhiType The RHI type to use for rendering
      * @param openPath Path to a .jzreproject file or a directory containing one
      */
-    JzREInstance(JzERHIType rhiType, const std::filesystem::path &openPath);
+    JzREEditor(JzERHIType rhiType, const std::filesystem::path &openPath);
 
     /**
      * @brief Destructor
      */
-    ~JzREInstance() override;
+    ~JzREEditor() override;
 
     /**
-     * @brief Get the editor instance
+     * @brief Get the editor UI instance
      *
-     * @return JzEditor& Reference to the editor
+     * @return JzEditorUI& Reference to the editor UI
      */
-    JzEditor &GetEditor();
+    JzEditorUI &GetEditorUI();
 
 protected:
     /**
@@ -94,7 +94,7 @@ public:
     static std::filesystem::path FindProjectFile(const std::filesystem::path &path);
 
 private:
-    std::filesystem::path     m_openPath;
-    std::unique_ptr<JzEditor> m_editor;
+    std::filesystem::path       m_openPath;
+    std::unique_ptr<JzEditorUI> m_editorUI;
 };
 } // namespace JzRE

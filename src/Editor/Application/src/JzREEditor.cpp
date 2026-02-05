@@ -3,7 +3,7 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzRE/Editor/JzREInstance.h"
+#include "JzRE/Editor/JzREEditor.h"
 
 namespace {
 
@@ -17,7 +17,7 @@ JzRE::JzRERuntimeSettings CreateSettingsFromPath(JzRE::JzERHIType rhiType,
 
     // Check if path is a project file or directory
     if (!openPath.empty()) {
-        auto projectFile = JzRE::JzREInstance::FindProjectFile(openPath);
+        auto projectFile = JzRE::JzREEditor::FindProjectFile(openPath);
         if (!projectFile.empty()) {
             settings.projectFile = projectFile;
         }
@@ -28,7 +28,7 @@ JzRE::JzRERuntimeSettings CreateSettingsFromPath(JzRE::JzERHIType rhiType,
 
 } // anonymous namespace
 
-std::filesystem::path JzRE::JzREInstance::FindProjectFile(const std::filesystem::path &path)
+std::filesystem::path JzRE::JzREEditor::FindProjectFile(const std::filesystem::path &path)
 {
     if (path.empty()) {
         return {};
@@ -55,38 +55,38 @@ std::filesystem::path JzRE::JzREInstance::FindProjectFile(const std::filesystem:
     return {};
 }
 
-JzRE::JzREInstance::JzREInstance(JzERHIType rhiType, const std::filesystem::path &openPath) :
+JzRE::JzREEditor::JzREEditor(JzERHIType rhiType, const std::filesystem::path &openPath) :
     JzRERuntime(CreateSettingsFromPath(rhiType, openPath)),
     m_openPath(openPath)
 {
-    // Create editor with runtime reference
-    m_editor = std::make_unique<JzEditor>(*this);
+    // Create editor UI with runtime reference
+    m_editorUI = std::make_unique<JzEditorUI>(*this);
 }
 
-JzRE::JzREInstance::~JzREInstance()
+JzRE::JzREEditor::~JzREEditor()
 {
-    // Clean up editor before base class destructor runs
-    m_editor.reset();
+    // Clean up editor UI before base class destructor runs
+    m_editorUI.reset();
 }
 
-JzRE::JzEditor &JzRE::JzREInstance::GetEditor()
+JzRE::JzEditorUI &JzRE::JzREEditor::GetEditorUI()
 {
-    return *m_editor;
+    return *m_editorUI;
 }
 
-void JzRE::JzREInstance::OnStart()
+void JzRE::JzREEditor::OnStart()
 {
     // Editor-specific initialization can be added here
 }
 
-void JzRE::JzREInstance::OnUpdate(F32 deltaTime)
+void JzRE::JzREEditor::OnUpdate(F32 deltaTime)
 {
     // Update editor logic (shortcuts, mode updates, panel updates)
     // This is called before UpdateSystems() in the main loop
-    m_editor->Update(deltaTime);
+    m_editorUI->Update(deltaTime);
 }
 
-void JzRE::JzREInstance::OnRender(F32 deltaTime)
+void JzRE::JzREEditor::OnRender(F32 deltaTime)
 {
     // Render editor views and UI
     // This is called after UpdateSystems() has run (camera, light, render preparation)
@@ -94,10 +94,10 @@ void JzRE::JzREInstance::OnRender(F32 deltaTime)
     //   1. Game scene (rendered by RenderSystem during UpdateSystems)
     //   2. SceneView (captures game scene to framebuffer)
     //   3. ImGui UI (rendered on top)
-    m_editor->Render(deltaTime);
+    m_editorUI->Render(deltaTime);
 }
 
-void JzRE::JzREInstance::OnStop()
+void JzRE::JzREEditor::OnStop()
 {
     // Editor-specific cleanup can be added here
 }

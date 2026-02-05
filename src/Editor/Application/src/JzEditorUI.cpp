@@ -3,7 +3,7 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzRE/Editor/JzEditor.h"
+#include "JzRE/Editor/JzEditorUI.h"
 #include "JzRE/Editor/Panels/JzAssetView.h"
 #include "JzRE/Editor/Panels/JzSceneView.h"
 #include "JzRE/Editor/Panels/JzGameView.h"
@@ -16,7 +16,7 @@
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
 #include "JzRE/Runtime/Function/ECS/JzWindowSystem.h"
 
-JzRE::JzEditor::JzEditor(JzRE::JzRERuntime &runtime) :
+JzRE::JzEditorUI::JzEditorUI(JzRE::JzRERuntime &runtime) :
     m_runtime(&runtime)
 {
     auto &windowSystem = JzServiceContainer::Get<JzWindowSystem>();
@@ -29,7 +29,7 @@ JzRE::JzEditor::JzEditor(JzRE::JzRERuntime &runtime) :
     InitializePanels();
 }
 
-void JzRE::JzEditor::InitializePanels()
+void JzRE::JzEditorUI::InitializePanels()
 {
     auto &windowSystem = JzServiceContainer::Get<JzWindowSystem>();
     m_panelsManager->CreatePanel<JzMenuBar>("Menu Bar", windowSystem);
@@ -58,7 +58,7 @@ void JzRE::JzEditor::InitializePanels()
     m_uiManager->SetCanvas(*m_canvas);
 }
 
-JzRE::JzEditor::~JzEditor()
+JzRE::JzEditorUI::~JzEditorUI()
 {
     if (m_uiManager) {
         m_uiManager.reset();
@@ -73,9 +73,9 @@ JzRE::JzEditor::~JzEditor()
     }
 }
 
-void JzRE::JzEditor::PreUpdate() { }
+void JzRE::JzEditorUI::PreUpdate() { }
 
-void JzRE::JzEditor::Update(JzRE::F32 deltaTime)
+void JzRE::JzEditorUI::Update(JzRE::F32 deltaTime)
 {
     // Editor logic updates only - no rendering
     HandleGlobalShortcuts();
@@ -89,7 +89,7 @@ void JzRE::JzEditor::Update(JzRE::F32 deltaTime)
     }
 }
 
-void JzRE::JzEditor::Render(JzRE::F32 deltaTime)
+void JzRE::JzEditorUI::Render(JzRE::F32 deltaTime)
 {
     // Rendering phase:
     // Views are now rendered by RenderSystem during World::Update()
@@ -97,22 +97,22 @@ void JzRE::JzEditor::Render(JzRE::F32 deltaTime)
     RenderEditorUI(deltaTime);
 }
 
-void JzRE::JzEditor::PostUpdate()
+void JzRE::JzEditorUI::PostUpdate()
 {
     ++m_elapsedFrames;
 }
 
-void JzRE::JzEditor::HandleGlobalShortcuts()
+void JzRE::JzEditorUI::HandleGlobalShortcuts()
 {
     // TODO
 }
 
-void JzRE::JzEditor::UpdateCurrentEditorMode(JzRE::F32 deltaTime)
+void JzRE::JzEditorUI::UpdateCurrentEditorMode(JzRE::F32 deltaTime)
 {
     // TODO
 }
 
-void JzRE::JzEditor::UpdateEditorPanels(JzRE::F32 deltaTime)
+void JzRE::JzEditorUI::UpdateEditorPanels(JzRE::F32 deltaTime)
 {
     auto &menuBar = m_panelsManager->GetPanelAs<JzMenuBar>("Menu Bar");
     // auto &sceneView = m_panelsManager.GetPanelAs<JzSceneView>("Scene View");
@@ -120,7 +120,7 @@ void JzRE::JzEditor::UpdateEditorPanels(JzRE::F32 deltaTime)
     menuBar.HandleShortcuts(deltaTime);
 }
 
-void JzRE::JzEditor::RenderEditorUI(JzRE::F32 deltaTime)
+void JzRE::JzEditorUI::RenderEditorUI(JzRE::F32 deltaTime)
 {
     m_uiManager->Render();
 }

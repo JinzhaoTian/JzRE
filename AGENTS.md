@@ -190,7 +190,7 @@ JzRERuntime → JzRuntimeFunction → JzRuntimeResource → JzRuntimePlatform �
 
 **Detailed:**
 ```
-JzREInstance (Executable)
+JzREEditor (Executable)
   └── JzEditor (Static) → JzRERuntime, imgui
         └── JzRERuntime (Interface) → All runtime layers
               └── JzRuntimeFunction (Static) → ECS, Event, Input, Window systems

@@ -7,7 +7,7 @@
 #include <optional>
 #include <filesystem>
 #include "JzRE/Editor/JzREHub.h"
-#include "JzRE/Editor/JzREInstance.h"
+#include "JzRE/Editor/JzREEditor.h"
 
 int main(int argc, char **argv)
 {
@@ -30,7 +30,7 @@ int main(int argc, char **argv)
             return EXIT_FAILURE;
         }
 
-        auto re = std::make_unique<JzRE::JzREInstance>(rhiType, openPath.value());
+        auto re = std::make_unique<JzRE::JzREEditor>(rhiType, openPath.value());
 
         if (re) {
             re->Run();

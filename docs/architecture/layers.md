@@ -11,7 +11,7 @@ JzRE is a cross-platform, multi-graphics-API game engine built with C++20. The c
 ```mermaid
 graph TB
     subgraph "Editor Application"
-        EditorApp[JzREInstance Executable]
+        EditorApp[JzREEditor Executable]
         EditorModule[JzEditor]
         UIModule[UI - ImGui Wrappers]
     end
@@ -168,7 +168,7 @@ Development tools built on top of Runtime:
 
 | Component         | Description                                                          |
 | ----------------- | -------------------------------------------------------------------- |
-| Application/      | `JzEditor`, `JzREHub`, `JzREInstance`, `JzCanvas`, `JzUIManager`     |
+| Application/      | `JzEditorUI`, `JzREHub`, `JzREEditor`, `JzCanvas`, `JzUIManager`     |
 | Core/             | `JzEvent` (editor-specific events)                                   |
 | Panels/           | `JzView`, `JzPanelsManager`, `JzSceneView`, `JzGameView`             |
 |                   | `JzHierarchy`, `JzAssetBrowser`, `JzAssetView`, `JzConsole`          |
