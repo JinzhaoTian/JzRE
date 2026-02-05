@@ -55,31 +55,14 @@ void JzRE::JzFileDialog::Show(JzEFileDialogType type) {
     }
 
     // Parse and set file types
-    if (!m_filter.empty()) {
+    auto filterEntries = this->ParseFilters();
+    if (!filterEntries.empty()) {
       NSMutableArray *allowedTypes = [[NSMutableArray alloc] init];
-      std::string filter = m_filter;
-      size_t pos = 0;
 
-      while ((pos = filter.find("|")) != std::string::npos) {
-        std::string item = filter.substr(0, pos);
-        size_t colonPos = item.find(":");
-        if (colonPos != std::string::npos) {
-          std::string extensions = item.substr(colonPos + 1);
-          // Parse extensions (e.g., "*.txt;*.doc" -> "txt", "doc")
-          size_t extPos = 0;
-          while ((extPos = extensions.find("*.")) != std::string::npos) {
-            extensions.erase(extPos, 2); // Remove "*."
-            size_t semicolonPos = extensions.find(";");
-            std::string ext = extensions.substr(0, semicolonPos);
-            [allowedTypes addObject:@(ext.c_str())];
-            if (semicolonPos != std::string::npos) {
-              extensions = extensions.substr(semicolonPos + 1);
-            } else {
-              break;
-            }
-          }
+      for (const auto &entry : filterEntries) {
+        for (const auto &ext : entry.extensions) {
+          [allowedTypes addObject:@(ext.c_str())];
         }
-        filter.erase(0, pos + 1);
       }
 
       if (allowedTypes.count > 0) {

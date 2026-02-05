@@ -36,11 +36,26 @@ void JzRE::JzFileDialog::Show(JzEFileDialogType type)
             pfd->GetOptions(&dwOptions);
             pfd->SetOptions(dwOptions | FOS_PICKFOLDERS);
         } else {
-            if (!m_filter.empty()) {
+            auto filterEntries = ParseFilters();
+            if (!filterEntries.empty()) {
                 std::vector<COMDLG_FILTERSPEC> filters;
-                COMDLG_FILTERSPEC              spec = {L"All Files", L"*.*"}; // TODO
-                filters.push_back(spec);
-                pfd->SetFileTypes(static_cast<UINT>(filters.size()), filters.data());
+                std::vector<std::wstring>      labels;
+                std::vector<std::wstring>      patterns;
+
+                for (const auto &entry : filterEntries) {
+                    labels.push_back(std::wstring(entry.label.begin(), entry.label.end()));
+                    patterns.push_back(std::wstring(entry.pattern.begin(), entry.pattern.end()));
+                }
+
+                // Build COMDLG_FILTERSPEC array (must reference stable wstring storage)
+                for (size_t i = 0; i < labels.size(); ++i) {
+                    COMDLG_FILTERSPEC spec = {labels[i].c_str(), patterns[i].c_str()};
+                    filters.push_back(spec);
+                }
+
+                if (!filters.empty()) {
+                    pfd->SetFileTypes(static_cast<UINT>(filters.size()), filters.data());
+                }
             }
         }
 

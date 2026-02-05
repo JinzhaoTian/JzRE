@@ -244,7 +244,7 @@ JzRE::JzREHubPanel::JzREHubPanel() :
         }
     };
 
-    auto &createButton             = CreateWidget<JzButton>("Create new Project");
+    auto &createButton             = CreateWidget<JzButton>("Create Project");
     createButton.buttonIdleColor   = "#d3674d";
     createButton.buttonSize        = m_buttonSize;
     createButton.buttonLabelColor  = "#003153";

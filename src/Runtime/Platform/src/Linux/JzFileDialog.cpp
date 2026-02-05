@@ -45,24 +45,12 @@ void JzRE::JzFileDialog::Show(JzEFileDialogType type)
     }
 
     // Parse and set file filters
-    if (!m_filter.empty()) {
-        std::string filter = m_filter;
-        size_t      pos    = 0;
-
-        while ((pos = filter.find("|")) != std::string::npos) {
-            std::string item     = filter.substr(0, pos);
-            size_t      colonPos = item.find(":");
-            if (colonPos != std::string::npos) {
-                std::string label   = item.substr(0, colonPos);
-                std::string pattern = item.substr(colonPos + 1);
-
-                GtkFileFilter *fileFilter = gtk_file_filter_new();
-                gtk_file_filter_set_name(fileFilter, label.c_str());
-                gtk_file_filter_add_pattern(fileFilter, pattern.c_str());
-                gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), fileFilter);
-            }
-            filter.erase(0, pos + 1);
-        }
+    auto filterEntries = ParseFilters();
+    for (const auto &entry : filterEntries) {
+        GtkFileFilter *fileFilter = gtk_file_filter_new();
+        gtk_file_filter_set_name(fileFilter, entry.label.c_str());
+        gtk_file_filter_add_pattern(fileFilter, entry.pattern.c_str());
+        gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), fileFilter);
     }
 
     gint result = gtk_dialog_run(GTK_DIALOG(dialog));
