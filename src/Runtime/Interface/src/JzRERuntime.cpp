@@ -39,6 +39,8 @@ void JzRE::JzRERuntime::Startup()
 {
     JzServiceContainer::Init();
 
+    JzServiceContainer::Provide<JzProjectManager>(m_projectManager);
+
     // Load project if specified
     if (!m_settings.projectFile.empty()) {
         auto result = m_projectManager.LoadProject(m_settings.projectFile);

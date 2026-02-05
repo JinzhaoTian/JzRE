@@ -12,13 +12,15 @@
 #include "JzRE/Editor/UI/JzIcon.h"
 #include "JzRE/Editor/UI/JzSeparator.h"
 #include "JzRE/Editor/UI/JzTextClickable.h"
+#include "JzRE/Runtime/Function/Project/JzProjectManager.h"
 #include "JzRE/Runtime/Resource/JzAssetManager.h"
 #include "JzRE/Runtime/Resource/JzTexture.h"
 
 JzRE::JzAssetBrowser::JzAssetBrowser(const JzRE::String &name, JzRE::Bool is_opened) :
     JzPanelWindow(name, is_opened)
 {
-    m_openDirectory = std::filesystem::current_path();
+    auto &projectManager = JzServiceContainer::Get<JzProjectManager>();
+    m_openDirectory      = projectManager.GetProjectFilePath().parent_path();
 
     auto &refreshButton             = CreateWidget<JzButton>("Refresh");
     refreshButton.buttonIdleColor   = "#e3c79f";
