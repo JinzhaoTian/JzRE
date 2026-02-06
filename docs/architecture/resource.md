@@ -589,6 +589,49 @@ for (auto entity : view) {
 | `JzTextureDirtyTag` | Texture file modified, reloaded            |
 | `JzMaterialDirtyTag`| Material definition modified               |
 
+## Asset Import/Export
+
+The engine provides `JzAssetImporter` and `JzAssetExporter` services for moving assets into and out of a project.
+
+### JzAssetImporter
+
+Located in `src/Runtime/Function/include/JzRE/Runtime/Function/Asset/JzAssetImporter.h`.
+
+Imports external files into the project's `Content/` directory:
+
+- Detects file type via `JzFileSystemUtils::GetFileType()` and routes to the correct subdirectory (`Models/`, `Textures/`, `Shaders/`, `Materials/`, `Fonts/`, `Sounds/`)
+- Creates target directories if they don't exist
+- Supports overwrite control and manual subfolder override via `JzImportOptions`
+- Marks the project as dirty after successful import
+
+```cpp
+auto& importer = JzServiceContainer::Get<JzAssetImporter>();
+auto result = importer.ImportFile("C:/Downloads/character.fbx");
+// Copies to: <ProjectRoot>/Content/Models/character.fbx
+```
+
+### JzAssetExporter
+
+Located in `src/Runtime/Function/include/JzRE/Runtime/Function/Asset/JzAssetExporter.h`.
+
+Exports project assets to an external directory:
+
+- Optionally preserves the `Content/` subfolder structure at the destination
+- Supports single-file and batch export
+- Overwrite control via `JzExportOptions`
+
+```cpp
+auto& exporter = JzServiceContainer::Get<JzAssetExporter>();
+auto result = exporter.ExportFile("Content/Models/character.fbx", "C:/Export/");
+// Copies to: C:/Export/Models/character.fbx (with preserveSubfolders=true)
+```
+
+### Design Note
+
+Import and export are file-copy operations, decoupled from `JzAssetManager`'s GPU resource lifecycle. After import, assets become discoverable by the asset manager through existing search paths. Loading into GPU memory happens separately when assets are actually used.
+
+---
+
 ## Future Plans
 
 > [!NOTE]

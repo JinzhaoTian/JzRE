@@ -17,6 +17,9 @@
 #include "JzRE/Runtime/Function/ECS/JzWorld.h"
 #include "JzRE/Runtime/Function/ECS/JzInputComponents.h"
 #include "JzRE/Runtime/Function/ECS/JzWindowComponents.h"
+#include "JzRE/Runtime/Function/Asset/JzAssetImporter.h"
+#include "JzRE/Runtime/Function/Asset/JzAssetExporter.h"
+#include "JzRE/Runtime/Function/Project/JzProjectManager.h"
 #include "JzRE/Runtime/Platform/Dialog/JzOpenFileDialog.h"
 
 JzRE::JzMenuBar::JzMenuBar(JzRE::JzWindowSystem &windowSystem) :
@@ -26,7 +29,7 @@ JzRE::JzMenuBar::JzMenuBar(JzRE::JzWindowSystem &windowSystem) :
     // CreateBuildMenu();
     CreateWindowMenu();
     // CreateActorsMenu();
-    // CreateResourcesMenu();
+    CreateResourcesMenu();
     // CreateToolsMenu();
     CreateSettingsMenu();
     // CreateLayoutMenu();
@@ -59,6 +62,24 @@ void JzRE::JzMenuBar::HandleShortcuts(F32 deltaTime)
                 // EDITOR_EXEC(SaveSceneChanges());
             } else {
                 // EDITOR_EXEC(SaveAs());
+            }
+        }
+
+        if (input.keyboard.IsKeyDown(JzEKeyCode::I)) {
+            if (JzServiceContainer::Has<JzProjectManager>() &&
+                JzServiceContainer::Get<JzProjectManager>().HasLoadedProject()) {
+                JzOpenFileDialog dialog("Import Asset");
+                auto filters = JzAssetImporter::GetSupportedFileFilters();
+                for (const auto &[label, filter] : filters) {
+                    dialog.AddFileType(label, filter);
+                }
+                dialog.AddFileType("All Files", "*.*");
+                dialog.Show(JzEFileDialogType::OpenFile);
+
+                if (dialog.HasSucceeded()) {
+                    auto &importer = JzServiceContainer::Get<JzAssetImporter>();
+                    importer.ImportFile(dialog.GetSelectedFilePath());
+                }
             }
         }
     }
@@ -138,6 +159,27 @@ void JzRE::JzMenuBar::CreateFileMenu()
         }
     };
 
+    auto &importAssetMenu         = fileMenu.CreateWidget<JzMenuItem>("Import Asset...", "CTRL + I");
+    importAssetMenu.ClickedEvent += [] {
+        if (!JzServiceContainer::Has<JzProjectManager>() ||
+            !JzServiceContainer::Get<JzProjectManager>().HasLoadedProject()) {
+            return;
+        }
+
+        JzOpenFileDialog dialog("Import Asset");
+        auto filters = JzAssetImporter::GetSupportedFileFilters();
+        for (const auto &[label, filter] : filters) {
+            dialog.AddFileType(label, filter);
+        }
+        dialog.AddFileType("All Files", "*.*");
+        dialog.Show(JzEFileDialogType::OpenFile);
+
+        if (dialog.HasSucceeded()) {
+            auto &importer = JzServiceContainer::Get<JzAssetImporter>();
+            importer.ImportFile(dialog.GetSelectedFilePath());
+        }
+    };
+
     fileMenu.CreateWidget<JzSeparator>();
 
     auto &closeFileFolderMenu         = fileMenu.CreateWidget<JzMenuItem>("Close File Folder", "CTRL + K F");
@@ -170,6 +212,58 @@ void JzRE::JzMenuBar::CreateActorsMenu() { }
 void JzRE::JzMenuBar::CreateResourcesMenu()
 {
     auto &resourcesMenu = CreateWidget<JzMenuList>("Resources");
+
+    auto &importItem         = resourcesMenu.CreateWidget<JzMenuItem>("Import Asset...");
+    importItem.ClickedEvent += [] {
+        if (!JzServiceContainer::Has<JzProjectManager>() ||
+            !JzServiceContainer::Get<JzProjectManager>().HasLoadedProject()) {
+            return;
+        }
+
+        JzOpenFileDialog dialog("Import Asset");
+        auto filters = JzAssetImporter::GetSupportedFileFilters();
+        for (const auto &[label, filter] : filters) {
+            dialog.AddFileType(label, filter);
+        }
+        dialog.AddFileType("All Files", "*.*");
+        dialog.Show(JzEFileDialogType::OpenFile);
+
+        if (dialog.HasSucceeded()) {
+            auto &importer = JzServiceContainer::Get<JzAssetImporter>();
+            importer.ImportFile(dialog.GetSelectedFilePath());
+        }
+    };
+
+    auto &exportItem         = resourcesMenu.CreateWidget<JzMenuItem>("Export Asset...");
+    exportItem.ClickedEvent += [] {
+        if (!JzServiceContainer::Has<JzProjectManager>() ||
+            !JzServiceContainer::Get<JzProjectManager>().HasLoadedProject()) {
+            return;
+        }
+
+        JzOpenFileDialog dialog("Select Export Destination");
+        dialog.Show(JzEFileDialogType::OpenFolder);
+
+        if (dialog.HasSucceeded()) {
+            auto        &projectManager = JzServiceContainer::Get<JzProjectManager>();
+            const auto   contentPath    = projectManager.GetConfig().GetContentPath();
+            auto        &exporter       = JzServiceContainer::Get<JzAssetExporter>();
+
+            // Export all files from the Content directory
+            std::vector<std::filesystem::path> assetPaths;
+            if (std::filesystem::exists(contentPath)) {
+                for (const auto &entry : std::filesystem::recursive_directory_iterator(contentPath)) {
+                    if (entry.is_regular_file()) {
+                        assetPaths.push_back(entry.path());
+                    }
+                }
+            }
+
+            if (!assetPaths.empty()) {
+                exporter.ExportFiles(assetPaths, dialog.GetSelectedFilePath());
+            }
+        }
+    };
 }
 
 void JzRE::JzMenuBar::CreateToolsMenu()

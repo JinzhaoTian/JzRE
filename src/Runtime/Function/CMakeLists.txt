@@ -16,6 +16,9 @@ file(GLOB RENDERING_SOURCES CONFIGURE_DEPENDS "src/Rendering/*.cpp")
 # Project sources
 file(GLOB PROJECT_SOURCES CONFIGURE_DEPENDS "src/Project/*.cpp")
 
+# Asset sources (import/export services)
+file(GLOB ASSET_SOURCES CONFIGURE_DEPENDS "src/Asset/*.cpp")
+
 # Combine all sources
 set(ALL_FUNCTION_SOURCES
     ${FUNCTION_HEADERS}
@@ -23,6 +26,7 @@ set(ALL_FUNCTION_SOURCES
     ${SCENE_SOURCES}
     ${RENDERING_SOURCES}
     ${PROJECT_SOURCES}
+    ${ASSET_SOURCES}
 )
 
 target_sources(JzRuntimeFunction PRIVATE ${ALL_FUNCTION_SOURCES})

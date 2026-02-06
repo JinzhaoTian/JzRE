@@ -15,6 +15,8 @@
 #include "JzRE/Runtime/Function/Project/JzProjectManager.h"
 #include "JzRE/Runtime/Resource/JzAssetManager.h"
 #include "JzRE/Runtime/Resource/JzTexture.h"
+#include "JzRE/Runtime/Function/Asset/JzAssetImporter.h"
+#include "JzRE/Runtime/Platform/Dialog/JzOpenFileDialog.h"
 
 JzRE::JzAssetBrowser::JzAssetBrowser(const JzRE::String &name, JzRE::Bool is_opened) :
     JzPanelWindow(name, is_opened)
@@ -32,8 +34,32 @@ JzRE::JzAssetBrowser::JzAssetBrowser(const JzRE::String &name, JzRE::Bool is_ope
     importButton.buttonIdleColor   = "#b5120f";
     importButton.buttonLabelColor  = "#003153";
     importButton.lineBreak         = true;
-    importButton.ClickedEvent     += []() {
-        // TODO
+    importButton.ClickedEvent     += [this]() {
+        auto &projectManager = JzServiceContainer::Get<JzProjectManager>();
+        if (!projectManager.HasLoadedProject()) {
+            JzRE_LOG_WARN("Cannot import: no project loaded");
+            return;
+        }
+
+        JzOpenFileDialog dialog("Import Asset");
+        auto filters = JzAssetImporter::GetSupportedFileFilters();
+        for (const auto &[label, filter] : filters) {
+            dialog.AddFileType(label, filter);
+        }
+        dialog.AddFileType("All Files", "*.*");
+        dialog.Show(JzEFileDialogType::OpenFile);
+
+        if (dialog.HasSucceeded()) {
+            auto &importer = JzServiceContainer::Get<JzAssetImporter>();
+            auto  result   = importer.ImportFile(dialog.GetSelectedFilePath());
+
+            if (result.result == JzEImportResult::Success) {
+                JzRE_LOG_INFO("Asset imported: {}", result.destinationPath.string());
+                Refresh();
+            } else {
+                JzRE_LOG_ERROR("Asset import failed: {}", result.errorMessage);
+            }
+        }
     };
 
     CreateWidget<JzSeparator>();

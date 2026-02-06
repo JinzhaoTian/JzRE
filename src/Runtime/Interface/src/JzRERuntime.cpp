@@ -24,6 +24,10 @@
 #include "JzRE/Runtime/Resource/JzTextureFactory.h"
 #include "JzRE/Runtime/Resource/JzMaterialFactory.h"
 
+// Asset import/export services
+#include "JzRE/Runtime/Function/Asset/JzAssetImporter.h"
+#include "JzRE/Runtime/Function/Asset/JzAssetExporter.h"
+
 JzRE::JzRERuntime::JzRERuntime(const JzRERuntimeSettings &settings) :
     m_settings(settings)
 {
@@ -207,6 +211,12 @@ void JzRE::JzRERuntime::InitializeSubsystems()
         m_assetSystem->AddSearchPath((enginePath / "resources" / "textures").string());
         m_assetSystem->AddSearchPath((enginePath / "resources" / "shaders").string());
     }
+
+    // Create and register asset import/export services
+    m_assetImporter = std::make_unique<JzAssetImporter>();
+    m_assetExporter = std::make_unique<JzAssetExporter>();
+    JzServiceContainer::Provide<JzAssetImporter>(*m_assetImporter);
+    JzServiceContainer::Provide<JzAssetExporter>(*m_assetExporter);
 }
 
 void JzRE::JzRERuntime::PreloadAssets()
@@ -257,6 +267,12 @@ void JzRE::JzRERuntime::SaveGameState()
 
 void JzRE::JzRERuntime::ShutdownSubsystems()
 {
+    // Shutdown asset import/export services
+    JzServiceContainer::Remove<JzAssetImporter>();
+    JzServiceContainer::Remove<JzAssetExporter>();
+    m_assetImporter.reset();
+    m_assetExporter.reset();
+
     // Shutdown all subsystems in reverse order of initialization
     m_renderSystem.reset();
     m_lightSystem.reset();

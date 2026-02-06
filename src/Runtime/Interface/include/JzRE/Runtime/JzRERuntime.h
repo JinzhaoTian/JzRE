@@ -24,6 +24,10 @@
 
 namespace JzRE {
 
+// Forward declarations for asset import/export services
+class JzAssetImporter;
+class JzAssetExporter;
+
 struct JzRERuntimeSettings {
     String                windowTitle = "JzRE Runtime";
     JzIVec2               windowSize  = {1280, 720};
@@ -200,6 +204,10 @@ protected:
     std::shared_ptr<JzRenderSystem> m_renderSystem;
     std::shared_ptr<JzAssetSystem>  m_assetSystem;
     std::shared_ptr<JzEventSystem>  m_eventSystem;
+
+    // Asset import/export services
+    std::unique_ptr<JzAssetImporter> m_assetImporter;
+    std::unique_ptr<JzAssetExporter> m_assetExporter;
 
     JzEntity m_mainCameraEntity = INVALID_ENTITY;
     JzEntity m_windowEntity     = INVALID_ENTITY; ///< Primary window ECS entity
