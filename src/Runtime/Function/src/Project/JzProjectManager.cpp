@@ -262,6 +262,10 @@ const std::filesystem::path& JzProjectManager::GetProjectFilePath() const {
     return m_projectFilePath;
 }
 
+std::filesystem::path JzProjectManager::GetContentPath() const {
+    return GetConfig().GetContentPath();
+}
+
 Bool JzProjectManager::HasUnsavedChanges() const {
     return m_isDirty;
 }

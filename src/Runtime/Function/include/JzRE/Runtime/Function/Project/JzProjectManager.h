@@ -130,6 +130,12 @@ public:
     [[nodiscard]] const std::filesystem::path& GetProjectFilePath() const;
 
     /**
+     * @brief Get the absolute path to the project's content/asset directory.
+     * @throws std::runtime_error if no project is loaded
+     */
+    [[nodiscard]] std::filesystem::path GetContentPath() const;
+
+    /**
      * @brief Check if the project has unsaved changes.
      */
     [[nodiscard]] Bool HasUnsavedChanges() const;
