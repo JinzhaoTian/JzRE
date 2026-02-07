@@ -43,6 +43,13 @@ void JzRE::JzEditorUI::InitializePanels()
 
     m_panelsManager->GetPanelAs<JzMenuBar>("Menu Bar").InitializeSettingsMenu();
 
+    // Wire Asset Browser selection to Asset View preview
+    auto &assetBrowser = m_panelsManager->GetPanelAs<JzAssetBrowser>("Asset Browser");
+    auto &assetView    = m_panelsManager->GetPanelAs<JzAssetView>("Asset View");
+    assetBrowser.AssetSelectedEvent += [&assetView](std::filesystem::path path) {
+        assetView.PreviewAsset(path);
+    };
+
     const auto layoutConfigPath = std::filesystem::current_path() / "config" / "layout.ini";
     m_uiManager->ResetLayout(layoutConfigPath.string());
     m_uiManager->SetEditorLayoutSaveFilename(layoutConfigPath.string());
@@ -84,6 +91,12 @@ void JzRE::JzEditorUI::Update(JzRE::F32 deltaTime)
     auto &sceneView = m_panelsManager->GetPanelAs<JzSceneView>("Scene View");
     if (sceneView.IsOpened()) {
         sceneView.Update(deltaTime);
+    }
+
+    // Update AssetView logic (orbit camera for model preview)
+    auto &assetView = m_panelsManager->GetPanelAs<JzAssetView>("Asset View");
+    if (assetView.IsOpened()) {
+        assetView.Update(deltaTime);
     }
 }
 

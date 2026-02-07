@@ -7,6 +7,7 @@
 
 #include <filesystem>
 #include "JzRE/Runtime/Core/JzRETypes.h"
+#include "JzRE/Editor/Core/JzEvent.h"
 #include "JzRE/Editor/UI/JzPanelWindow.h"
 #include "JzRE/Editor/UI/JzGroup.h"
 #include "JzRE/Editor/UI/JzTreeNode.h"
@@ -39,6 +40,9 @@ public:
      * @brief Refresh the asset browser panel
      */
     void Refresh();
+
+public:
+    JzEvent<std::filesystem::path> AssetSelectedEvent;
 
 private:
     void _TraverseDirectory(JzTreeNode &root, const std::filesystem::path &path);

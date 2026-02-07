@@ -22,7 +22,7 @@ JzRE::JzAssetBrowser::JzAssetBrowser(const JzRE::String &name, JzRE::Bool is_ope
     JzPanelWindow(name, is_opened)
 {
     auto &projectManager = JzServiceContainer::Get<JzProjectManager>();
-    m_openDirectory      = projectManager.GetProjectFilePath().parent_path();
+    m_openDirectory      = projectManager.GetContentPath();
 
     auto &refreshButton             = CreateWidget<JzButton>("Refresh");
     refreshButton.buttonIdleColor   = "#e3c79f";
@@ -166,5 +166,7 @@ void JzRE::JzAssetBrowser::_AddFileItem(JzRE::JzTreeNode *root, const std::files
     contextMenu.RenamedEvent   += [&clickableText](std::filesystem::path p_prev, std::filesystem::path p_newPath) { };
     contextMenu.DuplicateEvent += [this, &clickableText](std::filesystem::path newItem) { };
 
-    clickableText.DoubleClickedEvent += []() { };
+    clickableText.DoubleClickedEvent += [this, path]() {
+        AssetSelectedEvent.Invoke(path);
+    };
 }
