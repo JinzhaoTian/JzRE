@@ -19,11 +19,6 @@ JzView::JzView(const String &name, Bool is_opened) :
 {
     m_frame    = &CreateWidget<JzFrame>();
     scrollable = false;
-
-    // Register render target if view is opened
-    if (is_opened) {
-        RegisterRenderTarget();
-    }
 }
 
 JzView::~JzView()
@@ -110,6 +105,12 @@ void JzView::UnregisterRenderTarget()
 
 void JzView::UpdateFrameTexture()
 {
+    // Register render target lazily so derived overrides provide correct names.
+    if (IsOpened() && m_viewHandle == JzRenderSystem::INVALID_VIEW_HANDLE &&
+        JzServiceContainer::Has<JzRenderSystem>()) {
+        RegisterRenderTarget();
+    }
+
     auto size = GetSafeSize();
     if (size.x <= 0 || size.y <= 0) {
         return;

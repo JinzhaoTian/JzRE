@@ -174,6 +174,7 @@ void JzRE::JzRERuntime::RegisterSystems()
     m_cameraSystem = m_world->RegisterSystem<JzCameraSystem>();
     m_lightSystem  = m_world->RegisterSystem<JzLightSystem>();
     m_renderSystem = m_world->RegisterSystem<JzRenderSystem>();
+    JzServiceContainer::Provide<JzRenderSystem>(*m_renderSystem);
 }
 
 void JzRE::JzRERuntime::InitializeSubsystems()
@@ -274,6 +275,7 @@ void JzRE::JzRERuntime::ShutdownSubsystems()
     m_assetExporter.reset();
 
     // Shutdown all subsystems in reverse order of initialization
+    JzServiceContainer::Remove<JzRenderSystem>();
     m_renderSystem.reset();
     m_lightSystem.reset();
     m_cameraSystem.reset();

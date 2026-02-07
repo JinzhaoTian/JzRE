@@ -25,11 +25,13 @@ void JzCameraSystem::Update(JzWorld &world, F32 delta)
     for (auto entity : view) {
         auto &camera = world.GetComponent<JzCameraComponent>(entity);
 
-        // Update aspect ratio from window state component
-        auto windowView = world.View<JzWindowStateComponent>();
-        if (!windowView.empty()) {
-            const auto &windowState = world.GetComponent<JzWindowStateComponent>(windowView.front());
-            camera.aspect           = windowState.GetAspectRatio();
+        // Update aspect ratio from window state component for the main camera only.
+        if (camera.isMainCamera) {
+            auto windowView = world.View<JzWindowStateComponent>();
+            if (!windowView.empty()) {
+                const auto &windowState = world.GetComponent<JzWindowStateComponent>(windowView.front());
+                camera.aspect           = windowState.GetAspectRatio();
+            }
         }
 
         // Handle orbit controller if present

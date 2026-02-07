@@ -353,6 +353,8 @@ m_assetSystem  = m_world->RegisterSystem<JzAssetSystem>();
 
 **Note:** `JzEventSystem` is stored in `JzWorld` context (accessed via `world.GetContext<JzEventSystem>()`), not registered as a system.
 
+**Camera Aspect Policy:** `JzCameraSystem` updates the aspect ratio from the primary window only for the main camera. View-specific cameras (e.g., editor preview cameras) are expected to set their own aspect based on the render target size.
+
 ---
 
 ## Components

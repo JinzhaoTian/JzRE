@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document describes the ECS-based rendering pipeline in JzRE. The rendering is handled by three cooperating systems within `JzWorld`, organized into distinct execution phases for proper synchronization between logic and rendering.
+This document describes the ECS-based rendering pipeline in JzRE. The rendering is handled by systems registered in `JzWorld` and executed in registration order each frame. Editor views (SceneView/AssetView/GameView) register render targets with `JzRenderSystem` lazily (after construction, once the render system is available) and display the generated textures in ImGui.
 
 ---
 
@@ -11,17 +11,13 @@ This document describes the ECS-based rendering pipeline in JzRE. The rendering 
 ```
 JzRERuntime
   └── JzWorld
-        ├── Input Systems        (JzSystemPhase::Input)
-        │     ├── JzWindowSystem - Window polling, input state sync
-        │     └── JzInputSystem  - Input processing, event emission
-        ├── Logic Systems        (JzSystemPhase::Logic)
-        │     ├── JzAssetSystem  - Asset loading, hot reload
-        │     └── User logic systems (movement, physics, AI, animations)
-        ├── PreRender Systems    (JzSystemPhase::PreRender)
-        │     ├── JzCameraSystem - Camera matrices, orbit control
-        │     └── JzLightSystem  - Light data collection
-        └── Render Systems       (JzSystemPhase::Render)
-              └── JzRenderSystem - Framebuffer, pipeline, rendering
+        ├── JzWindowSystem - Window polling, input state sync
+        ├── JzInputSystem  - Input processing, event emission
+        ├── JzEventSystem  - Event dispatch
+        ├── JzAssetSystem  - Asset loading, hot reload
+        ├── JzCameraSystem - Camera matrices, orbit control
+        ├── JzLightSystem  - Light data collection
+        └── JzRenderSystem - RenderGraph, targets, draw calls
 ```
 
 ### System Phases
@@ -51,7 +47,7 @@ Systems execute in 8 phases grouped into 3 categories:
 
 ## Frame Execution Flow
 
-The main loop in `JzRERuntime::Run()` executes in 8 distinct phases:
+The main loop in `JzRERuntime::Run()` updates `JzWorld` once per frame. `JzWorld::Update()` runs registered systems in the order shown above.
 
 ```
 [Phase 1: Frame Start - Input and Window Events]
@@ -62,82 +58,14 @@ The main loop in `JzRERuntime::Run()` executes in 8 distinct phases:
    _SignalWorkerFrame(frameData)
    |
    v
-[Phase 3: ECS Logic Update (can run parallel with GPU)]
-   _UpdateECSLogic(frameData)
-     └── m_world->UpdateLogic(deltaTime)
-         └── All systems with JzSystemPhase::Logic
-   |
-   v
-[User Logic Hook]
-   OnUpdate(deltaTime)
-   |
-   v
-[Phase 4: Sync Point - Wait for Background Tasks]
-   _WaitForWorkerComplete()
-   |
-   v
-[Phase 5: ECS Pre-Render Update]
-   _UpdateECSPreRender(frameData)
-     ├── Update aspect ratio
-     ├── Update frame size
-     └── m_world->UpdatePreRender(deltaTime)
-         ├── JzCameraSystem::Update
-         │     ├── Process orbit controller (mouse input)
-         │     ├── Update camera position/rotation
-         │     ├── Compute view matrix (LookAt)
-         │     ├── Compute projection matrix (Perspective)
-         │     └── Cache main camera data
-         └── JzLightSystem::Update
-               ├── Query DirectionalLight entities
-               ├── Query PointLight entities
-               ├── Query SpotLight entities
-               └── Cache primary light direction/color
-   |
-   v
-[Phase 6: ECS Render Update]
-   _UpdateECSRender(frameData)
-     └── m_world->UpdateRender(deltaTime)
-         └── JzRenderSystem::Update
-               ├── Create/resize framebuffer if needed
-               ├── Build RenderGraph (phase 2: main pass + view passes)
-               │     ├── Bind framebuffer
-               │     ├── Set viewport
-               │     ├── Clear (color from camera)
-               │     ├── Get camera matrices from CameraSystem
-               │     ├── Get light data from LightSystem
-               │     ├── Set common uniforms
-               │     ├── Query entities with Transform + Mesh + Material
-               │     ├── For each entity:
-               │     │     ├── Compute model matrix
-               │     │     ├── Set material uniforms
-               │     │     ├── Bind vertex array
-               │     │     └── DrawIndexed
-               │     └── Unbind framebuffer
-               │
-               │     ├── For each registered view target:
-               │     │     ├── Ensure target size
-               │     │     ├── Bind target framebuffer
-               │     │     ├── Set viewport and clear
-               │     │     ├── Render filtered entities by tag mask
-               │     │     │     - JzEditorOnlyTag
-               │     │     │     - JzPreviewOnlyTag
-               │     │     │     - Untagged (game objects)
-               │     │     └── Unbind framebuffer
-               └── Execute RenderGraph passes
-   |
-   v
-[Phase 7: Execute Rendering]
-   _ExecuteRendering(frameData)
-     ├── m_renderSystem->BeginFrame()
-     ├── m_renderSystem->EndFrame()
-     ├── m_renderSystem->BlitToScreen() (if standalone)
-     └── OnRender(deltaTime) (ImGui UI)
-   |
-   v
-[Phase 8: Frame End]
-   _FinishFrame(frameData)
-     ├── m_window->SwapBuffers()
-     └── m_inputManager->ClearEvents()
+1. `OnUpdate(deltaTime)` runs editor/game logic (e.g., panel updates).
+2. `m_world->Update(deltaTime)` runs systems in registration order:
+   - `JzWindowSystem`/`JzInputSystem` update input and window state.
+   - `JzAssetSystem` updates asset state.
+   - `JzCameraSystem` computes view/projection matrices.
+   - `JzLightSystem` collects light data.
+   - `JzRenderSystem` builds/executes the RenderGraph.
+3. `OnRender(deltaTime)` draws ImGui UI (editor panels read from render targets).
 ```
 
 ---

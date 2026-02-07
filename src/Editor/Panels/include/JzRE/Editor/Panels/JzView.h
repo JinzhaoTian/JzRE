@@ -16,7 +16,7 @@ namespace JzRE {
 /**
  * @brief Base class for all view panels.
  *
- * Views register their render targets with RenderSystem during construction.
+ * Views register their render targets with RenderSystem lazily (first draw/update).
  * RenderSystem renders all registered targets during World::Update().
  * Views only display the pre-rendered texture in their _Draw_Impl().
  */
