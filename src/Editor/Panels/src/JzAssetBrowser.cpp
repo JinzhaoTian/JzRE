@@ -3,6 +3,7 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
+#include "JzRE/Runtime/Core/JzFileSystemUtils.h"
 #include "JzRE/Runtime/Core/JzLogger.h"
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
 #include "JzRE/Editor/Panels/JzAssetBrowser.h"
@@ -42,7 +43,7 @@ JzRE::JzAssetBrowser::JzAssetBrowser(const JzRE::String &name, JzRE::Bool is_ope
         }
 
         JzOpenFileDialog dialog("Import Asset");
-        auto filters = JzAssetImporter::GetSupportedFileFilters();
+        auto             filters = JzAssetImporter::GetSupportedFileFilters();
         for (const auto &[label, filter] : filters) {
             dialog.AddFileType(label, filter);
         }
@@ -51,13 +52,29 @@ JzRE::JzAssetBrowser::JzAssetBrowser(const JzRE::String &name, JzRE::Bool is_ope
 
         if (dialog.HasSucceeded()) {
             auto &importer = JzServiceContainer::Get<JzAssetImporter>();
-            auto  result   = importer.ImportFile(dialog.GetSelectedFilePath());
+            auto  filePath = dialog.GetSelectedFilePath();
+            auto  fileType = JzFileSystemUtils::GetFileType(filePath.string());
 
-            if (result.result == JzEImportResult::Success) {
-                JzRE_LOG_INFO("Asset imported: {}", result.destinationPath.string());
-                Refresh();
+            if (fileType == JzEFileType::MODEL) {
+                auto modelResult = importer.ImportModelWithDependencies(filePath);
+
+                if (modelResult.modelEntry.result == JzEImportResult::Success) {
+                    JzRE_LOG_INFO("Model imported: {} ({} dependencies)",
+                                      modelResult.modelEntry.destinationPath.string(),
+                                      modelResult.dependencyEntries.size());
+                    Refresh();
+                } else {
+                    JzRE_LOG_ERROR("Model import failed: {}", modelResult.modelEntry.errorMessage);
+                }
             } else {
-                JzRE_LOG_ERROR("Asset import failed: {}", result.errorMessage);
+                auto result = importer.ImportFile(filePath);
+
+                if (result.result == JzEImportResult::Success) {
+                    JzRE_LOG_INFO("Asset imported: {}", result.destinationPath.string());
+                    Refresh();
+                } else {
+                    JzRE_LOG_ERROR("Asset import failed: {}", result.errorMessage);
+                }
             }
         }
     };
@@ -115,9 +132,9 @@ void JzRE::JzAssetBrowser::_AddDirectoryItem(JzRE::JzTreeNode *root, const std::
     const auto itemName = path.filename().string();
 
     /* Find the icon to apply to the item */
-    auto      &assetManager = JzServiceContainer::Get<JzAssetManager>();
-    auto       iconHandle   = assetManager.GetOrLoad<JzTexture>("icons/folder-16.png");
-    auto       iconTexture  = assetManager.GetShared(iconHandle);
+    auto &assetManager = JzServiceContainer::Get<JzAssetManager>();
+    auto  iconHandle   = assetManager.GetOrLoad<JzTexture>("icons/folder-16.png");
+    auto  iconTexture  = assetManager.GetShared(iconHandle);
 
     auto &iconItem     = itemGroup.CreateWidget<JzIcon>(iconTexture->GetRhiTexture(), JzVec2{16, 16});
     iconItem.lineBreak = false;
@@ -151,9 +168,9 @@ void JzRE::JzAssetBrowser::_AddFileItem(JzRE::JzTreeNode *root, const std::files
     const auto itemName = path.filename().string();
 
     /* Find the icon to apply to the item */
-    auto      &assetManager = JzServiceContainer::Get<JzAssetManager>();
-    auto       iconHandle   = assetManager.GetOrLoad<JzTexture>("icons/file-16.png");
-    auto       iconTexture  = assetManager.GetShared(iconHandle);
+    auto &assetManager = JzServiceContainer::Get<JzAssetManager>();
+    auto  iconHandle   = assetManager.GetOrLoad<JzTexture>("icons/file-16.png");
+    auto  iconTexture  = assetManager.GetShared(iconHandle);
 
     auto &iconItem     = itemGroup.CreateWidget<JzIcon>(iconTexture->GetRhiTexture(), JzVec2{16, 16});
     iconItem.lineBreak = false;

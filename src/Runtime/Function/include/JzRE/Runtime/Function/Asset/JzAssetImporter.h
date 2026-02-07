@@ -45,6 +45,15 @@ struct JzImportResultEntry {
 };
 
 /**
+ * @brief Result of importing a model with its dependencies.
+ */
+struct JzModelImportResult {
+    JzImportResultEntry              modelEntry;          ///< The main model file result
+    std::vector<JzImportResultEntry> dependencyEntries;   ///< MTL, textures, etc.
+    Bool                             allSucceeded{false}; ///< True if every file imported OK
+};
+
+/**
  * @brief Service that imports external asset files into the project Content directory.
  *
  * Responsibilities:
@@ -66,8 +75,8 @@ public:
      * @param options Import options
      * @return Result entry describing what happened
      */
-    JzImportResultEntry ImportFile(const std::filesystem::path& sourcePath,
-                                   const JzImportOptions& options = {});
+    JzImportResultEntry ImportFile(const std::filesystem::path &sourcePath,
+                                   const JzImportOptions       &options = {});
 
     /**
      * @brief Import multiple files into the project.
@@ -76,8 +85,23 @@ public:
      * @return Vector of result entries, one per input file
      */
     std::vector<JzImportResultEntry> ImportFiles(
-        const std::vector<std::filesystem::path>& sourcePaths,
-        const JzImportOptions& options = {});
+        const std::vector<std::filesystem::path> &sourcePaths,
+        const JzImportOptions                    &options = {});
+
+    /**
+     * @brief Import a model file along with all its dependencies (MTL, textures).
+     *
+     * The model and its dependencies are placed in a subfolder:
+     *   Content/Models/<stem>/
+     * where <stem> is the model filename without extension.
+     *
+     * @param modelPath   Absolute path to the model file (.obj, .fbx)
+     * @param options     Import options
+     * @return JzModelImportResult with details for each copied file
+     */
+    JzModelImportResult ImportModelWithDependencies(
+        const std::filesystem::path &modelPath,
+        const JzImportOptions       &options = {});
 
     /**
      * @brief Get the target subdirectory for a file type.
@@ -105,13 +129,35 @@ private:
     /**
      * @brief Resolve the destination path within Content/ for a source file.
      */
-    std::filesystem::path ResolveDestination(const std::filesystem::path& sourcePath,
-                                              const JzImportOptions& options);
+    std::filesystem::path ResolveDestination(const std::filesystem::path &sourcePath,
+                                             const JzImportOptions       &options);
 
     /**
      * @brief Ensure the target directory exists, creating it if necessary.
      */
-    static Bool EnsureDirectoryExists(const std::filesystem::path& dirPath);
+    static Bool EnsureDirectoryExists(const std::filesystem::path &dirPath);
+
+    /**
+     * @brief Discover all files referenced by a model file.
+     *
+     * For .obj files, parses the mtllib directive to find .mtl files,
+     * then parses .mtl files for texture map directives.
+     *
+     * @param modelPath  Absolute path to the model file
+     * @return Vector of absolute paths to dependency files that exist on disk
+     */
+    std::vector<std::filesystem::path> DiscoverModelDependencies(
+        const std::filesystem::path &modelPath);
+
+    /**
+     * @brief Parse an OBJ file to extract mtllib references.
+     */
+    static std::vector<String> ParseObjMtlLibs(const std::filesystem::path &objPath);
+
+    /**
+     * @brief Parse an MTL file to extract texture map references.
+     */
+    static std::vector<String> ParseMtlTextures(const std::filesystem::path &mtlPath);
 };
 
 } // namespace JzRE
