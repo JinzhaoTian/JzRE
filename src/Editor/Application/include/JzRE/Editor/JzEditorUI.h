@@ -8,6 +8,7 @@
 #include "JzRE/Editor/Panels/JzCanvas.h"
 #include "JzRE/Editor/Panels/JzUIManager.h"
 #include "JzRE/Editor/Panels/JzPanelsManager.h"
+#include "JzRE/Editor/Core/JzEditorState.h"
 
 namespace JzRE {
 
@@ -68,9 +69,10 @@ private:
     void RenderEditorUI(F32 deltaTime);
 
 private:
-    JzRERuntime                     *m_runtime = nullptr;
-    std::unique_ptr<JzCanvas>        m_canvas;
-    std::unique_ptr<JzPanelsManager> m_panelsManager;
-    std::unique_ptr<JzUIManager>     m_uiManager;
+    JzRERuntime                       *m_runtime = nullptr;
+    std::unique_ptr<JzCanvas>          m_canvas;
+    std::unique_ptr<JzPanelsManager>   m_panelsManager;
+    std::unique_ptr<JzUIManager>       m_uiManager;
+    std::unique_ptr<JzEditorState>     m_editorState;
 };
 } // namespace JzRE

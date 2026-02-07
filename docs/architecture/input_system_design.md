@@ -102,6 +102,12 @@ Processed input specifically for camera control:
 - Scroll delta for zoom
 - Reset request flag
 
+#### JzEditorCameraInputOverrideTag
+
+Editor-only tag to opt a camera out of automatic input syncing in `JzInputSystem`.  
+When present, editor panels (e.g., Scene View) write `JzCameraInputComponent`
+directly to keep viewport input isolated from global window input.
+
 ### System Flow Example: Camera Control
 
 ```cpp
@@ -114,6 +120,7 @@ Processed input specifically for camera control:
    ↓ Reads JzInputStateComponent from primary window
    ↓ Syncs JzMouseInputComponent, JzKeyboardInputComponent
    ↓ Syncs JzCameraInputStateComponent
+   ↓ Skips `JzCameraInputComponent` update for entities tagged with `JzEditorCameraInputOverrideTag`
    ↓ Updates JzInputActionComponent action values
    ↓ Emits ECS input events
 

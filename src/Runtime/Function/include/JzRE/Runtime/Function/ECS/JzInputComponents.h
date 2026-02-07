@@ -427,6 +427,15 @@ struct JzCameraInputStateComponent {
     Bool   speedBoost{false};               ///< Shift key held for faster movement
 };
 
+/**
+ * @brief Tag component for editor-controlled camera input.
+ *
+ * Entities with this tag are excluded from JzInputSystem's automatic
+ * camera input synchronization, allowing editor panels to drive
+ * camera input explicitly and stay isolated from global input.
+ */
+struct JzEditorCameraInputOverrideTag { };
+
 // ==================== Legacy Input Components ====================
 // Note: For comprehensive input state, use JzInputStateComponent and
 // JzInputActionComponent above. These legacy components

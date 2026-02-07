@@ -138,25 +138,42 @@ void JzRE::JzAssetView::PreviewModel(const std::filesystem::path &path)
 
 void JzRE::JzAssetView::CleanupPreviewEntities()
 {
-    if (m_previewEntities.empty()) {
+    if (m_previewEntities.empty() && m_previewCamera == INVALID_ENTITY && m_previewInputState == INVALID_ENTITY) {
         return;
     }
 
-    if (!JzServiceContainer::Has<JzAssetSystem>() || !JzServiceContainer::Has<JzWorld>()) {
+    if (!JzServiceContainer::Has<JzWorld>()) {
         m_previewEntities.clear();
+        m_previewCamera     = INVALID_ENTITY;
+        m_previewInputState = INVALID_ENTITY;
         return;
     }
 
-    auto &assetSystem = JzServiceContainer::Get<JzAssetSystem>();
-    auto &world       = JzServiceContainer::Get<JzWorld>();
+    auto &world = JzServiceContainer::Get<JzWorld>();
 
-    for (auto entity : m_previewEntities) {
-        if (world.IsValid(entity)) {
-            assetSystem.DetachAllAssets(world, entity);
-            world.DestroyEntity(entity);
+    // Cleanup preview entities
+    if (!m_previewEntities.empty() && JzServiceContainer::Has<JzAssetSystem>()) {
+        auto &assetSystem = JzServiceContainer::Get<JzAssetSystem>();
+        for (auto entity : m_previewEntities) {
+            if (world.IsValid(entity)) {
+                assetSystem.DetachAllAssets(world, entity);
+                world.DestroyEntity(entity);
+            }
         }
+        m_previewEntities.clear();
     }
-    m_previewEntities.clear();
+
+    // Cleanup preview camera
+    if (m_previewCamera != INVALID_ENTITY && world.IsValid(m_previewCamera)) {
+        world.DestroyEntity(m_previewCamera);
+        m_previewCamera = INVALID_ENTITY;
+    }
+
+    // Cleanup preview input state
+    if (m_previewInputState != INVALID_ENTITY && world.IsValid(m_previewInputState)) {
+        world.DestroyEntity(m_previewInputState);
+        m_previewInputState = INVALID_ENTITY;
+    }
 }
 
 void JzRE::JzAssetView::CreatePreviewCamera()
@@ -209,10 +226,93 @@ void JzRE::JzAssetView::CreatePreviewCamera()
         RegisterRenderTarget();
     }
 
+    // Create dedicated input state for this preview
+    CreatePreviewInputState();
+
     // Update the render view with the new camera
     if (m_viewHandle != JzRenderSystem::INVALID_VIEW_HANDLE && JzServiceContainer::Has<JzRenderSystem>()) {
         auto &renderSystem = JzServiceContainer::Get<JzRenderSystem>();
         renderSystem.UpdateViewCamera(m_viewHandle, m_previewCamera);
+    }
+}
+
+void JzRE::JzAssetView::CreatePreviewInputState()
+{
+    if (m_previewInputState != INVALID_ENTITY) {
+        return;
+    }
+
+    if (!JzServiceContainer::Has<JzWorld>()) {
+        return;
+    }
+
+    auto &world         = JzServiceContainer::Get<JzWorld>();
+    m_previewInputState = world.CreateEntity();
+
+    // Add dedicated input state component for asset preview
+    world.AddComponent<JzInputStateComponent>(m_previewInputState);
+
+    // Initialize mouse position to avoid large delta on first frame
+    auto *inputState = world.TryGetComponent<JzInputStateComponent>(m_previewInputState);
+    if (inputState) {
+        // Get current mouse position from primary window
+        JzInputStateComponent *primaryInput = nullptr;
+        auto                   inputView    = world.View<JzInputStateComponent, JzPrimaryWindowTag>();
+        for (auto entity : inputView) {
+            primaryInput = &world.GetComponent<JzInputStateComponent>(entity);
+            break;
+        }
+        if (primaryInput) {
+            inputState->mouse.position     = primaryInput->mouse.position;
+            inputState->mouse.lastPosition = primaryInput->mouse.position;
+            m_lastMousePos                 = primaryInput->mouse.position;
+        }
+    }
+}
+
+void JzRE::JzAssetView::UpdatePreviewInputState()
+{
+    if (m_previewInputState == INVALID_ENTITY || !JzServiceContainer::Has<JzWorld>()) {
+        return;
+    }
+
+    auto &world = JzServiceContainer::Get<JzWorld>();
+
+    if (!world.IsValid(m_previewInputState)) {
+        m_previewInputState = INVALID_ENTITY;
+        return;
+    }
+
+    auto *previewInput = world.TryGetComponent<JzInputStateComponent>(m_previewInputState);
+    if (!previewInput) {
+        return;
+    }
+
+    // Copy primary window input state to preview input state
+    JzInputStateComponent *primaryInput = nullptr;
+    auto                   inputView    = world.View<JzInputStateComponent, JzPrimaryWindowTag>();
+    for (auto entity : inputView) {
+        primaryInput = &world.GetComponent<JzInputStateComponent>(entity);
+        break;
+    }
+    if (!primaryInput) {
+        return;
+    }
+
+    // Only update when panel is hovered/focused
+    if (IsHovered() || IsFocused()) {
+        previewInput->mouse.position       = primaryInput->mouse.position;
+        previewInput->mouse.scrollDelta    = primaryInput->mouse.scrollDelta;
+        previewInput->mouse.buttonsPressed = primaryInput->mouse.buttonsPressed;
+        previewInput->mouse.buttonsDown    = primaryInput->mouse.buttonsDown;
+        previewInput->mouse.buttonsUp      = primaryInput->mouse.buttonsUp;
+        previewInput->keyboard             = primaryInput->keyboard;
+    } else {
+        // Clear input state when not focused
+        previewInput->mouse.buttonsPressed.reset();
+        previewInput->mouse.buttonsDown.reset();
+        previewInput->mouse.buttonsUp.reset();
+        previewInput->mouse.scrollDelta = JzVec2(0.0f, 0.0f);
     }
 }
 
@@ -305,12 +405,14 @@ void JzRE::JzAssetView::Update(JzRE::F32 deltaTime)
         return;
     }
 
-    // Get primary window input state from ECS
+    // Ensure dedicated input state exists and is up to date
+    CreatePreviewInputState();
+    UpdatePreviewInputState();
+
+    // Use dedicated preview input state (isolated from scene view)
     JzInputStateComponent *inputState = nullptr;
-    auto                   inputView  = world.View<JzInputStateComponent, JzPrimaryWindowTag>();
-    for (auto entity : inputView) {
-        inputState = &world.GetComponent<JzInputStateComponent>(entity);
-        break;
+    if (m_previewInputState != INVALID_ENTITY && world.IsValid(m_previewInputState)) {
+        inputState = world.TryGetComponent<JzInputStateComponent>(m_previewInputState);
     }
     if (!inputState) return;
 

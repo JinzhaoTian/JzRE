@@ -24,6 +24,38 @@ class JzShaderVariant;
 // ==================== Asset Reference Components ====================
 
 /**
+ * @brief Component storing asset file paths for serialization
+ *
+ * This component stores the original file paths used to load assets.
+ * It enables scene serialization by preserving the path information
+ * that would otherwise be lost when converting to runtime handles.
+ *
+ * @note Asset handles are runtime-only (generational IDs). This component
+ *       provides the path information needed for save/load operations.
+ */
+struct JzAssetPathComponent {
+    String modelPath;    ///< Path to the model file (e.g., "Content/Models/cube.obj")
+    String materialPath; ///< Optional material override path
+    String shaderPath;   ///< Optional shader override path
+
+    JzAssetPathComponent() = default;
+
+    explicit JzAssetPathComponent(const String &model) :
+        modelPath(model) { }
+
+    JzAssetPathComponent(const String &model, const String &material) :
+        modelPath(model), materialPath(material) { }
+
+    /**
+     * @brief Check if this component has a valid model path
+     */
+    [[nodiscard]] Bool HasModelPath() const
+    {
+        return !modelPath.empty();
+    }
+};
+
+/**
  * @brief Mesh asset reference component
  *
  * This is a pure data component that references a mesh asset via handle

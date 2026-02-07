@@ -106,8 +106,7 @@ void JzView::UnregisterRenderTarget()
 void JzView::UpdateFrameTexture()
 {
     // Register render target lazily so derived overrides provide correct names.
-    if (IsOpened() && m_viewHandle == JzRenderSystem::INVALID_VIEW_HANDLE &&
-        JzServiceContainer::Has<JzRenderSystem>()) {
+    if (IsOpened() && m_viewHandle == JzRenderSystem::INVALID_VIEW_HANDLE && JzServiceContainer::Has<JzRenderSystem>()) {
         RegisterRenderTarget();
     }
 

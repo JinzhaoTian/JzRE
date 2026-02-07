@@ -171,6 +171,9 @@ void JzInputSystem::UpdateCameraInput(JzWorld &world)
     auto view = world.View<JzCameraInputComponent, JzMouseInputComponent>();
 
     for (auto entity : view) {
+        if (world.HasComponent<JzEditorCameraInputOverrideTag>(entity)) {
+            continue;
+        }
         auto &cameraInput = world.GetComponent<JzCameraInputComponent>(entity);
         auto &mouseInput  = world.GetComponent<JzMouseInputComponent>(entity);
 

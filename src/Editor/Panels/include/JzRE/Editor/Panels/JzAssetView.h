@@ -74,6 +74,8 @@ private:
     void PreviewModel(const std::filesystem::path &path);
     void CleanupPreviewEntities();
     void CreatePreviewCamera();
+    void CreatePreviewInputState();
+    void UpdatePreviewInputState();
 
 private:
     JzEPreviewMode        m_previewMode = JzEPreviewMode::None;
@@ -85,6 +87,9 @@ private:
     // Model preview
     std::vector<JzEntity> m_previewEntities;
     JzEntity              m_previewCamera = INVALID_ENTITY;
+
+    // Dedicated input state for asset preview (isolated from scene view)
+    JzEntity m_previewInputState = INVALID_ENTITY;
 
     // Orbit camera sensitivity (passed to JzOrbitControllerComponent)
     F32 m_orbitSensitivity = 0.005f;

@@ -24,14 +24,12 @@ void JzRE::JzSceneView::Update(JzRE::F32 deltaTime)
     JzView::Update(deltaTime);
 
     // Ensure the render target is registered when RenderSystem becomes available.
-    if (IsOpened() && m_viewHandle == JzRenderSystem::INVALID_VIEW_HANDLE &&
-        JzServiceContainer::Has<JzRenderSystem>()) {
+    if (IsOpened() && m_viewHandle == JzRenderSystem::INVALID_VIEW_HANDLE && JzServiceContainer::Has<JzRenderSystem>()) {
         RegisterRenderTarget();
     }
 
     // Keep the view camera binding up to date (main camera can be recreated).
-    if (m_viewHandle != JzRenderSystem::INVALID_VIEW_HANDLE &&
-        JzServiceContainer::Has<JzRenderSystem>()) {
+    if (m_viewHandle != JzRenderSystem::INVALID_VIEW_HANDLE && JzServiceContainer::Has<JzRenderSystem>()) {
         auto &renderSystem = JzServiceContainer::Get<JzRenderSystem>();
         renderSystem.UpdateViewCamera(m_viewHandle, GetCameraEntity());
     }
@@ -57,8 +55,15 @@ void JzRE::JzSceneView::Update(JzRE::F32 deltaTime)
 
     // Initialize camera on first update when JzWorld is available
     if (!m_cameraInitialized) {
+        FindEditorCamera();
         EnsureCameraInputComponent();
+        CreateSceneInputState();
         m_cameraInitialized = true;
+    }
+
+    // Re-find camera if it became invalid (e.g., scene reload)
+    if (m_editorCamera != INVALID_ENTITY && !world.IsValid(m_editorCamera)) {
+        FindEditorCamera();
     }
 
     // Get camera entity and its input component
@@ -85,12 +90,14 @@ void JzRE::JzSceneView::Update(JzRE::F32 deltaTime)
         return;
     }
 
-    // Get primary window input state from ECS
+    // Ensure dedicated input state exists and is up to date
+    CreateSceneInputState();
+    UpdateSceneInputState();
+
+    // Use dedicated scene input state (isolated from asset view)
     JzInputStateComponent *inputState = nullptr;
-    auto                   inputView  = world.View<JzInputStateComponent, JzPrimaryWindowTag>();
-    for (auto entity : inputView) {
-        inputState = &world.GetComponent<JzInputStateComponent>(entity);
-        break;
+    if (m_sceneInputState != INVALID_ENTITY && world.IsValid(m_sceneInputState)) {
+        inputState = world.TryGetComponent<JzInputStateComponent>(m_sceneInputState);
     }
     if (!inputState) return;
 
@@ -174,15 +181,28 @@ JzRE::JzEGizmoOperation JzRE::JzSceneView::GetGizmoOperation() const
     return m_currentOperation;
 }
 
+void JzRE::JzSceneView::SetSelectedEntity(JzRE::JzEntity entity)
+{
+    m_selectedEntity = entity;
+}
+
+JzRE::JzEntity JzRE::JzSceneView::GetSelectedEntity() const
+{
+    return m_selectedEntity;
+}
+
 void JzRE::JzSceneView::HandleActorPicking()
 {
+    if (!JzServiceContainer::Has<JzWorld>()) {
+        return;
+    }
+
     auto &world = JzServiceContainer::Get<JzWorld>();
 
+    // Use dedicated scene input state
     JzInputStateComponent *inputState = nullptr;
-    auto                   inputView  = world.View<JzInputStateComponent, JzPrimaryWindowTag>();
-    for (auto entity : inputView) {
-        inputState = &world.GetComponent<JzInputStateComponent>(entity);
-        break;
+    if (m_sceneInputState != INVALID_ENTITY && world.IsValid(m_sceneInputState)) {
+        inputState = world.TryGetComponent<JzInputStateComponent>(m_sceneInputState);
     }
     if (!inputState) return;
 
@@ -208,12 +228,22 @@ void JzRE::JzSceneView::EnsureCameraInputComponent()
     if (!world.HasComponent<JzCameraInputComponent>(camera)) {
         world.AddComponent<JzCameraInputComponent>(camera);
     }
+
+    // Tag editor camera so global input sync doesn't override panel input.
+    if (!world.HasComponent<JzEditorCameraInputOverrideTag>(camera)) {
+        world.AddComponent<JzEditorCameraInputOverrideTag>(camera);
+    }
 }
 
 JzRE::JzEntity JzRE::JzSceneView::GetCameraEntity()
 {
+    return m_editorCamera;
+}
+
+void JzRE::JzSceneView::FindEditorCamera()
+{
     if (!JzServiceContainer::Has<JzWorld>()) {
-        return INVALID_ENTITY;
+        return;
     }
 
     auto &world = JzServiceContainer::Get<JzWorld>();
@@ -223,9 +253,90 @@ JzRE::JzEntity JzRE::JzSceneView::GetCameraEntity()
     for (auto entity : view) {
         auto &camera = world.GetComponent<JzCameraComponent>(entity);
         if (camera.isMainCamera) {
-            return entity;
+            m_editorCamera = entity;
+            return;
         }
     }
 
-    return INVALID_ENTITY;
+    m_editorCamera = INVALID_ENTITY;
+}
+
+void JzRE::JzSceneView::CreateSceneInputState()
+{
+    if (m_sceneInputState != INVALID_ENTITY) {
+        return;
+    }
+
+    if (!JzServiceContainer::Has<JzWorld>()) {
+        return;
+    }
+
+    auto &world       = JzServiceContainer::Get<JzWorld>();
+    m_sceneInputState = world.CreateEntity();
+
+    // Add dedicated input state component for scene view
+    world.AddComponent<JzInputStateComponent>(m_sceneInputState);
+
+    // Initialize mouse position to avoid large delta on first frame
+    auto *inputState = world.TryGetComponent<JzInputStateComponent>(m_sceneInputState);
+    if (inputState) {
+        // Get current mouse position from primary window
+        JzInputStateComponent *primaryInput = nullptr;
+        auto                   inputView    = world.View<JzInputStateComponent, JzPrimaryWindowTag>();
+        for (auto entity : inputView) {
+            primaryInput = &world.GetComponent<JzInputStateComponent>(entity);
+            break;
+        }
+        if (primaryInput) {
+            inputState->mouse.position     = primaryInput->mouse.position;
+            inputState->mouse.lastPosition = primaryInput->mouse.position;
+            m_lastMousePos                 = primaryInput->mouse.position;
+        }
+    }
+}
+
+void JzRE::JzSceneView::UpdateSceneInputState()
+{
+    if (m_sceneInputState == INVALID_ENTITY || !JzServiceContainer::Has<JzWorld>()) {
+        return;
+    }
+
+    auto &world = JzServiceContainer::Get<JzWorld>();
+
+    if (!world.IsValid(m_sceneInputState)) {
+        m_sceneInputState = INVALID_ENTITY;
+        return;
+    }
+
+    auto *sceneInput = world.TryGetComponent<JzInputStateComponent>(m_sceneInputState);
+    if (!sceneInput) {
+        return;
+    }
+
+    // Copy primary window input state to scene input state
+    JzInputStateComponent *primaryInput = nullptr;
+    auto                   inputView    = world.View<JzInputStateComponent, JzPrimaryWindowTag>();
+    for (auto entity : inputView) {
+        primaryInput = &world.GetComponent<JzInputStateComponent>(entity);
+        break;
+    }
+    if (!primaryInput) {
+        return;
+    }
+
+    // Only update when panel is hovered/focused
+    if (IsHovered() || IsFocused()) {
+        sceneInput->mouse.position       = primaryInput->mouse.position;
+        sceneInput->mouse.scrollDelta    = primaryInput->mouse.scrollDelta;
+        sceneInput->mouse.buttonsPressed = primaryInput->mouse.buttonsPressed;
+        sceneInput->mouse.buttonsDown    = primaryInput->mouse.buttonsDown;
+        sceneInput->mouse.buttonsUp      = primaryInput->mouse.buttonsUp;
+        sceneInput->keyboard             = primaryInput->keyboard;
+    } else {
+        // Clear input state when not focused
+        sceneInput->mouse.buttonsPressed.reset();
+        sceneInput->mouse.buttonsDown.reset();
+        sceneInput->mouse.buttonsUp.reset();
+        sceneInput->mouse.scrollDelta = JzVec2(0.0f, 0.0f);
+    }
 }

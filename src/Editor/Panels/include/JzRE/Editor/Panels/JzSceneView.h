@@ -52,6 +52,18 @@ public:
      */
     JzEGizmoOperation GetGizmoOperation() const;
 
+    /**
+     * @brief Set the currently selected entity for gizmo display
+     * @param entity The entity to select
+     */
+    void SetSelectedEntity(JzEntity entity);
+
+    /**
+     * @brief Get the currently selected entity
+     * @return The selected entity
+     */
+    JzEntity GetSelectedEntity() const;
+
 protected:
     /**
      * @brief Get the camera entity for scene view rendering.
@@ -88,16 +100,36 @@ private:
      */
     void EnsureCameraInputComponent();
 
+    /**
+     * @brief Find and cache the editor camera entity
+     */
+    void FindEditorCamera();
+
+    /**
+     * @brief Create dedicated input state for scene view (isolated from asset view)
+     */
+    void CreateSceneInputState();
+
+    /**
+     * @brief Update dedicated input state from primary window input
+     */
+    void UpdateSceneInputState();
+
 private:
     JzEGizmoOperation m_currentOperation = JzEGizmoOperation::TRANSLATE;
+    JzEntity          m_editorCamera     = INVALID_ENTITY;
+
+    // Dedicated input state for scene view (isolated from asset view)
+    JzEntity m_sceneInputState = INVALID_ENTITY;
 
     // Mouse interaction state
-    Bool    m_leftMousePressed  = false;
-    Bool    m_rightMousePressed = false;
-    JzVec2  m_lastMousePos      = JzVec2(0.0f, 0.0f);
-    Bool    m_firstMouse        = true;
-    Bool    m_cameraInitialized = false;
-    JzIVec2 m_lastViewSize      = JzIVec2(0, 0);
+    Bool     m_leftMousePressed  = false;
+    Bool     m_rightMousePressed = false;
+    JzVec2   m_lastMousePos      = JzVec2(0.0f, 0.0f);
+    Bool     m_firstMouse        = true;
+    Bool     m_cameraInitialized = false;
+    JzIVec2  m_lastViewSize      = JzIVec2(0, 0);
+    JzEntity m_selectedEntity    = INVALID_ENTITY;
 };
 
 } // namespace JzRE

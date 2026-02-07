@@ -20,7 +20,9 @@
 #include "JzRE/Runtime/Function/Asset/JzAssetImporter.h"
 #include "JzRE/Runtime/Function/Asset/JzAssetExporter.h"
 #include "JzRE/Runtime/Function/Project/JzProjectManager.h"
+#include "JzRE/Runtime/Function/Scene/JzSceneSerializer.h"
 #include "JzRE/Runtime/Platform/Dialog/JzOpenFileDialog.h"
+#include "JzRE/Runtime/Platform/Dialog/JzSaveFileDialog.h"
 
 JzRE::JzMenuBar::JzMenuBar(JzRE::JzWindowSystem &windowSystem) :
     m_windowSystem(windowSystem)
@@ -126,7 +128,48 @@ void JzRE::JzMenuBar::CreateFileMenu()
 {
     auto &fileMenu = CreateWidget<JzMenuList>("File");
 
-    auto &openFileMenu         = fileMenu.CreateWidget<JzMenuItem>("Open File", "CTRL + O");
+    // Scene operations
+    auto &newSceneMenu         = fileMenu.CreateWidget<JzMenuItem>("New Scene", "CTRL + N");
+    newSceneMenu.ClickedEvent += [] {
+        if (!JzServiceContainer::Has<JzWorld>()) return;
+        auto &world = JzServiceContainer::Get<JzWorld>();
+        JzSceneSerializer::ClearScene(world);
+    };
+
+    auto &openSceneMenu         = fileMenu.CreateWidget<JzMenuItem>("Open Scene...", "CTRL + O");
+    openSceneMenu.ClickedEvent += [] {
+        if (!JzServiceContainer::Has<JzWorld>()) return;
+
+        JzOpenFileDialog dialog("Open Scene");
+        dialog.AddFileType("JzRE Scene", "*.jzscene");
+        dialog.AddFileType("All Files", "*.*");
+        dialog.Show(JzEFileDialogType::OpenFile);
+
+        if (dialog.HasSucceeded()) {
+            auto &world = JzServiceContainer::Get<JzWorld>();
+            JzSceneSerializer::ClearScene(world);
+            JzSceneSerializer::Deserialize(world, dialog.GetSelectedFilePath());
+        }
+    };
+
+    auto &saveSceneMenu         = fileMenu.CreateWidget<JzMenuItem>("Save Scene...", "CTRL + S");
+    saveSceneMenu.ClickedEvent += [] {
+        if (!JzServiceContainer::Has<JzWorld>()) return;
+
+        JzSaveFileDialog dialog("Save Scene");
+        dialog.DefineExtension("JzRE Scene", ".jzscene");
+        dialog.Show(JzEFileDialogType::SaveFile);
+
+        if (dialog.HasSucceeded()) {
+            auto &world = JzServiceContainer::Get<JzWorld>();
+            auto filepath = dialog.GetSelectedFilePath();
+            JzSceneSerializer::Serialize(world, filepath);
+        }
+    };
+
+    fileMenu.CreateWidget<JzSeparator>();
+
+    auto &openFileMenu         = fileMenu.CreateWidget<JzMenuItem>("Open File", "");
     openFileMenu.ClickedEvent += [] {
         JzOpenFileDialog dialog("Open File");
         dialog.AddFileType("OBJ Files", "*.obj");

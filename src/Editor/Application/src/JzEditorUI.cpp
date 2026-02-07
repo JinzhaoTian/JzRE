@@ -15,6 +15,7 @@
 #include "JzRE/Runtime/JzRERuntime.h"
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
 #include "JzRE/Runtime/Function/ECS/JzWindowSystem.h"
+#include "JzRE/Editor/Core/JzEditorState.h"
 
 JzRE::JzEditorUI::JzEditorUI(JzRE::JzRERuntime &runtime) :
     m_runtime(&runtime)
@@ -23,6 +24,10 @@ JzRE::JzEditorUI::JzEditorUI(JzRE::JzRERuntime &runtime) :
     m_uiManager        = std::make_unique<JzUIManager>(windowSystem);
     m_canvas           = std::make_unique<JzCanvas>();
     m_panelsManager    = std::make_unique<JzPanelsManager>(*m_canvas);
+
+    // Create and register editor state for selection management
+    m_editorState = std::make_unique<JzEditorState>();
+    JzServiceContainer::Provide(*m_editorState);
 
     m_canvas->SetDockspace(true);
 
@@ -48,6 +53,27 @@ void JzRE::JzEditorUI::InitializePanels()
     auto &assetView    = m_panelsManager->GetPanelAs<JzAssetView>("Asset View");
     assetBrowser.AssetSelectedEvent += [&assetView](std::filesystem::path path) {
         assetView.PreviewAsset(path);
+    };
+
+    // Wire Hierarchy selection to EditorState and SceneView
+    auto &hierarchy = m_panelsManager->GetPanelAs<JzHierarchy>("Hierarchy");
+    auto &sceneView = m_panelsManager->GetPanelAs<JzSceneView>("Scene View");
+
+    hierarchy.EntitySelectedEvent += [this](JzEntity entity) {
+        m_editorState->SelectEntity(entity);
+    };
+
+    hierarchy.SelectionClearedEvent += [this]() {
+        m_editorState->ClearSelection();
+    };
+
+    // Wire EditorState selection to SceneView for gizmo display
+    m_editorState->EntitySelectedEvent += [&sceneView](JzEntity entity) {
+        sceneView.SetSelectedEntity(entity);
+    };
+
+    m_editorState->SelectionClearedEvent += [&sceneView]() {
+        sceneView.SetSelectedEntity(INVALID_ENTITY);
     };
 
     const auto layoutConfigPath = std::filesystem::current_path() / "config" / "layout.ini";
@@ -86,6 +112,12 @@ void JzRE::JzEditorUI::Update(JzRE::F32 deltaTime)
     HandleGlobalShortcuts();
     UpdateCurrentEditorMode(deltaTime);
     UpdateEditorPanels(deltaTime);
+
+    // Update Hierarchy panel (entity list refresh)
+    auto &hierarchy = m_panelsManager->GetPanelAs<JzHierarchy>("Hierarchy");
+    if (hierarchy.IsOpened()) {
+        hierarchy.Update(deltaTime);
+    }
 
     // Update SceneView logic (camera control, input handling)
     auto &sceneView = m_panelsManager->GetPanelAs<JzSceneView>("Scene View");
