@@ -75,12 +75,6 @@ private:
     void CleanupPreviewEntities();
     void CreatePreviewCamera();
 
-    // Orbit camera (mirrors JzSceneView pattern)
-    void HandleOrbitRotation(F32 deltaX, F32 deltaY);
-    void HandlePanning(F32 deltaX, F32 deltaY);
-    void HandleZoom(F32 scrollY);
-    void UpdateCameraFromOrbit();
-
 private:
     JzEPreviewMode        m_previewMode = JzEPreviewMode::None;
     std::filesystem::path m_currentPath;
@@ -92,12 +86,7 @@ private:
     std::vector<JzEntity> m_previewEntities;
     JzEntity              m_previewCamera = INVALID_ENTITY;
 
-    // Orbit camera parameters
-    F32    m_orbitYaw      = 0.5f;
-    F32    m_orbitPitch    = 0.3f;
-    F32    m_orbitDistance = 5.0f;
-    JzVec3 m_orbitTarget   = JzVec3(0.0f, 0.0f, 0.0f);
-
+    // Orbit camera sensitivity (passed to JzOrbitControllerComponent)
     F32 m_orbitSensitivity = 0.005f;
     F32 m_panSensitivity   = 0.02f;
     F32 m_zoomSensitivity  = 1.0f;
@@ -105,10 +94,11 @@ private:
     F32 m_maxDistance      = 50.0f;
 
     // Mouse tracking state
-    Bool   m_leftMousePressed  = false;
-    Bool   m_rightMousePressed = false;
-    JzVec2 m_lastMousePos      = JzVec2(0.0f, 0.0f);
-    Bool   m_firstMouse        = true;
+    Bool    m_leftMousePressed  = false;
+    Bool    m_rightMousePressed = false;
+    JzVec2  m_lastMousePos      = JzVec2(0.0f, 0.0f);
+    Bool    m_firstMouse        = true;
+    JzIVec2 m_lastViewSize      = JzIVec2(0, 0);
 };
 
 } // namespace JzRE

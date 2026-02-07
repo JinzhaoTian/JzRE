@@ -41,15 +41,15 @@ void JzRE::JzAssetView::PreviewAsset(const std::filesystem::path &path)
     auto fileType = JzFileSystemUtils::GetFileType(path.string());
 
     switch (fileType) {
-    case JzEFileType::TEXTURE:
-        PreviewTexture(path);
-        break;
-    case JzEFileType::MODEL:
-        PreviewModel(path);
-        break;
-    default:
-        JzRE_LOG_WARN("No preview available for: {}", path.filename().string());
-        break;
+        case JzEFileType::TEXTURE:
+            PreviewTexture(path);
+            break;
+        case JzEFileType::MODEL:
+            PreviewModel(path);
+            break;
+        default:
+            JzRE_LOG_WARN("No preview available for: {}", path.filename().string());
+            break;
     }
 }
 
@@ -90,8 +90,7 @@ void JzRE::JzAssetView::PreviewTexture(const std::filesystem::path &path)
 
 void JzRE::JzAssetView::PreviewModel(const std::filesystem::path &path)
 {
-    if (!JzServiceContainer::Has<JzAssetSystem>() || !JzServiceContainer::Has<JzWorld>() ||
-        !JzServiceContainer::Has<JzProjectManager>()) {
+    if (!JzServiceContainer::Has<JzAssetSystem>() || !JzServiceContainer::Has<JzWorld>() || !JzServiceContainer::Has<JzProjectManager>()) {
         return;
     }
 
@@ -128,12 +127,10 @@ void JzRE::JzAssetView::PreviewModel(const std::filesystem::path &path)
     // Create preview camera if needed
     CreatePreviewCamera();
 
-    // Reset orbit to defaults
-    m_orbitYaw      = 0.5f;
-    m_orbitPitch    = 0.3f;
-    m_orbitDistance = 5.0f;
-    m_orbitTarget   = JzVec3(0.0f, 0.0f, 0.0f);
-    UpdateCameraFromOrbit();
+    // Ensure view is registered before binding camera (RenderSystem may initialize later).
+    if (IsOpened() && m_viewHandle == JzRenderSystem::INVALID_VIEW_HANDLE && JzServiceContainer::Has<JzRenderSystem>()) {
+        RegisterRenderTarget();
+    }
 
     m_previewMode = JzEPreviewMode::Model;
     JzRE_LOG_INFO("Previewing model: {}", path.filename().string());
@@ -172,27 +169,51 @@ void JzRE::JzAssetView::CreatePreviewCamera()
         return;
     }
 
-    auto &world    = JzServiceContainer::Get<JzWorld>();
+    auto &world     = JzServiceContainer::Get<JzWorld>();
     m_previewCamera = world.CreateEntity();
 
-    auto &camera       = world.AddComponent<JzCameraComponent>(m_previewCamera);
+    auto &camera        = world.AddComponent<JzCameraComponent>(m_previewCamera);
     camera.isMainCamera = false;
-    camera.fov         = 60.0f;
-    camera.nearPlane   = 0.1f;
-    camera.farPlane    = 100.0f;
-    camera.clearColor  = JzVec3(0.15f, 0.15f, 0.15f);
+    camera.fov          = 60.0f;
+    camera.nearPlane    = 0.1f;
+    camera.farPlane     = 100.0f;
+    camera.clearColor   = JzVec3(0.15f, 0.15f, 0.15f);
+    auto viewSize       = GetSafeSize();
+    if (viewSize.x > 0 && viewSize.y > 0) {
+        camera.aspect  = static_cast<F32>(viewSize.x) / static_cast<F32>(viewSize.y);
+        m_lastViewSize = viewSize;
+    }
 
-    world.AddComponent<JzTransformComponent>(m_previewCamera);
+    auto &transform    = world.AddComponent<JzTransformComponent>(m_previewCamera);
+    transform.position = JzVec3(0.0f, 0.0f, 5.0f);
+    transform.rotation = JzVec3(0.0f, 0.0f, 0.0f);
+    transform.scale    = JzVec3(1.0f, 1.0f, 1.0f);
 
-    // Update the render view with the new camera — the view was registered
-    // in JzView's constructor with INVALID_ENTITY before the camera existed.
-    if (m_viewHandle != JzRenderSystem::INVALID_VIEW_HANDLE &&
-        JzServiceContainer::Has<JzRenderSystem>()) {
+    // Add orbit controller - JzCameraSystem will handle orbit logic
+    auto &orbit            = world.AddComponent<JzOrbitControllerComponent>(m_previewCamera);
+    orbit.target           = JzVec3(0.0f, 0.0f, 0.0f);
+    orbit.yaw              = 0.5f;
+    orbit.pitch            = 0.3f;
+    orbit.distance         = 5.0f;
+    orbit.orbitSensitivity = m_orbitSensitivity;
+    orbit.panSensitivity   = m_panSensitivity;
+    orbit.zoomSensitivity  = m_zoomSensitivity;
+    orbit.minDistance      = m_minDistance;
+    orbit.maxDistance      = m_maxDistance;
+
+    // Add camera input component - JzCameraSystem reads this for orbit control
+    world.AddComponent<JzCameraInputComponent>(m_previewCamera);
+
+    // Ensure the render target exists before updating the view's camera.
+    if (IsOpened() && m_viewHandle == JzRenderSystem::INVALID_VIEW_HANDLE && JzServiceContainer::Has<JzRenderSystem>()) {
+        RegisterRenderTarget();
+    }
+
+    // Update the render view with the new camera
+    if (m_viewHandle != JzRenderSystem::INVALID_VIEW_HANDLE && JzServiceContainer::Has<JzRenderSystem>()) {
         auto &renderSystem = JzServiceContainer::Get<JzRenderSystem>();
         renderSystem.UpdateViewCamera(m_viewHandle, m_previewCamera);
     }
-
-    UpdateCameraFromOrbit();
 }
 
 // ==================== Drawing ====================
@@ -220,18 +241,38 @@ JzRE::JzEntity JzRE::JzAssetView::GetCameraEntity()
     return m_previewCamera;
 }
 
-// ==================== Update (Orbit Camera Input) ====================
+// ==================== Update (Capture Input for JzCameraSystem) ====================
 
 void JzRE::JzAssetView::Update(JzRE::F32 deltaTime)
 {
     JzView::Update(deltaTime);
 
-    if (m_previewMode != JzEPreviewMode::Model) {
-        return;
+    // Ensure the render target is registered when RenderSystem becomes available.
+    if (IsOpened() && m_viewHandle == JzRenderSystem::INVALID_VIEW_HANDLE && JzServiceContainer::Has<JzRenderSystem>()) {
+        RegisterRenderTarget();
     }
 
-    if (!IsHovered() && !IsFocused()) {
-        m_firstMouse = true;
+    if (m_viewHandle != JzRenderSystem::INVALID_VIEW_HANDLE && JzServiceContainer::Has<JzRenderSystem>() && m_previewCamera != INVALID_ENTITY) {
+        auto &renderSystem = JzServiceContainer::Get<JzRenderSystem>();
+        renderSystem.UpdateViewCamera(m_viewHandle, m_previewCamera);
+    }
+
+    if (m_previewCamera != INVALID_ENTITY && JzServiceContainer::Has<JzWorld>()) {
+        auto viewSize = GetSafeSize();
+        if (viewSize.x > 0 && viewSize.y > 0) {
+            auto &world = JzServiceContainer::Get<JzWorld>();
+            if (world.IsValid(m_previewCamera) && world.HasComponent<JzCameraComponent>(m_previewCamera)) {
+                if (viewSize.x != m_lastViewSize.x || viewSize.y != m_lastViewSize.y) {
+                    m_lastViewSize = viewSize;
+                }
+                auto &camera = world.GetComponent<JzCameraComponent>(m_previewCamera);
+                camera.aspect =
+                    static_cast<F32>(viewSize.x) / static_cast<F32>(viewSize.y);
+            }
+        }
+    }
+
+    if (m_previewMode != JzEPreviewMode::Model) {
         return;
     }
 
@@ -239,9 +280,32 @@ void JzRE::JzAssetView::Update(JzRE::F32 deltaTime)
         return;
     }
 
-    // Get primary window input state from ECS
     auto &world = JzServiceContainer::Get<JzWorld>();
 
+    // Ensure preview camera has input component
+    if (m_previewCamera == INVALID_ENTITY || !world.IsValid(m_previewCamera)) {
+        return;
+    }
+
+    auto *cameraInput = world.TryGetComponent<JzCameraInputComponent>(m_previewCamera);
+    if (!cameraInput) {
+        return;
+    }
+
+    // Reset input state each frame
+    cameraInput->orbitActive    = false;
+    cameraInput->panActive      = false;
+    cameraInput->mouseDelta     = JzVec2(0.0f, 0.0f);
+    cameraInput->scrollDelta    = 0.0f;
+    cameraInput->resetRequested = false;
+
+    // Only process input when the panel is hovered or focused
+    if (!IsHovered() && !IsFocused()) {
+        m_firstMouse = true;
+        return;
+    }
+
+    // Get primary window input state from ECS
     JzInputStateComponent *inputState = nullptr;
     auto                   inputView  = world.View<JzInputStateComponent, JzPrimaryWindowTag>();
     for (auto entity : inputView) {
@@ -263,7 +327,7 @@ void JzRE::JzAssetView::Update(JzRE::F32 deltaTime)
         deltaY = currentMousePos.y - m_lastMousePos.y;
     }
 
-    // Track button states
+    // Track button states and write to camera input component
     Bool leftPressed  = input.mouse.IsButtonPressed(JzEMouseButton::Left);
     Bool rightPressed = input.mouse.IsButtonPressed(JzEMouseButton::Right);
 
@@ -273,7 +337,8 @@ void JzRE::JzAssetView::Update(JzRE::F32 deltaTime)
             m_leftMousePressed = true;
             m_firstMouse       = true;
         } else if (!m_firstMouse) {
-            HandleOrbitRotation(deltaX, deltaY);
+            cameraInput->orbitActive = true;
+            cameraInput->mouseDelta  = JzVec2(deltaX, deltaY);
         }
     } else {
         m_leftMousePressed = false;
@@ -285,7 +350,8 @@ void JzRE::JzAssetView::Update(JzRE::F32 deltaTime)
             m_rightMousePressed = true;
             m_firstMouse        = true;
         } else if (!m_firstMouse) {
-            HandlePanning(deltaX, deltaY);
+            cameraInput->panActive  = true;
+            cameraInput->mouseDelta = JzVec2(deltaX, deltaY);
         }
     } else {
         m_rightMousePressed = false;
@@ -294,82 +360,10 @@ void JzRE::JzAssetView::Update(JzRE::F32 deltaTime)
     // Scroll wheel — Zoom
     JzVec2 scroll = input.mouse.scrollDelta;
     if (std::abs(scroll.y) > 0.001f) {
-        HandleZoom(scroll.y);
+        cameraInput->scrollDelta = scroll.y;
     }
 
     // Update last mouse position
     m_lastMousePos = currentMousePos;
     m_firstMouse   = false;
-}
-
-// ==================== Orbit Camera Methods ====================
-
-void JzRE::JzAssetView::HandleOrbitRotation(JzRE::F32 deltaX, JzRE::F32 deltaY)
-{
-    m_orbitYaw   -= deltaX * m_orbitSensitivity;
-    m_orbitPitch -= deltaY * m_orbitSensitivity;
-
-    // Clamp pitch to avoid gimbal lock
-    constexpr F32 maxPitch = 1.55f; // ~89 degrees
-    m_orbitPitch           = std::clamp(m_orbitPitch, -maxPitch, maxPitch);
-
-    UpdateCameraFromOrbit();
-}
-
-void JzRE::JzAssetView::HandlePanning(JzRE::F32 deltaX, JzRE::F32 deltaY)
-{
-    F32 cosYaw   = std::cos(m_orbitYaw);
-    F32 sinYaw   = std::sin(m_orbitYaw);
-    F32 cosPitch = std::cos(m_orbitPitch);
-    F32 sinPitch = std::sin(m_orbitPitch);
-
-    JzVec3 right(cosYaw, 0.0f, sinYaw);
-    JzVec3 up(-sinYaw * sinPitch, cosPitch, cosYaw * sinPitch);
-
-    F32 panScale = m_orbitDistance * m_panSensitivity;
-
-    m_orbitTarget.x -= right.x * deltaX * panScale + up.x * deltaY * panScale;
-    m_orbitTarget.y += up.y * deltaY * panScale;
-    m_orbitTarget.z -= right.z * deltaX * panScale + up.z * deltaY * panScale;
-
-    UpdateCameraFromOrbit();
-}
-
-void JzRE::JzAssetView::HandleZoom(JzRE::F32 scrollY)
-{
-    m_orbitDistance -= scrollY * m_zoomSensitivity;
-    m_orbitDistance  = std::clamp(m_orbitDistance, m_minDistance, m_maxDistance);
-
-    UpdateCameraFromOrbit();
-}
-
-void JzRE::JzAssetView::UpdateCameraFromOrbit()
-{
-    if (m_previewCamera == INVALID_ENTITY) {
-        return;
-    }
-
-    if (!JzServiceContainer::Has<JzWorld>()) {
-        return;
-    }
-
-    auto &world = JzServiceContainer::Get<JzWorld>();
-    if (!world.IsValid(m_previewCamera)) {
-        return;
-    }
-
-    auto &camera = world.GetComponent<JzCameraComponent>(m_previewCamera);
-
-    F32 cosPitch = std::cos(m_orbitPitch);
-    F32 sinPitch = std::sin(m_orbitPitch);
-    F32 cosYaw   = std::cos(m_orbitYaw);
-    F32 sinYaw   = std::sin(m_orbitYaw);
-
-    camera.position.x = m_orbitTarget.x + m_orbitDistance * cosPitch * sinYaw;
-    camera.position.y = m_orbitTarget.y + m_orbitDistance * sinPitch;
-    camera.position.z = m_orbitTarget.z + m_orbitDistance * cosPitch * cosYaw;
-    camera.rotation.x = -m_orbitPitch;
-    camera.rotation.y = m_orbitYaw;
-    camera.rotation.z = 0.0f;
-    camera.rotation.w = 0.0f;
 }
