@@ -73,6 +73,6 @@ private:
     JzWindowSystem &m_windowSystem;
     JzMenuList *m_settingsMenu   = nullptr;
     JzMenuList *m_windowMenu     = nullptr;
-    String      m_backgroudColor = "#2A2A2A";
+    String      m_backgroudColor = "#333333";
 };
 } // namespace JzRE

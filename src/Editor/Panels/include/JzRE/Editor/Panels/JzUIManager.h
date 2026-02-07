@@ -114,6 +114,11 @@ public:
      */
     void UseDefaultFont();
 
+    /**
+     * @brief Apply ImGui theme styles
+     */
+    void ApplyTheme();
+
 private:
     Bool                                      m_dockingState;
     JzCanvas                                 *m_canvas             = nullptr;
