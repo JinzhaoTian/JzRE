@@ -63,7 +63,9 @@ private:
     void CreateLayoutMenu();
     void CreateHelpMenu();
     void CreateRunButton();
+    void CreateWindowActions();
 
+    void HandleDragging();
     void UpdateToggleableItems();
     void OpenEveryWindows(Bool state);
 
@@ -74,5 +76,9 @@ private:
     JzMenuList *m_settingsMenu   = nullptr;
     JzMenuList *m_windowMenu     = nullptr;
     String      m_backgroudColor = "#333333";
+    JzVec2      m_actionButtonSize{30.0f, 20.0f};
+    Bool        m_isDragging = false;
+    JzIVec2     m_dragStartMousePos;
+    JzIVec2     m_dragStartWindowPos;
 };
 } // namespace JzRE

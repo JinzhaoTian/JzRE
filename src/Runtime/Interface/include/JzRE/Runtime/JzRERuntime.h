@@ -29,9 +29,10 @@ class JzAssetImporter;
 class JzAssetExporter;
 
 struct JzRERuntimeSettings {
-    String                windowTitle = "JzRE Runtime";
-    JzIVec2               windowSize  = {1280, 720};
-    JzERHIType            rhiType     = JzERHIType::OpenGL;
+    String                windowTitle     = "JzRE Runtime";
+    JzIVec2               windowSize      = {1280, 720};
+    Bool                  windowDecorated = true;
+    JzERHIType            rhiType         = JzERHIType::OpenGL;
     std::filesystem::path projectFile; // Optional: path to .jzreproject file
 };
 

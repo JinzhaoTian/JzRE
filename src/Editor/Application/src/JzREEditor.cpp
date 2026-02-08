@@ -11,9 +11,10 @@ JzRE::JzRERuntimeSettings CreateSettingsFromPath(JzRE::JzERHIType             rh
                                                  const std::filesystem::path &openPath)
 {
     JzRE::JzRERuntimeSettings settings;
-    settings.windowTitle = "JzRE";
-    settings.windowSize  = {1280, 720};
-    settings.rhiType     = rhiType;
+    settings.windowTitle     = "JzRE";
+    settings.windowSize      = {1280, 720};
+    settings.windowDecorated = false;
+    settings.rhiType         = rhiType;
 
     // Check if path is a project file or directory
     if (!openPath.empty()) {

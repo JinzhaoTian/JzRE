@@ -237,10 +237,11 @@ void JzRE::JzUIManager::ApplyTheme()
     style.Colors[ImGuiCol_TextSelectedBg]   = ImVec4(0.40f, 0.40f, 0.40f, 0.50f);
     style.Colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.10f, 0.10f, 0.10f, 0.60f);
 
-    // Style adjustments - remove rounding
-    style.WindowRounding    = 0.0f;
-    style.FrameRounding     = 0.0f;
-    style.ScrollbarRounding = 0.0f;
-    style.GrabRounding      = 0.0f;
-    style.TabRounding       = 0.0f;
+    // Style adjustments
+    style.WindowMenuButtonPosition = ImGuiDir_Right;
+    style.WindowRounding           = 0.0f;
+    style.FrameRounding            = 0.0f;
+    style.ScrollbarRounding        = 0.0f;
+    style.GrabRounding             = 0.0f;
+    style.TabRounding              = 0.0f;
 }

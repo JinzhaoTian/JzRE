@@ -146,9 +146,10 @@ void JzRE::JzRERuntime::RegisterSystems()
 
     // Create GLFW window via the window system
     JzWindowConfig windowConfig;
-    windowConfig.title  = m_settings.windowTitle;
-    windowConfig.width  = m_settings.windowSize.x;
-    windowConfig.height = m_settings.windowSize.y;
+    windowConfig.title     = m_settings.windowTitle;
+    windowConfig.width     = m_settings.windowSize.x;
+    windowConfig.height    = m_settings.windowSize.y;
+    windowConfig.decorated = m_settings.windowDecorated;
     m_windowSystem->InitializeWindow(m_settings.rhiType, windowConfig);
     m_windowSystem->SetAlignCentered();
 

@@ -8,10 +8,12 @@
 #include <filesystem>
 #include <imgui.h>
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
+#include "JzRE/Runtime/Resource/JzTexture.h"
 #include "JzRE/Editor/UI/JzGroup.h"
 #include "JzRE/Editor/UI/JzEAlignment.h"
 #include "JzRE/Editor/UI/JzText.h"
 #include "JzRE/Editor/UI/JzArrowButton.h"
+#include "JzRE/Editor/UI/JzIconButton.h"
 #include "JzRE/Editor/UI/JzSeparator.h"
 #include "JzRE/Editor/UI/JzConverter.h"
 #include "JzRE/Runtime/Function/ECS/JzWorld.h"
@@ -37,6 +39,7 @@ JzRE::JzMenuBar::JzMenuBar(JzRE::JzWindowSystem &windowSystem) :
     // CreateLayoutMenu();
     // CreateHelpMenu();
     CreateRunButton();
+    CreateWindowActions();
 }
 
 void JzRE::JzMenuBar::HandleShortcuts(F32 deltaTime)
@@ -117,6 +120,7 @@ void JzRE::JzMenuBar::_Draw_Impl()
     ImGui::PushStyleColor(ImGuiCol_MenuBarBg, JzConverter::HexToImVec4(m_backgroudColor));
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
     if (!m_widgets.empty() && ImGui::BeginMainMenuBar()) {
+        HandleDragging();
         DrawWidgets();
         ImGui::EndMainMenuBar();
     }
@@ -346,4 +350,76 @@ void JzRE::JzMenuBar::OpenEveryWindows(JzRE::Bool state)
 {
     for (auto &[name, panel] : m_panels)
         panel.first.get().SetOpened(state);
+}
+
+void JzRE::JzMenuBar::CreateWindowActions()
+{
+    const auto iconsDir = std::filesystem::current_path() / "icons";
+
+    auto &actions = CreateWidget<JzGroup>(JzEHorizontalAlignment::RIGHT, JzVec2(80.f, 0.f), JzVec2(0.f, 0.f));
+
+    auto minimizeIcon = std::make_shared<JzTexture>((iconsDir / "minimize-64.png").string());
+    minimizeIcon->Load();
+    auto &minimizeButton            = actions.CreateWidget<JzIconButton>(minimizeIcon->GetRhiTexture());
+    minimizeButton.buttonSize       = m_actionButtonSize;
+    minimizeButton.buttonIdleColor  = m_backgroudColor;
+    minimizeButton.lineBreak        = false;
+    minimizeButton.ClickedEvent    += [this]() {
+        if (m_windowSystem.IsMinimized())
+            m_windowSystem.Restore();
+        else
+            m_windowSystem.Minimize();
+    };
+
+    auto maximizeIcon = std::make_shared<JzTexture>((iconsDir / "maximize-64.png").string());
+    maximizeIcon->Load();
+    auto &maximizeButton            = actions.CreateWidget<JzIconButton>(maximizeIcon->GetRhiTexture());
+    maximizeButton.buttonSize       = m_actionButtonSize;
+    maximizeButton.buttonIdleColor  = m_backgroudColor;
+    maximizeButton.lineBreak        = false;
+    maximizeButton.ClickedEvent    += [this]() {
+        if (m_windowSystem.IsFullscreen())
+            m_windowSystem.SetFullscreen(false);
+        else
+            m_windowSystem.SetFullscreen(true);
+    };
+
+    auto closeIcon = std::make_shared<JzTexture>((iconsDir / "close-64.png").string());
+    closeIcon->Load();
+    auto &closeButton               = actions.CreateWidget<JzIconButton>(closeIcon->GetRhiTexture());
+    closeButton.buttonSize          = m_actionButtonSize;
+    closeButton.buttonIdleColor     = m_backgroudColor;
+    closeButton.buttonHoveredColor  = "#e81123";
+    closeButton.buttonClickedColor  = "#ec6c77";
+    closeButton.iconSize            = {14.f, 14.f};
+    closeButton.lineBreak           = true;
+    closeButton.ClickedEvent       += [this]() { m_windowSystem.SetShouldClose(true); };
+}
+
+void JzRE::JzMenuBar::HandleDragging()
+{
+    ImVec2 menuBarMin = ImGui::GetWindowPos();
+    ImVec2 menuBarMax = ImVec2(menuBarMin.x + ImGui::GetWindowWidth(), menuBarMin.y + ImGui::GetWindowHeight());
+
+    ImGuiIO &io                 = ImGui::GetIO();
+    Bool     isMouseOverMenuBar = ImGui::IsMouseHoveringRect(menuBarMin, menuBarMax);
+
+    const JzIVec2 windowScreenPos       = m_windowSystem.GetPosition();
+    const JzIVec2 currentMouseScreenPos = windowScreenPos + JzIVec2(io.MousePos.x, io.MousePos.y);
+
+    if (isMouseOverMenuBar && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+        m_dragStartWindowPos = windowScreenPos;
+        m_dragStartMousePos  = currentMouseScreenPos;
+        m_isDragging         = true;
+    }
+
+    if (m_isDragging) {
+        if (ImGui::IsMouseDragging(ImGuiMouseButton_Left)) {
+            const JzIVec2 delta = currentMouseScreenPos - m_dragStartMousePos;
+            m_windowSystem.SetPosition(m_dragStartWindowPos + delta);
+        }
+        if (ImGui::IsMouseReleased(ImGuiMouseButton_Left)) {
+            m_isDragging = false;
+        }
+    }
 }
