@@ -80,6 +80,20 @@ protected:
     }
 
     /**
+     * @brief Get per-view render feature flags.
+     *
+     * Override in subclasses to enable helper features:
+     * - Skybox
+     * - Axis
+     * - Grid
+     * - Gizmo
+     */
+    virtual JzRenderViewFeatures GetRenderFeatures() const
+    {
+        return JzRenderViewFeatures::None;
+    }
+
+    /**
      * @brief Get the render pass name for this view.
      *
      * Override in subclasses to provide explicit pass names.

@@ -6,10 +6,13 @@
 #include "JzRE/Runtime/Function/ECS/JzRenderSystem.h"
 
 #include <algorithm>
+#include <array>
+#include <cstddef>
 
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
 #include "JzRE/Runtime/Function/ECS/JzAssetComponents.h"
 #include "JzRE/Runtime/Function/ECS/JzCameraComponents.h"
+#include "JzRE/Runtime/Function/ECS/JzLightComponents.h"
 #include "JzRE/Runtime/Function/ECS/JzRenderComponents.h"
 #include "JzRE/Runtime/Function/ECS/JzTransformComponents.h"
 #include "JzRE/Runtime/Function/ECS/JzWindowComponents.h"
@@ -163,7 +166,7 @@ void JzRenderSystem::Update(JzWorld &world, F32 delta)
                 }
 
                 auto &target = *targetIter->second;
-                RenderToTargetFiltered(world, target, entry.camera, entry.visibility);
+                RenderToTargetFiltered(world, target, entry.camera, entry.visibility, entry.features);
             },
         });
     }
@@ -390,8 +393,6 @@ void JzRenderSystem::SetupViewportAndClear(JzWorld &world)
 
 void JzRenderSystem::RenderEntities(JzWorld &world)
 {
-    auto &device = JzServiceContainer::Get<JzDevice>();
-
     // Get camera matrices
     JzMat4 viewMatrix       = JzMat4x4::Identity();
     JzMat4 projectionMatrix = JzMat4x4::Identity();
@@ -412,62 +413,21 @@ void JzRenderSystem::RenderEntities(JzWorld &world)
     m_defaultPipeline->SetUniform("view", viewMatrix);
     m_defaultPipeline->SetUniform("projection", projectionMatrix);
 
-    // Render entities with Asset Components (JzMeshAssetComponent + JzMaterialAssetComponent)
-    // We only render entities that are marked as ready (JzAssetReadyTag)
-    auto &assetManager = JzServiceContainer::Get<JzAssetManager>();
-    auto  views        = world.View<JzTransformComponent, JzMeshAssetComponent, JzMaterialAssetComponent, JzAssetReadyTag>();
-
-    for (auto entity : views) {
-        auto &transform = world.GetComponent<JzTransformComponent>(entity);
-        auto &meshComp  = world.GetComponent<JzMeshAssetComponent>(entity);
-        auto &matComp   = world.GetComponent<JzMaterialAssetComponent>(entity);
-
-        // Get Mesh Asset
-        JzMesh *mesh = assetManager.Get(meshComp.meshHandle);
-        if (!mesh) continue;
-
-        auto vertexArray = mesh->GetVertexArray();
-        if (!vertexArray) continue;
-
-        // Get world matrix
-        const JzMat4 &entityModelMatrix = transform.GetWorldMatrix();
-        m_defaultPipeline->SetUniform("model", entityModelMatrix);
-
-        // Set Material Uniforms
-        // Note: We use the cached values in the component which are updated by JzAssetLoadingSystem
-        m_defaultPipeline->SetUniform("material.ambient", matComp.ambientColor);
-        m_defaultPipeline->SetUniform("material.diffuse", matComp.diffuseColor);
-        m_defaultPipeline->SetUniform("material.specular", matComp.specularColor);
-        m_defaultPipeline->SetUniform("material.shininess", matComp.shininess);
-
-        // Bind diffuse texture if available
-        // Get texture directly from material (hasDiffuseTexture flag is set during model loading)
-        JzMaterial *mat               = assetManager.Get(matComp.materialHandle);
-        bool        hasDiffuseTexture = mat && mat->HasDiffuseTexture();
-        m_defaultPipeline->SetUniform("hasDiffuseTexture", hasDiffuseTexture);
-
-        if (hasDiffuseTexture) {
-            device.BindTexture(mat->GetDiffuseTexture(), 0);
-            m_defaultPipeline->SetUniform("diffuseTexture", 0);
-        }
-
-        // Bind and Draw
-        device.BindVertexArray(vertexArray);
-
-        JzDrawIndexedParams drawParams;
-        drawParams.primitiveType = JzEPrimitiveType::Triangles;
-        drawParams.indexCount    = mesh->GetIndexCount();
-        drawParams.instanceCount = 1;
-        drawParams.firstIndex    = 0;
-        drawParams.vertexOffset  = 0;
-        drawParams.firstInstance = 0;
-
-        device.DrawIndexed(drawParams);
-    }
+    // Main scene output renders gameplay entities only.
+    RenderEntitiesFiltered(world, JzRenderVisibility::Untagged);
 }
 
 void JzRenderSystem::CleanupResources()
 {
+    m_gridVertexCount = 0;
+    m_gridVAO.reset();
+    m_gridVertexBuffer.reset();
+    m_axisVAO.reset();
+    m_axisVertexBuffer.reset();
+    m_skyboxScreenTriangleVAO.reset();
+    m_skyboxScreenTriangleBuffer.reset();
+    m_axisPipeline.reset();
+    m_skyboxPipeline.reset();
     m_defaultPipeline.reset();
     m_depthTexture.reset();
     m_colorTexture.reset();
@@ -498,19 +458,16 @@ JzRenderSystem::ViewHandle JzRenderSystem::RegisterView(JzRenderViewDesc desc)
 
 void JzRenderSystem::UnregisterView(JzRenderSystem::ViewHandle handle)
 {
+    String outputName;
     auto it = std::find_if(m_views.begin(), m_views.end(),
                            [handle](const auto &pair) { return pair.first == handle; });
     if (it != m_views.end()) {
+        outputName = it->second.outputName;
         m_views.erase(it);
     }
 
-    for (auto &entry : m_views) {
-        if (entry.first == handle) {
-            if (!entry.second.outputName.empty()) {
-                m_outputCache.Remove(entry.second.outputName);
-            }
-            break;
-        }
+    if (!outputName.empty()) {
+        m_outputCache.Remove(outputName);
     }
     m_targets.erase(handle);
 }
@@ -524,8 +481,18 @@ void JzRenderSystem::UpdateViewCamera(JzRenderSystem::ViewHandle handle, JzEntit
     }
 }
 
+void JzRenderSystem::UpdateViewFeatures(JzRenderSystem::ViewHandle handle, JzRenderViewFeatures features)
+{
+    auto it = std::find_if(m_views.begin(), m_views.end(),
+                           [handle](const auto &pair) { return pair.first == handle; });
+    if (it != m_views.end()) {
+        it->second.features = features;
+    }
+}
+
 void JzRenderSystem::RenderToTargetFiltered(JzWorld &world, JzRenderTarget &target,
-                                            JzEntity camera, JzRenderVisibility visibility)
+                                            JzEntity camera, JzRenderVisibility visibility,
+                                            JzRenderViewFeatures features)
 {
     // Ensure pipeline is initialized
     if (!m_isInitialized) {
@@ -603,6 +570,17 @@ void JzRenderSystem::RenderToTargetFiltered(JzWorld &world, JzRenderTarget &targ
 
     // Render entities with filtering
     RenderEntitiesFiltered(world, visibility);
+
+    // Render helper passes enabled for this view.
+    if (HasFeature(features, JzRenderViewFeatures::Skybox)) {
+        RenderSkybox(world, viewMatrix, projectionMatrix);
+    }
+    if (HasFeature(features, JzRenderViewFeatures::Grid)) {
+        RenderGrid(viewMatrix, projectionMatrix);
+    }
+    if (HasFeature(features, JzRenderViewFeatures::Axis)) {
+        RenderAxis(viewMatrix, projectionMatrix);
+    }
 
     // Unbind framebuffer
     device.BindFramebuffer(nullptr);
@@ -688,6 +666,236 @@ void JzRenderSystem::RenderEntitiesFiltered(JzWorld &world, JzRenderVisibility v
 
         device.DrawIndexed(drawParams);
     }
+}
+
+Bool JzRenderSystem::CreateEditorHelperResources()
+{
+    const Bool hasPipelines = (m_skyboxPipeline != nullptr && m_axisPipeline != nullptr);
+    const Bool hasGeometry =
+        (m_skyboxScreenTriangleVAO != nullptr && m_skyboxScreenTriangleBuffer != nullptr &&
+         m_axisVAO != nullptr && m_axisVertexBuffer != nullptr &&
+         m_gridVAO != nullptr && m_gridVertexBuffer != nullptr && m_gridVertexCount > 0);
+    if (hasPipelines && hasGeometry) {
+        return true;
+    }
+
+    if (!JzServiceContainer::Has<JzAssetManager>() || !JzServiceContainer::Has<JzDevice>()) {
+        return false;
+    }
+
+    auto &assetManager = JzServiceContainer::Get<JzAssetManager>();
+    auto &device       = JzServiceContainer::Get<JzDevice>();
+
+    struct JzLineVertex {
+        F32 px, py, pz;
+        F32 r, g, b;
+    };
+
+    const auto loadPipeline = [&assetManager](const String &primaryPath, const String &fallbackPath) {
+        auto tryLoad = [&assetManager](const String &path) -> std::shared_ptr<JzRHIPipeline> {
+            const auto shaderHandle = assetManager.LoadSync<JzShaderAsset>(path);
+            auto      *shaderAsset  = assetManager.Get(shaderHandle);
+            if (!shaderAsset || !shaderAsset->IsCompiled()) {
+                return nullptr;
+            }
+
+            auto variant = shaderAsset->GetMainVariant();
+            if (!variant || !variant->IsValid()) {
+                return nullptr;
+            }
+            return variant->GetPipeline();
+        };
+
+        auto pipeline = tryLoad(primaryPath);
+        if (!pipeline && !fallbackPath.empty()) {
+            pipeline = tryLoad(fallbackPath);
+        }
+        return pipeline;
+    };
+
+    if (!m_skyboxPipeline) {
+        m_skyboxPipeline = loadPipeline("shaders/editor_skybox", "resources/shaders/editor_skybox");
+    }
+
+    if (!m_axisPipeline) {
+        m_axisPipeline = loadPipeline("shaders/editor_axis", "resources/shaders/editor_axis");
+    }
+
+    if (!m_skyboxScreenTriangleBuffer || !m_skyboxScreenTriangleVAO) {
+        constexpr std::array<F32, 6> kTriangleVertices = {
+            -1.0f, -1.0f,
+            -1.0f, 3.0f,
+            3.0f, -1.0f
+        };
+
+        JzGPUBufferObjectDesc vbDesc;
+        vbDesc.type      = JzEGPUBufferObjectType::Vertex;
+        vbDesc.usage     = JzEGPUBufferObjectUsage::StaticDraw;
+        vbDesc.size      = kTriangleVertices.size() * sizeof(F32);
+        vbDesc.data      = kTriangleVertices.data();
+        vbDesc.debugName = "EditorSkyboxScreenTriangleVB";
+        m_skyboxScreenTriangleBuffer = device.CreateBuffer(vbDesc);
+
+        m_skyboxScreenTriangleVAO = device.CreateVertexArray("EditorSkyboxScreenTriangleVAO");
+        if (m_skyboxScreenTriangleBuffer && m_skyboxScreenTriangleVAO) {
+            m_skyboxScreenTriangleVAO->BindVertexBuffer(m_skyboxScreenTriangleBuffer, 0);
+            m_skyboxScreenTriangleVAO->SetVertexAttribute(0, 2, static_cast<U32>(2 * sizeof(F32)), 0);
+        }
+    }
+
+    if (!m_axisVertexBuffer || !m_axisVAO) {
+        constexpr std::array<JzLineVertex, 6> kAxisVertices = {{
+            {0.0f, 0.0f, 0.0f, 1.0f, 0.2f, 0.2f},
+            {1.5f, 0.0f, 0.0f, 1.0f, 0.2f, 0.2f},
+            {0.0f, 0.0f, 0.0f, 0.2f, 1.0f, 0.2f},
+            {0.0f, 1.5f, 0.0f, 0.2f, 1.0f, 0.2f},
+            {0.0f, 0.0f, 0.0f, 0.2f, 0.5f, 1.0f},
+            {0.0f, 0.0f, 1.5f, 0.2f, 0.5f, 1.0f}
+        }};
+
+        JzGPUBufferObjectDesc vbDesc;
+        vbDesc.type      = JzEGPUBufferObjectType::Vertex;
+        vbDesc.usage     = JzEGPUBufferObjectUsage::StaticDraw;
+        vbDesc.size      = kAxisVertices.size() * sizeof(JzLineVertex);
+        vbDesc.data      = kAxisVertices.data();
+        vbDesc.debugName = "EditorAxisVB";
+        m_axisVertexBuffer = device.CreateBuffer(vbDesc);
+
+        m_axisVAO = device.CreateVertexArray("EditorAxisVAO");
+        if (m_axisVertexBuffer && m_axisVAO) {
+            m_axisVAO->BindVertexBuffer(m_axisVertexBuffer, 0);
+            m_axisVAO->SetVertexAttribute(0, 3, static_cast<U32>(sizeof(JzLineVertex)), 0);
+            m_axisVAO->SetVertexAttribute(1, 3, static_cast<U32>(sizeof(JzLineVertex)),
+                                          static_cast<U32>(offsetof(JzLineVertex, r)));
+        }
+    }
+
+    if (!m_gridVertexBuffer || !m_gridVAO || m_gridVertexCount == 0) {
+        constexpr I32 kHalfLineCount = 20;
+        constexpr F32 kGridSpacing   = 1.0f;
+        constexpr F32 kGridY         = -0.001f;
+        constexpr F32 kGridExtent    = kHalfLineCount * kGridSpacing;
+
+        std::vector<JzLineVertex> gridVertices;
+        gridVertices.reserve(static_cast<size_t>((kHalfLineCount * 2 + 1) * 4));
+
+        for (I32 i = -kHalfLineCount; i <= kHalfLineCount; ++i) {
+            const F32 offset = static_cast<F32>(i) * kGridSpacing;
+            const Bool majorLine = (i == 0) || (i % 5 == 0);
+            const F32  c         = majorLine ? 0.36f : 0.24f;
+
+            gridVertices.push_back({-kGridExtent, kGridY, offset, c, c, c});
+            gridVertices.push_back({kGridExtent, kGridY, offset, c, c, c});
+            gridVertices.push_back({offset, kGridY, -kGridExtent, c, c, c});
+            gridVertices.push_back({offset, kGridY, kGridExtent, c, c, c});
+        }
+
+        JzGPUBufferObjectDesc vbDesc;
+        vbDesc.type      = JzEGPUBufferObjectType::Vertex;
+        vbDesc.usage     = JzEGPUBufferObjectUsage::StaticDraw;
+        vbDesc.size      = gridVertices.size() * sizeof(JzLineVertex);
+        vbDesc.data      = gridVertices.data();
+        vbDesc.debugName = "EditorGridVB";
+        m_gridVertexBuffer = device.CreateBuffer(vbDesc);
+
+        m_gridVAO = device.CreateVertexArray("EditorGridVAO");
+        if (m_gridVertexBuffer && m_gridVAO) {
+            m_gridVAO->BindVertexBuffer(m_gridVertexBuffer, 0);
+            m_gridVAO->SetVertexAttribute(0, 3, static_cast<U32>(sizeof(JzLineVertex)), 0);
+            m_gridVAO->SetVertexAttribute(1, 3, static_cast<U32>(sizeof(JzLineVertex)),
+                                          static_cast<U32>(offsetof(JzLineVertex, r)));
+            m_gridVertexCount = static_cast<U32>(gridVertices.size());
+        }
+    }
+
+    return true;
+}
+
+void JzRenderSystem::RenderSkybox(JzWorld &world, const JzMat4 &viewMatrix, const JzMat4 &projectionMatrix)
+{
+    if (!CreateEditorHelperResources() || !m_skyboxPipeline || !m_skyboxScreenTriangleVAO) {
+        return;
+    }
+
+    auto &device = JzServiceContainer::Get<JzDevice>();
+
+    JzVec3 sunDirection(0.3f, -1.0f, -0.5f);
+    auto   lightView = world.View<JzDirectionalLightComponent>();
+    if (!lightView.empty()) {
+        sunDirection = world.GetComponent<JzDirectionalLightComponent>(lightView.front()).direction;
+    }
+    if (sunDirection.Length() > 0.0001f) {
+        sunDirection.Normalize();
+    }
+
+    device.BindPipeline(m_skyboxPipeline);
+    device.BindVertexArray(m_skyboxScreenTriangleVAO);
+
+    m_skyboxPipeline->SetUniform("view", viewMatrix);
+    m_skyboxPipeline->SetUniform("projection", projectionMatrix);
+    m_skyboxPipeline->SetUniform("topColor", JzVec3(0.19f, 0.42f, 0.78f));
+    m_skyboxPipeline->SetUniform("horizonColor", JzVec3(0.62f, 0.73f, 0.90f));
+    m_skyboxPipeline->SetUniform("groundColor", JzVec3(0.20f, 0.21f, 0.24f));
+    m_skyboxPipeline->SetUniform("sunDirection", sunDirection);
+    m_skyboxPipeline->SetUniform("sunColor", JzVec3(1.0f, 0.95f, 0.80f));
+    m_skyboxPipeline->SetUniform("sunSize", 0.04f);
+    m_skyboxPipeline->SetUniform("exposure", 1.0f);
+
+    JzDrawParams drawParams;
+    drawParams.primitiveType = JzEPrimitiveType::Triangles;
+    drawParams.vertexCount   = 3;
+    drawParams.instanceCount = 1;
+    drawParams.firstVertex   = 0;
+    drawParams.firstInstance = 0;
+    device.Draw(drawParams);
+}
+
+void JzRenderSystem::RenderAxis(const JzMat4 &viewMatrix, const JzMat4 &projectionMatrix)
+{
+    if (!CreateEditorHelperResources() || !m_axisPipeline || !m_axisVAO) {
+        return;
+    }
+
+    auto &device = JzServiceContainer::Get<JzDevice>();
+    device.BindPipeline(m_axisPipeline);
+    device.BindVertexArray(m_axisVAO);
+
+    const JzMat4 model = JzMat4x4::Identity();
+    m_axisPipeline->SetUniform("model", model);
+    m_axisPipeline->SetUniform("view", viewMatrix);
+    m_axisPipeline->SetUniform("projection", projectionMatrix);
+
+    JzDrawParams drawParams;
+    drawParams.primitiveType = JzEPrimitiveType::Lines;
+    drawParams.vertexCount   = 6;
+    drawParams.instanceCount = 1;
+    drawParams.firstVertex   = 0;
+    drawParams.firstInstance = 0;
+    device.Draw(drawParams);
+}
+
+void JzRenderSystem::RenderGrid(const JzMat4 &viewMatrix, const JzMat4 &projectionMatrix)
+{
+    if (!CreateEditorHelperResources() || !m_axisPipeline || !m_gridVAO || m_gridVertexCount == 0) {
+        return;
+    }
+
+    auto &device = JzServiceContainer::Get<JzDevice>();
+    device.BindPipeline(m_axisPipeline);
+    device.BindVertexArray(m_gridVAO);
+
+    const JzMat4 model = JzMat4x4::Identity();
+    m_axisPipeline->SetUniform("model", model);
+    m_axisPipeline->SetUniform("view", viewMatrix);
+    m_axisPipeline->SetUniform("projection", projectionMatrix);
+
+    JzDrawParams drawParams;
+    drawParams.primitiveType = JzEPrimitiveType::Lines;
+    drawParams.vertexCount   = m_gridVertexCount;
+    drawParams.instanceCount = 1;
+    drawParams.firstVertex   = 0;
+    drawParams.firstInstance = 0;
+    device.Draw(drawParams);
 }
 
 void JzRenderSystem::ApplyRenderGraphTransitions(

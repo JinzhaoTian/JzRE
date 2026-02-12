@@ -74,7 +74,14 @@ graph TB
 
 ## Integration Notes
 
-`JzRenderSystem` can register multiple view targets and render to them through `JzDevice`. Each view can filter entities by a tag mask, allowing editor-only, preview-only, and untagged objects to be rendered to different targets without changing RHI APIs.
+`JzRenderSystem` can register multiple view targets and render to them through `JzDevice`. Each view has:
+
+- a visibility mask for entity filtering (`EditorOnly`, `PreviewOnly`, `Untagged`)
+- a feature mask for optional helper passes (`Skybox`, `Axis`, `Grid`, `Gizmo`)
+
+The helper passes use the same RHI API path (`CreatePipeline`, `BindPipeline`, `BindVertexArray`, `Draw`) and are selected per target, so SceneView can render editor skybox/axis while GameView and runtime outputs stay clean.
+
+Current editor helper implementation reuses the line-color pipeline for both axis and ground grid rendering, with dedicated VAOs/VBs for each helper geometry.
 
 ---
 

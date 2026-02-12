@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "JzRE/Runtime/Core/JzRETypes.h"
+#include "JzRE/Runtime/Core/JzMatrix.h"
 #include "JzRE/Runtime/Core/JzVector.h"
 #include "JzRE/Runtime/Function/ECS/JzEntity.h"
 #include "JzRE/Runtime/Function/ECS/JzSystem.h"
@@ -20,11 +21,52 @@
 #include "JzRE/Runtime/Function/Rendering/JzRenderOutputCache.h"
 #include "JzRE/Runtime/Function/Rendering/JzRenderTarget.h"
 #include "JzRE/Runtime/Function/Rendering/JzRenderVisibility.h"
+#include "JzRE/Runtime/Platform/RHI/JzGPUBufferObject.h"
 #include "JzRE/Runtime/Platform/RHI/JzGPUFramebufferObject.h"
 #include "JzRE/Runtime/Platform/RHI/JzGPUTextureObject.h"
+#include "JzRE/Runtime/Platform/RHI/JzGPUVertexArrayObject.h"
 #include "JzRE/Runtime/Platform/RHI/JzRHIPipeline.h"
 
 namespace JzRE {
+
+/**
+ * @brief Per-view render feature flags.
+ *
+ * A view can opt in to additional editor rendering features
+ * (such as skybox and axis helpers) without forcing those
+ * features into all render targets.
+ */
+enum class JzRenderViewFeatures : U32 {
+    None   = 0,
+    Skybox = 1 << 0,
+    Axis   = 1 << 1,
+    Grid   = 1 << 2,
+    Gizmo  = 1 << 3,
+};
+
+/**
+ * @brief Bitwise OR for JzRenderViewFeatures.
+ */
+inline constexpr JzRenderViewFeatures operator|(JzRenderViewFeatures lhs, JzRenderViewFeatures rhs)
+{
+    return static_cast<JzRenderViewFeatures>(static_cast<U32>(lhs) | static_cast<U32>(rhs));
+}
+
+/**
+ * @brief Bitwise AND for JzRenderViewFeatures.
+ */
+inline constexpr JzRenderViewFeatures operator&(JzRenderViewFeatures lhs, JzRenderViewFeatures rhs)
+{
+    return static_cast<JzRenderViewFeatures>(static_cast<U32>(lhs) & static_cast<U32>(rhs));
+}
+
+/**
+ * @brief Check if feature mask contains a specific feature.
+ */
+inline constexpr Bool HasFeature(JzRenderViewFeatures mask, JzRenderViewFeatures feature)
+{
+    return static_cast<U32>(mask & feature) != 0;
+}
 
 /**
  * @brief Enhanced render system that integrates with camera system.
@@ -135,6 +177,7 @@ public:
         String                   outputName;
         JzEntity                 camera     = INVALID_ENTITY;
         JzRenderVisibility       visibility = JzRenderVisibility::Untagged;
+        JzRenderViewFeatures     features   = JzRenderViewFeatures::None;
         std::function<Bool()>    shouldRender;
         std::function<JzIVec2()> getDesiredSize;
     };
@@ -161,6 +204,14 @@ public:
      * @param camera New camera entity
      */
     void UpdateViewCamera(ViewHandle handle, JzEntity camera);
+
+    /**
+     * @brief Update the feature mask for a registered view.
+     *
+     * @param handle Handle returned from RegisterView()
+     * @param features New feature mask
+     */
+    void UpdateViewFeatures(ViewHandle handle, JzRenderViewFeatures features);
 
 private:
     /**
@@ -192,7 +243,7 @@ private:
      * @param visibility Visibility mask for entity filtering
      */
     void RenderToTargetFiltered(JzWorld &world, JzRenderTarget &target, JzEntity camera,
-                                JzRenderVisibility visibility);
+                                JzRenderVisibility visibility, JzRenderViewFeatures features);
 
     /**
      * @brief Render entities with visibility filtering.
@@ -201,6 +252,36 @@ private:
      * @param visibility Visibility mask for entity filtering
      */
     void RenderEntitiesFiltered(JzWorld &world, JzRenderVisibility visibility);
+
+    /**
+     * @brief Create shared editor helper resources (pipelines, geometry).
+     */
+    Bool CreateEditorHelperResources();
+
+    /**
+     * @brief Render procedural skybox for the active target.
+     *
+     * @param world The ECS world (used to query sun light direction)
+     * @param viewMatrix Current camera view matrix
+     * @param projectionMatrix Current camera projection matrix
+     */
+    void RenderSkybox(JzWorld &world, const JzMat4 &viewMatrix, const JzMat4 &projectionMatrix);
+
+    /**
+     * @brief Render world-space axis helper at origin.
+     *
+     * @param viewMatrix Current camera view matrix
+     * @param projectionMatrix Current camera projection matrix
+     */
+    void RenderAxis(const JzMat4 &viewMatrix, const JzMat4 &projectionMatrix);
+
+    /**
+     * @brief Render world-space ground grid for horizon reference.
+     *
+     * @param viewMatrix Current camera view matrix
+     * @param projectionMatrix Current camera projection matrix
+     */
+    void RenderGrid(const JzMat4 &viewMatrix, const JzMat4 &projectionMatrix);
 
     /**
      * @brief Apply render graph transitions (backend-specific).
@@ -219,6 +300,15 @@ private:
     std::shared_ptr<JzGPUTextureObject>     m_colorTexture;
     std::shared_ptr<JzGPUTextureObject>     m_depthTexture;
     std::shared_ptr<JzRHIPipeline>          m_defaultPipeline;
+    std::shared_ptr<JzRHIPipeline>          m_skyboxPipeline;
+    std::shared_ptr<JzRHIPipeline>          m_axisPipeline;
+    std::shared_ptr<JzGPUBufferObject>      m_skyboxScreenTriangleBuffer;
+    std::shared_ptr<JzGPUVertexArrayObject> m_skyboxScreenTriangleVAO;
+    std::shared_ptr<JzGPUBufferObject>      m_axisVertexBuffer;
+    std::shared_ptr<JzGPUVertexArrayObject> m_axisVAO;
+    std::shared_ptr<JzGPUBufferObject>      m_gridVertexBuffer;
+    std::shared_ptr<JzGPUVertexArrayObject> m_gridVAO;
+    U32                                     m_gridVertexCount = 0;
 
     // Frame state
     JzIVec2 m_frameSize{1280, 720};

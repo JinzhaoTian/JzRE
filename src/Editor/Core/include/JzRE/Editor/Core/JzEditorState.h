@@ -34,6 +34,36 @@ struct JzEditorState {
     JzEvent<> SelectionClearedEvent;
 
     /**
+     * @brief Whether SceneView skybox rendering is enabled.
+     */
+    Bool sceneSkyboxEnabled = true;
+
+    /**
+     * @brief Whether SceneView axis helper rendering is enabled.
+     */
+    Bool sceneAxisEnabled = true;
+
+    /**
+     * @brief Whether SceneView ground grid rendering is enabled.
+     */
+    Bool sceneGridEnabled = true;
+
+    /**
+     * @brief Event fired when SceneView skybox enabled state changes.
+     */
+    JzEvent<Bool> SceneSkyboxToggledEvent;
+
+    /**
+     * @brief Event fired when SceneView axis enabled state changes.
+     */
+    JzEvent<Bool> SceneAxisToggledEvent;
+
+    /**
+     * @brief Event fired when SceneView grid enabled state changes.
+     */
+    JzEvent<Bool> SceneGridToggledEvent;
+
+    /**
      * @brief Select an entity and fire the selection event
      * @param entity The entity to select
      */
@@ -59,6 +89,51 @@ struct JzEditorState {
     Bool HasSelection() const
     {
         return selectedEntity != INVALID_ENTITY;
+    }
+
+    /**
+     * @brief Enable or disable SceneView skybox rendering.
+     *
+     * @param enabled True to enable skybox, false to disable.
+     */
+    void SetSceneSkyboxEnabled(Bool enabled)
+    {
+        if (sceneSkyboxEnabled == enabled) {
+            return;
+        }
+
+        sceneSkyboxEnabled = enabled;
+        SceneSkyboxToggledEvent.Invoke(enabled);
+    }
+
+    /**
+     * @brief Enable or disable SceneView axis helper rendering.
+     *
+     * @param enabled True to enable axis helper, false to disable.
+     */
+    void SetSceneAxisEnabled(Bool enabled)
+    {
+        if (sceneAxisEnabled == enabled) {
+            return;
+        }
+
+        sceneAxisEnabled = enabled;
+        SceneAxisToggledEvent.Invoke(enabled);
+    }
+
+    /**
+     * @brief Enable or disable SceneView ground grid rendering.
+     *
+     * @param enabled True to enable grid, false to disable.
+     */
+    void SetSceneGridEnabled(Bool enabled)
+    {
+        if (sceneGridEnabled == enabled) {
+            return;
+        }
+
+        sceneGridEnabled = enabled;
+        SceneGridToggledEvent.Invoke(enabled);
     }
 };
 

@@ -16,6 +16,7 @@
 #include "JzRE/Editor/UI/JzIconButton.h"
 #include "JzRE/Editor/UI/JzSeparator.h"
 #include "JzRE/Editor/UI/JzConverter.h"
+#include "JzRE/Editor/Core/JzEditorState.h"
 #include "JzRE/Runtime/Function/ECS/JzWorld.h"
 #include "JzRE/Runtime/Function/ECS/JzInputComponents.h"
 #include "JzRE/Runtime/Function/ECS/JzWindowComponents.h"
@@ -103,8 +104,8 @@ void JzRE::JzMenuBar::InitializeSettingsMenu()
     auto &themeButton = m_settingsMenu->CreateWidget<JzMenuList>("Editor Theme");
     themeButton.CreateWidget<JzText>("Some themes may require a restart");
 
-    auto &cameraPositionMenu  = m_settingsMenu->CreateWidget<JzMenuList>("Reset Camera");
-    auto &viewColors          = m_settingsMenu->CreateWidget<JzMenuList>("View Colors");
+    auto &cameraPositionMenu = m_settingsMenu->CreateWidget<JzMenuList>("Reset Camera");
+    auto &viewColors         = m_settingsMenu->CreateWidget<JzMenuList>("View Colors");
     auto &sceneViewBackground = viewColors.CreateWidget<JzMenuList>("Scene View Background");
     auto &sceneViewGrid       = viewColors.CreateWidget<JzMenuList>("Scene View Grid");
     sceneViewGrid.CreateWidget<JzMenuItem>("Reset");
@@ -113,6 +114,34 @@ void JzRE::JzMenuBar::InitializeSettingsMenu()
     assetViewBackground.CreateWidget<JzMenuItem>("Reset");
 
     auto &consoleSettingsMenu = m_settingsMenu->CreateWidget<JzMenuList>("Console Settings");
+    (void)cameraPositionMenu;
+    (void)sceneViewBackground;
+    (void)consoleSettingsMenu;
+
+    // SceneView rendering helper toggles
+    if (JzServiceContainer::Has<JzEditorState>()) {
+        auto &editorState = JzServiceContainer::Get<JzEditorState>();
+
+        auto &sceneViewMenu = m_settingsMenu->CreateWidget<JzMenuList>("Scene View");
+
+        auto &skyboxItem = sceneViewMenu.CreateWidget<JzMenuItem>(
+            "Show Skybox", "", true, editorState.sceneSkyboxEnabled);
+        skyboxItem.ValueChangedEvent += [&editorState](Bool enabled) {
+            editorState.SetSceneSkyboxEnabled(enabled);
+        };
+
+        auto &axisItem = sceneViewMenu.CreateWidget<JzMenuItem>(
+            "Show Axis", "", true, editorState.sceneAxisEnabled);
+        axisItem.ValueChangedEvent += [&editorState](Bool enabled) {
+            editorState.SetSceneAxisEnabled(enabled);
+        };
+
+        auto &gridItem = sceneViewMenu.CreateWidget<JzMenuItem>(
+            "Show Grid", "", true, editorState.sceneGridEnabled);
+        gridItem.ValueChangedEvent += [&editorState](Bool enabled) {
+            editorState.SetSceneGridEnabled(enabled);
+        };
+    }
 }
 
 void JzRE::JzMenuBar::_Draw_Impl()

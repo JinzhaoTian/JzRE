@@ -4,6 +4,13 @@
 
 This document describes the ECS-based rendering pipeline in JzRE. The rendering is handled by systems registered in `JzWorld` and executed in registration order each frame. Editor views (SceneView/AssetView/GameView) register render targets with `JzRenderSystem` lazily (after construction, once the render system is available) and display the generated textures in ImGui.
 
+`JzRenderSystem` now uses a per-view descriptor with two independent controls:
+
+- `visibility` (entity filtering): `Untagged`, `EditorOnly`, `PreviewOnly`
+- `features` (helper rendering): `Skybox`, `Axis`, `Grid`, `Gizmo`
+
+This keeps one ECS world while allowing each render target to opt in to editor-specific passes.
+
 ---
 
 ## Architecture
@@ -41,7 +48,16 @@ Systems execute in 8 phases grouped into 3 categories:
 | ---------------------- | --------- | ---------------------------------------------------------------- |
 | **JzCameraSystem** | PreRender | Process orbit controller input, compute view/projection matrices |
 | **JzLightSystem**  | PreRender | Collect light entities, provide primary light direction/color    |
-| **JzRenderSystem** | Render    | Manage framebuffer/textures, build RenderGraph, render entities and view targets |
+| **JzRenderSystem** | Render    | Manage framebuffer/textures, build RenderGraph, render entities and view targets, execute view features (skybox/grid/axis) |
+
+### View Feature Defaults
+
+| View       | Visibility Mask                | Feature Mask                 |
+| ---------- | ------------------------------ | ---------------------------- |
+| MainScene  | `Untagged`                     | `None`                       |
+| GameView   | `Untagged`                     | `None`                       |
+| SceneView  | `Untagged \| EditorOnly`       | `Skybox \| Grid \| Axis` (toggleable) |
+| AssetView  | `PreviewOnly`                  | `None`                       |
 
 ---
 
@@ -239,6 +255,8 @@ if (output && output->IsValid()) {
     ImGui::Image(output->GetTextureID(), ImVec2(viewportWidth, viewportHeight));
 }
 ```
+
+Each frame, views can update camera and feature mask independently (`UpdateViewCamera`, `UpdateViewFeatures`) without recreating render targets.
 
 The Editor overrides `ShouldBlitToScreen()` to return `false`, preventing automatic screen blit.
 

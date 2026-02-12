@@ -28,7 +28,12 @@ JzView::~JzView()
 
 void JzView::Update(F32 deltaTime)
 {
-    // Base implementation - override in subclasses
+    if (m_viewHandle == JzRenderSystem::INVALID_VIEW_HANDLE || !JzServiceContainer::Has<JzRenderSystem>()) {
+        return;
+    }
+
+    auto &renderSystem = JzServiceContainer::Get<JzRenderSystem>();
+    renderSystem.UpdateViewFeatures(m_viewHandle, GetRenderFeatures());
 }
 
 JzEntity JzView::GetCameraEntity()
@@ -82,6 +87,7 @@ void JzView::RegisterRenderTarget()
     desc.outputName     = GetOutputName();
     desc.camera         = GetCameraEntity();
     desc.visibility     = GetVisibility();
+    desc.features       = GetRenderFeatures();
     desc.shouldRender   = [this]() { return IsOpened() && IsVisible(); };
     desc.getDesiredSize = [this]() { return GetSafeSize(); };
 

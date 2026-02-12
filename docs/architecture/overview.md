@@ -125,7 +125,7 @@ High-level engine systems built on lower layers.
 | **Input**  | `JzInputSystem` - ECS-based keyboard/mouse/gamepad input processing |
 | **Window** | `JzWindowSystem` - ECS-integrated GLFW window management |
 | **Asset**  | `JzAssetSystem` - Asset loading, hot reload, ECS integration |
-| **Rendering** | `JzRenderSystem`, `JzRenderGraph`, `JzRenderTarget`, `JzRenderOutput` - ECS-driven rendering outputs |
+| **Rendering** | `JzRenderSystem`, `JzRenderGraph`, `JzRenderTarget`, `JzRenderOutput` - ECS-driven multi-target rendering with per-view visibility and feature masks |
 
 📄 See: [ECS Integration](ecs.md), [Rendering Pipeline](rendering_pipeline.md)
 
@@ -139,6 +139,8 @@ Development tools built with ImGui.
 - `JzPanelsManager` - Panel layout management
 - `JzUIManager` - ImGui integration
 - Panels: `JzSceneView`, `JzHierarchy`, `JzAssetBrowser`, `JzConsole`
+
+`JzSceneView` enables editor helper rendering by default (procedural skybox + world axis helper), controlled through editor settings.
 
 ---
 

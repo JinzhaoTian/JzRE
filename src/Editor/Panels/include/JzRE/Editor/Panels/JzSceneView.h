@@ -92,6 +92,11 @@ protected:
         return "SceneView_Color";
     }
 
+    /**
+     * @brief SceneView enables editor helper features by default (skybox, grid, axis).
+     */
+    JzRenderViewFeatures GetRenderFeatures() const override;
+
 private:
     void HandleActorPicking();
 

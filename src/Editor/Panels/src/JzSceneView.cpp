@@ -6,6 +6,7 @@
 #include <cmath>
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
 #include "JzRE/Editor/Panels/JzSceneView.h"
+#include "JzRE/Editor/Core/JzEditorState.h"
 #include "JzRE/Runtime/Function/ECS/JzWorld.h"
 #include "JzRE/Runtime/Function/ECS/JzCameraComponents.h"
 #include "JzRE/Runtime/Function/ECS/JzInputComponents.h"
@@ -238,6 +239,35 @@ void JzRE::JzSceneView::EnsureCameraInputComponent()
 JzRE::JzEntity JzRE::JzSceneView::GetCameraEntity()
 {
     return m_editorCamera;
+}
+
+JzRE::JzRenderViewFeatures JzRE::JzSceneView::GetRenderFeatures() const
+{
+    JzRenderViewFeatures features =
+        JzRenderViewFeatures::Skybox | JzRenderViewFeatures::Axis | JzRenderViewFeatures::Grid;
+
+    if (!JzServiceContainer::Has<JzEditorState>()) {
+        return features;
+    }
+
+    const auto &editorState = JzServiceContainer::Get<JzEditorState>();
+
+    if (!editorState.sceneSkyboxEnabled) {
+        features = static_cast<JzRenderViewFeatures>(static_cast<U32>(features) &
+                                                     ~static_cast<U32>(JzRenderViewFeatures::Skybox));
+    }
+
+    if (!editorState.sceneAxisEnabled) {
+        features = static_cast<JzRenderViewFeatures>(static_cast<U32>(features) &
+                                                     ~static_cast<U32>(JzRenderViewFeatures::Axis));
+    }
+
+    if (!editorState.sceneGridEnabled) {
+        features = static_cast<JzRenderViewFeatures>(static_cast<U32>(features) &
+                                                     ~static_cast<U32>(JzRenderViewFeatures::Grid));
+    }
+
+    return features;
 }
 
 void JzRE::JzSceneView::FindEditorCamera()
