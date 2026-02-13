@@ -4,6 +4,14 @@
 
 This document describes the design and implementation of the Input System in JzRE's ECS architecture.
 
+## Runtime-Editor Boundary (Mandatory)
+
+The runtime input pipeline must remain editor-agnostic.
+
+- Runtime input components and systems should represent generic input semantics.
+- Editor viewport/panel-specific input isolation should be implemented in the Editor module as a consumer of runtime APIs.
+- Any editor-coupled runtime input marker should be treated as temporary compatibility, not long-term architecture.
+
 ## Design Decision: Should Input be a System?
 
 ### Answer: YES (pure ECS approach)
@@ -104,9 +112,11 @@ Processed input specifically for camera control:
 
 #### JzEditorCameraInputOverrideTag
 
-Editor-only tag to opt a camera out of automatic input syncing in `JzInputSystem`.  
+Legacy compatibility tag to opt a camera out of automatic input syncing in `JzInputSystem`.  
 When present, editor panels (e.g., Scene View) write `JzCameraInputComponent`
 directly to keep viewport input isolated from global window input.
+
+This tag is considered migration debt under the runtime-editor boundary rules.
 
 ### System Flow Example: Camera Control
 

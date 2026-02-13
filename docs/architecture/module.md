@@ -107,6 +107,38 @@ graph TD
 
 ---
 
+## Runtime-Editor Boundary Rules (Mandatory)
+
+### Dependency Direction
+
+- `src/Runtime/**` must not include headers from `src/Editor/**`.
+- `src/Editor/**` may include and link `src/Runtime/**`.
+
+### Public API Naming
+
+- Runtime public headers must use generic engine semantics.
+- Editor-specific names in runtime public APIs are forbidden (`Editor`, `SceneView`, `GameView`, `AssetView`, `Gizmo`, etc.).
+
+### Tooling Boundary
+
+- Runtime code must not directly depend on editor UI/tooling libraries (for example, `imgui`).
+- Editor-side rendering and input behavior should be implemented as consumers of runtime extension points.
+
+### Recommended Review Checks
+
+Run these checks when reviewing runtime changes:
+
+```bash
+rg -n '#include\\s+\"JzRE/Editor/' src/Runtime
+rg -n 'imgui' src/Runtime
+rg -n 'SceneView|GameView|AssetView|EditorOnly|PreviewOnly' src/Runtime/include
+```
+
+These checks can report known legacy compatibility symbols; treat each hit as
+explicit debt and avoid introducing new hits.
+
+---
+
 ## CMake Configuration
 
 ### src/CMakeLists.txt

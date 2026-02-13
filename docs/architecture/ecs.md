@@ -4,6 +4,17 @@
 
 JzRE uses EnTT as its primary ECS implementation. The ECS is now the core architecture for the rendering pipeline in `JzRERuntime`.
 
+## Runtime Boundary for ECS (Mandatory)
+
+Runtime ECS design must remain editor-agnostic.
+
+Rules:
+
+1. Runtime components/systems model engine and gameplay domain semantics, not editor product semantics.
+2. Runtime public ECS contracts must not encode panel-level concepts (`SceneView`, `AssetView`, `GameView`) or editor-only naming.
+3. Editor viewport/panel interaction logic should stay in Editor module and consume runtime ECS data through generic interfaces.
+4. Existing editor-coupled ECS symbols in runtime are compatibility debt and should be migrated incrementally.
+
 ## Quick Start
 
 ### Include Header

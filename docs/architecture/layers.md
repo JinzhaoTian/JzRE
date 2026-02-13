@@ -197,6 +197,19 @@ graph LR
 3. **Core is independent** - no dependencies
 4. **Backends are replaceable** - through RHI abstraction
 
+### Runtime Purity Rules (Mandatory)
+
+The Runtime layers (`Core`, `Platform`, `Resource`, `Function`, `Interface`) must stay editor-agnostic.
+
+| Rule | Required Behavior | Not Allowed |
+| ---- | ----------------- | ----------- |
+| Runtime API boundary | Use generic domain names (`view`, `layer`, `feature`, `camera`) | Expose editor product names (`SceneView`, `AssetView`, `GameView`, `Editor`) |
+| Runtime dependencies | Depend only on runtime modules and platform/resource libraries | Include or link editor modules (`src/Editor/**`) |
+| UI/tooling integration | Keep UI-specific code in Editor module | Use `imgui` or editor panel types in runtime headers/sources |
+| Cross-layer extension | Define runtime extension points that Editor can consume | Hardcode editor-only policies into runtime system logic |
+
+Existing violations are considered technical debt and should be migrated toward the rules above.
+
 ---
 
 ## Design Principles

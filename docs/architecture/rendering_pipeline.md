@@ -2,12 +2,17 @@
 
 ## Overview
 
-This document describes the ECS-based rendering pipeline in JzRE. The rendering is handled by systems registered in `JzWorld` and executed in registration order each frame. Editor views (SceneView/AssetView/GameView) register render targets with `JzRenderSystem` lazily (after construction, once the render system is available) and display the generated textures in ImGui.
+This document describes the ECS-based rendering pipeline in JzRE. The rendering is handled by systems registered in `JzWorld` and executed in registration order each frame.
 
-`JzRenderSystem` now uses a per-view descriptor with two independent controls:
+Runtime architecture target: rendering APIs and data contracts remain editor-agnostic.  
+Editor integration must be built on top of runtime extension points rather than encoded directly into runtime-specific semantics.
 
-- `visibility` (entity filtering): `Untagged`, `EditorOnly`, `PreviewOnly`
-- `features` (helper rendering): `Skybox`, `Axis`, `Grid`, `Gizmo`
+Current implementation note: some editor-coupled render visibility/feature naming still exists for compatibility and is treated as migration debt.
+
+Current `JzRenderSystem` implementation uses a per-view descriptor with two independent controls:
+
+- `visibility` (entity filtering): `Untagged`, `EditorOnly`, `PreviewOnly` (legacy compatibility naming)
+- `features` (helper rendering): `Skybox`, `Axis`, `Grid`, `Gizmo` (currently used by editor helper rendering)
 
 This keeps one ECS world while allowing each render target to opt in to editor-specific passes.
 
@@ -58,7 +63,7 @@ Systems execute in 8 phases grouped into 3 categories:
 | **JzLightSystem**  | PreRender | Collect light entities, provide primary light direction/color    |
 | **JzRenderSystem** | Render    | Manage framebuffer/textures, build RenderGraph, render entities and view targets, execute view features (skybox/grid/axis) |
 
-### View Feature Defaults
+### View Feature Defaults (Current Compatibility Behavior)
 
 | View       | Visibility Mask                | Feature Mask                 |
 | ---------- | ------------------------------ | ---------------------------- |
@@ -268,12 +273,14 @@ Each frame, views can update camera and feature mask independently (`UpdateViewC
 Pass/output names are now generated internally from the view name, so panel code does not
 need to maintain string-based render target identifiers.
 
-In editor mode, `JzREEditor::OnStart()` now builds helper resources and registers
+In editor mode, `JzREEditor::OnStart()` builds helper resources and registers
 helper passes through `JzRenderSystem::RegisterHelperPass()`. This keeps helper
 resource ownership in the Editor layer while `JzRenderSystem` only executes the
 registered feature-gated pass list.
 
-The Editor overrides `ShouldBlitToScreen()` to return `false`, preventing automatic screen blit.
+The runtime currently performs main-frame blit based on window visibility in
+`JzRenderSystem::Update()`. There is no `ShouldBlitToScreen()` override hook in
+`JzRERuntime` at this time.
 
 ---
 

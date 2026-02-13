@@ -46,6 +46,19 @@ The engine follows a strict **Runtime + Editor** architecture where dependencies
 | **Command Pattern**        | RHI uses command lists for deferred execution            |
 | **Service Locator**        | Dependency injection via `JzServiceContainer`            |
 
+### Runtime-Editor Boundary (Mandatory)
+
+Runtime (`src/Runtime/**`) is editor-agnostic engine code. Editor (`src/Editor/**`) is a runtime consumer.
+
+Mandatory rules:
+
+1. Runtime public APIs must not expose editor concepts or names (`Editor`, `SceneView`, `GameView`, `AssetView`, `Gizmo`, etc.).
+2. Runtime modules must not depend on editor UI/tooling libraries (for example, `imgui` and editor panel classes).
+3. Editor-specific behavior must be injected through generic runtime extension points (callbacks, descriptors, plugin-like pass registration), not embedded as runtime-specific semantics.
+4. Any new runtime abstraction must remain reusable by standalone game applications that do not link the editor.
+
+Current editor-coupled runtime symbols are treated as migration debt, not architecture targets.
+
 ---
 
 ## Layer Overview
@@ -125,7 +138,7 @@ High-level engine systems built on lower layers.
 | **Input**  | `JzInputSystem` - ECS-based keyboard/mouse/gamepad input processing |
 | **Window** | `JzWindowSystem` - ECS-integrated GLFW window management |
 | **Asset**  | `JzAssetSystem` - Asset loading, hot reload, ECS integration |
-| **Rendering** | `JzRenderSystem`, `JzRenderGraph`, `JzRenderTarget`, `JzRenderOutput` - ECS-driven multi-target rendering with per-view visibility and feature masks |
+| **Rendering** | `JzRenderSystem`, `JzRenderGraph`, `JzRenderTarget`, `JzRenderOutput` - ECS-driven rendering orchestration and output abstraction; editor behavior is layered on top via runtime extension points |
 
 📄 See: [ECS Integration](ecs.md), [Rendering Pipeline](rendering_pipeline.md)
 
@@ -141,6 +154,7 @@ Development tools built with ImGui.
 - Panels: `JzSceneView`, `JzHierarchy`, `JzAssetBrowser`, `JzConsole`
 
 `JzSceneView` enables editor helper rendering by default (procedural skybox + world axis helper), controlled through editor settings.
+The editor must consume runtime public interfaces and must not require runtime to introduce editor-only types.
 
 ---
 
