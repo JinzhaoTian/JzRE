@@ -2,380 +2,220 @@
 
 ## Overview
 
-This document describes the ECS-based rendering pipeline in JzRE. The rendering is handled by systems registered in `JzWorld` and executed in registration order each frame.
+This document describes the **current runtime rendering flow in code**.
 
-Runtime architecture target: rendering APIs and data contracts remain editor-agnostic.  
-Editor integration must be built on top of runtime extension points rather than encoded directly into runtime-specific semantics.
+The rendering path is ECS-driven:
 
-Current `JzRenderSystem` implementation uses a per-render-target descriptor with two independent controls:
+- `JzRERuntime::Run()` drives the frame loop.
+- `JzWorld::Update()` executes registered systems in order.
+- `JzRenderSystem` builds and executes a per-frame `JzRenderGraph`.
+- RHI calls are issued through `JzDevice` (OpenGL backend currently).
 
-- `visibility` (entity filtering): `MainScene`, `Overlay`, `Isolated`
-- `features` (render pass toggles): `Skybox`, `Axis`, `Grid`, `Manipulator` (currently used by editor pass rendering)
+## Runtime Frame Entry
 
-This keeps one ECS world while allowing each render target to opt in to editor-specific passes.
+`JzRERuntime::RegisterSystems()` registers systems in this order:
 
-Runtime data is unified in a single target instance (`JzRenderTarget`) that contains:
+1. `JzWindowSystem`
+2. `JzInputSystem`
+3. `JzEventSystem`
+4. `JzAssetSystem`
+5. `JzCameraSystem`
+6. `JzLightSystem`
+7. `JzRenderSystem`
 
-- `handle`: stable render target identifier
-- `desc`: logical render target settings (`camera`, `visibility`, `features`, callbacks)
-- `output`: owned `JzRenderOutput` instance for this render target
+`JzWorld::Update(delta)` then executes systems **strictly in this registration order**.
 
-This removes duplicated state between logical render target descriptors and separate output maps.
-Pass/resource debug names are derived from `desc.name` on demand instead of being stored as extra record fields.
-
----
-
-## Architecture
-
-```
-JzRERuntime
-  └── JzWorld
-        ├── JzWindowSystem - Window polling, input state sync
-        ├── JzInputSystem  - Input processing, event emission
-        ├── JzEventSystem  - Event dispatch
-        ├── JzAssetSystem  - Asset loading, hot reload
-        ├── JzCameraSystem - Camera matrices, orbit control
-        ├── JzLightSystem  - Light data collection
-        └── JzRenderSystem - RenderGraph, targets, draw calls
-```
-
-### System Phases
-
-Systems execute in 8 phases grouped into 3 categories:
-
-| Group         | Phase      | Purpose                                   | Example Systems                           |
-| ------------- | ---------- | ----------------------------------------- | ----------------------------------------- |
-| **Logic**     | Input      | Input processing, event handling          | JzWindowSystem, JzInputSystem             |
-|               | Physics    | Physics simulation, collision detection   | PhysicsSystem (user-defined)              |
-|               | Animation  | Skeletal animation, blend trees           | AnimationSystem (user-defined)            |
-|               | Logic      | General game logic, AI, scripts           | JzAssetSystem, JzMoveSystem, user systems |
-| **PreRender** | PreRender  | Camera matrices, light collection         | JzCameraSystem, JzLightSystem             |
-|               | Culling    | Frustum culling, occlusion, LOD selection | CullingSystem (user-defined)              |
-| **Render**    | RenderPrep | Batch building, instance data preparation | BatchBuildingSystem (user-defined)        |
-|               | Render     | Actual GPU draw calls                     | JzRenderSystem                            |
-
-### System Responsibilities
-
-| System             | Phase     | Responsibilities                                                                                                                       |
-| ------------------ | --------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| **JzCameraSystem** | PreRender | Process orbit controller input, compute view/projection matrices                                                                       |
-| **JzLightSystem**  | PreRender | Collect light entities, provide primary light direction/color                                                                          |
-| **JzRenderSystem** | Render    | Manage framebuffer/textures, build RenderGraph, render entities and logical render targets, execute target features (skybox/grid/axis) |
-
-### RenderTarget Feature Defaults
-
-| RenderTarget | Visibility Mask        | Feature Mask                          |
-| ------------ | ---------------------- | ------------------------------------- |
-| MainScene    | `MainScene`            | `None`                                |
-| GameView     | `MainScene`            | `None`                                |
-| SceneView    | `MainScene \| Overlay` | `Skybox \| Grid \| Axis` (toggleable) |
-| AssetView    | `Isolated`             | `None`                                |
-
----
-
-## Frame Execution Flow
-
-The main loop in `JzRERuntime::Run()` updates `JzWorld` once per frame. `JzWorld::Update()` runs registered systems in the order shown above.
-
-```
-[Phase 1: Frame Start - Input and Window Events]
-   m_window->PollEvents()
-   |
-   v
-[Phase 2: Async Processing - Start Background Tasks]
-   _SignalWorkerFrame(frameData)
-   |
-   v
-1. `OnUpdate(deltaTime)` runs editor/game logic (e.g., panel updates).
-2. `m_world->Update(deltaTime)` runs systems in registration order:
-   - `JzWindowSystem`/`JzInputSystem` update input and window state.
-   - `JzAssetSystem` updates asset state.
-   - `JzCameraSystem` computes view/projection matrices.
-   - `JzLightSystem` collects light data.
-   - `JzRenderSystem` builds/executes the RenderGraph.
-3. `OnRender(deltaTime)` draws ImGui UI (editor panels read from render targets).
-```
-
----
-
-## Phase Separation Benefits
-
-1. **Parallel Execution**: Logic systems can run in parallel with GPU work from previous frame
-2. **Clear Synchronization**: Explicit sync point ensures background tasks complete before rendering
-3. **Data Isolation**: PreRender phase prepares render data after logic updates are complete
-4. **Extensibility**: Easy to add new systems by specifying their phase
-
----
-
-## Key Components
-
-### Camera Components
+## Actual Frame Loop (`JzRERuntime::Run`)
 
 ```cpp
-// Full camera state
-struct JzCameraComponent {
-    JzVec3 position;
-    JzVec4 rotation;        // pitch, yaw, roll, unused
-    F32    fov, nearPlane, farPlane, aspect;
-    JzVec3 clearColor;
-    Bool   isMainCamera;
-    JzMat4 viewMatrix;       // Computed by CameraSystem
-    JzMat4 projectionMatrix; // Computed by CameraSystem
-};
+while (IsRunning()) {
+    const auto deltaTime = clock.GetDeltaTime();
 
-// Orbit controller for camera
-struct JzOrbitControllerComponent {
-    JzVec3 target;
-    F32    yaw, pitch, distance;
-    F32    orbitSensitivity, panSensitivity, zoomSensitivity;
-    F32    minDistance, maxDistance;
-    // Mouse tracking state...
-};
-```
+    m_windowSystem->PollWindowEvents();
 
-### Light Components
+    OnFrameBegin();
+    OnUpdate(deltaTime);
 
-```cpp
-struct JzDirectionalLightComponent {
-    JzVec3 direction;
-    JzVec3 color;
-    F32    intensity;
-};
+    m_world->Update(deltaTime);
 
-struct JzPointLightComponent {
-    JzVec3 color;
-    F32    intensity, range;
-    F32    constant, linear, quadratic;  // Attenuation
-};
+    OnRender(deltaTime);
+    OnFrameEnd();
 
-struct JzSpotLightComponent {
-    JzVec3 direction, color;
-    F32    intensity, range;
-    F32    innerCutoff, outerCutoff;  // Cone angles
-};
-```
-
-### Renderable Entity
-
-An entity is rendered if it has these components:
-
-| Component              | Purpose                            |
-| ---------------------- | ---------------------------------- |
-| `JzTransformComponent` | Position, rotation, scale          |
-| `JzMeshComponent`      | Reference to `JzMesh` resource     |
-| `JzMaterialComponent`  | Reference to `JzMaterial` resource |
-
----
-
-## Code Example
-
-### Rendering Flow in JzRenderSystem
-
-```cpp
-void JzRenderSystem::Update(JzWorld &world, F32 delta) {
-    // Create/recreate framebuffer if size changed
-    if (m_frameSizeChanged) {
-        CreateFramebuffer();
+    if (m_inputSystem) {
+        m_inputSystem->ClearFrameState(*m_world);
     }
 
-    // Setup viewport and clear
-    SetupViewportAndClear();
-
-    // Get camera data from CameraSystem
-    JzMat4 viewMatrix = m_cameraSystem->GetViewMatrix();
-    JzMat4 projMatrix = m_cameraSystem->GetProjectionMatrix();
-    JzVec3 cameraPos = m_cameraSystem->GetCameraPosition();
-
-    // Get light data from LightSystem
-    JzVec3 lightDir = m_lightSystem->GetPrimaryLightDirection();
-    JzVec3 lightColor = m_lightSystem->GetPrimaryLightColor();
-
-    // Set common uniforms
-    m_pipeline->SetUniform("view", viewMatrix);
-    m_pipeline->SetUniform("projection", projMatrix);
-    m_pipeline->SetUniform("uCameraPos", cameraPos);
-    m_pipeline->SetUniform("uLightDir", lightDir);
-    m_pipeline->SetUniform("uLightColor", lightColor);
-
-    // Render all entities with Transform + Mesh + Material
-    auto view = world.View<JzTransformComponent, JzMeshComponent, JzMaterialComponent>();
-
-    for (auto entity : view) {
-        auto &transform = world.GetComponent<JzTransformComponent>(entity);
-        auto &meshComp = world.GetComponent<JzMeshComponent>(entity);
-        auto &matComp = world.GetComponent<JzMaterialComponent>(entity);
-
-        auto mesh = std::static_pointer_cast<JzMesh>(meshComp.mesh);
-        auto material = std::static_pointer_cast<JzMaterial>(matComp.material);
-
-        if (!mesh || mesh->GetState() != JzEResourceState::Loaded) continue;
-
-        // Set model matrix
-        JzMat4 modelMatrix = ComputeModelMatrix(transform);
-        m_pipeline->SetUniform("model", modelMatrix);
-
-        // Set material uniforms
-        if (material && material->GetState() == JzEResourceState::Loaded) {
-            const auto &props = material->GetProperties();
-            m_pipeline->SetUniform("uAmbientColor", props.ambientColor);
-            m_pipeline->SetUniform("uDiffuseColor", props.diffuseColor);
-            m_pipeline->SetUniform("uSpecularColor", props.specularColor);
-            m_pipeline->SetUniform("uShininess", props.shininess);
-        }
-
-        // Draw
-        m_device->BindVertexArray(mesh->GetVertexArray());
-        m_device->DrawIndexed(drawParams);
+    if (m_graphicsContext) {
+        m_graphicsContext->Present();
     }
 
-    // Unbind framebuffer
-    m_device->BindFramebuffer(nullptr);
+    clock.Update();
 }
 ```
 
----
+## ECS-to-Render Flow
 
-## Model Spawning
+### 1. Window/Input/Event
 
-Use `JzModelSpawner` to create entities from model files:
+- `JzWindowSystem::Update()` polls backend events, syncs `JzWindowStateComponent` and `JzInputStateComponent`, and emits window ECS events.
+- `JzInputSystem::Update()` syncs legacy input components, updates actions/camera input, and emits input ECS events.
+- `JzEventSystem::Update()` dispatches queued events.
 
-```cpp
-// Load model
-auto model = std::make_shared<JzModel>("models/scene.obj");
-model->Load();
+Implementation note:
 
-// Spawn entities (one per mesh)
-auto entities = JzModelSpawner::SpawnModel(world, model);
+- `Run()` calls `m_windowSystem->PollWindowEvents()`.
+- `JzWindowSystem::Update()` also polls backend events internally.
 
-// Each entity has:
-// - JzTransformComponent
-// - JzMeshComponent
-// - JzMaterialComponent
-// - JzRenderableTag
-```
+### 2. Asset/Camera/Light
 
----
+- `JzAssetSystem::Update()` advances asset state and ECS asset tags.
+- `JzCameraSystem::Update()` computes view/projection data on camera components.
+- `JzLightSystem::Update()` collects light data.
 
-## Editor Integration
+### 3. Render (`JzRenderSystem::Update`)
 
-Editor panels register a logical render target and retrieve its output via `JzRenderSystem`:
+`JzRenderSystem::Update()` does the following each frame:
 
-```cpp
-// In JzView: after registration
-auto *output = renderSystem.GetRenderOutput(m_renderTargetHandle);
-if (output != nullptr && output->IsValid()) {
-    ImGui::Image(output->GetTextureID(), ImVec2(viewportWidth, viewportHeight));
-}
-```
+1. Reads `JzWindowStateComponent`.
+2. Tracks framebuffer size changes and window visibility.
+3. Recreates main framebuffer attachments when size changes.
+4. Lazily creates default pipeline from `shaders/standard`.
+5. Configures `JzRenderGraph` allocator and transition callbacks.
+6. Resets graph and records passes.
+7. Compiles and executes graph.
+8. Blits main framebuffer to screen only when window is visible.
 
-Each frame, panels can update target camera and feature mask independently (`UpdateRenderTargetCamera`, `UpdateRenderTargetFeatures`) without recreating outputs.
-Pass/output names are generated internally from the render target name, so panel code does not
-need to maintain string-based render target identifiers.
+## RenderGraph Recording in `JzRenderSystem`
 
-In editor mode, `JzREEditor::OnStart()` builds pass resources and registers
-render passes through `JzRenderSystem::RegisterRenderPass()`. This keeps pass
-resource ownership in the Editor layer while `JzRenderSystem` only executes the
-registered feature-gated pass list.
+### Main scene pass
 
-The runtime currently performs main-frame blit based on window visibility in
-`JzRenderSystem::Update()`. There is no `ShouldBlitToScreen()` override hook in
-`JzRERuntime` at this time.
+The system creates two graph textures and binds them to persistent members:
 
----
+- `MainScene_Color` -> `m_colorTexture`
+- `MainScene_Depth` -> `m_depthTexture`
+
+Then it records `MainScenePass`:
+
+- Setup: declare color/depth writes, render target, viewport.
+- Execute: `SetupViewportAndClear(world)` + `RenderEntities(world)`.
+
+Main scene pass renders with visibility mask `MainScene`.
+
+### Per render-target passes
+
+For each registered logical target (`RegisterRenderTarget`):
+
+- Resolve target size (`getDesiredSize` callback).
+- Ensure `JzRenderOutput` size/resources are valid.
+- Bind output color/depth textures into graph.
+- Add one pass with optional `shouldRender` predicate.
+- Execute path calls `RenderToTargetFiltered(...)`.
+
+`RenderToTargetFiltered(...)`:
+
+- Binds target framebuffer.
+- Resolves camera (explicit target camera or main camera fallback).
+- Clears target.
+- Renders filtered entities.
+- Executes feature-gated passes (`Skybox`, `Axis`, `Grid`, `Manipulator`).
+
+Important distinction:
+
+- Main scene pass does not execute feature-gated editor passes.
+- Feature passes are currently executed in target-filtered rendering path.
+
+## Entity Selection and Draw Conditions
+
+Renderable entities are selected by:
+
+- `JzTransformComponent`
+- `JzMeshAssetComponent`
+- `JzMaterialAssetComponent`
+- `JzAssetReadyTag`
+
+Visibility filtering uses tag/mask rules:
+
+- `JzOverlayRenderTag` against `Overlay`
+- `JzIsolatedRenderTag` against `Isolated`
+- untagged entities against `MainScene`
+
+Per draw call:
+
+- model/view/projection and material uniforms are set.
+- diffuse texture is bound when material has one.
+- `device.DrawIndexed(...)` is issued with mesh index count.
+
+## RenderGraph Compile/Execute Behavior
+
+`JzRenderGraph::Compile()` currently:
+
+1. Runs pass `setup` callbacks.
+2. Builds dependencies from resource write/read tracking.
+3. Topologically computes execution order.
+4. Builds per-pass transition list.
+5. Allocates/binds texture and buffer resources.
+
+`JzRenderGraph::Execute()`:
+
+- Executes passes in computed order.
+- Applies transition callback before pass execute.
+- Skips passes when `enabledExecute` returns false.
+
+OpenGL backend currently treats `ResourceBarrier(...)` as no-op (implicit transitions).
+
+## Editor Integration Path
+
+Editor panels are runtime consumers via render targets:
+
+- `JzView` registers a logical target through `JzRenderSystem::RegisterRenderTarget`.
+- Panel fetches `JzRenderOutput` by handle and shows texture in ImGui.
+- `JzSceneView` updates camera binding and feature mask each frame.
+
+`JzREEditor::OnStart()` builds pass resources and registers:
+
+- `EditorSkyboxPass`
+- `EditorAxisPass`
+- `EditorGridPass`
+
+These passes are executed by `JzRenderSystem` only when target feature masks request them.
 
 ## Sequence Diagram
 
 ```mermaid
 sequenceDiagram
-    participant App as JzRERuntime
-    participant Worker as WorkerThread
+    participant Runtime as JzRERuntime::Run
     participant World as JzWorld
+    participant Window as JzWindowSystem
+    participant Input as JzInputSystem
+    participant Event as JzEventSystem
+    participant Asset as JzAssetSystem
     participant Camera as JzCameraSystem
     participant Light as JzLightSystem
     participant Render as JzRenderSystem
-    participant GPU as GPU/RHI
+    participant Device as JzDevice/OpenGL
 
-    Note over App: Phase 1: Frame Start
-    App->>App: PollEvents()
-
-    Note over App,Worker: Phase 2: Async Processing
-    App->>Worker: SignalWorkerFrame()
-
-    Note over App,World: Phase 3: Logic Update (parallel with Worker)
-    App->>World: UpdateLogic(deltaTime)
-    World->>World: Logic systems (movement, physics, AI)
-
-    App->>App: OnUpdate(deltaTime)
-
-    Note over App,Worker: Phase 4: Sync Point
-    App->>Worker: WaitForWorkerComplete()
-
-    Note over App,Light: Phase 5: Pre-Render Update
-    App->>World: UpdatePreRender(deltaTime)
-    World->>Camera: Update()
-    Camera->>Camera: Process orbit input
-    Camera->>Camera: Compute matrices
-    World->>Light: Update()
-    Light->>Light: Collect light entities
-
-    Note over App,Render: Phase 6: Render Update
-    App->>World: UpdateRender(deltaTime)
-    World->>Render: Update()
-    Render->>Render: Setup framebuffer
-    Render->>Camera: GetViewMatrix()
-    Render->>Light: GetPrimaryLightDirection()
-    Render->>GPU: BindFramebuffer()
-    Render->>GPU: Clear()
-
-    loop For each renderable entity
-        Render->>GPU: SetUniforms()
-        Render->>GPU: BindVertexArray()
-        Render->>GPU: DrawIndexed()
-    end
-
-    Render->>GPU: UnbindFramebuffer()
-
-    Note over App,GPU: Phase 7: Execute Rendering
-    App->>Render: BeginFrame()
-    App->>Render: EndFrame()
-
-    alt Standalone Runtime
-        App->>Render: BlitToScreen()
-        Render->>GPU: BlitFramebuffer()
-    end
-
-    App->>App: OnRender(deltaTime)
-
-    Note over App: Phase 8: Frame End
-    App->>App: SwapBuffers()
-    App->>App: ClearEvents()
+    Runtime->>Window: PollWindowEvents()
+    Runtime->>Runtime: OnUpdate(delta)
+    Runtime->>World: Update(delta)
+    World->>Window: Update
+    World->>Input: Update
+    World->>Event: Update
+    World->>Asset: Update
+    World->>Camera: Update
+    World->>Light: Update
+    World->>Render: Update
+    Render->>Device: Bind/Clear/Draw/Blit
+    Runtime->>Runtime: OnRender(delta)
+    Runtime->>Input: ClearFrameState()
+    Runtime->>Device: Present (Finish + SwapBuffers)
 ```
 
----
+## Source References
 
-## Key Type Relationships
-
-| Component             | Resource     | RHI Objects                                   |
-| --------------------- | ------------ | --------------------------------------------- |
-| `JzMeshComponent`     | `JzMesh`     | `JzGPUVertexArrayObject`, `JzGPUBufferObject` |
-| `JzMaterialComponent` | `JzMaterial` | `JzRHIPipeline`, `JzGPUTextureObject`         |
-| `JzCameraComponent`   | -            | Uniform data                                  |
-| `Jz*LightComponent`   | -            | Uniform data                                  |
-
----
-
-## Default Shaders
-
-The `JzRenderSystem` creates a default pipeline with Blinn-Phong shading:
-
-**Vertex Shader:**
-
-- MVP transformation
-- Pass normal and world position to fragment
-
-**Fragment Shader:**
-
-- Ambient + Diffuse + Specular lighting
-- Material colors: `uAmbientColor`, `uDiffuseColor`, `uSpecularColor`, `uShininess`
-- Light: `uLightDir`, `uLightColor`
-- Camera: `uCameraPos`
+- `src/Runtime/Interface/src/JzRERuntime.cpp`
+- `src/Runtime/Function/src/ECS/JzWorld.cpp`
+- `src/Runtime/Function/src/ECS/JzRenderSystem.cpp`
+- `src/Runtime/Function/src/Rendering/JzRenderGraph.cpp`
+- `src/Editor/Panels/src/JzView.cpp`
+- `src/Editor/Panels/src/JzSceneView.cpp`
+- `src/Editor/Application/src/JzREEditor.cpp`

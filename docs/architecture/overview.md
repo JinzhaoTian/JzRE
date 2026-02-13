@@ -2,329 +2,182 @@
 
 ## Introduction
 
-JzRE (Jinzhao's Real-time game Engine) is a cross-platform, multi-graphics-API game engine built with modern C++20. The engine is designed with a clean layered architecture that separates concerns and enables easy extension and maintenance.
+JzRE is a cross-platform game engine built with C++20.
 
----
+Architecture is split into Runtime and Editor:
 
-## Core Design Philosophy
+- Runtime (`src/Runtime/**`) provides engine capabilities.
+- Editor (`src/Editor/**`) consumes runtime interfaces.
 
-### Layered Architecture
+Dependency direction is strictly top-down from Editor to Core.
 
-The engine follows a strict **Runtime + Editor** architecture where dependencies flow strictly downward:
+## Layered Architecture
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│              JzREEditor (JzRE Executable)                   │
-├─────────────────────────────────────────────────────────────┤
-│                     Editor (JzEditorUI)                     │
-│              ImGui-based development tools                  │
-├─────────────────────────────────────────────────────────────┤
-│                  JzRERuntime (Interface)                    │
-│           Runtime application framework interface           │
-├─────────────────────────────────────────────────────────────┤
-│                    Function Layer                           │
-│                ECS, Input, Window                           │
-├─────────────────────────────────────────────────────────────┤
-│                    Resource Layer                           │
-│       ResourceManager, Asset Factories, Caching             │
-├─────────────────────────────────────────────────────────────┤
-│                    Platform Layer                           │
-│     RHI Abstraction, Graphics Backends, OS APIs             │
-├─────────────────────────────────────────────────────────────┤
-│                      Core Layer                             │
-│        Types, Math, Threading, Events, Logging              │
-└─────────────────────────────────────────────────────────────┘
+```text
+JzREEditor (Executable)
+  -> JzEditor (Editor UI/tools)
+    -> JzRERuntime (runtime integration surface)
+      -> JzRuntimeFunction (ECS, systems)
+        -> JzRuntimeResource (assets/factories/cache)
+          -> JzRuntimePlatform (RHI, window, backend)
+            -> JzRuntimeCore (types/math/logging/threading)
 ```
 
-### Design Principles
+## Design Principles
 
-| Principle                  | Description                                              |
-| -------------------------- | -------------------------------------------------------- |
-| **Separation of Concerns** | Each layer has a single responsibility                   |
-| **Dependency Inversion**   | Upper layers depend on abstractions, not implementations |
-| **Data-Oriented Design**   | ECS with cache-friendly component pools                  |
-| **Command Pattern**        | RHI uses command lists for deferred execution            |
-| **Service Locator**        | Dependency injection via `JzServiceContainer`            |
+| Principle                           | Description                                                                                         |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Separation of concerns              | Each module owns a focused responsibility.                                                          |
+| Strict dependency flow              | Upper layers depend on lower layers only.                                                           |
+| ECS-centric runtime                 | Runtime frame behavior is driven by `JzWorld` systems.                                              |
+| Service locator for shared services | Runtime services are exposed via `JzServiceContainer`.                                              |
+| Multi-path rendering API            | Immediate-mode draw is the current default path; command list API is available as an optional path. |
 
-### Runtime-Editor Boundary (Mandatory)
+## Runtime and Editor Boundary
 
-Runtime (`src/Runtime/**`) is editor-agnostic engine code. Editor (`src/Editor/**`) is a runtime consumer.
+Runtime must stay editor-agnostic:
 
-Mandatory rules:
+1. Runtime public API must not expose panel-specific editor concepts.
+2. Runtime must not depend on editor UI/tooling libraries.
+3. Editor-specific rendering behavior must be injected via runtime extension points (render targets, render passes, callbacks).
 
-1. Runtime public APIs must not expose editor concepts or panel-level names (`Editor`, `SceneView`, `GameView`, `AssetView`, etc.).
-2. Runtime modules must not depend on editor UI/tooling libraries (for example, `imgui` and editor panel classes).
-3. Editor-specific behavior must be injected through generic runtime extension points (callbacks, descriptors, plugin-like pass registration), not embedded as runtime-specific semantics.
-4. Any new runtime abstraction must remain reusable by standalone game applications that do not link the editor.
+## Core Layer
 
----
+Key responsibilities:
 
-## Layer Overview
+- fundamental types and math (`JzRETypes`, vectors, matrices)
+- timing and utilities (`JzClock`)
+- threading primitives (`JzThreadPool`, `JzTaskQueue`)
+- logging (`spdlog` integration)
+- service container (`JzServiceContainer`)
 
-### Core Layer
+## Platform Layer
 
-The foundation of the engine with zero dependencies on other modules.
+Key responsibilities:
 
-**Key Components:**
+- window abstraction (`JzIWindowBackend`, GLFW backend)
+- RHI abstraction (`JzGraphicsContext`, `JzDevice`)
+- backend resources (pipeline/buffer/texture/VAO/framebuffer)
 
-- `JzRETypes.h` - Fundamental type definitions (U32, F32, Bool, String, etc.)
-- `JzVector.h`, `JzMatrix.h`, `JzVertex.h` - Math primitives and operations
-- `JzClock.h` - Timing and frame delta calculations
-- `JzThreadPool.h`, `JzTaskQueue.h` - Concurrent execution infrastructure
-- `JzPlatformEvent.h`, `JzPlatformEventQueue.h` - Platform-agnostic event types
-- `JzServiceContainer.h` - Dependency injection container
-- `JzLogger.h`, `JzLogSink.h` - Logging infrastructure (via spdlog)
-- `JzDelegate.h` - Callback/delegate pattern
-- `JzFileSystemUtils.h` - File I/O utilities
+Current backend status:
 
-📄 See: [Module Structure](module.md)
+- OpenGL: implemented and used
+- Vulkan: planned
 
-### Platform Layer
+Notes on rendering command path:
 
-Abstracts platform-specific functionality and graphics APIs.
+- default runtime render flow uses immediate device calls
+- `JzRHICommandList` exists as optional deferred recording utility
 
-**Key Components:**
+## Resource Layer
 
-- **RHI (Render Hardware Interface)** - Graphics API abstraction
-- `JzGraphicsContext` - Owns device and presentation/context switching
-- `JzDevice` - Unified device interface for resource creation
-- `JzDeviceFactory` - Device creation factory (backend selection)
-- `JzRHICommandList` - Command buffer for deferred rendering
-- `JzGPU*Object` - GPU resource wrappers (Buffer, Texture, Shader, etc.)
-- `JzFileDialog` - Cross-platform file dialogs
+Key responsibilities:
 
-**Supported Backends:**
+- `JzAssetManager` lifecycle and registries
+- type factories (`JzShaderAssetFactory`, `JzModelFactory`, ...)
+- sync/async loading
+- search-path based asset resolution
+- ECS-facing integration via `JzAssetSystem`
 
-- ✅ OpenGL 3.3+
-- 🔜 Vulkan (planned)
+## Function Layer
 
-📄 See: [RHI Design](rhi.md)
+Key responsibilities:
 
-### Resource Layer
+- ECS world and systems (`JzWorld`, `JzSystem`)
+- window/input/event/asset/camera/light/render systems
+- render orchestration (`JzRenderSystem`, `JzRenderGraph`, `JzRenderOutput`)
 
-Manages asset lifecycle with automatic caching and reference counting.
+Current runtime system registration order:
 
-**Key Components:**
+1. `JzWindowSystem`
+2. `JzInputSystem`
+3. `JzEventSystem`
+4. `JzAssetSystem`
+5. `JzCameraSystem`
+6. `JzLightSystem`
+7. `JzRenderSystem`
 
-- `JzAssetManager` - Central asset management with generation-based handles
-- `JzAssetRegistry<T>` - Per-type asset storage with O(1) access
-- `JzLRUCache` - LRU cache with memory budget management
-- `JzResourceFactory` - Factory pattern for resource creation
-- Resource types: `JzTexture`, `JzMesh`, `JzModel`, `JzShaderAsset`, `JzMaterial`, `JzFont`
+`JzWorld::Update()` executes systems in this order.
 
-**Features:**
+## Runtime Frame Flow
 
-- Type-safe handles with generation tracking (`JzAssetHandle<T>`)
-- Synchronous and asynchronous loading
-- LRU cache with configurable memory budget
-- Shader variants and hot reload support
-- Search path management
+Current `JzRERuntime::Run()` flow (simplified):
 
-📄 See: [Resource Layer Design](resource.md), [Asset System](asset_system.md)
+1. poll window events (`m_windowSystem->PollWindowEvents()`)
+2. `OnUpdate(delta)`
+3. `m_world->Update(delta)`
+4. `OnRender(delta)`
+5. clear input frame state
+6. `m_graphicsContext->Present()`
 
-### Function Layer
+`Present()` currently performs `device->Finish()` then `SwapBuffers()`.
 
-High-level engine systems built on lower layers.
+## Editor Layer
 
-**Subsystems:**
+The Editor uses runtime extension points rather than editor-specific runtime internals:
 
-| Subsystem     | Description                                                                                                                                                                                          |
-| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Scene**     | `JzActor` - Legacy scene graph (optional)                                                                                                                                                            |
-| **ECS**       | `JzWorld`, Systems, Components (EnTT-based)                                                                                                                                                          |
-| **Event**     | `JzEventSystem` - ECS event dispatcher (stored in JzWorld context)                                                                                                                                   |
-| **Input**     | `JzInputSystem` - ECS-based keyboard/mouse/gamepad input processing                                                                                                                                  |
-| **Window**    | `JzWindowSystem` - ECS-integrated GLFW window management                                                                                                                                             |
-| **Asset**     | `JzAssetSystem` - Asset loading, hot reload, ECS integration                                                                                                                                         |
-| **Rendering** | `JzRenderSystem`, `JzRenderGraph`, `JzRenderOutput` - ECS-driven rendering orchestration where logical `RenderTarget` descriptors map to concrete `RenderOutput` resources |
-
-📄 See: [ECS Integration](ecs.md), [Rendering Pipeline](rendering_pipeline.md)
-
-### Editor Layer
-
-Development tools built with ImGui.
-
-**Key Components:**
-
-- `JzEditorUI` - Main editor loop
-- `JzPanelsManager` - Panel layout management
-- `JzUIManager` - ImGui integration
-- Panels: `JzSceneView`, `JzHierarchy`, `JzAssetBrowser`, `JzConsole`
-
-`JzSceneView` enables editor helper rendering by default (procedural skybox + world axis helper), controlled through editor settings.
-The editor must consume runtime public interfaces and must not require runtime to introduce editor-only types.
-
----
+- `JzView` registers logical render targets.
+- panels query `JzRenderOutput` by handle and display textures.
+- editor registers optional feature passes (skybox/axis/grid) via `JzRenderSystem::RegisterRenderPass`.
 
 ## Key Patterns
 
-### Command Pattern (RHI)
+### Service Locator
 
 ```cpp
-// Record commands
-auto cmdList = device->CreateCommandList("MainPass");
-cmdList->Begin();
-cmdList->Clear(clearParams);
-cmdList->BindPipeline(pipeline);
-cmdList->BindVertexArray(vertexArray);
-cmdList->DrawIndexed(drawParams);
-cmdList->End();
-
-// Execute later
-device->ExecuteCommandList(cmdList);
-```
-
-### Service Container (Dependency Injection)
-
-```cpp
-// Provide service
 JzServiceContainer::Provide<JzAssetManager>(assetManager);
-
-// Consume service
-auto& assetMgr = JzServiceContainer::Get<JzAssetManager>();
+auto &mgr = JzServiceContainer::Get<JzAssetManager>();
 ```
 
-### Factory Pattern (Assets)
+### Asset Factory
 
 ```cpp
-// Register factories
-assetManager.RegisterFactory<JzTexture>(std::make_unique<JzTextureFactory>());
-
-// Load asset (sync)
-auto textureHandle = assetManager.LoadSync<JzTexture>("textures/player.png");
-auto* texture = assetManager.Get(textureHandle);
-
-// Load asset (async)
-assetManager.LoadAsync<JzTexture>("textures/player.png", [](JzTextureHandle handle, Bool success) {
-    // Callback when loaded
-});
+assetSystem.RegisterFactory<JzTexture>(std::make_unique<JzTextureFactory>());
+auto handle = assetSystem.LoadSync<JzTexture>("textures/albedo.png");
 ```
 
-### Entity-Component-System
+### ECS Query
 
 ```cpp
-// Create entity and add components
-JzWorld world;
-auto entity = world.CreateEntity();
-world.AddComponent<JzTransformComponent>(entity);
-world.AddComponent<JzMeshComponent>(entity);
-
-// Query and process
-auto view = world.View<JzTransformComponent, JzVelocityComponent>();
-for (auto [entity, transform, velocity] : view.each()) {
-    transform.position += velocity.velocity * deltaTime;
+auto view = world.View<JzTransformComponent, JzMeshAssetComponent>();
+for (auto [entity, transform, meshAsset] : view.each()) {
+    // system logic
 }
-
-// Store singleton services in world context
-world.SetContext<JzEventSystem>(std::make_unique<JzEventSystem>());
-auto& eventSystem = world.GetContext<JzEventSystem>();
 ```
 
----
-
-## Build Targets
-
-| Target              | Type              | Description              |
-| ------------------- | ----------------- | ------------------------ |
-| `JzRuntimeCore`     | Static Library    | Core utilities           |
-| `JzRuntimePlatform` | Static Library    | RHI + Graphics backends  |
-| `JzRuntimeResource` | Static Library    | Resource management      |
-| `JzRuntimeFunction` | Static Library    | High-level systems       |
-| `JzRERuntime`       | Interface Library | Links all runtime layers |
-| `JzEditor`          | Static Library    | Editor logic             |
-| `JzREEditor`        | Executable        | Main application         |
-
----
-
-## External Dependencies
-
-Managed via vcpkg:
-
-| Library           | Purpose                    |
-| ----------------- | -------------------------- |
-| **glfw3**         | Window and input           |
-| **glad**          | OpenGL loader              |
-| **imgui**         | Editor UI (docking branch) |
-| **assimp**        | 3D model loading           |
-| **stb**           | Image loading              |
-| **gtest**         | Unit testing               |
-| **nlohmann-json** | JSON parsing               |
-| **spdlog**        | Logging                    |
-| **fmt**           | String formatting          |
-| **freetype**      | Font rendering             |
-| **entt**          | ECS library                |
-
----
-
-## Documentation Index
-
-| Document                                    | Description                              |
-| ------------------------------------------- | ---------------------------------------- |
-| [Architecture Layers](layers.md)            | Detailed layer descriptions and diagrams |
-| [Module Structure](module.md)               | Directory layout and CMake configuration |
-| [RHI Design](rhi.md)                        | Render Hardware Interface specification  |
-| [Resource Layer](resource.md)               | Asset management system                  |
-| [ECS Integration](ecs.md)                   | Entity-Component-System usage guide      |
-| [Rendering Pipeline](rendering_pipeline.md) | Data flow from ECS to GPU                |
-| [Threading Roadmap](threading.md)           | Multi-threading evolution plan           |
-
----
-
-## Quick Start
-
-### Build
-
-```bash
-# Configure (uses vcpkg for dependencies)
-cmake -B build
-
-# Build all targets
-cmake --build build
-
-# Run main application
-./build/JzRE/JzRE
-
-# Run tests
-cd build && ctest --output-on-failure
-```
-
-### Include Convention
+### Immediate RHI Path (Current Default)
 
 ```cpp
-// Runtime modules
-#include "JzRE/Runtime/Core/JzRETypes.h"
-#include "JzRE/Runtime/Platform/RHI/JzDevice.h"
-#include "JzRE/Runtime/Platform/Command/JzRHICommandList.h"
-#include "JzRE/Runtime/Resource/JzAssetManager.h"
-#include "JzRE/Runtime/Function/ECS/JzWorld.h"
-#include "JzRE/Runtime/Function/ECS/JzAssetSystem.h"
-#include "JzRE/Runtime/Function/Event/JzEventSystem.h"
-
-// Editor modules
-#include "JzRE/Editor/JzEditorUI.h"
+device.BindPipeline(pipeline);
+device.BindVertexArray(vertexArray);
+device.DrawIndexed(drawParams);
 ```
 
----
+### Command List (Available)
 
-## Future Roadmap
+```cpp
+auto cmd = device.CreateCommandList("Pass");
+cmd->Begin();
+cmd->DrawIndexed(drawParams);
+cmd->End();
+device.ExecuteCommandList(cmd);
+```
 
-### Near-term
+## Documentation Map
 
-- [ ] Vulkan backend implementation
-- [x] Async resource loading (implemented in JzAssetManager)
-- [x] Material system improvements (shader variants)
-- [x] Shader hot reload (integrated into JzAssetSystem)
+- [layers.md](layers.md)
+- [module.md](module.md)
+- [ecs.md](ecs.md)
+- [rendering_pipeline.md](rendering_pipeline.md)
+- [rhi.md](rhi.md)
+- [resource.md](resource.md)
+- [asset_system.md](asset_system.md)
+- [threading.md](threading.md)
 
-### Mid-term
+## Source References
 
-- [ ] Parallel ECS systems
-- [ ] Scene serialization
-- [ ] Physics integration
-
-### Long-term
-
-- [ ] Multi-threaded command recording
-- [ ] Render graph
-- [ ] Ray tracing support
-
-📄 See: [Threading Roadmap](threading.md) for detailed evolution plan.
+- `src/Runtime/Interface/src/JzRERuntime.cpp`
+- `src/Runtime/Function/src/ECS/JzWorld.cpp`
+- `src/Runtime/Function/src/ECS/JzRenderSystem.cpp`
+- `src/Editor/Panels/src/JzView.cpp`
+- `src/Editor/Application/src/JzREEditor.cpp`
