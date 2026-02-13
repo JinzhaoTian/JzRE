@@ -39,7 +39,7 @@ Runtime must stay editor-agnostic:
 
 1. Runtime public API must not expose panel-specific editor concepts.
 2. Runtime must not depend on editor UI/tooling libraries.
-3. Editor-specific rendering behavior must be injected via runtime extension points (render targets, render passes, callbacks).
+3. Editor-specific rendering behavior must be injected via runtime extension points (render targets, graph contributions, callbacks).
 
 ## Core Layer
 
@@ -86,6 +86,7 @@ Key responsibilities:
 - ECS world and systems (`JzWorld`, `JzSystem`)
 - window/input/event/asset/camera/light/render systems
 - render orchestration (`JzRenderSystem`, `JzRenderGraph`, `JzRenderOutput`)
+- render pass execution context (`JzRGPassContext`) for target/framebuffer binding
 
 Current runtime system registration order:
 
@@ -118,7 +119,9 @@ The Editor uses runtime extension points rather than editor-specific runtime int
 
 - `JzView` registers logical render targets.
 - panels query `JzRenderOutput` by handle and display textures.
-- editor registers optional feature passes (skybox/axis/grid) via `JzRenderSystem::RegisterRenderPass`.
+- editor feature drawing is appended as graph contributions
+  with scope control (`MainScene` / `RegisteredTarget` / `All`).
+  Contributions can read pass execution metadata through `JzRenderGraphContributionContext::passContext`.
 
 ## Key Patterns
 

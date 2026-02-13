@@ -53,7 +53,7 @@ protected:
     /**
      * @brief Called before the main loop starts
      *
-     * Initializes editor-specific components and registers SceneView render passes.
+     * Initializes editor-specific components and registers SceneView contributions.
      */
     void OnStart() override;
 
@@ -80,7 +80,7 @@ protected:
     /**
      * @brief Called after the main loop ends
      *
-     * Cleans up editor-specific components and render pass resources.
+     * Cleans up editor-specific components and contribution resources.
      */
     void OnStop() override;
 
@@ -95,22 +95,22 @@ public:
 
 private:
     /**
-     * @brief GPU resources owned by editor render passes.
+     * @brief GPU resources owned by editor render contributions.
      */
-    struct JzEditorRenderPassResources;
+    struct JzEditorRenderContributionResources;
 
     /**
-     * @brief Build and register SceneView render passes (skybox/grid/axis).
+     * @brief Build and register SceneView contributions (skybox/grid/axis).
      */
-    void InitializeEditorRenderPasses();
+    void InitializeEditorRenderContributions();
 
     /**
-     * @brief Unregister render passes and release owned GPU resources.
+     * @brief Unregister contributions and release owned GPU resources.
      */
-    void ReleaseEditorRenderPasses();
+    void ReleaseEditorRenderContributions();
 
     std::filesystem::path       m_openPath;
     std::unique_ptr<JzEditorUI> m_editorUI;
-    std::unique_ptr<JzEditorRenderPassResources> m_editorRenderPassResources;
+    std::unique_ptr<JzEditorRenderContributionResources> m_editorRenderContributionResources;
 };
 } // namespace JzRE

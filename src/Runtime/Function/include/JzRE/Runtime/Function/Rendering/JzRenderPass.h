@@ -20,9 +20,11 @@ namespace JzRE {
 /**
  * @brief Description for a feature-gated render pass.
  *
+ * @deprecated Prefer JzRenderGraphContribution registration in JzRenderSystem.
+ *
  * Render passes are executed after filtered entity rendering in each target.
  * Each pass is controlled by a feature flag (Skybox/Grid/Axis/...) and
- * shares a unified execution path in RenderSystem.
+ * shares a unified execution path in RenderSystem as a compatibility adapter.
  */
 struct JzRenderPass {
     String                                  name;

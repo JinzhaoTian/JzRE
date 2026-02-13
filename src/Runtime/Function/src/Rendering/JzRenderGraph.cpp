@@ -5,7 +5,10 @@
 
 #include "JzRE/Runtime/Function/Rendering/JzRenderGraph.h"
 
+#include <cstdint>
 #include <fstream>
+
+#include "JzRE/Runtime/Platform/RHI/JzDevice.h"
 
 namespace JzRE {
 
@@ -130,29 +133,19 @@ void JzRenderGraph::Compile()
     AllocateResources();
 }
 
-void JzRenderGraph::Execute()
+void JzRenderGraph::Execute(JzDevice &device)
 {
+    std::vector<size_t> order;
     if (m_executionOrder.empty()) {
+        order.resize(m_passes.size());
         for (size_t i = 0; i < m_passes.size(); ++i) {
-            auto &pass = m_passes[i];
-            if (pass.desc.enabledExecute && !pass.desc.enabledExecute()) {
-                continue;
-            }
-
-            m_builder.SetActivePassIndex(i);
-
-            if (m_transitionCallback && !pass.transitions.empty()) {
-                m_transitionCallback(pass.desc, pass.transitions);
-            }
-
-            if (pass.desc.execute) {
-                pass.desc.execute();
-            }
+            order[i] = i;
         }
-        return;
+    } else {
+        order = m_executionOrder;
     }
 
-    for (size_t index : m_executionOrder) {
+    for (size_t index : order) {
         auto &pass = m_passes[index];
         if (pass.desc.enabledExecute && !pass.desc.enabledExecute()) {
             continue;
@@ -165,7 +158,34 @@ void JzRenderGraph::Execute()
         }
 
         if (pass.desc.execute) {
-            pass.desc.execute();
+            auto colorTexture = GetTextureResource(pass.colorTarget);
+            auto depthTexture = GetTextureResource(pass.depthTarget);
+            auto framebuffer  = ResolveFramebuffer(device, pass, colorTexture, depthTexture);
+
+            if (pass.colorTarget.id != 0 || pass.depthTarget.id != 0 || framebuffer) {
+                device.BindFramebuffer(framebuffer);
+            }
+
+            if (pass.viewport.x > 0 && pass.viewport.y > 0) {
+                JzViewport viewport;
+                viewport.x        = 0.0f;
+                viewport.y        = 0.0f;
+                viewport.width    = static_cast<F32>(pass.viewport.x);
+                viewport.height   = static_cast<F32>(pass.viewport.y);
+                viewport.minDepth = 0.0f;
+                viewport.maxDepth = 1.0f;
+                device.SetViewport(viewport);
+            }
+
+            const JzRGPassContext context{
+                device,
+                pass.viewport,
+                pass.colorTarget,
+                pass.depthTarget,
+                std::move(framebuffer),
+                std::move(colorTexture),
+                std::move(depthTexture)};
+            pass.desc.execute(context);
         }
     }
 }
@@ -179,6 +199,7 @@ void JzRenderGraph::Reset()
     m_bufferResources.clear();
     m_executionOrder.clear();
     m_hasCycle = false;
+    m_boundRenderTargets.clear();
 
     for (auto &entry : m_texturePool) {
         entry.inUse = false;
@@ -260,6 +281,22 @@ void JzRenderGraph::BindBuffer(JzRGBuffer buffer, std::shared_ptr<JzGPUBufferObj
     m_bufferResources[buffer.id - 1] = std::move(resource);
 }
 
+void JzRenderGraph::BindRenderTarget(JzRGTexture color, JzRGTexture depth,
+                                     std::shared_ptr<JzGPUFramebufferObject> framebuffer)
+{
+    if (color.id == 0 && depth.id == 0) {
+        return;
+    }
+
+    const U64 key = BuildRenderTargetKey(color.id, depth.id);
+    if (!framebuffer) {
+        m_boundRenderTargets.erase(key);
+        return;
+    }
+
+    m_boundRenderTargets[key] = std::move(framebuffer);
+}
+
 std::shared_ptr<JzGPUTextureObject> JzRenderGraph::GetTextureResource(JzRGTexture tex) const
 {
     if (tex.id == 0 || tex.id > m_textureResources.size()) {
@@ -293,6 +330,68 @@ void JzRenderGraph::SetBufferAllocator(
     std::function<std::shared_ptr<JzGPUBufferObject>(const JzRGBufferDesc &)> allocator)
 {
     m_bufferAllocator = std::move(allocator);
+}
+
+U64 JzRenderGraph::BuildRenderTargetKey(U32 colorId, U32 depthId)
+{
+    return (static_cast<U64>(colorId) << 32U) | static_cast<U64>(depthId);
+}
+
+U64 JzRenderGraph::BuildFramebufferPoolKey(const std::shared_ptr<JzGPUTextureObject> &color,
+                                           const std::shared_ptr<JzGPUTextureObject> &depth)
+{
+    if (!color && !depth) {
+        return 0;
+    }
+
+    const U64 colorPtr = static_cast<U64>(reinterpret_cast<std::uintptr_t>(color.get()));
+    const U64 depthPtr = static_cast<U64>(reinterpret_cast<std::uintptr_t>(depth.get()));
+    return colorPtr ^ (depthPtr + 0x9e3779b97f4a7c15ULL + (colorPtr << 6U) + (colorPtr >> 2U));
+}
+
+std::shared_ptr<JzGPUFramebufferObject> JzRenderGraph::ResolveFramebuffer(
+    JzDevice &device, const JzRGPassData &pass,
+    const std::shared_ptr<JzGPUTextureObject> &colorTexture,
+    const std::shared_ptr<JzGPUTextureObject> &depthTexture)
+{
+    if (pass.colorTarget.id == 0 && pass.depthTarget.id == 0) {
+        return nullptr;
+    }
+
+    const U64 boundTargetKey = BuildRenderTargetKey(pass.colorTarget.id, pass.depthTarget.id);
+    auto      boundTargetIt  = m_boundRenderTargets.find(boundTargetKey);
+    if (boundTargetIt != m_boundRenderTargets.end()) {
+        return boundTargetIt->second;
+    }
+
+    if (!colorTexture && !depthTexture) {
+        return nullptr;
+    }
+
+    const U64 poolKey = BuildFramebufferPoolKey(colorTexture, depthTexture);
+    if (poolKey == 0) {
+        return nullptr;
+    }
+
+    auto cachedFramebuffer = m_framebufferPool.find(poolKey);
+    if (cachedFramebuffer != m_framebufferPool.end()) {
+        return cachedFramebuffer->second;
+    }
+
+    auto framebuffer = device.CreateFramebuffer("RenderGraph_Framebuffer");
+    if (!framebuffer) {
+        return nullptr;
+    }
+
+    if (colorTexture) {
+        framebuffer->AttachColorTexture(colorTexture, 0);
+    }
+    if (depthTexture) {
+        framebuffer->AttachDepthTexture(depthTexture);
+    }
+
+    m_framebufferPool[poolKey] = framebuffer;
+    return framebuffer;
 }
 
 JzRGTexture JzRenderGraph::JzRGBuilderImpl::Read(JzRGTexture tex, JzRGUsage usage)

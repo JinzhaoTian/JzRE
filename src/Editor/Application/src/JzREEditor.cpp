@@ -37,7 +37,7 @@ JzRE::JzRERuntimeSettings CreateSettingsFromPath(JzRE::JzERHIType             rh
     return settings;
 }
 
-std::shared_ptr<JzRE::JzRHIPipeline> LoadRenderPassPipeline(
+std::shared_ptr<JzRE::JzRHIPipeline> LoadEditorContributionPipeline(
     JzRE::JzAssetSystem &assetSystem, const JzRE::String &primaryPath, const JzRE::String &fallbackPath)
 {
     const auto tryLoad = [&assetSystem](const JzRE::String &path) -> std::shared_ptr<JzRE::JzRHIPipeline> {
@@ -63,7 +63,7 @@ std::shared_ptr<JzRE::JzRHIPipeline> LoadRenderPassPipeline(
 
 } // anonymous namespace
 
-struct JzRE::JzREEditor::JzEditorRenderPassResources {
+struct JzRE::JzREEditor::JzEditorRenderContributionResources {
     std::shared_ptr<JzRHIPipeline>          skyboxPipeline;
     std::shared_ptr<JzRHIPipeline>          linePipeline;
     std::shared_ptr<JzGPUBufferObject>      skyboxVertexBuffer;
@@ -111,7 +111,7 @@ JzRE::JzREEditor::JzREEditor(JzERHIType rhiType, const std::filesystem::path &op
 
 JzRE::JzREEditor::~JzREEditor()
 {
-    ReleaseEditorRenderPasses();
+    ReleaseEditorRenderContributions();
 
     // Clean up editor UI before base class destructor runs
     m_editorUI.reset();
@@ -126,7 +126,7 @@ void JzRE::JzREEditor::OnStart()
 {
     JzRERuntime::OnStart();
 
-    InitializeEditorRenderPasses();
+    InitializeEditorRenderContributions();
 }
 
 void JzRE::JzREEditor::OnUpdate(F32 deltaTime)
@@ -149,13 +149,13 @@ void JzRE::JzREEditor::OnRender(F32 deltaTime)
 
 void JzRE::JzREEditor::OnStop()
 {
-    ReleaseEditorRenderPasses();
+    ReleaseEditorRenderContributions();
     JzRERuntime::OnStop();
 }
 
-void JzRE::JzREEditor::InitializeEditorRenderPasses()
+void JzRE::JzREEditor::InitializeEditorRenderContributions()
 {
-    ReleaseEditorRenderPasses();
+    ReleaseEditorRenderContributions();
 
     if (!m_renderSystem || !m_assetSystem || !JzServiceContainer::Has<JzDevice>()) {
         return;
@@ -164,16 +164,16 @@ void JzRE::JzREEditor::InitializeEditorRenderPasses()
     auto &device      = JzServiceContainer::Get<JzDevice>();
     auto &assetSystem = *m_assetSystem;
 
-    m_editorRenderPassResources = std::make_unique<JzEditorRenderPassResources>();
-    auto &resources             = *m_editorRenderPassResources;
+    m_editorRenderContributionResources = std::make_unique<JzEditorRenderContributionResources>();
+    auto &resources                     = *m_editorRenderContributionResources;
 
     resources.skyboxPipeline =
-        LoadRenderPassPipeline(assetSystem, "shaders/editor_skybox", "resources/shaders/editor_skybox");
+        LoadEditorContributionPipeline(assetSystem, "shaders/editor_skybox", "resources/shaders/editor_skybox");
     resources.linePipeline =
-        LoadRenderPassPipeline(assetSystem, "shaders/editor_axis", "resources/shaders/editor_axis");
+        LoadEditorContributionPipeline(assetSystem, "shaders/editor_axis", "resources/shaders/editor_axis");
 
     if (!resources.skyboxPipeline || !resources.linePipeline) {
-        JzRE_LOG_WARN("JzREEditor: Render pass shaders are not fully available, render pass rendering may be incomplete.");
+        JzRE_LOG_WARN("JzREEditor: Editor contribution shaders are not fully available, contribution rendering may be incomplete.");
     }
 
     constexpr std::array<F32, 6> kSkyboxTriangleVertices = {
@@ -265,84 +265,111 @@ void JzRE::JzREEditor::InitializeEditorRenderPasses()
         }
     }
 
-    auto setupLinePass = [](const std::shared_ptr<JzRHIPipeline> &pipeline,
-                            JzWorld &, const JzMat4 &viewMatrix, const JzMat4 &projectionMatrix) {
+    auto setupLineContribution = [](const std::shared_ptr<JzRHIPipeline> &pipeline,
+                                    const JzRenderGraphContributionContext &context) {
         const JzMat4 model = JzMat4x4::Identity();
         pipeline->SetUniform("model", model);
-        pipeline->SetUniform("view", viewMatrix);
-        pipeline->SetUniform("projection", projectionMatrix);
+        pipeline->SetUniform("view", context.viewMatrix);
+        pipeline->SetUniform("projection", context.projectionMatrix);
     };
 
     if (resources.skyboxPipeline && resources.skyboxVAO) {
-        JzRenderPass skyboxPass;
-        skyboxPass.name                     = "EditorSkyboxPass";
-        skyboxPass.feature                  = JzRenderTargetFeatures::Skybox;
-        skyboxPass.pipeline                 = resources.skyboxPipeline;
-        skyboxPass.vertexArray              = resources.skyboxVAO;
-        skyboxPass.drawParams.primitiveType = JzEPrimitiveType::Triangles;
-        skyboxPass.drawParams.vertexCount   = 3;
-        skyboxPass.drawParams.instanceCount = 1;
-        skyboxPass.drawParams.firstVertex   = 0;
-        skyboxPass.drawParams.firstInstance = 0;
-        skyboxPass.setupPass                = [](const std::shared_ptr<JzRHIPipeline> &pipeline,
-                                  JzWorld &world, const JzMat4 &viewMatrix, const JzMat4 &projectionMatrix) {
-            JzVec3 sunDirection(0.3f, -1.0f, -0.5f);
-            auto   lightView = world.View<JzDirectionalLightComponent>();
-            if (!lightView.empty()) {
-                sunDirection = world.GetComponent<JzDirectionalLightComponent>(lightView.front()).direction;
-            }
-            if (sunDirection.Length() > 0.0001f) {
-                sunDirection.Normalize();
-            }
+        JzDrawParams drawParams;
+        drawParams.primitiveType = JzEPrimitiveType::Triangles;
+        drawParams.vertexCount   = 3;
+        drawParams.instanceCount = 1;
+        drawParams.firstVertex   = 0;
+        drawParams.firstInstance = 0;
 
-            pipeline->SetUniform("view", viewMatrix);
-            pipeline->SetUniform("projection", projectionMatrix);
-            pipeline->SetUniform("topColor", JzVec3(0.19f, 0.42f, 0.78f));
-            pipeline->SetUniform("horizonColor", JzVec3(0.62f, 0.73f, 0.90f));
-            pipeline->SetUniform("groundColor", JzVec3(0.20f, 0.21f, 0.24f));
-            pipeline->SetUniform("sunDirection", sunDirection);
-            pipeline->SetUniform("sunColor", JzVec3(1.0f, 0.95f, 0.80f));
-            pipeline->SetUniform("sunSize", 0.04f);
-            pipeline->SetUniform("exposure", 1.0f);
-        };
-        m_renderSystem->RegisterRenderPass(std::move(skyboxPass));
+        JzRenderGraphContribution skyboxContribution;
+        skyboxContribution.name            = "EditorSkyboxContribution";
+        skyboxContribution.requiredFeature = JzRenderTargetFeatures::Skybox;
+        skyboxContribution.scope           = JzRenderGraphContributionScope::RegisteredTarget;
+        skyboxContribution.execute         =
+            [pipeline = resources.skyboxPipeline, vertexArray = resources.skyboxVAO, drawParams](
+                const JzRenderGraphContributionContext &context) {
+                auto &device = JzServiceContainer::Get<JzDevice>();
+                device.BindPipeline(pipeline);
+                device.BindVertexArray(vertexArray);
+
+                JzVec3 sunDirection(0.3f, -1.0f, -0.5f);
+                auto   lightView = context.world.View<JzDirectionalLightComponent>();
+                if (!lightView.empty()) {
+                    sunDirection =
+                        context.world.GetComponent<JzDirectionalLightComponent>(lightView.front()).direction;
+                }
+                if (sunDirection.Length() > 0.0001f) {
+                    sunDirection.Normalize();
+                }
+
+                pipeline->SetUniform("view", context.viewMatrix);
+                pipeline->SetUniform("projection", context.projectionMatrix);
+                pipeline->SetUniform("topColor", JzVec3(0.19f, 0.42f, 0.78f));
+                pipeline->SetUniform("horizonColor", JzVec3(0.62f, 0.73f, 0.90f));
+                pipeline->SetUniform("groundColor", JzVec3(0.20f, 0.21f, 0.24f));
+                pipeline->SetUniform("sunDirection", sunDirection);
+                pipeline->SetUniform("sunColor", JzVec3(1.0f, 0.95f, 0.80f));
+                pipeline->SetUniform("sunSize", 0.04f);
+                pipeline->SetUniform("exposure", 1.0f);
+
+                device.Draw(drawParams);
+            };
+        m_renderSystem->RegisterGraphContribution(std::move(skyboxContribution));
     }
 
     if (resources.linePipeline && resources.axisVAO) {
-        JzRenderPass axisPass;
-        axisPass.name                     = "EditorAxisPass";
-        axisPass.feature                  = JzRenderTargetFeatures::Axis;
-        axisPass.pipeline                 = resources.linePipeline;
-        axisPass.vertexArray              = resources.axisVAO;
-        axisPass.drawParams.primitiveType = JzEPrimitiveType::Lines;
-        axisPass.drawParams.vertexCount   = static_cast<U32>(kAxisVertices.size());
-        axisPass.drawParams.instanceCount = 1;
-        axisPass.drawParams.firstVertex   = 0;
-        axisPass.drawParams.firstInstance = 0;
-        axisPass.setupPass                = setupLinePass;
-        m_renderSystem->RegisterRenderPass(std::move(axisPass));
+        JzDrawParams drawParams;
+        drawParams.primitiveType = JzEPrimitiveType::Lines;
+        drawParams.vertexCount   = static_cast<U32>(kAxisVertices.size());
+        drawParams.instanceCount = 1;
+        drawParams.firstVertex   = 0;
+        drawParams.firstInstance = 0;
+
+        JzRenderGraphContribution axisContribution;
+        axisContribution.name            = "EditorAxisContribution";
+        axisContribution.requiredFeature = JzRenderTargetFeatures::Axis;
+        axisContribution.scope           = JzRenderGraphContributionScope::RegisteredTarget;
+        axisContribution.execute         =
+            [pipeline = resources.linePipeline, vertexArray = resources.axisVAO, drawParams,
+             setupLineContribution](const JzRenderGraphContributionContext &context) {
+                auto &device = JzServiceContainer::Get<JzDevice>();
+                device.BindPipeline(pipeline);
+                device.BindVertexArray(vertexArray);
+                setupLineContribution(pipeline, context);
+                device.Draw(drawParams);
+            };
+        m_renderSystem->RegisterGraphContribution(std::move(axisContribution));
     }
 
     if (resources.linePipeline && resources.gridVAO && resources.gridVertexCount > 0) {
-        JzRenderPass gridPass;
-        gridPass.name                     = "EditorGridPass";
-        gridPass.feature                  = JzRenderTargetFeatures::Grid;
-        gridPass.pipeline                 = resources.linePipeline;
-        gridPass.vertexArray              = resources.gridVAO;
-        gridPass.drawParams.primitiveType = JzEPrimitiveType::Lines;
-        gridPass.drawParams.vertexCount   = resources.gridVertexCount;
-        gridPass.drawParams.instanceCount = 1;
-        gridPass.drawParams.firstVertex   = 0;
-        gridPass.drawParams.firstInstance = 0;
-        gridPass.setupPass                = setupLinePass;
-        m_renderSystem->RegisterRenderPass(std::move(gridPass));
+        JzDrawParams drawParams;
+        drawParams.primitiveType = JzEPrimitiveType::Lines;
+        drawParams.vertexCount   = resources.gridVertexCount;
+        drawParams.instanceCount = 1;
+        drawParams.firstVertex   = 0;
+        drawParams.firstInstance = 0;
+
+        JzRenderGraphContribution gridContribution;
+        gridContribution.name            = "EditorGridContribution";
+        gridContribution.requiredFeature = JzRenderTargetFeatures::Grid;
+        gridContribution.scope           = JzRenderGraphContributionScope::RegisteredTarget;
+        gridContribution.execute         =
+            [pipeline = resources.linePipeline, vertexArray = resources.gridVAO, drawParams,
+             setupLineContribution](const JzRenderGraphContributionContext &context) {
+                auto &device = JzServiceContainer::Get<JzDevice>();
+                device.BindPipeline(pipeline);
+                device.BindVertexArray(vertexArray);
+                setupLineContribution(pipeline, context);
+                device.Draw(drawParams);
+            };
+        m_renderSystem->RegisterGraphContribution(std::move(gridContribution));
     }
 }
 
-void JzRE::JzREEditor::ReleaseEditorRenderPasses()
+void JzRE::JzREEditor::ReleaseEditorRenderContributions()
 {
     if (m_renderSystem) {
-        m_renderSystem->ClearRenderPasses();
+        m_renderSystem->ClearGraphContributions();
     }
-    m_editorRenderPassResources.reset();
+    m_editorRenderContributionResources.reset();
 }

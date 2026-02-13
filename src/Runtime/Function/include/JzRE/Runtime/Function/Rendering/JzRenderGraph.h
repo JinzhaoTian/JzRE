@@ -8,14 +8,18 @@
 #include <cstddef>
 #include <functional>
 #include <memory>
+#include <unordered_map>
 #include <vector>
 
 #include "JzRE/Runtime/Core/JzRETypes.h"
 #include "JzRE/Runtime/Core/JzVector.h"
 #include "JzRE/Runtime/Platform/RHI/JzGPUBufferObject.h"
+#include "JzRE/Runtime/Platform/RHI/JzGPUFramebufferObject.h"
 #include "JzRE/Runtime/Platform/RHI/JzGPUTextureObject.h"
 
 namespace JzRE {
+
+class JzDevice;
 
 enum class JzRGUsage : U8 {
     Read,
@@ -58,6 +62,19 @@ struct JzRGTransition {
     JzRGUsage        after  = JzRGUsage::Read;
 };
 
+/**
+ * @brief Runtime execution context for one RenderGraph pass.
+ */
+struct JzRGPassContext {
+    JzDevice                               &device;
+    JzIVec2                                 viewport{0, 0};
+    JzRGTexture                             colorHandle{};
+    JzRGTexture                             depthHandle{};
+    std::shared_ptr<JzGPUFramebufferObject> framebuffer;
+    std::shared_ptr<JzGPUTextureObject>     colorTexture;
+    std::shared_ptr<JzGPUTextureObject>     depthTexture;
+};
+
 class JzRGBuilder {
 public:
     /**
@@ -90,10 +107,10 @@ public:
  * @brief RenderGraph pass description (phase 1).
  */
 struct JzRGPassDesc {
-    String                             name;
-    std::function<Bool()>              enabledExecute = nullptr;
-    std::function<void(JzRGBuilder &)> setup;
-    std::function<void()>              execute;
+    String                                       name;
+    std::function<Bool()>                        enabledExecute = nullptr;
+    std::function<void(JzRGBuilder &)>           setup;
+    std::function<void(const JzRGPassContext &)> execute;
 };
 
 /**
@@ -138,7 +155,7 @@ public:
     /**
      * @brief Execute all passes in order.
      */
-    void Execute();
+    void Execute(JzDevice &device);
 
     /**
      * @brief Clear all passes for the next frame.
@@ -161,6 +178,12 @@ public:
      * @brief Bind an external buffer resource to a logical buffer.
      */
     void BindBuffer(JzRGBuffer buffer, std::shared_ptr<JzGPUBufferObject> resource);
+
+    /**
+     * @brief Bind an external framebuffer for a logical color/depth pair.
+     */
+    void BindRenderTarget(JzRGTexture color, JzRGTexture depth,
+                          std::shared_ptr<JzGPUFramebufferObject> framebuffer);
 
     /**
      * @brief Get the bound GPU texture resource for a logical texture.
@@ -221,15 +244,17 @@ private:
         size_t         m_activePass = static_cast<size_t>(-1);
     };
 
-    std::vector<JzRGPassData>                        m_passes;
-    std::vector<JzRGTextureDesc>                     m_textures;
-    std::vector<JzRGBufferDesc>                      m_buffers;
-    std::vector<std::shared_ptr<JzGPUTextureObject>> m_textureResources;
-    std::vector<std::shared_ptr<JzGPUBufferObject>>  m_bufferResources;
-    TransitionCallback                               m_transitionCallback;
-    std::vector<size_t>                              m_executionOrder;
-    Bool                                             m_hasCycle = false;
-    JzRGBuilderImpl                                  m_builder;
+    std::vector<JzRGPassData>                                        m_passes;
+    std::vector<JzRGTextureDesc>                                     m_textures;
+    std::vector<JzRGBufferDesc>                                      m_buffers;
+    std::vector<std::shared_ptr<JzGPUTextureObject>>                 m_textureResources;
+    std::vector<std::shared_ptr<JzGPUBufferObject>>                  m_bufferResources;
+    std::unordered_map<U64, std::shared_ptr<JzGPUFramebufferObject>> m_boundRenderTargets;
+    std::unordered_map<U64, std::shared_ptr<JzGPUFramebufferObject>> m_framebufferPool;
+    TransitionCallback                                               m_transitionCallback;
+    std::vector<size_t>                                              m_executionOrder;
+    Bool                                                             m_hasCycle = false;
+    JzRGBuilderImpl                                                  m_builder;
 
     void BuildTransitions(const std::vector<size_t> &order);
     void AllocateResources();
@@ -251,6 +276,14 @@ private:
 
     std::function<std::shared_ptr<JzGPUTextureObject>(const JzRGTextureDesc &)> m_textureAllocator;
     std::function<std::shared_ptr<JzGPUBufferObject>(const JzRGBufferDesc &)>   m_bufferAllocator;
+
+    static U64                              BuildRenderTargetKey(U32 colorId, U32 depthId);
+    static U64                              BuildFramebufferPoolKey(const std::shared_ptr<JzGPUTextureObject> &color,
+                                                                    const std::shared_ptr<JzGPUTextureObject> &depth);
+    std::shared_ptr<JzGPUFramebufferObject> ResolveFramebuffer(
+        JzDevice &device, const JzRGPassData &pass,
+        const std::shared_ptr<JzGPUTextureObject> &colorTexture,
+        const std::shared_ptr<JzGPUTextureObject> &depthTexture);
 };
 
 } // namespace JzRE

@@ -16,6 +16,7 @@
 #include "JzRE/Runtime/Function/ECS/JzSystem.h"
 #include "JzRE/Runtime/Function/ECS/JzWorld.h"
 #include "JzRE/Runtime/Function/Rendering/JzRenderGraph.h"
+#include "JzRE/Runtime/Function/Rendering/JzRenderGraphContribution.h"
 #include "JzRE/Runtime/Function/Rendering/JzRenderOutput.h"
 #include "JzRE/Runtime/Function/Rendering/JzRenderPass.h"
 #include "JzRE/Runtime/Function/Rendering/JzRenderTarget.h"
@@ -29,12 +30,15 @@
 
 namespace JzRE {
 
+class JzAssetManager;
+class JzDevice;
+
 /**
  * @brief Enhanced render system that integrates with camera system.
  *
  * This system manages:
- * - Framebuffer, color texture, and depth texture
- * - Default rendering pipeline with shaders
+ * - Main and registered render outputs
+ * - RenderGraph pass recording and execution
  * - Rendering all entities with Transform + Mesh + Material components
  * - Blitting to screen for standalone runtime
  */
@@ -80,11 +84,6 @@ public:
     std::shared_ptr<JzGPUTextureObject> GetDepthTexture() const;
 
     /**
-     * @brief Get the default rendering pipeline.
-     */
-    std::shared_ptr<JzRHIPipeline> GetDefaultPipeline() const;
-
-    /**
      * @brief Get a render output by render target handle.
      *
      * @param handle Handle returned from RegisterRenderTarget()
@@ -118,18 +117,16 @@ public:
     Bool IsInitialized() const;
 
     /**
-     * @brief Register a render pass.
+     * @brief Register a graph contribution.
      *
-     * If a pass with the same name already exists, it is replaced in-place.
-     *
-     * @param pass Render pass descriptor.
+     * If a contribution with the same name already exists, it is replaced.
      */
-    void RegisterRenderPass(JzRenderPass pass);
+    void RegisterGraphContribution(JzRenderGraphContribution contribution);
 
     /**
-     * @brief Remove all registered render passes.
+     * @brief Remove all registered graph contributions.
      */
-    void ClearRenderPasses();
+    void ClearGraphContributions();
 
     // ==================== Render Target Registration ====================
 
@@ -174,56 +171,69 @@ public:
 
 private:
     /**
-     * @brief Create the framebuffer and its attachments.
+     * @brief Ensure the main output size/resources match current frame size.
      */
-    Bool CreateFramebuffer();
+    Bool EnsureMainOutput();
 
     /**
-     * @brief Create the default rendering pipeline with shaders.
+     * @brief Resolve the geometry rendering pipeline from shader assets.
      */
-    Bool CreateDefaultPipeline();
+    std::shared_ptr<JzRHIPipeline> ResolveGeometryPipeline() const;
 
     /**
-     * @brief Setup viewport and clear the framebuffer.
+     * @brief Execute one contribution for a render target.
      */
-    void SetupViewportAndClear(JzWorld &world);
+    void ExecuteContribution(JzWorld                         &world,
+                             const JzRGPassContext           &passContext,
+                             JzEntity                         camera,
+                             JzRenderVisibility               visibility,
+                             JzRenderTargetFeatures           targetFeatures,
+                             std::shared_ptr<JzRHIPipeline>   geometryPipeline,
+                             const JzRenderGraphContribution &contribution);
 
     /**
-     * @brief Render all entities with Transform + Mesh + Material.
+     * @brief Resolve camera matrices and clear color for the current target.
      */
-    void RenderEntities(JzWorld &world);
+    void ResolveCameraFrameData(JzWorld &world, JzEntity preferredCamera,
+                                JzMat4 &viewMatrix, JzMat4 &projectionMatrix,
+                                JzVec3 &clearColor) const;
 
     /**
-     * @brief Render to an output with entity filtering based on visibility.
-     *
-     * @param world The ECS world
-     * @param output The render output
-     * @param camera The camera entity
-     * @param visibility Visibility mask for entity filtering
-     * @param features Target feature mask
+     * @brief Bind framebuffer/pipeline, set viewport, and clear target.
      */
-    void RenderToTargetFiltered(JzWorld &world, JzRenderOutput &output,
-                                JzEntity camera, JzRenderVisibility visibility,
-                                JzRenderTargetFeatures features);
+    void BeginRenderTargetPass(const JzRGPassContext         &passContext,
+                               const JzMat4                  &viewMatrix,
+                               const JzMat4                  &projectionMatrix,
+                               const JzVec3                  &clearColor,
+                               std::shared_ptr<JzRHIPipeline> pipeline);
 
     /**
-     * @brief Render entities with visibility filtering.
-     *
-     * @param world The ECS world
-     * @param visibility Visibility mask for entity filtering
+     * @brief Bind framebuffer and viewport for contribution passes.
      */
-    void RenderEntitiesFiltered(JzWorld &world, JzRenderVisibility visibility);
+    void BeginContributionTargetPass(const JzRGPassContext &passContext);
 
     /**
-     * @brief Execute render passes enabled for a render target.
-     *
-     * @param world The ECS world
-     * @param features Feature mask for the current target
-     * @param viewMatrix Current camera view matrix
-     * @param projectionMatrix Current camera projection matrix
+     * @brief Render entities for a visibility mask.
      */
-    void ExecuteRenderPasses(JzWorld &world, JzRenderTargetFeatures features,
-                             const JzMat4 &viewMatrix, const JzMat4 &projectionMatrix);
+    void DrawVisibleEntities(JzWorld &world, JzRenderVisibility visibility,
+                             std::shared_ptr<JzRHIPipeline> pipeline);
+
+    /**
+     * @brief Draw a single renderable entity with the geometry pipeline.
+     */
+    void DrawEntity(JzWorld &world, JzEntity entity, JzAssetManager &assetManager,
+                    JzDevice &device, std::shared_ptr<JzRHIPipeline> pipeline);
+
+    /**
+     * @brief Check if an entity should be rendered by the current visibility mask.
+     */
+    Bool IsEntityVisible(JzWorld &world, JzEntity entity, JzRenderVisibility visibility) const;
+
+    /**
+     * @brief Check if a contribution should run for a target feature mask.
+     */
+    Bool IsContributionEnabled(JzRenderTargetFeatures targetFeatures,
+                               JzRenderTargetFeatures requiredFeature) const;
 
     /**
      * @brief Apply render graph transitions (backend-specific).
@@ -237,24 +247,17 @@ private:
     void CleanupResources();
 
 private:
-    // GPU resources
-    std::shared_ptr<JzGPUFramebufferObject> m_framebuffer;
-    std::shared_ptr<JzGPUTextureObject>     m_colorTexture;
-    std::shared_ptr<JzGPUTextureObject>     m_depthTexture;
-    std::shared_ptr<JzRHIPipeline>          m_defaultPipeline;
-    std::vector<JzRenderPass>               m_renderPasses;
-
-    // Frame state
     JzIVec2 m_frameSize{1280, 720};
     Bool    m_frameSizeChanged = true;
     Bool    m_isInitialized    = false;
 
-    // Logical render target registry
     std::vector<JzRenderTarget> m_renderTargets;
     JzRenderTargetHandle        m_nextRenderTargetHandle = 1;
 
-    // Phase 1 RenderGraph (single-pass integration)
-    JzRenderGraph m_renderGraph;
+    JzRenderGraph                          m_renderGraph;
+    std::vector<JzRenderGraphContribution> m_graphContributions;
+
+    std::shared_ptr<JzRenderOutput> m_mainOutput;
 };
 
 } // namespace JzRE

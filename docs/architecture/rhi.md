@@ -118,6 +118,8 @@ This path is available, but current `JzRenderSystem` directly issues immediate c
 
 - graph transition callback builds `JzRHIResourceBarrier` list
 - calls `device.ResourceBarrier(barriers)` before pass execution
+- graph execution runs via `JzRenderGraph::Execute(device)` and provides
+  per-pass `JzRGPassContext` (framebuffer/viewport/resource bindings)
 
 Backend behavior today:
 
@@ -148,7 +150,13 @@ Backend characteristics:
 In the runtime frame loop:
 
 1. ECS systems update (`JzWorld::Update`).
-2. `JzRenderSystem` performs immediate RHI draw calls.
+2. `JzRenderSystem` performs immediate RHI draw calls through:
+   built-in geometry contribution (`ExecuteContribution` with
+   `ResolveCameraFrameData -> BeginRenderTargetPass -> DrawVisibleEntities`,
+   where the geometry pipeline is resolved from `shaders/standard` per frame
+   and pass targets are provided by `JzRGPassContext`
+   plus graph contribution passes (`JzRenderGraphContribution`).
+   Editor integrations register these passes via `RegisterGraphContribution(...)`.
 3. Host UI (`OnRender`) runs.
 4. `JzGraphicsContext::Present()` performs finish + swap.
 
