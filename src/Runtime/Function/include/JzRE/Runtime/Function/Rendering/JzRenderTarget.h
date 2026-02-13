@@ -5,109 +5,87 @@
 
 #pragma once
 
+#include <functional>
 #include <memory>
 
 #include "JzRE/Runtime/Core/JzRETypes.h"
 #include "JzRE/Runtime/Core/JzVector.h"
+#include "JzRE/Runtime/Function/ECS/JzEntity.h"
 #include "JzRE/Runtime/Function/Rendering/JzRenderOutput.h"
-#include "JzRE/Runtime/Platform/RHI/JzGPUFramebufferObject.h"
-#include "JzRE/Runtime/Platform/RHI/JzGPUTextureObject.h"
+#include "JzRE/Runtime/Function/Rendering/JzRenderVisibility.h"
 
 namespace JzRE {
 
 /**
- * @brief Manages framebuffer and textures for a single view panel.
- *
- * This class encapsulates the GPU resources needed to render to an offscreen
- * target that can be displayed in an ImGui view panel via ImGui::Image().
+ * @brief Handle type for registered render targets.
  */
-class JzRenderTarget : public JzRenderOutput,
-                       public std::enable_shared_from_this<JzRenderTarget> {
-public:
-    /**
-     * @brief Constructor
-     *
-     * @param debugName Debug name for GPU resources
-     */
-    explicit JzRenderTarget(const String &debugName = "RenderTarget");
+using JzRenderTargetHandle = U32;
 
-    /**
-     * @brief Destructor
-     */
-    ~JzRenderTarget();
+/**
+ * @brief Invalid render target handle value.
+ */
+inline constexpr JzRenderTargetHandle INVALID_RENDER_TARGET_HANDLE = 0;
 
-    /**
-     * @brief Ensure the render target matches the requested size.
-     *
-     * Creates or recreates GPU resources if the size has changed.
-     *
-     * @param size The desired size
-     * @return true if resize occurred and resources were recreated
-     */
-    Bool EnsureSize(JzIVec2 size);
+/**
+ * @brief Per-target render feature flags.
+ *
+ * A render target can opt in to additional render features
+ * (such as skybox and axis overlays) without forcing those features
+ * into all render targets.
+ */
+enum class JzRenderTargetFeatures : U32 {
+    None        = 0,
+    Skybox      = 1 << 0,
+    Axis        = 1 << 1,
+    Grid        = 1 << 2,
+    Manipulator = 1 << 3,
+};
 
-    /**
-     * @brief Get the framebuffer for rendering.
-     *
-     * @return The framebuffer object
-     */
-    std::shared_ptr<JzGPUFramebufferObject> GetFramebuffer() const;
+/**
+ * @brief Bitwise OR for JzRenderTargetFeatures.
+ */
+inline constexpr JzRenderTargetFeatures operator|(JzRenderTargetFeatures lhs,
+                                                  JzRenderTargetFeatures rhs)
+{
+    return static_cast<JzRenderTargetFeatures>(static_cast<U32>(lhs) | static_cast<U32>(rhs));
+}
 
-    /**
-     * @brief Get the color texture.
-     *
-     * @return The color texture object
-     */
-    std::shared_ptr<JzGPUTextureObject> GetColorTexture() const;
+/**
+ * @brief Bitwise AND for JzRenderTargetFeatures.
+ */
+inline constexpr JzRenderTargetFeatures operator&(JzRenderTargetFeatures lhs,
+                                                  JzRenderTargetFeatures rhs)
+{
+    return static_cast<JzRenderTargetFeatures>(static_cast<U32>(lhs) & static_cast<U32>(rhs));
+}
 
-    /**
-     * @brief Get the depth texture.
-     *
-     * @return The depth texture object
-     */
-    std::shared_ptr<JzGPUTextureObject> GetDepthTexture() const;
+/**
+ * @brief Check if feature mask contains a specific feature.
+ */
+inline constexpr Bool HasFeature(JzRenderTargetFeatures mask, JzRenderTargetFeatures feature)
+{
+    return static_cast<U32>(mask & feature) != 0;
+}
 
-    /**
-     * @brief Get the native texture ID for ImGui::Image().
-     *
-     * @return The native texture ID (e.g., GLuint cast to void*)
-     */
-    void *GetTextureID() const override;
+/**
+ * @brief Logical render target descriptor.
+ */
+struct JzRenderTargetDesc {
+    String                   name;
+    JzEntity                 camera     = INVALID_ENTITY;
+    JzRenderVisibility       visibility = JzRenderVisibility::MainScene;
+    JzRenderTargetFeatures   features   = JzRenderTargetFeatures::None;
+    std::function<Bool()>    shouldRender;
+    std::function<JzIVec2()> getDesiredSize;
+};
 
-    /**
-     * @brief Get current size.
-     *
-     * @return The current render target size
-     */
-    JzIVec2 GetSize() const override;
-
-    /**
-     * @brief Check if the render target is valid and ready for use.
-     *
-     * @return true if framebuffer and textures are created
-     */
-    Bool IsValid() const override;
-
-private:
-    /**
-     * @brief Create GPU resources (framebuffer, color texture, depth texture).
-     *
-     * @return true if creation succeeded
-     */
-    Bool CreateResources();
-
-    /**
-     * @brief Destroy GPU resources.
-     */
-    void DestroyResources();
-
-private:
-    String  m_debugName;
-    JzIVec2 m_size{0, 0};
-
-    std::shared_ptr<JzGPUFramebufferObject> m_framebuffer;
-    std::shared_ptr<JzGPUTextureObject>     m_colorTexture;
-    std::shared_ptr<JzGPUTextureObject>     m_depthTexture;
+/**
+ * @brief Runtime render target instance.
+ */
+struct JzRenderTarget {
+    JzRenderTargetHandle            handle = INVALID_RENDER_TARGET_HANDLE;
+    JzRenderTargetDesc              desc;
+    std::shared_ptr<JzRenderOutput> output;
 };
 
 } // namespace JzRE

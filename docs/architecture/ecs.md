@@ -13,7 +13,7 @@ Rules:
 1. Runtime components/systems model engine and gameplay domain semantics, not editor product semantics.
 2. Runtime public ECS contracts must not encode panel-level concepts (`SceneView`, `AssetView`, `GameView`) or editor-only naming.
 3. Editor viewport/panel interaction logic should stay in Editor module and consume runtime ECS data through generic interfaces.
-4. Existing editor-coupled ECS symbols in runtime are compatibility debt and should be migrated incrementally.
+4. New runtime ECS APIs must use neutral engine terms; legacy editor-coupled symbols, if any, must be explicitly marked for deprecation and never extended.
 
 ## Quick Start
 
@@ -290,29 +290,29 @@ Any System → RegisterHandler<JzKeyEvent>(...) to receive events
 
 ### Window Events (`JzWindowEvents.h`)
 
-| Event                                | Fields                         | Emitted When                  |
-| ------------------------------------ | ------------------------------ | ----------------------------- |
-| `JzWindowResizedEvent`               | `size`, `oldSize`              | Window size changes           |
-| `JzWindowFramebufferResizedEvent`    | `size`                         | Framebuffer resizes (HiDPI)   |
-| `JzWindowMovedEvent`                 | `position`                     | Window position changes       |
-| `JzWindowFocusEvent`                 | `focused`                      | Focus gained/lost             |
-| `JzWindowIconifiedEvent`             | `iconified`                    | Minimized/restored            |
-| `JzWindowMaximizedEvent`             | `maximized`                    | Maximized/restored            |
-| `JzWindowClosedEvent`                | `forced`                       | Close requested               |
-| `JzFileDroppedEvent`                 | `filePaths`, `dropPosition`    | File dropped on window        |
-| `JzWindowContentScaleChangedEvent`   | `scale`                        | DPI scale changes             |
+| Event                              | Fields                      | Emitted When                |
+| ---------------------------------- | --------------------------- | --------------------------- |
+| `JzWindowResizedEvent`             | `size`, `oldSize`           | Window size changes         |
+| `JzWindowFramebufferResizedEvent`  | `size`                      | Framebuffer resizes (HiDPI) |
+| `JzWindowMovedEvent`               | `position`                  | Window position changes     |
+| `JzWindowFocusEvent`               | `focused`                   | Focus gained/lost           |
+| `JzWindowIconifiedEvent`           | `iconified`                 | Minimized/restored          |
+| `JzWindowMaximizedEvent`           | `maximized`                 | Maximized/restored          |
+| `JzWindowClosedEvent`              | `forced`                    | Close requested             |
+| `JzFileDroppedEvent`               | `filePaths`, `dropPosition` | File dropped on window      |
+| `JzWindowContentScaleChangedEvent` | `scale`                     | DPI scale changes           |
 
 ### Input Events (`JzInputEvents.h`)
 
-| Event                          | Fields                              | Emitted When                     |
-| ------------------------------ | ----------------------------------- | -------------------------------- |
-| `JzKeyEvent`                   | `key`, `scancode`, `action`, `mods` | Key pressed/released             |
-| `JzMouseButtonEvent`           | `button`, `action`, `mods`, `position` | Mouse button pressed/released |
-| `JzMouseMoveEvent`             | `position`, `delta`                 | Mouse moved (non-zero delta)     |
-| `JzMouseScrollEvent`           | `offset`, `position`                | Scroll wheel used                |
-| `JzMouseEnterEvent`            | `entered`                           | Cursor enters/leaves window      |
-| `JzInputActionTriggeredEvent`  | `actionName`, `value`               | Action triggered this frame      |
-| `JzInputActionReleasedEvent`   | `actionName`, `duration`            | Action released this frame       |
+| Event                         | Fields                                 | Emitted When                  |
+| ----------------------------- | -------------------------------------- | ----------------------------- |
+| `JzKeyEvent`                  | `key`, `scancode`, `action`, `mods`    | Key pressed/released          |
+| `JzMouseButtonEvent`          | `button`, `action`, `mods`, `position` | Mouse button pressed/released |
+| `JzMouseMoveEvent`            | `position`, `delta`                    | Mouse moved (non-zero delta)  |
+| `JzMouseScrollEvent`          | `offset`, `position`                   | Scroll wheel used             |
+| `JzMouseEnterEvent`           | `entered`                              | Cursor enters/leaves window   |
+| `JzInputActionTriggeredEvent` | `actionName`, `value`                  | Action triggered this frame   |
+| `JzInputActionReleasedEvent`  | `actionName`, `duration`               | Action released this frame    |
 
 ### Subscribing to Events
 
@@ -352,15 +352,15 @@ m_assetSystem  = m_world->RegisterSystem<JzAssetSystem>();
 
 ## Available Systems
 
-| System             | Phase     | Description                                                       |
-| ------------------ | --------- | ----------------------------------------------------------------- |
-| `JzWindowSystem`   | Input     | Polls backend, syncs window/input state, emits window events      |
-| `JzInputSystem`    | Input     | Processes input, syncs legacy components, emits input events      |
-| `JzAssetSystem`    | Logic     | Asset loading, hot reload, shader variant management              |
-| `JzMoveSystem`     | Logic     | Entity movement and basic physics                                 |
-| `JzCameraSystem`   | PreRender | Updates camera matrices, reads input components for orbit control |
-| `JzLightSystem`    | PreRender | Collects light data for rendering                                 |
-| `JzRenderSystem`   | Render    | Manages framebuffer, renders entities with mesh/material          |
+| System           | Phase     | Description                                                       |
+| ---------------- | --------- | ----------------------------------------------------------------- |
+| `JzWindowSystem` | Input     | Polls backend, syncs window/input state, emits window events      |
+| `JzInputSystem`  | Input     | Processes input, syncs legacy components, emits input events      |
+| `JzAssetSystem`  | Logic     | Asset loading, hot reload, shader variant management              |
+| `JzMoveSystem`   | Logic     | Entity movement and basic physics                                 |
+| `JzCameraSystem` | PreRender | Updates camera matrices, reads input components for orbit control |
+| `JzLightSystem`  | PreRender | Collects light data for rendering                                 |
+| `JzRenderSystem` | Render    | Manages framebuffer, renders entities with mesh/material          |
 
 **Note:** `JzEventSystem` is stored in `JzWorld` context (accessed via `world.GetContext<JzEventSystem>()`), not registered as a system.
 
@@ -374,29 +374,29 @@ Components are organized into per-system header files.
 
 ### Entity Components (`JzEntityComponents.h`)
 
-| Component              | Description                          |
-| ---------------------- | ------------------------------------ |
-| `JzActiveTag`          | Tag for active entities              |
-| `JzStaticTag`          | Tag for static entities              |
-| `JzPendingDestroyTag`  | Mark for deferred destruction        |
-| `JzNameComponent`      | Human-readable entity name           |
-| `JzUUIDComponent`      | Unique identifier for serialization  |
+| Component             | Description                         |
+| --------------------- | ----------------------------------- |
+| `JzActiveTag`         | Tag for active entities             |
+| `JzStaticTag`         | Tag for static entities             |
+| `JzPendingDestroyTag` | Mark for deferred destruction       |
+| `JzNameComponent`     | Human-readable entity name          |
+| `JzUUIDComponent`     | Unique identifier for serialization |
 
 ### Transform Components (`JzTransformComponents.h`)
 
-| Component                | Description                              |
-| ------------------------ | ---------------------------------------- |
-| `JzTransformComponent`   | Position, rotation, scale, cached matrix |
-| `JzVelocityComponent`    | Velocity vector                          |
+| Component              | Description                              |
+| ---------------------- | ---------------------------------------- |
+| `JzTransformComponent` | Position, rotation, scale, cached matrix |
+| `JzVelocityComponent`  | Velocity vector                          |
 
 ### Camera Components (`JzCameraComponents.h`)
 
-| Component                      | Description                                                         |
-| ------------------------------ | ------------------------------------------------------------------- |
-| `JzCameraComponent`            | Full camera state (position, rotation, fov, near/far, matrices)     |
-| `JzOrbitControllerComponent`   | Orbit camera controller (target, yaw, pitch, distance, sensitivity) |
-| `JzMainCameraTag`              | Tag for main camera entity                                          |
-| `JzCameraInputComponent`       | Legacy processed camera input (orbit/pan, mouse delta, scroll)      |
+| Component                    | Description                                                         |
+| ---------------------------- | ------------------------------------------------------------------- |
+| `JzCameraComponent`          | Full camera state (position, rotation, fov, near/far, matrices)     |
+| `JzOrbitControllerComponent` | Orbit camera controller (target, yaw, pitch, distance, sensitivity) |
+| `JzMainCameraTag`            | Tag for main camera entity                                          |
+| `JzCameraInputComponent`     | Legacy processed camera input (orbit/pan, mouse delta, scroll)      |
 
 ### Light Components (`JzLightComponents.h`)
 
@@ -404,67 +404,68 @@ Components are organized into per-system header files.
 | ----------------------------- | ------------------------------------------------------- |
 | `JzDirectionalLightComponent` | Directional light (direction, color, intensity)         |
 | `JzPointLightComponent`       | Point light (color, intensity, range, attenuation)      |
-| `JzSpotLightComponent`        | Spot light (direction, color, intensity, cutoff angles)  |
+| `JzSpotLightComponent`        | Spot light (direction, color, intensity, cutoff angles) |
 
 ### Render Components (`JzRenderComponents.h`)
 
-| Component              | Description                              |
-| ---------------------- | ---------------------------------------- |
-| `JzMeshComponent`      | Mesh geometry data and GPU resources     |
-| `JzMaterialComponent`  | PBR material properties and textures     |
-| `JzRenderableTag`      | Tag to mark entity as renderable         |
-| `JzSkyboxComponent`    | Skybox tag                               |
-| `JzGridComponent`      | Grid visualization parameters            |
-| `JzGizmoComponent`     | Editor gizmo type and selection state    |
+| Component                | Description                          |
+| ------------------------ | ------------------------------------ |
+| `JzMeshComponent`        | Mesh geometry data and GPU resources |
+| `JzMaterialComponent`    | PBR material properties and textures |
+| `JzRenderableTag`        | Tag to mark entity as renderable     |
+| `JzSkyboxComponent`      | Skybox tag                           |
+| `JzGridComponent`        | Grid visualization parameters        |
+| `JzManipulatorComponent` | Manipulator type and selection state |
 
 ### Spatial Components (`JzSpatialComponents.h`)
 
-| Component                    | Description                              |
-| ---------------------------- | ---------------------------------------- |
-| `JzBoundingBoxComponent`     | Axis-aligned bounding box (min, max)     |
-| `JzBoundingSphereComponent`  | Bounding sphere (center, radius)         |
-| `JzBoundsComponent`          | Local and world bounds                   |
-| `JzSpatialComponent`         | Spatial partition (position, grid cell)   |
-| `JzStreamingComponent`       | Streaming load state                     |
+| Component                   | Description                             |
+| --------------------------- | --------------------------------------- |
+| `JzBoundingBoxComponent`    | Axis-aligned bounding box (min, max)    |
+| `JzBoundingSphereComponent` | Bounding sphere (center, radius)        |
+| `JzBoundsComponent`         | Local and world bounds                  |
+| `JzSpatialComponent`        | Spatial partition (position, grid cell) |
+| `JzStreamingComponent`      | Streaming load state                    |
 
 ### Input Components (`JzInputComponents.h`)
 
-| Component                       | Description                                                      |
-| ------------------------------- | ---------------------------------------------------------------- |
-| `JzInputStateComponent`         | Full input state (keyboard, mouse, gamepad)                      |
-| `JzInputActionComponent`        | Action bindings and input contexts                               |
-| `JzCameraInputStateComponent`   | Enhanced camera input signals                                    |
-| `JzMouseInputComponent`         | Legacy mouse position, delta, button states                      |
-| `JzKeyboardInputComponent`      | Legacy common key states (WASD, arrows, modifiers)               |
+| Component                     | Description                                        |
+| ----------------------------- | -------------------------------------------------- |
+| `JzInputStateComponent`       | Full input state (keyboard, mouse, gamepad)        |
+| `JzInputActionComponent`      | Action bindings and input contexts                 |
+| `JzCameraInputStateComponent` | Enhanced camera input signals                      |
+| `JzCameraInputIsolationTag`   | Opt-out tag for automatic camera-input syncing     |
+| `JzMouseInputComponent`       | Legacy mouse position, delta, button states        |
+| `JzKeyboardInputComponent`    | Legacy common key states (WASD, arrows, modifiers) |
 
 ### Window Components (`JzWindowComponents.h`)
 
-| Component                       | Description                                          |
-| ------------------------------- | ---------------------------------------------------- |
-| `JzWindowStateComponent`        | Window properties, state, and dirty flags            |
-| `JzDisplayComponent`            | Display/monitor info and video modes                 |
-| `JzWindowEventQueueComponent`   | Queued window events for the frame                   |
-| `JzPrimaryWindowTag`            | Tag for the primary window entity                    |
-| `JzPersistentWindowTag`         | Tag for windows that cannot be closed by user        |
+| Component                     | Description                                   |
+| ----------------------------- | --------------------------------------------- |
+| `JzWindowStateComponent`      | Window properties, state, and dirty flags     |
+| `JzDisplayComponent`          | Display/monitor info and video modes          |
+| `JzWindowEventQueueComponent` | Queued window events for the frame            |
+| `JzPrimaryWindowTag`          | Tag for the primary window entity             |
+| `JzPersistentWindowTag`       | Tag for windows that cannot be closed by user |
 
 ### Asset Components (`JzAssetComponents.h`)
 
-| Component                    | Description                                               |
-| ---------------------------- | --------------------------------------------------------- |
-| `JzMeshAssetComponent`       | Reference to mesh asset for deferred loading              |
-| `JzMaterialAssetComponent`   | Reference to material asset (with shader variants)        |
-| `JzTextureAssetComponent`    | Reference to texture asset                                |
-| `JzModelAssetComponent`      | Reference to model asset                                  |
-| `JzShaderAssetComponent`     | Reference to shader asset (with defines)                  |
-| `JzAssetLoadingTag`          | Tag indicating asset is currently loading                 |
-| `JzAssetReadyTag`            | Tag indicating all assets are GPU-ready                   |
-| `JzAssetLoadFailedTag`       | Tag indicating asset load failed                          |
-| `JzShaderDirtyTag`           | Tag for shader hot reload detection                       |
-| `JzTextureDirtyTag`          | Tag for texture hot reload detection                      |
-| `JzMaterialDirtyTag`         | Tag for material hot reload detection                     |
-| `JzAssetReferenceComponent`  | Asset lifecycle tracking                                  |
-| `JzRenderQueueComponent`     | Render queue classification (Background/Opaque/Transparent/Overlay) |
-| `JzInstanceGroupComponent`   | Instance rendering group for batching                     |
+| Component                   | Description                                                         |
+| --------------------------- | ------------------------------------------------------------------- |
+| `JzMeshAssetComponent`      | Reference to mesh asset for deferred loading                        |
+| `JzMaterialAssetComponent`  | Reference to material asset (with shader variants)                  |
+| `JzTextureAssetComponent`   | Reference to texture asset                                          |
+| `JzModelAssetComponent`     | Reference to model asset                                            |
+| `JzShaderAssetComponent`    | Reference to shader asset (with defines)                            |
+| `JzAssetLoadingTag`         | Tag indicating asset is currently loading                           |
+| `JzAssetReadyTag`           | Tag indicating all assets are GPU-ready                             |
+| `JzAssetLoadFailedTag`      | Tag indicating asset load failed                                    |
+| `JzShaderDirtyTag`          | Tag for shader hot reload detection                                 |
+| `JzTextureDirtyTag`         | Tag for texture hot reload detection                                |
+| `JzMaterialDirtyTag`        | Tag for material hot reload detection                               |
+| `JzAssetReferenceComponent` | Asset lifecycle tracking                                            |
+| `JzRenderQueueComponent`    | Render queue classification (Background/Opaque/Transparent/Overlay) |
+| `JzInstanceGroupComponent`  | Instance rendering group for batching                               |
 
 ---
 

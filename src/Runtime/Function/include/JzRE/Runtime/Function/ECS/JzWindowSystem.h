@@ -36,7 +36,7 @@ class JzIWindowBackend;
  * - Apply component changes to the backend (bidirectional sync)
  * - Process window event queue
  * - Update JzInputStateComponent with raw input from window callbacks
- * - Provide public API for external consumers (Editor, ImGui, etc.)
+ * - Provide public API for external consumers (host runtime app, UI toolkits, etc.)
  *
  * This system runs in the Input phase (first phase) to ensure
  * fresh window/input state for all subsequent systems.
@@ -128,7 +128,7 @@ public:
     /**
      * @brief Get the windowing library's window handle (e.g., GLFWwindow* as void*).
      *
-     * Used for library-specific integrations such as ImGui backends.
+     * Used for library-specific integrations such as host UI backends.
      */
     void *GetPlatformWindowHandle() const;
 
@@ -205,14 +205,13 @@ public:
     {
         return m_primaryWindow;
     }
+
     void SetPrimaryWindow(JzEntity window)
     {
         m_primaryWindow = window;
     }
 
 private:
-    // ==================== ECS Update Helpers ====================
-
     void PollEvents(JzWorld &world);
     void UpdateWindowState(JzWorld &world);
     void ApplyComponentChanges(JzWorld &world);

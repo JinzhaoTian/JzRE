@@ -9,14 +9,15 @@
 #include <utility>
 #include <vector>
 
-#include "JzRE/Runtime/Core/JzRETypes.h"
 #include "JzRE/Runtime/Core/JzMatrix.h"
+#include "JzRE/Runtime/Core/JzRETypes.h"
 #include "JzRE/Runtime/Core/JzVector.h"
 #include "JzRE/Runtime/Function/ECS/JzEntity.h"
 #include "JzRE/Runtime/Function/ECS/JzSystem.h"
 #include "JzRE/Runtime/Function/ECS/JzWorld.h"
 #include "JzRE/Runtime/Function/Rendering/JzRenderGraph.h"
 #include "JzRE/Runtime/Function/Rendering/JzRenderOutput.h"
+#include "JzRE/Runtime/Function/Rendering/JzRenderPass.h"
 #include "JzRE/Runtime/Function/Rendering/JzRenderTarget.h"
 #include "JzRE/Runtime/Function/Rendering/JzRenderVisibility.h"
 #include "JzRE/Runtime/Platform/Command/JzRHIDrawCommand.h"
@@ -29,45 +30,6 @@
 namespace JzRE {
 
 /**
- * @brief Per-view render feature flags.
- *
- * A view can opt in to additional editor rendering features
- * (such as skybox and axis helpers) without forcing those
- * features into all render targets.
- */
-enum class JzRenderViewFeatures : U32 {
-    None   = 0,
-    Skybox = 1 << 0,
-    Axis   = 1 << 1,
-    Grid   = 1 << 2,
-    Gizmo  = 1 << 3,
-};
-
-/**
- * @brief Bitwise OR for JzRenderViewFeatures.
- */
-inline constexpr JzRenderViewFeatures operator|(JzRenderViewFeatures lhs, JzRenderViewFeatures rhs)
-{
-    return static_cast<JzRenderViewFeatures>(static_cast<U32>(lhs) | static_cast<U32>(rhs));
-}
-
-/**
- * @brief Bitwise AND for JzRenderViewFeatures.
- */
-inline constexpr JzRenderViewFeatures operator&(JzRenderViewFeatures lhs, JzRenderViewFeatures rhs)
-{
-    return static_cast<JzRenderViewFeatures>(static_cast<U32>(lhs) & static_cast<U32>(rhs));
-}
-
-/**
- * @brief Check if feature mask contains a specific feature.
- */
-inline constexpr Bool HasFeature(JzRenderViewFeatures mask, JzRenderViewFeatures feature)
-{
-    return static_cast<U32>(mask & feature) != 0;
-}
-
-/**
  * @brief Enhanced render system that integrates with camera system.
  *
  * This system manages:
@@ -78,8 +40,6 @@ inline constexpr Bool HasFeature(JzRenderViewFeatures mask, JzRenderViewFeatures
  */
 class JzRenderSystem : public JzSystem {
 public:
-    using ViewHandle                                = U32;
-    static constexpr ViewHandle INVALID_VIEW_HANDLE = 0;
     /**
      * @brief Constructs the render system.
      */
@@ -110,7 +70,7 @@ public:
     std::shared_ptr<JzGPUFramebufferObject> GetFramebuffer() const;
 
     /**
-     * @brief Get the color texture for display (e.g., in ImGui).
+     * @brief Get the color texture for host UI presentation.
      */
     std::shared_ptr<JzGPUTextureObject> GetColorTexture() const;
 
@@ -125,24 +85,12 @@ public:
     std::shared_ptr<JzRHIPipeline> GetDefaultPipeline() const;
 
     /**
-     * @brief Get a render output by view handle.
+     * @brief Get a render output by render target handle.
      *
-     * @param handle Handle returned from RegisterView()
+     * @param handle Handle returned from RegisterRenderTarget()
      * @return Render output if available, otherwise nullptr
      */
-    JzRenderOutput *GetRenderOutput(ViewHandle handle) const;
-
-    /**
-     * @brief Get a render output by name.
-     *
-     * This is mainly intended for named RenderGraph exports. View outputs
-     * are generated internally from view names and can be queried directly
-     * by handle via GetRenderOutput(ViewHandle).
-     *
-     * @param name Output name
-     * @return Render output if available, otherwise nullptr
-     */
-    JzRenderOutput *GetRenderOutput(const String &name) const;
+    JzRenderOutput *GetRenderOutput(JzRenderTargetHandle handle) const;
 
     // ==================== Frame Control ====================
 
@@ -170,83 +118,59 @@ public:
     Bool IsInitialized() const;
 
     /**
-     * @brief Description for a feature-gated helper rendering pass.
-     *
-     * Helper passes are executed after filtered entity rendering in each view.
-     * Each pass is controlled by a feature flag (Skybox/Grid/Axis/...) and
-     * shares a unified execution path in RenderSystem.
-     */
-    struct JzRenderHelperPass {
-        String                                                       name;
-        JzRenderViewFeatures                                         feature = JzRenderViewFeatures::None;
-        std::shared_ptr<JzRHIPipeline>                               pipeline;
-        std::shared_ptr<JzGPUVertexArrayObject>                      vertexArray;
-        JzDrawParams                                                 drawParams;
-        std::function<void(const std::shared_ptr<JzRHIPipeline> &,
-                           JzWorld &, const JzMat4 &, const JzMat4 &)> setupPass;
-    };
-
-    /**
-     * @brief Register a helper pass.
+     * @brief Register a render pass.
      *
      * If a pass with the same name already exists, it is replaced in-place.
      *
-     * @param pass Helper pass descriptor.
+     * @param pass Render pass descriptor.
      */
-    void RegisterHelperPass(JzRenderHelperPass pass);
+    void RegisterRenderPass(JzRenderPass pass);
 
     /**
-     * @brief Remove all registered helper passes.
+     * @brief Remove all registered render passes.
      */
-    void ClearHelperPasses();
+    void ClearRenderPasses();
 
-    // ==================== View Registration ====================
+    // ==================== Render Target Registration ====================
 
     /**
-     * @brief View description for RenderSystem-managed outputs.
+     * @brief Register a logical render target.
      *
-     * This struct only captures view semantics. Internal pass/output
-     * names are generated by RenderSystem to reduce duplicated naming state.
+     * @param desc Render target description
+     * @return Handle to the registered render target
      */
-    struct JzRenderViewDesc {
-        String                   name;
-        JzEntity                 camera     = INVALID_ENTITY;
-        JzRenderVisibility       visibility = JzRenderVisibility::Untagged;
-        JzRenderViewFeatures     features   = JzRenderViewFeatures::None;
-        std::function<Bool()>    shouldRender;
-        std::function<JzIVec2()> getDesiredSize;
-    };
+    JzRenderTargetHandle RegisterRenderTarget(JzRenderTargetDesc desc);
 
     /**
-     * @brief Register a view for rendering.
+     * @brief Unregister a logical render target.
      *
-     * @param desc View description
-     * @return Handle to the registered view
+     * @param handle Handle returned from RegisterRenderTarget()
      */
-    ViewHandle RegisterView(JzRenderViewDesc desc);
+    void UnregisterRenderTarget(JzRenderTargetHandle handle);
 
     /**
-     * @brief Unregister a view.
+     * @brief Update the camera for a registered render target.
      *
-     * @param handle Handle returned from RegisterView()
-     */
-    void UnregisterView(ViewHandle handle);
-
-    /**
-     * @brief Update the camera for a registered view.
-     *
-     * @param handle Handle returned from RegisterView()
+     * @param handle Handle returned from RegisterRenderTarget()
      * @param camera New camera entity
      */
-    void UpdateViewCamera(ViewHandle handle, JzEntity camera);
+    void UpdateRenderTargetCamera(JzRenderTargetHandle handle, JzEntity camera);
 
     /**
-     * @brief Update the feature mask for a registered view.
+     * @brief Update the feature mask for a registered render target.
      *
-     * @param handle Handle returned from RegisterView()
+     * @param handle Handle returned from RegisterRenderTarget()
      * @param features New feature mask
      */
-    void UpdateViewFeatures(ViewHandle handle, JzRenderViewFeatures features);
+    void UpdateRenderTargetFeatures(JzRenderTargetHandle handle, JzRenderTargetFeatures features);
+
+    /**
+     * @brief Update visibility mask for a registered render target.
+     *
+     * @param handle Handle returned from RegisterRenderTarget()
+     * @param visibility New visibility mask
+     */
+    void UpdateRenderTargetVisibility(JzRenderTargetHandle handle, JzRenderVisibility visibility);
 
 private:
     /**
@@ -270,15 +194,17 @@ private:
     void RenderEntities(JzWorld &world);
 
     /**
-     * @brief Render to a target with entity filtering based on visibility.
+     * @brief Render to an output with entity filtering based on visibility.
      *
      * @param world The ECS world
-     * @param target The render target
+     * @param output The render output
      * @param camera The camera entity
      * @param visibility Visibility mask for entity filtering
+     * @param features Target feature mask
      */
-    void RenderToTargetFiltered(JzWorld &world, JzRenderTarget &target, JzEntity camera,
-                                JzRenderVisibility visibility, JzRenderViewFeatures features);
+    void RenderToTargetFiltered(JzWorld &world, JzRenderOutput &output,
+                                JzEntity camera, JzRenderVisibility visibility,
+                                JzRenderTargetFeatures features);
 
     /**
      * @brief Render entities with visibility filtering.
@@ -289,15 +215,15 @@ private:
     void RenderEntitiesFiltered(JzWorld &world, JzRenderVisibility visibility);
 
     /**
-     * @brief Execute helper passes enabled for a view.
+     * @brief Execute render passes enabled for a render target.
      *
      * @param world The ECS world
-     * @param features Feature mask for the current view
+     * @param features Feature mask for the current target
      * @param viewMatrix Current camera view matrix
      * @param projectionMatrix Current camera projection matrix
      */
-    void RenderHelperPasses(JzWorld &world, JzRenderViewFeatures features,
-                            const JzMat4 &viewMatrix, const JzMat4 &projectionMatrix);
+    void ExecuteRenderPasses(JzWorld &world, JzRenderTargetFeatures features,
+                             const JzMat4 &viewMatrix, const JzMat4 &projectionMatrix);
 
     /**
      * @brief Apply render graph transitions (backend-specific).
@@ -311,35 +237,21 @@ private:
     void CleanupResources();
 
 private:
-    /**
-     * @brief Runtime view record combining view configuration and render target.
-     *
-     * This merges the previously separated "view descriptor" and "target map"
-     * into one owning structure to avoid duplicated state.
-     */
-    struct JzRenderView {
-        ViewHandle                     handle = INVALID_VIEW_HANDLE;
-        JzRenderViewDesc               desc;
-        String                         passName;
-        String                         outputName;
-        std::shared_ptr<JzRenderTarget> target;
-    };
-
     // GPU resources
     std::shared_ptr<JzGPUFramebufferObject> m_framebuffer;
     std::shared_ptr<JzGPUTextureObject>     m_colorTexture;
     std::shared_ptr<JzGPUTextureObject>     m_depthTexture;
     std::shared_ptr<JzRHIPipeline>          m_defaultPipeline;
-    std::vector<JzRenderHelperPass>         m_helperPasses;
+    std::vector<JzRenderPass>               m_renderPasses;
 
     // Frame state
     JzIVec2 m_frameSize{1280, 720};
     Bool    m_frameSizeChanged = true;
     Bool    m_isInitialized    = false;
 
-    // View registry for unified rendering
-    std::vector<JzRenderView> m_views;
-    ViewHandle                m_nextViewHandle = 1;
+    // Logical render target registry
+    std::vector<JzRenderTarget> m_renderTargets;
+    JzRenderTargetHandle        m_nextRenderTargetHandle = 1;
 
     // Phase 1 RenderGraph (single-pass integration)
     JzRenderGraph m_renderGraph;

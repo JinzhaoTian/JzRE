@@ -80,8 +80,6 @@ struct JzWindowStateComponent {
     JzIVec2 windowedSize{1280, 720};
     JzIVec2 windowedPosition{0, 0};
 
-    // ========== Helper Methods ==========
-
     F32 GetAspectRatio() const
     {
         return size.y > 0 ? static_cast<F32>(size.x) / static_cast<F32>(size.y) : 1.0f;

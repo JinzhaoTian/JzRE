@@ -141,20 +141,20 @@ struct JzMaterialComponent {
 struct JzRenderableTag { };
 
 /**
- * @brief Tag for editor-only entities (grid, gizmo, selection box).
+ * @brief Tag for overlay entities.
  *
- * Only visible in SceneView, hidden in GameView.
- * Used for editor visualization that should not appear in the final game.
+ * Overlay entities are rendered only by targets that include
+ * `JzRenderVisibility::Overlay`.
  */
-struct JzEditorOnlyTag { };
+struct JzOverlayRenderTag { };
 
 /**
- * @brief Tag for preview-only entities.
+ * @brief Tag for isolated preview entities.
  *
- * Only visible in AssetView, hidden in SceneView and GameView.
- * Used for asset preview rendering (e.g., material preview spheres).
+ * Isolated entities are rendered only by targets that include
+ * `JzRenderVisibility::Isolated`.
  */
-struct JzPreviewOnlyTag { };
+struct JzIsolatedRenderTag { };
 
 /**
  * @brief Component for skybox
@@ -174,9 +174,9 @@ struct JzGridComponent {
 };
 
 /**
- * @brief Component for gizmo component
+ * @brief Component for manipulator overlay entities.
  */
-struct JzGizmoComponent {
+struct JzManipulatorComponent {
     enum class Type { Transform,
                       Light,
                       Camera,

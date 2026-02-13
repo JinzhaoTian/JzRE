@@ -16,17 +16,17 @@ namespace JzRE {
  * @brief Startup mode for the project.
  */
 enum class JzEStartupMode : U8 {
-    Editor,  // Launch in editor mode
-    Runtime  // Launch in standalone runtime mode
+    Authoring, // Launch in authoring-tools mode
+    Runtime    // Launch in standalone runtime mode
 };
 
 /**
  * @brief Graphics API selection.
  */
 enum class JzERenderAPI : U8 {
-    Auto,    // Automatically select best available
-    OpenGL,  // OpenGL backend
-    Vulkan   // Vulkan backend
+    Auto,   // Automatically select best available
+    OpenGL, // OpenGL backend
+    Vulkan  // Vulkan backend
 };
 
 /**
@@ -54,8 +54,8 @@ struct JzPluginEntry {
  * @brief Asset import rule mapping file extension to factory.
  */
 struct JzImportRule {
-    String extension;  // File extension (e.g., ".png", ".fbx")
-    String factory;    // Factory name to use for import
+    String extension; // File extension (e.g., ".png", ".fbx")
+    String factory;   // Factory name to use for import
 };
 
 /**
@@ -67,17 +67,17 @@ struct JzImportRule {
 struct JzProjectConfig {
     // === Runtime Essential ===
 
-    String projectName;                          // Human-readable project name
-    String projectId;                            // Stable unique identifier (UUID)
-    String engineVersion;                        // Compatible engine version (e.g., "1.0.0")
+    String projectName;   // Human-readable project name
+    String projectId;     // Stable unique identifier (UUID)
+    String engineVersion; // Compatible engine version (e.g., "1.0.0")
 
-    std::filesystem::path rootPath;              // Project root directory
-    std::filesystem::path contentRoot{"Content"};// Asset root relative to rootPath
-    std::filesystem::path configRoot{"Config"};  // Config directory relative to rootPath
+    std::filesystem::path rootPath;               // Project root directory
+    std::filesystem::path contentRoot{"Content"}; // Asset root relative to rootPath
+    std::filesystem::path configRoot{"Config"};   // Config directory relative to rootPath
 
-    String           defaultScene;               // Default scene to load on startup
-    JzEStartupMode   startupMode{JzEStartupMode::Editor};
-    JzERenderAPI     renderAPI{JzERenderAPI::Auto};
+    String         defaultScene; // Default scene to load on startup
+    JzEStartupMode startupMode{JzEStartupMode::Authoring};
+    JzERenderAPI   renderAPI{JzERenderAPI::Auto};
 
     std::vector<JzETargetPlatform> targetPlatforms;
 
@@ -91,57 +91,63 @@ struct JzProjectConfig {
 
     // === Modules & Plugins ===
 
-    std::vector<String>                  modules;
-    std::vector<JzPluginEntry>           plugins;
-    std::vector<std::filesystem::path>   pluginSearchPaths;
+    std::vector<String>                modules;
+    std::vector<JzPluginEntry>         plugins;
+    std::vector<std::filesystem::path> pluginSearchPaths;
 
     // === Version & Migration ===
 
-    U32    projectVersion{1};                    // Project file format version
-    String minCompatibleVersion{"1.0.0"};        // Minimum compatible engine version
+    U32    projectVersion{1};             // Project file format version
+    String minCompatibleVersion{"1.0.0"}; // Minimum compatible engine version
 
     // === Utility Methods ===
 
     /**
      * @brief Get the absolute content directory path.
      */
-    [[nodiscard]] std::filesystem::path GetContentPath() const {
+    [[nodiscard]] std::filesystem::path GetContentPath() const
+    {
         return rootPath / contentRoot;
     }
 
     /**
      * @brief Get the absolute config directory path.
      */
-    [[nodiscard]] std::filesystem::path GetConfigPath() const {
+    [[nodiscard]] std::filesystem::path GetConfigPath() const
+    {
         return rootPath / configRoot;
     }
 
     /**
      * @brief Get the absolute asset registry path.
      */
-    [[nodiscard]] std::filesystem::path GetAssetRegistryPath() const {
+    [[nodiscard]] std::filesystem::path GetAssetRegistryPath() const
+    {
         return rootPath / assetRegistry;
     }
 
     /**
      * @brief Get the absolute shader cache path.
      */
-    [[nodiscard]] std::filesystem::path GetShaderCachePath() const {
+    [[nodiscard]] std::filesystem::path GetShaderCachePath() const
+    {
         return rootPath / shaderCache;
     }
 
     /**
      * @brief Get the absolute build output path.
      */
-    [[nodiscard]] std::filesystem::path GetBuildOutputPath() const {
+    [[nodiscard]] std::filesystem::path GetBuildOutputPath() const
+    {
         return rootPath / buildOutput;
     }
 
     /**
      * @brief Check if a target platform is supported.
      */
-    [[nodiscard]] Bool SupportsTargetPlatform(JzETargetPlatform platform) const {
-        for (const auto& p : targetPlatforms) {
+    [[nodiscard]] Bool SupportsTargetPlatform(JzETargetPlatform platform) const
+    {
+        for (const auto &p : targetPlatforms) {
             if (p == platform) return true;
         }
         return false;
@@ -149,15 +155,16 @@ struct JzProjectConfig {
 };
 
 /**
- * @brief Editor-specific project settings.
+ * @brief Workspace-level project settings for host tooling.
  *
- * Stored separately from runtime config to keep runtime lightweight.
- * Typically saved as ProjectName.editor alongside ProjectName.jzreproject.
+ * Stored separately from runtime config to keep runtime lightweight while
+ * allowing host applications to persist layout and recent scene state.
+ * Typically saved as ProjectName.workspace alongside ProjectName.jzreproject.
  */
-struct JzProjectEditorSettings {
-    std::filesystem::path    editorLayout;       // Editor window layout file
-    std::vector<String>      recentScenes;       // Recently opened scene paths
-    std::filesystem::path    editorSettingsFile; // General editor preferences
+struct JzProjectWorkspaceSettings {
+    std::filesystem::path workspaceLayout;       // Host workspace layout file
+    std::vector<String>   recentScenes;          // Recently opened scene paths
+    std::filesystem::path workspaceSettingsFile; // Host workspace preferences file
 
     // Last camera position for each scene (scene path -> camera state)
     // Can be expanded as needed

@@ -75,17 +75,17 @@ protected:
     JzEntity GetCameraEntity() override;
 
     /**
-     * @brief SceneView renders game objects and editor helpers.
+     * @brief SceneView renders game objects and editor objects.
      */
     JzRenderVisibility GetVisibility() const override
     {
-        return JzRenderVisibility::Untagged | JzRenderVisibility::EditorOnly;
+        return JzRenderVisibility::MainScene | JzRenderVisibility::Overlay;
     }
 
     /**
-     * @brief SceneView enables editor helper features by default (skybox, grid, axis).
+     * @brief SceneView enables editor features by default (skybox, grid, axis).
      */
-    JzRenderViewFeatures GetRenderFeatures() const override;
+    JzRenderTargetFeatures GetRenderFeatures() const override;
 
 private:
     void HandleActorPicking();

@@ -8,12 +8,10 @@
 #include <cstddef>
 #include <functional>
 #include <memory>
-#include <unordered_map>
 #include <vector>
 
 #include "JzRE/Runtime/Core/JzRETypes.h"
 #include "JzRE/Runtime/Core/JzVector.h"
-#include "JzRE/Runtime/Function/Rendering/JzRenderOutput.h"
 #include "JzRE/Runtime/Platform/RHI/JzGPUBufferObject.h"
 #include "JzRE/Runtime/Platform/RHI/JzGPUTextureObject.h"
 
@@ -148,22 +146,6 @@ public:
     void Reset();
 
     /**
-     * @brief Register a named output for UI consumption.
-     *
-     * @param name Output name
-     * @param output Render output instance
-     */
-    void RegisterOutput(const String &name, JzRenderOutput *output);
-
-    /**
-     * @brief Get a named output if available.
-     *
-     * @param name Output name
-     * @return Output pointer or nullptr
-     */
-    JzRenderOutput *GetOutput(const String &name) const;
-
-    /**
      * @brief Dump current graph state to a markdown file.
      *
      * @param path Output file path
@@ -244,7 +226,6 @@ private:
     std::vector<JzRGBufferDesc>                      m_buffers;
     std::vector<std::shared_ptr<JzGPUTextureObject>> m_textureResources;
     std::vector<std::shared_ptr<JzGPUBufferObject>>  m_bufferResources;
-    std::unordered_map<String, JzRenderOutput *>     m_outputs;
     TransitionCallback                               m_transitionCallback;
     std::vector<size_t>                              m_executionOrder;
     Bool                                             m_hasCycle = false;

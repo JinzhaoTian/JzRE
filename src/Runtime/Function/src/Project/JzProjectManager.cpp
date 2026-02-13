@@ -18,72 +18,81 @@ namespace {
 
 // JSON keys for project file serialization
 namespace Keys {
-constexpr const char* ProjectName        = "project_name";
-constexpr const char* ProjectId          = "project_id";
-constexpr const char* EngineVersion      = "engine_version";
-constexpr const char* ContentRoot        = "content_root";
-constexpr const char* ConfigRoot         = "config_root";
-constexpr const char* DefaultScene       = "default_scene";
-constexpr const char* StartupMode        = "startup_mode";
-constexpr const char* RenderAPI          = "render_api";
-constexpr const char* TargetPlatforms    = "target_platforms";
-constexpr const char* AssetRegistry      = "asset_registry";
-constexpr const char* ShaderCache        = "shader_cache";
-constexpr const char* BuildOutput        = "build_output";
-constexpr const char* ImportRules        = "import_rules";
-constexpr const char* Modules            = "modules";
-constexpr const char* Plugins            = "plugins";
-constexpr const char* PluginSearchPaths  = "plugin_search_paths";
-constexpr const char* ProjectVersion     = "project_version";
-constexpr const char* MinCompatVersion   = "min_compatible_version";
+constexpr const char *ProjectName       = "project_name";
+constexpr const char *ProjectId         = "project_id";
+constexpr const char *EngineVersion     = "engine_version";
+constexpr const char *ContentRoot       = "content_root";
+constexpr const char *ConfigRoot        = "config_root";
+constexpr const char *DefaultScene      = "default_scene";
+constexpr const char *StartupMode       = "startup_mode";
+constexpr const char *RenderAPI         = "render_api";
+constexpr const char *TargetPlatforms   = "target_platforms";
+constexpr const char *AssetRegistry     = "asset_registry";
+constexpr const char *ShaderCache       = "shader_cache";
+constexpr const char *BuildOutput       = "build_output";
+constexpr const char *ImportRules       = "import_rules";
+constexpr const char *Modules           = "modules";
+constexpr const char *Plugins           = "plugins";
+constexpr const char *PluginSearchPaths = "plugin_search_paths";
+constexpr const char *ProjectVersion    = "project_version";
+constexpr const char *MinCompatVersion  = "min_compatible_version";
 } // namespace Keys
 
-String StartupModeToString(JzEStartupMode mode) {
+String StartupModeToString(JzEStartupMode mode)
+{
     switch (mode) {
-        case JzEStartupMode::Editor:  return "Editor";
+        case JzEStartupMode::Authoring: return "Authoring";
         case JzEStartupMode::Runtime: return "Runtime";
     }
-    return "Editor";
+    return "Authoring";
 }
 
-JzEStartupMode StringToStartupMode(const String& str) {
+JzEStartupMode StringToStartupMode(const String &str)
+{
+    if (str == "Authoring") return JzEStartupMode::Authoring;
+    // Backward compatibility for older project files.
+    if (str == "Editor") return JzEStartupMode::Authoring;
     if (str == "Runtime") return JzEStartupMode::Runtime;
-    return JzEStartupMode::Editor;
+    return JzEStartupMode::Authoring;
 }
 
-String RenderAPIToString(JzERenderAPI api) {
+String RenderAPIToString(JzERenderAPI api)
+{
     switch (api) {
-        case JzERenderAPI::Auto:   return "Auto";
+        case JzERenderAPI::Auto: return "Auto";
         case JzERenderAPI::OpenGL: return "OpenGL";
         case JzERenderAPI::Vulkan: return "Vulkan";
     }
     return "Auto";
 }
 
-JzERenderAPI StringToRenderAPI(const String& str) {
+JzERenderAPI StringToRenderAPI(const String &str)
+{
     if (str == "OpenGL") return JzERenderAPI::OpenGL;
     if (str == "Vulkan") return JzERenderAPI::Vulkan;
     return JzERenderAPI::Auto;
 }
 
-String PlatformToString(JzETargetPlatform platform) {
+String PlatformToString(JzETargetPlatform platform)
+{
     switch (platform) {
         case JzETargetPlatform::Windows: return "Windows";
-        case JzETargetPlatform::Linux:   return "Linux";
-        case JzETargetPlatform::MacOS:   return "MacOS";
+        case JzETargetPlatform::Linux: return "Linux";
+        case JzETargetPlatform::MacOS: return "MacOS";
         case JzETargetPlatform::Android: return "Android";
-        case JzETargetPlatform::iOS:     return "iOS";
-        case JzETargetPlatform::Web:     return "Web";
+        case JzETargetPlatform::iOS: return "iOS";
+        case JzETargetPlatform::Web: return "Web";
     }
     return "Windows";
 }
 
-JzETargetPlatform StringToPlatform(const String& str) {
-    if (str == "Linux")   return JzETargetPlatform::Linux;
-    if (str == "MacOS")   return JzETargetPlatform::MacOS;
+JzETargetPlatform StringToPlatform(const String &str)
+{
+    if (str == "Linux") return JzETargetPlatform::Linux;
+    if (str == "MacOS") return JzETargetPlatform::MacOS;
     if (str == "Android") return JzETargetPlatform::Android;
-    if (str == "iOS")     return JzETargetPlatform::iOS;
-    if (str == "Web")     return JzETargetPlatform::Web;
+    if (str == "iOS") return JzETargetPlatform::iOS;
+    if (str == "Web") return JzETargetPlatform::Web;
     return JzETargetPlatform::Windows;
 }
 
@@ -95,21 +104,23 @@ JzETargetPlatform StringToPlatform(const String& str) {
 
 JzProjectManager::JzProjectManager() = default;
 
-JzProjectManager::~JzProjectManager() {
+JzProjectManager::~JzProjectManager()
+{
     if (m_config) {
         NotifyProjectClosing();
     }
 }
 
-JzProjectManager::JzProjectManager(JzProjectManager&&) noexcept = default;
+JzProjectManager::JzProjectManager(JzProjectManager &&) noexcept = default;
 
-JzProjectManager& JzProjectManager::operator=(JzProjectManager&&) noexcept = default;
+JzProjectManager &JzProjectManager::operator=(JzProjectManager &&) noexcept = default;
 
 // ============================================================================
 // Project Operations
 // ============================================================================
 
-JzEProjectResult JzProjectManager::LoadProject(const std::filesystem::path& projectFilePath) {
+JzEProjectResult JzProjectManager::LoadProject(const std::filesystem::path &projectFilePath)
+{
     if (!std::filesystem::exists(projectFilePath)) {
         return JzEProjectResult::FileNotFound;
     }
@@ -119,7 +130,7 @@ JzEProjectResult JzProjectManager::LoadProject(const std::filesystem::path& proj
     }
 
     auto newConfig = std::make_unique<JzProjectConfig>();
-    auto result = ParseProjectFile(projectFilePath, *newConfig);
+    auto result    = ParseProjectFile(projectFilePath, *newConfig);
 
     if (result != JzEProjectResult::Success) {
         return result;
@@ -128,17 +139,18 @@ JzEProjectResult JzProjectManager::LoadProject(const std::filesystem::path& proj
     // Set the root path based on the project file location
     newConfig->rootPath = projectFilePath.parent_path();
 
-    m_config = std::move(newConfig);
+    m_config          = std::move(newConfig);
     m_projectFilePath = projectFilePath;
-    m_isDirty = false;
+    m_isDirty         = false;
 
     NotifyProjectLoaded();
 
     return JzEProjectResult::Success;
 }
 
-JzEProjectResult JzProjectManager::CreateProject(const std::filesystem::path& projectDirectory,
-                                                  const String& projectName) {
+JzEProjectResult JzProjectManager::CreateProject(const std::filesystem::path &projectDirectory,
+                                                 const String                &projectName)
+{
     if (!std::filesystem::exists(projectDirectory)) {
         std::error_code ec;
         if (!std::filesystem::create_directories(projectDirectory, ec)) {
@@ -151,13 +163,13 @@ JzEProjectResult JzProjectManager::CreateProject(const std::filesystem::path& pr
     }
 
     // Create default configuration
-    auto newConfig = std::make_unique<JzProjectConfig>();
-    newConfig->projectName = projectName;
-    newConfig->projectId = GenerateProjectId();
+    auto newConfig           = std::make_unique<JzProjectConfig>();
+    newConfig->projectName   = projectName;
+    newConfig->projectId     = GenerateProjectId();
     newConfig->engineVersion = "1.0.0";
-    newConfig->rootPath = std::filesystem::absolute(projectDirectory);
-    newConfig->startupMode = JzEStartupMode::Editor;
-    newConfig->renderAPI = JzERenderAPI::Auto;
+    newConfig->rootPath      = std::filesystem::absolute(projectDirectory);
+    newConfig->startupMode   = JzEStartupMode::Authoring;
+    newConfig->renderAPI     = JzERenderAPI::Auto;
 
     // Set default target platform based on current OS
 #ifdef _WIN32
@@ -176,7 +188,7 @@ JzEProjectResult JzProjectManager::CreateProject(const std::filesystem::path& pr
     // Construct project file path
     String sanitizedName = projectName;
     // Replace spaces and special characters for filename
-    for (char& c : sanitizedName) {
+    for (char &c : sanitizedName) {
         if (c == ' ' || c == '/' || c == '\\' || c == ':') {
             c = '_';
         }
@@ -189,7 +201,7 @@ JzEProjectResult JzProjectManager::CreateProject(const std::filesystem::path& pr
         return result;
     }
 
-    m_config = std::move(newConfig);
+    m_config  = std::move(newConfig);
     m_isDirty = false;
 
     NotifyProjectLoaded();
@@ -197,7 +209,8 @@ JzEProjectResult JzProjectManager::CreateProject(const std::filesystem::path& pr
     return JzEProjectResult::Success;
 }
 
-JzEProjectResult JzProjectManager::SaveProject() {
+JzEProjectResult JzProjectManager::SaveProject()
+{
     if (!m_config) {
         return JzEProjectResult::NoProjectLoaded;
     }
@@ -211,23 +224,25 @@ JzEProjectResult JzProjectManager::SaveProject() {
     return result;
 }
 
-JzEProjectResult JzProjectManager::SaveProjectAs(const std::filesystem::path& newProjectFilePath) {
+JzEProjectResult JzProjectManager::SaveProjectAs(const std::filesystem::path &newProjectFilePath)
+{
     if (!m_config) {
         return JzEProjectResult::NoProjectLoaded;
     }
 
     auto result = WriteProjectFile(newProjectFilePath, *m_config);
     if (result == JzEProjectResult::Success) {
-        m_projectFilePath = newProjectFilePath;
+        m_projectFilePath  = newProjectFilePath;
         m_config->rootPath = newProjectFilePath.parent_path();
-        m_isDirty = false;
+        m_isDirty          = false;
         NotifyProjectSaved();
     }
 
     return result;
 }
 
-void JzProjectManager::CloseProject() {
+void JzProjectManager::CloseProject()
+{
     if (m_config) {
         NotifyProjectClosing();
         m_config.reset();
@@ -240,58 +255,74 @@ void JzProjectManager::CloseProject() {
 // Query Methods
 // ============================================================================
 
-Bool JzProjectManager::HasLoadedProject() const {
+Bool JzProjectManager::HasLoadedProject() const
+{
     return m_config != nullptr;
 }
 
-const JzProjectConfig& JzProjectManager::GetConfig() const {
+const JzProjectConfig &JzProjectManager::GetConfig() const
+{
     if (!m_config) {
         throw std::runtime_error("No project is currently loaded");
     }
     return *m_config;
 }
 
-JzProjectConfig& JzProjectManager::GetConfig() {
+JzProjectConfig &JzProjectManager::GetConfig()
+{
     if (!m_config) {
         throw std::runtime_error("No project is currently loaded");
     }
     return *m_config;
 }
 
-const std::filesystem::path& JzProjectManager::GetProjectFilePath() const {
+const std::filesystem::path &JzProjectManager::GetProjectFilePath() const
+{
     return m_projectFilePath;
 }
 
-std::filesystem::path JzProjectManager::GetContentPath() const {
+std::filesystem::path JzProjectManager::GetContentPath() const
+{
     return GetConfig().GetContentPath();
 }
 
-Bool JzProjectManager::HasUnsavedChanges() const {
+Bool JzProjectManager::HasUnsavedChanges() const
+{
     return m_isDirty;
 }
 
-void JzProjectManager::MarkDirty() {
+void JzProjectManager::MarkDirty()
+{
     m_isDirty = true;
 }
 
 // ============================================================================
-// Editor Settings
+// Workspace Settings
 // ============================================================================
 
-std::optional<JzProjectEditorSettings> JzProjectManager::LoadEditorSettings() const {
+std::optional<JzProjectWorkspaceSettings> JzProjectManager::LoadWorkspaceSettings() const
+{
     if (!m_config) {
         return std::nullopt;
     }
 
-    auto editorPath = m_projectFilePath;
-    editorPath.replace_extension(GetEditorSettingsExtension());
+    auto workspacePath = m_projectFilePath;
+    workspacePath.replace_extension(GetWorkspaceSettingsExtension());
+    Bool loadedFromLegacyEditorFile = false;
 
-    if (!std::filesystem::exists(editorPath)) {
-        return std::nullopt;
+    // Backward compatibility: load legacy ".editor" settings when ".workspace" does not exist.
+    if (!std::filesystem::exists(workspacePath)) {
+        auto legacyPath = m_projectFilePath;
+        legacyPath.replace_extension(".editor");
+        if (!std::filesystem::exists(legacyPath)) {
+            return std::nullopt;
+        }
+        workspacePath = std::move(legacyPath);
+        loadedFromLegacyEditorFile = true;
     }
 
     try {
-        std::ifstream file(editorPath);
+        std::ifstream file(workspacePath);
         if (!file.is_open()) {
             return std::nullopt;
         }
@@ -299,16 +330,25 @@ std::optional<JzProjectEditorSettings> JzProjectManager::LoadEditorSettings() co
         nlohmann::json json;
         file >> json;
 
-        JzProjectEditorSettings settings;
+        JzProjectWorkspaceSettings settings;
 
-        if (json.contains("editor_layout")) {
-            settings.editorLayout = json["editor_layout"].get<String>();
+        if (json.contains("workspace_layout")) {
+            settings.workspaceLayout = json["workspace_layout"].get<String>();
+        } else if (json.contains("editor_layout")) {
+            settings.workspaceLayout = json["editor_layout"].get<String>();
         }
         if (json.contains("recent_scenes")) {
             settings.recentScenes = json["recent_scenes"].get<std::vector<String>>();
         }
-        if (json.contains("editor_settings_file")) {
-            settings.editorSettingsFile = json["editor_settings_file"].get<String>();
+        if (json.contains("workspace_settings_file")) {
+            settings.workspaceSettingsFile = json["workspace_settings_file"].get<String>();
+        } else if (json.contains("editor_settings_file")) {
+            settings.workspaceSettingsFile = json["editor_settings_file"].get<String>();
+        }
+
+        if (loadedFromLegacyEditorFile) {
+            // Migrate legacy editor settings to the new workspace format on first successful load.
+            (void)SaveWorkspaceSettings(settings);
         }
 
         return settings;
@@ -317,21 +357,22 @@ std::optional<JzProjectEditorSettings> JzProjectManager::LoadEditorSettings() co
     }
 }
 
-JzEProjectResult JzProjectManager::SaveEditorSettings(const JzProjectEditorSettings& settings) const {
+JzEProjectResult JzProjectManager::SaveWorkspaceSettings(const JzProjectWorkspaceSettings &settings) const
+{
     if (!m_config) {
         return JzEProjectResult::NoProjectLoaded;
     }
 
-    auto editorPath = m_projectFilePath;
-    editorPath.replace_extension(GetEditorSettingsExtension());
+    auto workspacePath = m_projectFilePath;
+    workspacePath.replace_extension(GetWorkspaceSettingsExtension());
 
     try {
         nlohmann::json json;
-        json["editor_layout"] = settings.editorLayout.string();
-        json["recent_scenes"] = settings.recentScenes;
-        json["editor_settings_file"] = settings.editorSettingsFile.string();
+        json["workspace_layout"]        = settings.workspaceLayout.string();
+        json["recent_scenes"]           = settings.recentScenes;
+        json["workspace_settings_file"] = settings.workspaceSettingsFile.string();
 
-        std::ofstream file(editorPath);
+        std::ofstream file(workspacePath);
         if (!file.is_open()) {
             return JzEProjectResult::WriteError;
         }
@@ -347,15 +388,18 @@ JzEProjectResult JzProjectManager::SaveEditorSettings(const JzProjectEditorSetti
 // Event Callbacks
 // ============================================================================
 
-void JzProjectManager::OnProjectLoaded(JzProjectCallback callback) {
+void JzProjectManager::OnProjectLoaded(JzProjectCallback callback)
+{
     m_onLoadedCallbacks.push_back(std::move(callback));
 }
 
-void JzProjectManager::OnProjectClosing(JzProjectCallback callback) {
+void JzProjectManager::OnProjectClosing(JzProjectCallback callback)
+{
     m_onClosingCallbacks.push_back(std::move(callback));
 }
 
-void JzProjectManager::OnProjectSaved(JzProjectCallback callback) {
+void JzProjectManager::OnProjectSaved(JzProjectCallback callback)
+{
     m_onSavedCallbacks.push_back(std::move(callback));
 }
 
@@ -363,9 +407,10 @@ void JzProjectManager::OnProjectSaved(JzProjectCallback callback) {
 // Static Utilities
 // ============================================================================
 
-String JzProjectManager::GenerateProjectId() {
-    static std::random_device rd;
-    static std::mt19937_64 gen(rd());
+String JzProjectManager::GenerateProjectId()
+{
+    static std::random_device                 rd;
+    static std::mt19937_64                    gen(rd());
     static std::uniform_int_distribution<U64> dis;
 
     std::stringstream ss;
@@ -373,7 +418,8 @@ String JzProjectManager::GenerateProjectId() {
     return ss.str();
 }
 
-JzEProjectResult JzProjectManager::ValidateProjectFile(const std::filesystem::path& projectFilePath) {
+JzEProjectResult JzProjectManager::ValidateProjectFile(const std::filesystem::path &projectFilePath)
+{
     if (!std::filesystem::exists(projectFilePath)) {
         return JzEProjectResult::FileNotFound;
     }
@@ -393,7 +439,7 @@ JzEProjectResult JzProjectManager::ValidateProjectFile(const std::filesystem::pa
         }
 
         return JzEProjectResult::Success;
-    } catch (const nlohmann::json::parse_error&) {
+    } catch (const nlohmann::json::parse_error &) {
         return JzEProjectResult::ParseError;
     } catch (...) {
         return JzEProjectResult::ParseError;
@@ -404,8 +450,9 @@ JzEProjectResult JzProjectManager::ValidateProjectFile(const std::filesystem::pa
 // Private Methods
 // ============================================================================
 
-JzEProjectResult JzProjectManager::ParseProjectFile(const std::filesystem::path& filePath,
-                                                     JzProjectConfig& outConfig) {
+JzEProjectResult JzProjectManager::ParseProjectFile(const std::filesystem::path &filePath,
+                                                    JzProjectConfig             &outConfig)
+{
     try {
         std::ifstream file(filePath);
         if (!file.is_open()) {
@@ -421,7 +468,7 @@ JzEProjectResult JzProjectManager::ParseProjectFile(const std::filesystem::path&
         }
 
         outConfig.projectName = json[Keys::ProjectName].get<String>();
-        outConfig.projectId = json[Keys::ProjectId].get<String>();
+        outConfig.projectId   = json[Keys::ProjectId].get<String>();
 
         // Optional fields with defaults
         if (json.contains(Keys::EngineVersion)) {
@@ -443,7 +490,7 @@ JzEProjectResult JzProjectManager::ParseProjectFile(const std::filesystem::path&
             outConfig.renderAPI = StringToRenderAPI(json[Keys::RenderAPI].get<String>());
         }
         if (json.contains(Keys::TargetPlatforms)) {
-            for (const auto& p : json[Keys::TargetPlatforms]) {
+            for (const auto &p : json[Keys::TargetPlatforms]) {
                 outConfig.targetPlatforms.push_back(StringToPlatform(p.get<String>()));
             }
         }
@@ -457,10 +504,10 @@ JzEProjectResult JzProjectManager::ParseProjectFile(const std::filesystem::path&
             outConfig.buildOutput = json[Keys::BuildOutput].get<String>();
         }
         if (json.contains(Keys::ImportRules)) {
-            for (const auto& rule : json[Keys::ImportRules]) {
+            for (const auto &rule : json[Keys::ImportRules]) {
                 JzImportRule r;
                 r.extension = rule["extension"].get<String>();
-                r.factory = rule["factory"].get<String>();
+                r.factory   = rule["factory"].get<String>();
                 outConfig.importRules.push_back(r);
             }
         }
@@ -468,7 +515,7 @@ JzEProjectResult JzProjectManager::ParseProjectFile(const std::filesystem::path&
             outConfig.modules = json[Keys::Modules].get<std::vector<String>>();
         }
         if (json.contains(Keys::Plugins)) {
-            for (const auto& plugin : json[Keys::Plugins]) {
+            for (const auto &plugin : json[Keys::Plugins]) {
                 JzPluginEntry entry;
                 entry.name = plugin["name"].get<String>();
                 if (plugin.contains("version")) {
@@ -481,7 +528,7 @@ JzEProjectResult JzProjectManager::ParseProjectFile(const std::filesystem::path&
             }
         }
         if (json.contains(Keys::PluginSearchPaths)) {
-            for (const auto& path : json[Keys::PluginSearchPaths]) {
+            for (const auto &path : json[Keys::PluginSearchPaths]) {
                 outConfig.pluginSearchPaths.emplace_back(path.get<String>());
             }
         }
@@ -493,48 +540,49 @@ JzEProjectResult JzProjectManager::ParseProjectFile(const std::filesystem::path&
         }
 
         return JzEProjectResult::Success;
-    } catch (const nlohmann::json::parse_error&) {
+    } catch (const nlohmann::json::parse_error &) {
         return JzEProjectResult::ParseError;
     } catch (...) {
         return JzEProjectResult::ParseError;
     }
 }
 
-JzEProjectResult JzProjectManager::WriteProjectFile(const std::filesystem::path& filePath,
-                                                     const JzProjectConfig& config) {
+JzEProjectResult JzProjectManager::WriteProjectFile(const std::filesystem::path &filePath,
+                                                    const JzProjectConfig       &config)
+{
     try {
         nlohmann::json json;
 
         // Required fields
         json[Keys::ProjectName] = config.projectName;
-        json[Keys::ProjectId] = config.projectId;
+        json[Keys::ProjectId]   = config.projectId;
 
         // Optional fields
         json[Keys::EngineVersion] = config.engineVersion;
-        json[Keys::ContentRoot] = config.contentRoot.string();
-        json[Keys::ConfigRoot] = config.configRoot.string();
-        json[Keys::DefaultScene] = config.defaultScene;
-        json[Keys::StartupMode] = StartupModeToString(config.startupMode);
-        json[Keys::RenderAPI] = RenderAPIToString(config.renderAPI);
+        json[Keys::ContentRoot]   = config.contentRoot.string();
+        json[Keys::ConfigRoot]    = config.configRoot.string();
+        json[Keys::DefaultScene]  = config.defaultScene;
+        json[Keys::StartupMode]   = StartupModeToString(config.startupMode);
+        json[Keys::RenderAPI]     = RenderAPIToString(config.renderAPI);
 
         // Target platforms
         nlohmann::json platforms = nlohmann::json::array();
-        for (const auto& p : config.targetPlatforms) {
+        for (const auto &p : config.targetPlatforms) {
             platforms.push_back(PlatformToString(p));
         }
         json[Keys::TargetPlatforms] = platforms;
 
         // Resource paths
         json[Keys::AssetRegistry] = config.assetRegistry.string();
-        json[Keys::ShaderCache] = config.shaderCache.string();
-        json[Keys::BuildOutput] = config.buildOutput.string();
+        json[Keys::ShaderCache]   = config.shaderCache.string();
+        json[Keys::BuildOutput]   = config.buildOutput.string();
 
         // Import rules
         nlohmann::json rules = nlohmann::json::array();
-        for (const auto& rule : config.importRules) {
+        for (const auto &rule : config.importRules) {
             nlohmann::json r;
             r["extension"] = rule.extension;
-            r["factory"] = rule.factory;
+            r["factory"]   = rule.factory;
             rules.push_back(r);
         }
         json[Keys::ImportRules] = rules;
@@ -544,9 +592,9 @@ JzEProjectResult JzProjectManager::WriteProjectFile(const std::filesystem::path&
 
         // Plugins
         nlohmann::json plugins = nlohmann::json::array();
-        for (const auto& plugin : config.plugins) {
+        for (const auto &plugin : config.plugins) {
             nlohmann::json p;
-            p["name"] = plugin.name;
+            p["name"]    = plugin.name;
             p["version"] = plugin.version;
             p["enabled"] = plugin.enabled;
             plugins.push_back(p);
@@ -555,13 +603,13 @@ JzEProjectResult JzProjectManager::WriteProjectFile(const std::filesystem::path&
 
         // Plugin search paths
         nlohmann::json paths = nlohmann::json::array();
-        for (const auto& path : config.pluginSearchPaths) {
+        for (const auto &path : config.pluginSearchPaths) {
             paths.push_back(path.string());
         }
         json[Keys::PluginSearchPaths] = paths;
 
         // Version info
-        json[Keys::ProjectVersion] = config.projectVersion;
+        json[Keys::ProjectVersion]   = config.projectVersion;
         json[Keys::MinCompatVersion] = config.minCompatibleVersion;
 
         // Write to file
@@ -577,7 +625,8 @@ JzEProjectResult JzProjectManager::WriteProjectFile(const std::filesystem::path&
     }
 }
 
-Bool JzProjectManager::CreateProjectDirectories(const std::filesystem::path& projectRoot) {
+Bool JzProjectManager::CreateProjectDirectories(const std::filesystem::path &projectRoot)
+{
     std::error_code ec;
 
     // Create Content directory
@@ -599,25 +648,28 @@ Bool JzProjectManager::CreateProjectDirectories(const std::filesystem::path& pro
     return true;
 }
 
-void JzProjectManager::NotifyProjectLoaded() {
+void JzProjectManager::NotifyProjectLoaded()
+{
     if (m_config) {
-        for (const auto& callback : m_onLoadedCallbacks) {
+        for (const auto &callback : m_onLoadedCallbacks) {
             callback(*m_config);
         }
     }
 }
 
-void JzProjectManager::NotifyProjectClosing() {
+void JzProjectManager::NotifyProjectClosing()
+{
     if (m_config) {
-        for (const auto& callback : m_onClosingCallbacks) {
+        for (const auto &callback : m_onClosingCallbacks) {
             callback(*m_config);
         }
     }
 }
 
-void JzProjectManager::NotifyProjectSaved() {
+void JzProjectManager::NotifyProjectSaved()
+{
     if (m_config) {
-        for (const auto& callback : m_onSavedCallbacks) {
+        for (const auto &callback : m_onSavedCallbacks) {
             callback(*m_config);
         }
     }

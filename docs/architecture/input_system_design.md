@@ -10,7 +10,7 @@ The runtime input pipeline must remain editor-agnostic.
 
 - Runtime input components and systems should represent generic input semantics.
 - Editor viewport/panel-specific input isolation should be implemented in the Editor module as a consumer of runtime APIs.
-- Any editor-coupled runtime input marker should be treated as temporary compatibility, not long-term architecture.
+- Runtime markers for viewport-local input isolation must use neutral naming and semantics.
 
 ## Design Decision: Should Input be a System?
 
@@ -110,13 +110,12 @@ Processed input specifically for camera control:
 - Scroll delta for zoom
 - Reset request flag
 
-#### JzEditorCameraInputOverrideTag
+#### JzCameraInputIsolationTag
 
-Legacy compatibility tag to opt a camera out of automatic input syncing in `JzInputSystem`.  
-When present, editor panels (e.g., Scene View) write `JzCameraInputComponent`
-directly to keep viewport input isolated from global window input.
-
-This tag is considered migration debt under the runtime-editor boundary rules.
+Tag to opt a camera out of automatic input syncing in `JzInputSystem`.  
+When present, host viewports (for example, editor scene panels or other tooling
+windows) can write `JzCameraInputComponent` directly to keep local viewport input
+isolated from global window input.
 
 ### System Flow Example: Camera Control
 
@@ -130,7 +129,7 @@ This tag is considered migration debt under the runtime-editor boundary rules.
    ↓ Reads JzInputStateComponent from primary window
    ↓ Syncs JzMouseInputComponent, JzKeyboardInputComponent
    ↓ Syncs JzCameraInputStateComponent
-   ↓ Skips `JzCameraInputComponent` update for entities tagged with `JzEditorCameraInputOverrideTag`
+   ↓ Skips `JzCameraInputComponent` update for entities tagged with `JzCameraInputIsolationTag`
    ↓ Updates JzInputActionComponent action values
    ↓ Emits ECS input events
 
@@ -231,15 +230,15 @@ In addition to the component-based polling approach, the input system emits type
 
 All events inherit from `JzREEvent` (timestamp, source entity, target entity) and are defined in `JzInputEvents.h`:
 
-| Event | Fields | Emitted When |
-|-------|--------|--------------|
-| `JzKeyEvent` | `key` (JzEKeyCode), `scancode`, `action` (JzEKeyAction), `mods` | Key pressed or released |
-| `JzMouseButtonEvent` | `button` (JzEMouseButton), `action`, `mods`, `position` | Mouse button pressed or released |
-| `JzMouseMoveEvent` | `position`, `delta` | Mouse moved (non-zero delta) |
-| `JzMouseScrollEvent` | `offset`, `position` | Scroll wheel used |
-| `JzMouseEnterEvent` | `entered` | Cursor enters/leaves window |
-| `JzInputActionTriggeredEvent` | `actionName`, `value` | Action first triggered this frame |
-| `JzInputActionReleasedEvent` | `actionName`, `duration` | Action released this frame |
+| Event                         | Fields                                                          | Emitted When                      |
+| ----------------------------- | --------------------------------------------------------------- | --------------------------------- |
+| `JzKeyEvent`                  | `key` (JzEKeyCode), `scancode`, `action` (JzEKeyAction), `mods` | Key pressed or released           |
+| `JzMouseButtonEvent`          | `button` (JzEMouseButton), `action`, `mods`, `position`         | Mouse button pressed or released  |
+| `JzMouseMoveEvent`            | `position`, `delta`                                             | Mouse moved (non-zero delta)      |
+| `JzMouseScrollEvent`          | `offset`, `position`                                            | Scroll wheel used                 |
+| `JzMouseEnterEvent`           | `entered`                                                       | Cursor enters/leaves window       |
+| `JzInputActionTriggeredEvent` | `actionName`, `value`                                           | Action first triggered this frame |
+| `JzInputActionReleasedEvent`  | `actionName`, `duration`                                        | Action released this frame        |
 
 ### Event Emission
 
@@ -274,9 +273,9 @@ void MySystem::OnInit(JzWorld &world) {
 
 ### When to Use Polling vs Events
 
-| Approach | Use When | Example |
-|----------|----------|---------|
-| **Polling** (component-based) | Continuous input, every frame | Camera orbit, WASD movement |
+| Approach                      | Use When                            | Example                      |
+| ----------------------------- | ----------------------------------- | ---------------------------- |
+| **Polling** (component-based) | Continuous input, every frame       | Camera orbit, WASD movement  |
 | **Events** (dispatcher-based) | Discrete actions, one-shot triggers | Key shortcuts, button clicks |
 
 ### Input Action System (Implemented)

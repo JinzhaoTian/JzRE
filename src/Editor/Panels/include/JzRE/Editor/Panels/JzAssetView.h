@@ -53,7 +53,7 @@ public:
 protected:
     JzRenderVisibility GetVisibility() const override
     {
-        return JzRenderVisibility::PreviewOnly;
+        return JzRenderVisibility::Isolated;
     }
 
     void     _Draw_Impl() override;

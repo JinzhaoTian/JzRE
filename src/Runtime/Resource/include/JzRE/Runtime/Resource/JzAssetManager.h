@@ -45,7 +45,7 @@ struct JzAssetManagerConfig {
     Size maxCacheMemoryMB     = 512;   ///< Maximum memory budget (MB)
     Size asyncWorkerCount     = 2;     ///< Number of async loading threads
     F32  lruEvictionThreshold = 0.8f;  ///< Eviction threshold (0.0-1.0)
-    Bool enableHotReload      = false; ///< Enable hot reload (editor mode)
+    Bool enableHotReload      = false; ///< Enable hot reload (authoring/development mode)
 };
 
 /**

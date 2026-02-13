@@ -43,7 +43,7 @@ struct JzRERuntimeSettings {
  *
  * Usage patterns:
  * 1. Standalone runtime: Override OnStart/OnUpdate/OnStop for custom logic
- * 2. Editor integration: Override OnRender to inject UI rendering after 3D scene
+ * 2. Host tooling integration: Override OnRender to inject UI rendering after 3D scene
  *
  */
 class JzRERuntime {
@@ -129,7 +129,7 @@ protected:
      *
      * @param deltaTime Time elapsed since the last frame in seconds
      *
-     * Override this method to render additional content (e.g., ImGui UI).
+     * Override this method to render additional content (e.g., host UI).
      * The 3D scene has already been rendered to the framebuffer at this point.
      */
     virtual void OnRender(F32 deltaTime);

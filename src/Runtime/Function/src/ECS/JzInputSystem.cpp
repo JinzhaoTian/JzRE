@@ -171,7 +171,7 @@ void JzInputSystem::UpdateCameraInput(JzWorld &world)
     auto view = world.View<JzCameraInputComponent, JzMouseInputComponent>();
 
     for (auto entity : view) {
-        if (world.HasComponent<JzEditorCameraInputOverrideTag>(entity)) {
+        if (world.HasComponent<JzCameraInputIsolationTag>(entity)) {
             continue;
         }
         auto &cameraInput = world.GetComponent<JzCameraInputComponent>(entity);
@@ -302,7 +302,7 @@ void JzInputSystem::EmitKeyboardEvents(JzWorld &world)
     JzInputStateComponent *inputState = GetPrimaryInputState(world);
     if (!inputState) return;
 
-    JzEventSystem **dispatcherPtr = world.TryGetContext<JzEventSystem*>();
+    JzEventSystem **dispatcherPtr = world.TryGetContext<JzEventSystem *>();
     if (!dispatcherPtr || !*dispatcherPtr) return;
     JzEventSystem *dispatcher = *dispatcherPtr;
 
@@ -335,7 +335,7 @@ void JzInputSystem::EmitMouseEvents(JzWorld &world)
     JzInputStateComponent *inputState = GetPrimaryInputState(world);
     if (!inputState) return;
 
-    JzEventSystem **dispatcherPtr = world.TryGetContext<JzEventSystem*>();
+    JzEventSystem **dispatcherPtr = world.TryGetContext<JzEventSystem *>();
     if (!dispatcherPtr || !*dispatcherPtr) return;
     JzEventSystem *dispatcher = *dispatcherPtr;
 
@@ -385,7 +385,7 @@ void JzInputSystem::EmitMouseEvents(JzWorld &world)
 
 void JzInputSystem::EmitActionEvents(JzWorld &world)
 {
-    JzEventSystem **dispatcherPtr = world.TryGetContext<JzEventSystem*>();
+    JzEventSystem **dispatcherPtr = world.TryGetContext<JzEventSystem *>();
     if (!dispatcherPtr || !*dispatcherPtr) return;
     JzEventSystem *dispatcher = *dispatcherPtr;
 

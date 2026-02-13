@@ -25,8 +25,7 @@ enum class JzRHIECommandType : U8 {
     BeginRenderPass,
     EndRenderPass,
     CopyTexture,
-    UpdateBuffer,
-    ImGuiRender
+    UpdateBuffer
 };
 
 /**

@@ -67,7 +67,7 @@ JzRE/
 │   │       │   │   ├── JzAssetSystem.h, JzMoveSystem.h
 │   │       │   │   └── JzAssetComponents.h
 │   │       │   ├── Rendering/
-│   │       │   │   └── JzRenderGraph.h, JzRenderTarget.h, JzRenderOutput.h, JzRenderOutputCache.h
+│   │       │   │   └── JzRenderGraph.h, JzRenderOutput.h, JzRenderPass.h, JzRenderTarget.h
 │   │       │   ├── Asset/
 │   │       │   │   └── JzAssetImporter.h, JzAssetExporter.h
 │   │       │   ├── Project/
@@ -117,7 +117,7 @@ graph TD
 ### Public API Naming
 
 - Runtime public headers must use generic engine semantics.
-- Editor-specific names in runtime public APIs are forbidden (`Editor`, `SceneView`, `GameView`, `AssetView`, `Gizmo`, etc.).
+- Editor-specific names in runtime public APIs are forbidden (`Editor`, `SceneView`, `GameView`, `AssetView`, etc.).
 
 ### Tooling Boundary
 
@@ -131,11 +131,11 @@ Run these checks when reviewing runtime changes:
 ```bash
 rg -n '#include\\s+\"JzRE/Editor/' src/Runtime
 rg -n 'imgui' src/Runtime
-rg -n 'SceneView|GameView|AssetView|EditorOnly|PreviewOnly' src/Runtime/include
+rg -n 'SceneView|GameView|AssetView|EditorOnly|PreviewOnly|JzRenderView|JzEditorOnlyTag|JzPreviewOnlyTag|JzEditorCameraInputOverrideTag|JzProjectEditorSettings|JzGizmoComponent|ImGuiRender|JzRHIImGuiRenderCommand' src/Runtime -g '*.h'
 ```
 
-These checks can report known legacy compatibility symbols; treat each hit as
-explicit debt and avoid introducing new hits.
+Any hit in runtime public headers should be treated as a boundary violation
+unless it is explicitly documented legacy scheduled for removal.
 
 ---
 
@@ -227,13 +227,13 @@ cd build && ctest --output-on-failure
 
 ## Build Targets Summary
 
-| Target              | Type       | Dependencies                                        |
-| ------------------- | ---------- | --------------------------------------------------- |
-| `JzRuntimeCore`     | Static     | spdlog, fmt                                         |
-| `JzRuntimePlatform` | Static     | JzRuntimeCore, glad, glfw                           |
-| `JzRuntimeResource` | Static     | JzRuntimeCore, JzRuntimePlatform, assimp, stb, freetype |
+| Target              | Type       | Dependencies                                              |
+| ------------------- | ---------- | --------------------------------------------------------- |
+| `JzRuntimeCore`     | Static     | spdlog, fmt                                               |
+| `JzRuntimePlatform` | Static     | JzRuntimeCore, glad, glfw                                 |
+| `JzRuntimeResource` | Static     | JzRuntimeCore, JzRuntimePlatform, assimp, stb, freetype   |
 | `JzRuntimeFunction` | Static     | JzRuntimeCore, JzRuntimePlatform, JzRuntimeResource, entt |
-| `JzRERuntime`       | Interface  | All runtime layers                                  |
-| `JzEditor`          | Static     | JzRERuntime, imgui (docking)                        |
-| `JzREEditor`        | Executable | JzRERuntime, JzEditor                               |
-| `TESTJzRECore`      | Executable | JzRuntimeCore, GTest::gtest_main                    |
+| `JzRERuntime`       | Interface  | All runtime layers                                        |
+| `JzEditor`          | Static     | JzRERuntime, imgui (docking)                              |
+| `JzREEditor`        | Executable | JzRERuntime, JzEditor                                     |
+| `TESTJzRECore`      | Executable | JzRuntimeCore, GTest::gtest_main                          |

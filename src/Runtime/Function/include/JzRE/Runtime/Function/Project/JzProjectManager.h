@@ -30,7 +30,7 @@ enum class JzEProjectResult : U8 {
 /**
  * @brief Callback type for project lifecycle events.
  */
-using JzProjectCallback = std::function<void(const JzProjectConfig&)>;
+using JzProjectCallback = std::function<void(const JzProjectConfig &)>;
 
 /**
  * @brief Manages project lifecycle: load, save, create, and switch projects.
@@ -64,10 +64,10 @@ public:
     ~JzProjectManager();
 
     // Non-copyable, movable
-    JzProjectManager(const JzProjectManager&) = delete;
-    JzProjectManager& operator=(const JzProjectManager&) = delete;
-    JzProjectManager(JzProjectManager&&) noexcept;
-    JzProjectManager& operator=(JzProjectManager&&) noexcept;
+    JzProjectManager(const JzProjectManager &)            = delete;
+    JzProjectManager &operator=(const JzProjectManager &) = delete;
+    JzProjectManager(JzProjectManager &&) noexcept;
+    JzProjectManager &operator=(JzProjectManager &&) noexcept;
 
     // === Project Operations ===
 
@@ -76,7 +76,7 @@ public:
      * @param projectFilePath Path to the .jzreproject file
      * @return Result indicating success or failure reason
      */
-    JzEProjectResult LoadProject(const std::filesystem::path& projectFilePath);
+    JzEProjectResult LoadProject(const std::filesystem::path &projectFilePath);
 
     /**
      * @brief Create a new project at the specified location.
@@ -84,8 +84,8 @@ public:
      * @param projectName Human-readable name for the project
      * @return Result indicating success or failure reason
      */
-    JzEProjectResult CreateProject(const std::filesystem::path& projectDirectory,
-                                   const String& projectName);
+    JzEProjectResult CreateProject(const std::filesystem::path &projectDirectory,
+                                   const String                &projectName);
 
     /**
      * @brief Save the current project configuration to disk.
@@ -98,7 +98,7 @@ public:
      * @param newProjectFilePath New path for the project file
      * @return Result indicating success or failure reason
      */
-    JzEProjectResult SaveProjectAs(const std::filesystem::path& newProjectFilePath);
+    JzEProjectResult SaveProjectAs(const std::filesystem::path &newProjectFilePath);
 
     /**
      * @brief Close the currently loaded project.
@@ -116,18 +116,18 @@ public:
      * @brief Get the current project configuration (const).
      * @throws std::runtime_error if no project is loaded
      */
-    [[nodiscard]] const JzProjectConfig& GetConfig() const;
+    [[nodiscard]] const JzProjectConfig &GetConfig() const;
 
     /**
      * @brief Get the current project configuration (mutable).
      * @throws std::runtime_error if no project is loaded
      */
-    [[nodiscard]] JzProjectConfig& GetConfig();
+    [[nodiscard]] JzProjectConfig &GetConfig();
 
     /**
      * @brief Get the path to the currently loaded project file.
      */
-    [[nodiscard]] const std::filesystem::path& GetProjectFilePath() const;
+    [[nodiscard]] const std::filesystem::path &GetProjectFilePath() const;
 
     /**
      * @brief Get the absolute path to the project's content/asset directory.
@@ -145,20 +145,20 @@ public:
      */
     void MarkDirty();
 
-    // === Editor Settings ===
+    // === Workspace Settings ===
 
     /**
-     * @brief Load editor settings for the current project.
+     * @brief Load workspace settings for the current project.
      * @return Optional containing settings if found, empty otherwise
      */
-    std::optional<JzProjectEditorSettings> LoadEditorSettings() const;
+    std::optional<JzProjectWorkspaceSettings> LoadWorkspaceSettings() const;
 
     /**
-     * @brief Save editor settings for the current project.
-     * @param settings The editor settings to save
+     * @brief Save workspace settings for the current project.
+     * @param settings The workspace settings to save
      * @return Result indicating success or failure reason
      */
-    JzEProjectResult SaveEditorSettings(const JzProjectEditorSettings& settings) const;
+    JzEProjectResult SaveWorkspaceSettings(const JzProjectWorkspaceSettings &settings) const;
 
     // === Event Callbacks ===
 
@@ -187,15 +187,17 @@ public:
     /**
      * @brief Get the project file extension.
      */
-    static constexpr const char* GetProjectFileExtension() {
+    static constexpr const char *GetProjectFileExtension()
+    {
         return ".jzreproject";
     }
 
     /**
-     * @brief Get the editor settings file extension.
+     * @brief Get the workspace settings file extension.
      */
-    static constexpr const char* GetEditorSettingsExtension() {
-        return ".editor";
+    static constexpr const char *GetWorkspaceSettingsExtension()
+    {
+        return ".workspace";
     }
 
     /**
@@ -203,25 +205,25 @@ public:
      * @param projectFilePath Path to the project file
      * @return Result indicating if the file is valid
      */
-    static JzEProjectResult ValidateProjectFile(const std::filesystem::path& projectFilePath);
+    static JzEProjectResult ValidateProjectFile(const std::filesystem::path &projectFilePath);
 
 private:
     /**
      * @brief Parse a project file and populate config.
      */
-    JzEProjectResult ParseProjectFile(const std::filesystem::path& filePath,
-                                      JzProjectConfig& outConfig);
+    JzEProjectResult ParseProjectFile(const std::filesystem::path &filePath,
+                                      JzProjectConfig             &outConfig);
 
     /**
      * @brief Serialize config to JSON and write to file.
      */
-    JzEProjectResult WriteProjectFile(const std::filesystem::path& filePath,
-                                      const JzProjectConfig& config);
+    JzEProjectResult WriteProjectFile(const std::filesystem::path &filePath,
+                                      const JzProjectConfig       &config);
 
     /**
      * @brief Create default directory structure for a new project.
      */
-    Bool CreateProjectDirectories(const std::filesystem::path& projectRoot);
+    Bool CreateProjectDirectories(const std::filesystem::path &projectRoot);
 
     /**
      * @brief Notify all registered callbacks.

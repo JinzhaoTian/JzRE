@@ -34,121 +34,121 @@ enum class JzEInputDeviceType : U8 {
  * @brief Keyboard key codes (GLFW compatible)
  */
 enum class JzEKeyCode : I32 {
-    Unknown       = -1,
-    Space         = 32,
-    Apostrophe    = 39,
-    Comma         = 44,
-    Minus         = 45,
-    Period        = 46,
-    Slash         = 47,
-    Num0          = 48,
-    Num1          = 49,
-    Num2          = 50,
-    Num3          = 51,
-    Num4          = 52,
-    Num5          = 53,
-    Num6          = 54,
-    Num7          = 55,
-    Num8          = 56,
-    Num9          = 57,
-    Semicolon     = 59,
-    Equal         = 61,
-    A             = 65,
-    B             = 66,
-    C             = 67,
-    D             = 68,
-    E             = 69,
-    F             = 70,
-    G             = 71,
-    H             = 72,
-    I             = 73,
-    J             = 74,
-    K             = 75,
-    L             = 76,
-    M             = 77,
-    N             = 78,
-    O             = 79,
-    P             = 80,
-    Q             = 81,
-    R             = 82,
-    S             = 83,
-    T             = 84,
-    U             = 85,
-    V             = 86,
-    W             = 87,
-    X             = 88,
-    Y             = 89,
-    Z             = 90,
-    LeftBracket   = 91,
-    Backslash     = 92,
-    RightBracket  = 93,
-    GraveAccent   = 96,
-    Escape        = 256,
-    Enter         = 257,
-    Tab           = 258,
-    Backspace     = 259,
-    Insert        = 260,
-    Delete        = 261,
-    Right         = 262,
-    Left          = 263,
-    Down          = 264,
-    Up            = 265,
-    PageUp        = 266,
-    PageDown      = 267,
-    Home          = 268,
-    End           = 269,
-    CapsLock      = 280,
-    ScrollLock    = 281,
-    NumLock       = 282,
-    PrintScreen   = 283,
-    Pause         = 284,
-    F1            = 290,
-    F2            = 291,
-    F3            = 292,
-    F4            = 293,
-    F5            = 294,
-    F6            = 295,
-    F7            = 296,
-    F8            = 297,
-    F9            = 298,
-    F10           = 299,
-    F11           = 300,
-    F12           = 301,
-    Keypad0       = 320,
-    Keypad1       = 321,
-    Keypad2       = 322,
-    Keypad3       = 323,
-    Keypad4       = 324,
-    Keypad5       = 325,
-    Keypad6       = 326,
-    Keypad7       = 327,
-    Keypad8       = 328,
-    Keypad9       = 329,
-    KeypadDecimal = 330,
-    KeypadDivide  = 331,
-    KeypadMultiply= 332,
-    KeypadSubtract= 333,
-    KeypadAdd     = 334,
-    KeypadEnter   = 335,
-    KeypadEqual   = 336,
-    LeftShift     = 340,
-    LeftControl   = 341,
-    LeftAlt       = 342,
-    LeftSuper     = 343,
-    RightShift    = 344,
-    RightControl  = 345,
-    RightAlt      = 346,
-    RightSuper    = 347,
-    Menu          = 348
+    Unknown        = -1,
+    Space          = 32,
+    Apostrophe     = 39,
+    Comma          = 44,
+    Minus          = 45,
+    Period         = 46,
+    Slash          = 47,
+    Num0           = 48,
+    Num1           = 49,
+    Num2           = 50,
+    Num3           = 51,
+    Num4           = 52,
+    Num5           = 53,
+    Num6           = 54,
+    Num7           = 55,
+    Num8           = 56,
+    Num9           = 57,
+    Semicolon      = 59,
+    Equal          = 61,
+    A              = 65,
+    B              = 66,
+    C              = 67,
+    D              = 68,
+    E              = 69,
+    F              = 70,
+    G              = 71,
+    H              = 72,
+    I              = 73,
+    J              = 74,
+    K              = 75,
+    L              = 76,
+    M              = 77,
+    N              = 78,
+    O              = 79,
+    P              = 80,
+    Q              = 81,
+    R              = 82,
+    S              = 83,
+    T              = 84,
+    U              = 85,
+    V              = 86,
+    W              = 87,
+    X              = 88,
+    Y              = 89,
+    Z              = 90,
+    LeftBracket    = 91,
+    Backslash      = 92,
+    RightBracket   = 93,
+    GraveAccent    = 96,
+    Escape         = 256,
+    Enter          = 257,
+    Tab            = 258,
+    Backspace      = 259,
+    Insert         = 260,
+    Delete         = 261,
+    Right          = 262,
+    Left           = 263,
+    Down           = 264,
+    Up             = 265,
+    PageUp         = 266,
+    PageDown       = 267,
+    Home           = 268,
+    End            = 269,
+    CapsLock       = 280,
+    ScrollLock     = 281,
+    NumLock        = 282,
+    PrintScreen    = 283,
+    Pause          = 284,
+    F1             = 290,
+    F2             = 291,
+    F3             = 292,
+    F4             = 293,
+    F5             = 294,
+    F6             = 295,
+    F7             = 296,
+    F8             = 297,
+    F9             = 298,
+    F10            = 299,
+    F11            = 300,
+    F12            = 301,
+    Keypad0        = 320,
+    Keypad1        = 321,
+    Keypad2        = 322,
+    Keypad3        = 323,
+    Keypad4        = 324,
+    Keypad5        = 325,
+    Keypad6        = 326,
+    Keypad7        = 327,
+    Keypad8        = 328,
+    Keypad9        = 329,
+    KeypadDecimal  = 330,
+    KeypadDivide   = 331,
+    KeypadMultiply = 332,
+    KeypadSubtract = 333,
+    KeypadAdd      = 334,
+    KeypadEnter    = 335,
+    KeypadEqual    = 336,
+    LeftShift      = 340,
+    LeftControl    = 341,
+    LeftAlt        = 342,
+    LeftSuper      = 343,
+    RightShift     = 344,
+    RightControl   = 345,
+    RightAlt       = 346,
+    RightSuper     = 347,
+    Menu           = 348
 };
 
 /**
  * @brief Mouse button codes
  */
 enum class JzEMouseButton : I32 {
-    Left   = 0,
-    Right  = 1,
-    Middle = 2,
+    Left    = 0,
+    Right   = 1,
+    Middle  = 2,
     Button4 = 3,
     Button5 = 4,
     Button6 = 5,
@@ -174,19 +174,46 @@ struct JzInputStateComponent {
         std::bitset<KEY_COUNT> keysUp;        ///< Keys released this frame
         std::bitset<KEY_COUNT> keysRepeating; ///< Keys repeating (held)
 
-        String textBuffer;           ///< Text input buffer
+        String textBuffer;              ///< Text input buffer
         Bool   textInputEnabled{false}; ///< Whether text input mode is active
 
-        Bool IsKeyPressed(I32 key) const { return key >= 0 && key < static_cast<I32>(KEY_COUNT) && keysPressed[static_cast<Size>(key)]; }
-        Bool IsKeyDown(I32 key) const { return key >= 0 && key < static_cast<I32>(KEY_COUNT) && keysDown[static_cast<Size>(key)]; }
-        Bool IsKeyUp(I32 key) const { return key >= 0 && key < static_cast<I32>(KEY_COUNT) && keysUp[static_cast<Size>(key)]; }
-        Bool IsKeyRepeating(I32 key) const { return key >= 0 && key < static_cast<I32>(KEY_COUNT) && keysRepeating[static_cast<Size>(key)]; }
+        Bool IsKeyPressed(I32 key) const
+        {
+            return key >= 0 && key < static_cast<I32>(KEY_COUNT) && keysPressed[static_cast<Size>(key)];
+        }
 
-        Bool IsKeyPressed(JzEKeyCode key) const { return IsKeyPressed(static_cast<I32>(key)); }
-        Bool IsKeyDown(JzEKeyCode key) const { return IsKeyDown(static_cast<I32>(key)); }
-        Bool IsKeyUp(JzEKeyCode key) const { return IsKeyUp(static_cast<I32>(key)); }
+        Bool IsKeyDown(I32 key) const
+        {
+            return key >= 0 && key < static_cast<I32>(KEY_COUNT) && keysDown[static_cast<Size>(key)];
+        }
 
-        void ClearFrameState() {
+        Bool IsKeyUp(I32 key) const
+        {
+            return key >= 0 && key < static_cast<I32>(KEY_COUNT) && keysUp[static_cast<Size>(key)];
+        }
+
+        Bool IsKeyRepeating(I32 key) const
+        {
+            return key >= 0 && key < static_cast<I32>(KEY_COUNT) && keysRepeating[static_cast<Size>(key)];
+        }
+
+        Bool IsKeyPressed(JzEKeyCode key) const
+        {
+            return IsKeyPressed(static_cast<I32>(key));
+        }
+
+        Bool IsKeyDown(JzEKeyCode key) const
+        {
+            return IsKeyDown(static_cast<I32>(key));
+        }
+
+        Bool IsKeyUp(JzEKeyCode key) const
+        {
+            return IsKeyUp(static_cast<I32>(key));
+        }
+
+        void ClearFrameState()
+        {
             keysDown.reset();
             keysUp.reset();
             keysRepeating.reset();
@@ -218,20 +245,43 @@ struct JzInputStateComponent {
 
         Bool entered{false}; ///< Cursor entered window this frame
 
-        Bool IsButtonPressed(I32 button) const { return button >= 0 && button < static_cast<I32>(BUTTON_COUNT) && buttonsPressed[static_cast<Size>(button)]; }
-        Bool IsButtonDown(I32 button) const { return button >= 0 && button < static_cast<I32>(BUTTON_COUNT) && buttonsDown[static_cast<Size>(button)]; }
-        Bool IsButtonUp(I32 button) const { return button >= 0 && button < static_cast<I32>(BUTTON_COUNT) && buttonsUp[static_cast<Size>(button)]; }
+        Bool IsButtonPressed(I32 button) const
+        {
+            return button >= 0 && button < static_cast<I32>(BUTTON_COUNT) && buttonsPressed[static_cast<Size>(button)];
+        }
 
-        Bool IsButtonPressed(JzEMouseButton button) const { return IsButtonPressed(static_cast<I32>(button)); }
-        Bool IsButtonDown(JzEMouseButton button) const { return IsButtonDown(static_cast<I32>(button)); }
-        Bool IsButtonUp(JzEMouseButton button) const { return IsButtonUp(static_cast<I32>(button)); }
+        Bool IsButtonDown(I32 button) const
+        {
+            return button >= 0 && button < static_cast<I32>(BUTTON_COUNT) && buttonsDown[static_cast<Size>(button)];
+        }
 
-        void ClearFrameState() {
+        Bool IsButtonUp(I32 button) const
+        {
+            return button >= 0 && button < static_cast<I32>(BUTTON_COUNT) && buttonsUp[static_cast<Size>(button)];
+        }
+
+        Bool IsButtonPressed(JzEMouseButton button) const
+        {
+            return IsButtonPressed(static_cast<I32>(button));
+        }
+
+        Bool IsButtonDown(JzEMouseButton button) const
+        {
+            return IsButtonDown(static_cast<I32>(button));
+        }
+
+        Bool IsButtonUp(JzEMouseButton button) const
+        {
+            return IsButtonUp(static_cast<I32>(button));
+        }
+
+        void ClearFrameState()
+        {
             buttonsDown.reset();
             buttonsUp.reset();
             positionDelta = {0.0f, 0.0f};
-            scrollDelta = {0.0f, 0.0f};
-            entered = false;
+            scrollDelta   = {0.0f, 0.0f};
+            entered       = false;
         }
     } mouse;
 
@@ -239,7 +289,7 @@ struct JzInputStateComponent {
     struct GamepadState {
         static constexpr Size MAX_GAMEPADS = 4;
         static constexpr Size BUTTON_COUNT = 15;
-        static constexpr Size AXIS_COUNT = 6;
+        static constexpr Size AXIS_COUNT   = 6;
 
         struct Pad {
             Bool   connected{false};
@@ -258,7 +308,8 @@ struct JzInputStateComponent {
 
         std::array<Pad, MAX_GAMEPADS> pads;
 
-        void ClearFrameState() {
+        void ClearFrameState()
+        {
             for (auto &pad : pads) {
                 std::fill(pad.buttonsDown.begin(), pad.buttonsDown.end(), false);
                 std::fill(pad.buttonsUp.begin(), pad.buttonsUp.end(), false);
@@ -281,7 +332,8 @@ struct JzInputStateComponent {
     /**
      * @brief Clear per-frame state (call at end of frame)
      */
-    void ClearFrameState() {
+    void ClearFrameState()
+    {
         keyboard.ClearFrameState();
         mouse.ClearFrameState();
         gamepad.ClearFrameState();
@@ -355,7 +407,8 @@ struct JzInputActionComponent {
         Bool triggered{false}; ///< Just pressed this frame
         Bool released{false};  ///< Just released this frame
 
-        void Update(F32 deltaTime) {
+        void Update(F32 deltaTime)
+        {
             wasPressed = pressed;
             pressed    = (std::abs(value) > 0.1f);
             triggered  = pressed && !wasPressed;
@@ -375,33 +428,35 @@ struct JzInputActionComponent {
      * @brief Input context for switching control schemes
      */
     struct InputContext {
-        String                          name;
-        std::vector<String>             enabledActions;
-        I32                             priority{0};
-        Bool                            enabled{true};
+        String              name;
+        std::vector<String> enabledActions;
+        I32                 priority{0};
+        Bool                enabled{true};
     };
 
     std::vector<InputContext> contexts;
     String                    activeContext{"default"};
 
-    // ========== Helper Methods ==========
-
-    F32 GetActionValue(const String &name) const {
+    F32 GetActionValue(const String &name) const
+    {
         auto it = actions.find(name);
         return it != actions.end() ? it->second.value : 0.0f;
     }
 
-    Bool IsActionPressed(const String &name) const {
+    Bool IsActionPressed(const String &name) const
+    {
         auto it = actions.find(name);
         return it != actions.end() ? it->second.pressed : false;
     }
 
-    Bool IsActionTriggered(const String &name) const {
+    Bool IsActionTriggered(const String &name) const
+    {
         auto it = actions.find(name);
         return it != actions.end() ? it->second.triggered : false;
     }
 
-    Bool IsActionReleased(const String &name) const {
+    Bool IsActionReleased(const String &name) const
+    {
         auto it = actions.find(name);
         return it != actions.end() ? it->second.released : false;
     }
@@ -428,13 +483,14 @@ struct JzCameraInputStateComponent {
 };
 
 /**
- * @brief Tag component for editor-controlled camera input.
+ * @brief Tag component for manually managed camera input.
  *
  * Entities with this tag are excluded from JzInputSystem's automatic
- * camera input synchronization, allowing editor panels to drive
- * camera input explicitly and stay isolated from global input.
+ * camera input synchronization. This allows a host application to
+ * drive camera input explicitly and keep local viewport controls
+ * isolated from global window input.
  */
-struct JzEditorCameraInputOverrideTag { };
+struct JzCameraInputIsolationTag { };
 
 // ==================== Legacy Input Components ====================
 // Note: For comprehensive input state, use JzInputStateComponent and

@@ -70,27 +70,27 @@ protected:
      * @brief Get the visibility mask for entity filtering.
      *
      * Override in subclasses to control which entities are rendered:
-     * - GameView: Untagged (default)
-     * - SceneView: Untagged | EditorOnly
-     * - AssetView: PreviewOnly
+     * - GameView: MainScene (default)
+     * - SceneView: MainScene | Overlay
+     * - AssetView: Isolated
      */
     virtual JzRenderVisibility GetVisibility() const
     {
-        return JzRenderVisibility::Untagged;
+        return JzRenderVisibility::MainScene;
     }
 
     /**
-     * @brief Get per-view render feature flags.
+     * @brief Get per-target render feature flags.
      *
-     * Override in subclasses to enable helper features:
+     * Override in subclasses to enable features:
      * - Skybox
      * - Axis
      * - Grid
-     * - Gizmo
+     * - Manipulator
      */
-    virtual JzRenderViewFeatures GetRenderFeatures() const
+    virtual JzRenderTargetFeatures GetRenderFeatures() const
     {
-        return JzRenderViewFeatures::None;
+        return JzRenderTargetFeatures::None;
     }
 
     /**
@@ -114,9 +114,9 @@ private:
     void UpdateFrameTexture();
 
 protected:
-    String                     m_name;
-    JzFrame                   *m_frame;
-    JzRenderSystem::ViewHandle m_viewHandle = JzRenderSystem::INVALID_VIEW_HANDLE;
+    String                             m_name;
+    JzFrame                           *m_frame;
+    JzRenderTargetHandle               m_renderTargetHandle = INVALID_RENDER_TARGET_HANDLE;
 };
 
 } // namespace JzRE

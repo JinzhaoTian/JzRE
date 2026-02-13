@@ -3,54 +3,51 @@
  * @copyright Copyright (c) 2025 JzRE
  */
 
-#include "JzRE/Runtime/Function/Rendering/JzRenderTarget.h"
+#include "JzRE/Runtime/Function/Rendering/JzRenderOutput.h"
 
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
 #include "JzRE/Runtime/Platform/RHI/JzDevice.h"
 
 namespace JzRE {
 
-JzRenderTarget::JzRenderTarget(const String &debugName) :
+JzRenderOutput::JzRenderOutput(const String &debugName) :
     m_debugName(debugName) { }
 
-JzRenderTarget::~JzRenderTarget()
+JzRenderOutput::~JzRenderOutput()
 {
     DestroyResources();
 }
 
-Bool JzRenderTarget::EnsureSize(JzIVec2 size)
+Bool JzRenderOutput::EnsureSize(JzIVec2 size)
 {
-    // Skip if size is invalid
     if (size.x <= 0 || size.y <= 0) {
         return false;
     }
 
-    // Skip if size hasn't changed and resources exist
     if (m_size == size && IsValid()) {
         return false;
     }
 
-    // Update size and recreate resources
     m_size = size;
     return CreateResources();
 }
 
-std::shared_ptr<JzGPUFramebufferObject> JzRenderTarget::GetFramebuffer() const
+std::shared_ptr<JzGPUFramebufferObject> JzRenderOutput::GetFramebuffer() const
 {
     return m_framebuffer;
 }
 
-std::shared_ptr<JzGPUTextureObject> JzRenderTarget::GetColorTexture() const
+std::shared_ptr<JzGPUTextureObject> JzRenderOutput::GetColorTexture() const
 {
     return m_colorTexture;
 }
 
-std::shared_ptr<JzGPUTextureObject> JzRenderTarget::GetDepthTexture() const
+std::shared_ptr<JzGPUTextureObject> JzRenderOutput::GetDepthTexture() const
 {
     return m_depthTexture;
 }
 
-void *JzRenderTarget::GetTextureID() const
+void *JzRenderOutput::GetTextureID() const
 {
     if (m_colorTexture) {
         return m_colorTexture->GetTextureID();
@@ -58,17 +55,17 @@ void *JzRenderTarget::GetTextureID() const
     return nullptr;
 }
 
-JzIVec2 JzRenderTarget::GetSize() const
+JzIVec2 JzRenderOutput::GetSize() const
 {
     return m_size;
 }
 
-Bool JzRenderTarget::IsValid() const
+Bool JzRenderOutput::IsValid() const
 {
     return m_framebuffer != nullptr && m_colorTexture != nullptr && m_depthTexture != nullptr;
 }
 
-Bool JzRenderTarget::CreateResources()
+Bool JzRenderOutput::CreateResources()
 {
     if (!JzServiceContainer::Has<JzDevice>()) {
         return false;
@@ -76,13 +73,11 @@ Bool JzRenderTarget::CreateResources()
 
     auto &device = JzServiceContainer::Get<JzDevice>();
 
-    // Create framebuffer
     m_framebuffer = device.CreateFramebuffer(m_debugName + "_FB");
     if (!m_framebuffer) {
         return false;
     }
 
-    // Create color texture
     JzGPUTextureObjectDesc colorDesc;
     colorDesc.type      = JzETextureResourceType::Texture2D;
     colorDesc.format    = JzETextureResourceFormat::RGBA8;
@@ -95,7 +90,6 @@ Bool JzRenderTarget::CreateResources()
         m_framebuffer->AttachColorTexture(m_colorTexture, 0);
     }
 
-    // Create depth texture
     JzGPUTextureObjectDesc depthDesc;
     depthDesc.type      = JzETextureResourceType::Texture2D;
     depthDesc.format    = JzETextureResourceFormat::Depth24;
@@ -111,7 +105,7 @@ Bool JzRenderTarget::CreateResources()
     return IsValid();
 }
 
-void JzRenderTarget::DestroyResources()
+void JzRenderOutput::DestroyResources()
 {
     m_depthTexture.reset();
     m_colorTexture.reset();

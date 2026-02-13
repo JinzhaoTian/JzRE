@@ -357,7 +357,7 @@ void JzWindowSystem::ProcessPlatformEvents(JzWorld &world)
     if (m_primaryWindow == INVALID_ENTITY) return;
 
     // Get event dispatcher (optional - gracefully skip if not registered)
-    JzEventSystem **dispatcherPtr = world.TryGetContext<JzEventSystem*>();
+    JzEventSystem **dispatcherPtr = world.TryGetContext<JzEventSystem *>();
     if (!dispatcherPtr || !*dispatcherPtr) {
         // No dispatcher registered, just drain the queue without dispatching
         m_backend->GetEventQueue().Clear();
@@ -371,8 +371,6 @@ void JzWindowSystem::ProcessPlatformEvents(JzWorld &world)
         *dispatcher,
         m_primaryWindow);
 }
-
-// ==================== ECS Update Helpers ====================
 
 void JzWindowSystem::PollEvents(JzWorld &world)
 {
@@ -503,7 +501,7 @@ void JzWindowSystem::SyncInputFromBackend(JzWorld &world, JzEntity windowEntity)
 void JzWindowSystem::ProcessWindowEvents(JzWorld &world)
 {
     // Get event dispatcher (optional - gracefully skip if not registered)
-    JzEventSystem **dispatcherPtr = world.TryGetContext<JzEventSystem*>();
+    JzEventSystem **dispatcherPtr = world.TryGetContext<JzEventSystem *>();
     JzEventSystem  *dispatcher    = (dispatcherPtr && *dispatcherPtr) ? *dispatcherPtr : nullptr;
 
     auto view = world.View<JzWindowEventQueueComponent>();
@@ -643,7 +641,7 @@ void JzWindowSystem::UpdateStatistics(JzWorld &world, F32 delta)
 void JzWindowSystem::EmitWindowEvents(JzWorld &world)
 {
     // Get event dispatcher (optional - gracefully skip if not registered)
-    JzEventSystem **dispatcherPtr = world.TryGetContext<JzEventSystem*>();
+    JzEventSystem **dispatcherPtr = world.TryGetContext<JzEventSystem *>();
     if (!dispatcherPtr || !*dispatcherPtr) return;
     JzEventSystem *dispatcher = *dispatcherPtr;
 

@@ -111,12 +111,12 @@ void JzRE::JzAssetView::PreviewModel(const std::filesystem::path &path)
 
     m_previewEntities = assetSystem.SpawnModel(world, modelHandle);
 
-    // Tag all preview entities with JzPreviewOnlyTag and ensure they have
+    // Tag all preview entities with JzIsolatedRenderTag and ensure they have
     // material components (some .obj files have no .mtl, so SpawnModel
     // skips material creation — but the render system requires it).
     for (auto entity : m_previewEntities) {
-        if (!world.HasComponent<JzPreviewOnlyTag>(entity)) {
-            world.AddComponent<JzPreviewOnlyTag>(entity);
+        if (!world.HasComponent<JzIsolatedRenderTag>(entity)) {
+            world.AddComponent<JzIsolatedRenderTag>(entity);
         }
         if (!world.HasComponent<JzMaterialAssetComponent>(entity)) {
             auto &matComp   = world.AddComponent<JzMaterialAssetComponent>(entity);
@@ -128,7 +128,7 @@ void JzRE::JzAssetView::PreviewModel(const std::filesystem::path &path)
     CreatePreviewCamera();
 
     // Ensure view is registered before binding camera (RenderSystem may initialize later).
-    if (IsOpened() && m_viewHandle == JzRenderSystem::INVALID_VIEW_HANDLE && JzServiceContainer::Has<JzRenderSystem>()) {
+    if (IsOpened() && m_renderTargetHandle == INVALID_RENDER_TARGET_HANDLE && JzServiceContainer::Has<JzRenderSystem>()) {
         RegisterRenderTarget();
     }
 
@@ -222,17 +222,17 @@ void JzRE::JzAssetView::CreatePreviewCamera()
     world.AddComponent<JzCameraInputComponent>(m_previewCamera);
 
     // Ensure the render target exists before updating the view's camera.
-    if (IsOpened() && m_viewHandle == JzRenderSystem::INVALID_VIEW_HANDLE && JzServiceContainer::Has<JzRenderSystem>()) {
+    if (IsOpened() && m_renderTargetHandle == INVALID_RENDER_TARGET_HANDLE && JzServiceContainer::Has<JzRenderSystem>()) {
         RegisterRenderTarget();
     }
 
     // Create dedicated input state for this preview
     CreatePreviewInputState();
 
-    // Update the render view with the new camera
-    if (m_viewHandle != JzRenderSystem::INVALID_VIEW_HANDLE && JzServiceContainer::Has<JzRenderSystem>()) {
+    // Update the render target with the new camera
+    if (m_renderTargetHandle != INVALID_RENDER_TARGET_HANDLE && JzServiceContainer::Has<JzRenderSystem>()) {
         auto &renderSystem = JzServiceContainer::Get<JzRenderSystem>();
-        renderSystem.UpdateViewCamera(m_viewHandle, m_previewCamera);
+        renderSystem.UpdateRenderTargetCamera(m_renderTargetHandle, m_previewCamera);
     }
 }
 
@@ -348,13 +348,13 @@ void JzRE::JzAssetView::Update(JzRE::F32 deltaTime)
     JzView::Update(deltaTime);
 
     // Ensure the render target is registered when RenderSystem becomes available.
-    if (IsOpened() && m_viewHandle == JzRenderSystem::INVALID_VIEW_HANDLE && JzServiceContainer::Has<JzRenderSystem>()) {
+    if (IsOpened() && m_renderTargetHandle == INVALID_RENDER_TARGET_HANDLE && JzServiceContainer::Has<JzRenderSystem>()) {
         RegisterRenderTarget();
     }
 
-    if (m_viewHandle != JzRenderSystem::INVALID_VIEW_HANDLE && JzServiceContainer::Has<JzRenderSystem>() && m_previewCamera != INVALID_ENTITY) {
+    if (m_renderTargetHandle != INVALID_RENDER_TARGET_HANDLE && JzServiceContainer::Has<JzRenderSystem>() && m_previewCamera != INVALID_ENTITY) {
         auto &renderSystem = JzServiceContainer::Get<JzRenderSystem>();
-        renderSystem.UpdateViewCamera(m_viewHandle, m_previewCamera);
+        renderSystem.UpdateRenderTargetCamera(m_renderTargetHandle, m_previewCamera);
     }
 
     if (m_previewCamera != INVALID_ENTITY && JzServiceContainer::Has<JzWorld>()) {

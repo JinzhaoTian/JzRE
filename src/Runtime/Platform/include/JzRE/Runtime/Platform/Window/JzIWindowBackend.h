@@ -125,7 +125,7 @@ public:
     /**
      * @brief Get the windowing library's window handle (e.g., GLFWwindow*).
      *
-     * Used for library-specific integrations such as ImGui backends.
+     * Used for library-specific integrations such as host UI backends.
      */
     virtual void *GetPlatformWindowHandle() const = 0;
 

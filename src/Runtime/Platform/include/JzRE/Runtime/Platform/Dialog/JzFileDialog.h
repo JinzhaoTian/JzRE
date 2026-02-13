@@ -115,7 +115,7 @@ protected:
             return entries;
         }
 
-        // Helper to parse a single filter item
+        // to parse a single filter item
         auto parseItem = [](const String &item) -> JzFileFilterEntry {
             JzFileFilterEntry entry;
             size_t            colonPos = item.find(':');

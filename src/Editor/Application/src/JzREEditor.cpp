@@ -37,7 +37,7 @@ JzRE::JzRERuntimeSettings CreateSettingsFromPath(JzRE::JzERHIType             rh
     return settings;
 }
 
-std::shared_ptr<JzRE::JzRHIPipeline> LoadHelperPipeline(
+std::shared_ptr<JzRE::JzRHIPipeline> LoadRenderPassPipeline(
     JzRE::JzAssetSystem &assetSystem, const JzRE::String &primaryPath, const JzRE::String &fallbackPath)
 {
     const auto tryLoad = [&assetSystem](const JzRE::String &path) -> std::shared_ptr<JzRE::JzRHIPipeline> {
@@ -63,7 +63,7 @@ std::shared_ptr<JzRE::JzRHIPipeline> LoadHelperPipeline(
 
 } // anonymous namespace
 
-struct JzRE::JzREEditor::JzEditorHelperResources {
+struct JzRE::JzREEditor::JzEditorRenderPassResources {
     std::shared_ptr<JzRHIPipeline>          skyboxPipeline;
     std::shared_ptr<JzRHIPipeline>          linePipeline;
     std::shared_ptr<JzGPUBufferObject>      skyboxVertexBuffer;
@@ -111,7 +111,7 @@ JzRE::JzREEditor::JzREEditor(JzERHIType rhiType, const std::filesystem::path &op
 
 JzRE::JzREEditor::~JzREEditor()
 {
-    ReleaseEditorHelperPasses();
+    ReleaseEditorRenderPasses();
 
     // Clean up editor UI before base class destructor runs
     m_editorUI.reset();
@@ -125,7 +125,8 @@ JzRE::JzEditorUI &JzRE::JzREEditor::GetEditorUI()
 void JzRE::JzREEditor::OnStart()
 {
     JzRERuntime::OnStart();
-    InitializeEditorHelperPasses();
+
+    InitializeEditorRenderPasses();
 }
 
 void JzRE::JzREEditor::OnUpdate(F32 deltaTime)
@@ -148,13 +149,13 @@ void JzRE::JzREEditor::OnRender(F32 deltaTime)
 
 void JzRE::JzREEditor::OnStop()
 {
-    ReleaseEditorHelperPasses();
+    ReleaseEditorRenderPasses();
     JzRERuntime::OnStop();
 }
 
-void JzRE::JzREEditor::InitializeEditorHelperPasses()
+void JzRE::JzREEditor::InitializeEditorRenderPasses()
 {
-    ReleaseEditorHelperPasses();
+    ReleaseEditorRenderPasses();
 
     if (!m_renderSystem || !m_assetSystem || !JzServiceContainer::Has<JzDevice>()) {
         return;
@@ -163,31 +164,30 @@ void JzRE::JzREEditor::InitializeEditorHelperPasses()
     auto &device      = JzServiceContainer::Get<JzDevice>();
     auto &assetSystem = *m_assetSystem;
 
-    m_editorHelperResources = std::make_unique<JzEditorHelperResources>();
-    auto &resources         = *m_editorHelperResources;
+    m_editorRenderPassResources = std::make_unique<JzEditorRenderPassResources>();
+    auto &resources             = *m_editorRenderPassResources;
 
     resources.skyboxPipeline =
-        LoadHelperPipeline(assetSystem, "shaders/editor_skybox", "resources/shaders/editor_skybox");
+        LoadRenderPassPipeline(assetSystem, "shaders/editor_skybox", "resources/shaders/editor_skybox");
     resources.linePipeline =
-        LoadHelperPipeline(assetSystem, "shaders/editor_axis", "resources/shaders/editor_axis");
+        LoadRenderPassPipeline(assetSystem, "shaders/editor_axis", "resources/shaders/editor_axis");
 
     if (!resources.skyboxPipeline || !resources.linePipeline) {
-        JzRE_LOG_WARN("JzREEditor: Helper shaders are not fully available, helper rendering may be incomplete.");
+        JzRE_LOG_WARN("JzREEditor: Render pass shaders are not fully available, render pass rendering may be incomplete.");
     }
 
     constexpr std::array<F32, 6> kSkyboxTriangleVertices = {
         -1.0f, -1.0f,
         -1.0f, 3.0f,
-        3.0f, -1.0f
-    };
+        3.0f, -1.0f};
 
     {
         JzGPUBufferObjectDesc vbDesc;
-        vbDesc.type      = JzEGPUBufferObjectType::Vertex;
-        vbDesc.usage     = JzEGPUBufferObjectUsage::StaticDraw;
-        vbDesc.size      = kSkyboxTriangleVertices.size() * sizeof(F32);
-        vbDesc.data      = kSkyboxTriangleVertices.data();
-        vbDesc.debugName = "EditorSkyboxScreenTriangleVB";
+        vbDesc.type                  = JzEGPUBufferObjectType::Vertex;
+        vbDesc.usage                 = JzEGPUBufferObjectUsage::StaticDraw;
+        vbDesc.size                  = kSkyboxTriangleVertices.size() * sizeof(F32);
+        vbDesc.data                  = kSkyboxTriangleVertices.data();
+        vbDesc.debugName             = "EditorSkyboxScreenTriangleVB";
         resources.skyboxVertexBuffer = device.CreateBuffer(vbDesc);
 
         resources.skyboxVAO = device.CreateVertexArray("EditorSkyboxScreenTriangleVAO");
@@ -202,22 +202,20 @@ void JzRE::JzREEditor::InitializeEditorHelperPasses()
         F32 r, g, b;
     };
 
-    constexpr std::array<JzLineVertex, 6> kAxisVertices = {{
-        {0.0f, 0.0f, 0.0f, 1.0f, 0.2f, 0.2f},
-        {1.5f, 0.0f, 0.0f, 1.0f, 0.2f, 0.2f},
-        {0.0f, 0.0f, 0.0f, 0.2f, 1.0f, 0.2f},
-        {0.0f, 1.5f, 0.0f, 0.2f, 1.0f, 0.2f},
-        {0.0f, 0.0f, 0.0f, 0.2f, 0.5f, 1.0f},
-        {0.0f, 0.0f, 1.5f, 0.2f, 0.5f, 1.0f}
-    }};
+    constexpr std::array<JzLineVertex, 6> kAxisVertices = {{{0.0f, 0.0f, 0.0f, 1.0f, 0.2f, 0.2f},
+                                                            {1.5f, 0.0f, 0.0f, 1.0f, 0.2f, 0.2f},
+                                                            {0.0f, 0.0f, 0.0f, 0.2f, 1.0f, 0.2f},
+                                                            {0.0f, 1.5f, 0.0f, 0.2f, 1.0f, 0.2f},
+                                                            {0.0f, 0.0f, 0.0f, 0.2f, 0.5f, 1.0f},
+                                                            {0.0f, 0.0f, 1.5f, 0.2f, 0.5f, 1.0f}}};
 
     {
         JzGPUBufferObjectDesc vbDesc;
-        vbDesc.type      = JzEGPUBufferObjectType::Vertex;
-        vbDesc.usage     = JzEGPUBufferObjectUsage::StaticDraw;
-        vbDesc.size      = kAxisVertices.size() * sizeof(JzLineVertex);
-        vbDesc.data      = kAxisVertices.data();
-        vbDesc.debugName = "EditorAxisVB";
+        vbDesc.type                = JzEGPUBufferObjectType::Vertex;
+        vbDesc.usage               = JzEGPUBufferObjectUsage::StaticDraw;
+        vbDesc.size                = kAxisVertices.size() * sizeof(JzLineVertex);
+        vbDesc.data                = kAxisVertices.data();
+        vbDesc.debugName           = "EditorAxisVB";
         resources.axisVertexBuffer = device.CreateBuffer(vbDesc);
 
         resources.axisVAO = device.CreateVertexArray("EditorAxisVAO");
@@ -250,11 +248,11 @@ void JzRE::JzREEditor::InitializeEditorHelperPasses()
 
     {
         JzGPUBufferObjectDesc vbDesc;
-        vbDesc.type      = JzEGPUBufferObjectType::Vertex;
-        vbDesc.usage     = JzEGPUBufferObjectUsage::StaticDraw;
-        vbDesc.size      = gridVertices.size() * sizeof(JzLineVertex);
-        vbDesc.data      = gridVertices.data();
-        vbDesc.debugName = "EditorGridVB";
+        vbDesc.type                = JzEGPUBufferObjectType::Vertex;
+        vbDesc.usage               = JzEGPUBufferObjectUsage::StaticDraw;
+        vbDesc.size                = gridVertices.size() * sizeof(JzLineVertex);
+        vbDesc.data                = gridVertices.data();
+        vbDesc.debugName           = "EditorGridVB";
         resources.gridVertexBuffer = device.CreateBuffer(vbDesc);
 
         resources.gridVAO = device.CreateVertexArray("EditorGridVAO");
@@ -276,17 +274,17 @@ void JzRE::JzREEditor::InitializeEditorHelperPasses()
     };
 
     if (resources.skyboxPipeline && resources.skyboxVAO) {
-        JzRenderSystem::JzRenderHelperPass skyboxPass;
-        skyboxPass.name       = "EditorSkyboxPass";
-        skyboxPass.feature    = JzRenderViewFeatures::Skybox;
-        skyboxPass.pipeline   = resources.skyboxPipeline;
-        skyboxPass.vertexArray = resources.skyboxVAO;
+        JzRenderPass skyboxPass;
+        skyboxPass.name                     = "EditorSkyboxPass";
+        skyboxPass.feature                  = JzRenderTargetFeatures::Skybox;
+        skyboxPass.pipeline                 = resources.skyboxPipeline;
+        skyboxPass.vertexArray              = resources.skyboxVAO;
         skyboxPass.drawParams.primitiveType = JzEPrimitiveType::Triangles;
         skyboxPass.drawParams.vertexCount   = 3;
         skyboxPass.drawParams.instanceCount = 1;
         skyboxPass.drawParams.firstVertex   = 0;
         skyboxPass.drawParams.firstInstance = 0;
-        skyboxPass.setupPass = [](const std::shared_ptr<JzRHIPipeline> &pipeline,
+        skyboxPass.setupPass                = [](const std::shared_ptr<JzRHIPipeline> &pipeline,
                                   JzWorld &world, const JzMat4 &viewMatrix, const JzMat4 &projectionMatrix) {
             JzVec3 sunDirection(0.3f, -1.0f, -0.5f);
             auto   lightView = world.View<JzDirectionalLightComponent>();
@@ -307,44 +305,44 @@ void JzRE::JzREEditor::InitializeEditorHelperPasses()
             pipeline->SetUniform("sunSize", 0.04f);
             pipeline->SetUniform("exposure", 1.0f);
         };
-        m_renderSystem->RegisterHelperPass(std::move(skyboxPass));
+        m_renderSystem->RegisterRenderPass(std::move(skyboxPass));
     }
 
     if (resources.linePipeline && resources.axisVAO) {
-        JzRenderSystem::JzRenderHelperPass axisPass;
-        axisPass.name        = "EditorAxisPass";
-        axisPass.feature     = JzRenderViewFeatures::Axis;
-        axisPass.pipeline    = resources.linePipeline;
-        axisPass.vertexArray = resources.axisVAO;
+        JzRenderPass axisPass;
+        axisPass.name                     = "EditorAxisPass";
+        axisPass.feature                  = JzRenderTargetFeatures::Axis;
+        axisPass.pipeline                 = resources.linePipeline;
+        axisPass.vertexArray              = resources.axisVAO;
         axisPass.drawParams.primitiveType = JzEPrimitiveType::Lines;
         axisPass.drawParams.vertexCount   = static_cast<U32>(kAxisVertices.size());
         axisPass.drawParams.instanceCount = 1;
         axisPass.drawParams.firstVertex   = 0;
         axisPass.drawParams.firstInstance = 0;
-        axisPass.setupPass = setupLinePass;
-        m_renderSystem->RegisterHelperPass(std::move(axisPass));
+        axisPass.setupPass                = setupLinePass;
+        m_renderSystem->RegisterRenderPass(std::move(axisPass));
     }
 
     if (resources.linePipeline && resources.gridVAO && resources.gridVertexCount > 0) {
-        JzRenderSystem::JzRenderHelperPass gridPass;
-        gridPass.name        = "EditorGridPass";
-        gridPass.feature     = JzRenderViewFeatures::Grid;
-        gridPass.pipeline    = resources.linePipeline;
-        gridPass.vertexArray = resources.gridVAO;
+        JzRenderPass gridPass;
+        gridPass.name                     = "EditorGridPass";
+        gridPass.feature                  = JzRenderTargetFeatures::Grid;
+        gridPass.pipeline                 = resources.linePipeline;
+        gridPass.vertexArray              = resources.gridVAO;
         gridPass.drawParams.primitiveType = JzEPrimitiveType::Lines;
         gridPass.drawParams.vertexCount   = resources.gridVertexCount;
         gridPass.drawParams.instanceCount = 1;
         gridPass.drawParams.firstVertex   = 0;
         gridPass.drawParams.firstInstance = 0;
-        gridPass.setupPass = setupLinePass;
-        m_renderSystem->RegisterHelperPass(std::move(gridPass));
+        gridPass.setupPass                = setupLinePass;
+        m_renderSystem->RegisterRenderPass(std::move(gridPass));
     }
 }
 
-void JzRE::JzREEditor::ReleaseEditorHelperPasses()
+void JzRE::JzREEditor::ReleaseEditorRenderPasses()
 {
     if (m_renderSystem) {
-        m_renderSystem->ClearHelperPasses();
+        m_renderSystem->ClearRenderPasses();
     }
-    m_editorHelperResources.reset();
+    m_editorRenderPassResources.reset();
 }

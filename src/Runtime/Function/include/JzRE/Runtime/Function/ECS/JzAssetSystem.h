@@ -276,7 +276,7 @@ public:
      * @brief Enable or disable hot reload functionality
      *
      * Hot reload monitors asset files for changes and automatically
-     * reloads them during runtime. This is intended for editor/development
+     * reloads them during runtime. This is intended for authoring/development
      * mode and should be disabled in release builds.
      *
      * @param enabled True to enable hot reload
@@ -303,7 +303,7 @@ public:
     /**
      * @brief Force an immediate hot reload check on all tracked assets
      *
-     * Useful for triggering reload via editor UI button.
+     * Useful for triggering reload from host tooling or debug controls.
      */
     void ForceHotReloadCheck();
 

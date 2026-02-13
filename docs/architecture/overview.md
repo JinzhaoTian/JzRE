@@ -52,12 +52,10 @@ Runtime (`src/Runtime/**`) is editor-agnostic engine code. Editor (`src/Editor/*
 
 Mandatory rules:
 
-1. Runtime public APIs must not expose editor concepts or names (`Editor`, `SceneView`, `GameView`, `AssetView`, `Gizmo`, etc.).
+1. Runtime public APIs must not expose editor concepts or panel-level names (`Editor`, `SceneView`, `GameView`, `AssetView`, etc.).
 2. Runtime modules must not depend on editor UI/tooling libraries (for example, `imgui` and editor panel classes).
 3. Editor-specific behavior must be injected through generic runtime extension points (callbacks, descriptors, plugin-like pass registration), not embedded as runtime-specific semantics.
 4. Any new runtime abstraction must remain reusable by standalone game applications that do not link the editor.
-
-Current editor-coupled runtime symbols are treated as migration debt, not architecture targets.
 
 ---
 
@@ -130,15 +128,15 @@ High-level engine systems built on lower layers.
 
 **Subsystems:**
 
-| Subsystem  | Description                                   |
-| ---------- | --------------------------------------------- |
-| **Scene**  | `JzActor` - Legacy scene graph (optional)     |
-| **ECS**    | `JzWorld`, Systems, Components (EnTT-based)   |
-| **Event**  | `JzEventSystem` - ECS event dispatcher (stored in JzWorld context) |
-| **Input**  | `JzInputSystem` - ECS-based keyboard/mouse/gamepad input processing |
-| **Window** | `JzWindowSystem` - ECS-integrated GLFW window management |
-| **Asset**  | `JzAssetSystem` - Asset loading, hot reload, ECS integration |
-| **Rendering** | `JzRenderSystem`, `JzRenderGraph`, `JzRenderTarget`, `JzRenderOutput` - ECS-driven rendering orchestration and output abstraction; editor behavior is layered on top via runtime extension points |
+| Subsystem     | Description                                                                                                                                                                                          |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Scene**     | `JzActor` - Legacy scene graph (optional)                                                                                                                                                            |
+| **ECS**       | `JzWorld`, Systems, Components (EnTT-based)                                                                                                                                                          |
+| **Event**     | `JzEventSystem` - ECS event dispatcher (stored in JzWorld context)                                                                                                                                   |
+| **Input**     | `JzInputSystem` - ECS-based keyboard/mouse/gamepad input processing                                                                                                                                  |
+| **Window**    | `JzWindowSystem` - ECS-integrated GLFW window management                                                                                                                                             |
+| **Asset**     | `JzAssetSystem` - Asset loading, hot reload, ECS integration                                                                                                                                         |
+| **Rendering** | `JzRenderSystem`, `JzRenderGraph`, `JzRenderOutput` - ECS-driven rendering orchestration where logical `RenderTarget` descriptors map to concrete `RenderOutput` resources |
 
 📄 See: [ECS Integration](ecs.md), [Rendering Pipeline](rendering_pipeline.md)
 

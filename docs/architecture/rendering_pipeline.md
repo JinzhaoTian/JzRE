@@ -7,22 +7,21 @@ This document describes the ECS-based rendering pipeline in JzRE. The rendering 
 Runtime architecture target: rendering APIs and data contracts remain editor-agnostic.  
 Editor integration must be built on top of runtime extension points rather than encoded directly into runtime-specific semantics.
 
-Current implementation note: some editor-coupled render visibility/feature naming still exists for compatibility and is treated as migration debt.
+Current `JzRenderSystem` implementation uses a per-render-target descriptor with two independent controls:
 
-Current `JzRenderSystem` implementation uses a per-view descriptor with two independent controls:
-
-- `visibility` (entity filtering): `Untagged`, `EditorOnly`, `PreviewOnly` (legacy compatibility naming)
-- `features` (helper rendering): `Skybox`, `Axis`, `Grid`, `Gizmo` (currently used by editor helper rendering)
+- `visibility` (entity filtering): `MainScene`, `Overlay`, `Isolated`
+- `features` (render pass toggles): `Skybox`, `Axis`, `Grid`, `Manipulator` (currently used by editor pass rendering)
 
 This keeps one ECS world while allowing each render target to opt in to editor-specific passes.
 
-View runtime data is unified in a single record (`JzRenderView`) that contains:
+Runtime data is unified in a single target instance (`JzRenderTarget`) that contains:
 
-- `handle`: stable view identifier
-- `desc`: logical view settings (`camera`, `visibility`, `features`, callbacks)
-- `target`: owned `JzRenderTarget` output for this view
+- `handle`: stable render target identifier
+- `desc`: logical render target settings (`camera`, `visibility`, `features`, callbacks)
+- `output`: owned `JzRenderOutput` instance for this render target
 
-This removes duplicated state between "view descriptors" and separate target/output maps.
+This removes duplicated state between logical render target descriptors and separate output maps.
+Pass/resource debug names are derived from `desc.name` on demand instead of being stored as extra record fields.
 
 ---
 
@@ -44,33 +43,33 @@ JzRERuntime
 
 Systems execute in 8 phases grouped into 3 categories:
 
-| Group         | Phase      | Purpose                                    | Example Systems                           |
-| ------------- | ---------- | ------------------------------------------ | ----------------------------------------- |
-| **Logic**     | Input      | Input processing, event handling           | JzWindowSystem, JzInputSystem             |
-|               | Physics    | Physics simulation, collision detection    | PhysicsSystem (user-defined)              |
-|               | Animation  | Skeletal animation, blend trees            | AnimationSystem (user-defined)            |
-|               | Logic      | General game logic, AI, scripts            | JzAssetSystem, JzMoveSystem, user systems |
-| **PreRender** | PreRender  | Camera matrices, light collection          | JzCameraSystem, JzLightSystem             |
-|               | Culling    | Frustum culling, occlusion, LOD selection  | CullingSystem (user-defined)              |
-| **Render**    | RenderPrep | Batch building, instance data preparation  | BatchBuildingSystem (user-defined)        |
-|               | Render     | Actual GPU draw calls                      | JzRenderSystem                            |
+| Group         | Phase      | Purpose                                   | Example Systems                           |
+| ------------- | ---------- | ----------------------------------------- | ----------------------------------------- |
+| **Logic**     | Input      | Input processing, event handling          | JzWindowSystem, JzInputSystem             |
+|               | Physics    | Physics simulation, collision detection   | PhysicsSystem (user-defined)              |
+|               | Animation  | Skeletal animation, blend trees           | AnimationSystem (user-defined)            |
+|               | Logic      | General game logic, AI, scripts           | JzAssetSystem, JzMoveSystem, user systems |
+| **PreRender** | PreRender  | Camera matrices, light collection         | JzCameraSystem, JzLightSystem             |
+|               | Culling    | Frustum culling, occlusion, LOD selection | CullingSystem (user-defined)              |
+| **Render**    | RenderPrep | Batch building, instance data preparation | BatchBuildingSystem (user-defined)        |
+|               | Render     | Actual GPU draw calls                     | JzRenderSystem                            |
 
 ### System Responsibilities
 
-| System                 | Phase     | Responsibilities                                                 |
-| ---------------------- | --------- | ---------------------------------------------------------------- |
-| **JzCameraSystem** | PreRender | Process orbit controller input, compute view/projection matrices |
-| **JzLightSystem**  | PreRender | Collect light entities, provide primary light direction/color    |
-| **JzRenderSystem** | Render    | Manage framebuffer/textures, build RenderGraph, render entities and view targets, execute view features (skybox/grid/axis) |
+| System             | Phase     | Responsibilities                                                                                                                       |
+| ------------------ | --------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| **JzCameraSystem** | PreRender | Process orbit controller input, compute view/projection matrices                                                                       |
+| **JzLightSystem**  | PreRender | Collect light entities, provide primary light direction/color                                                                          |
+| **JzRenderSystem** | Render    | Manage framebuffer/textures, build RenderGraph, render entities and logical render targets, execute target features (skybox/grid/axis) |
 
-### View Feature Defaults (Current Compatibility Behavior)
+### RenderTarget Feature Defaults
 
-| View       | Visibility Mask                | Feature Mask                 |
-| ---------- | ------------------------------ | ---------------------------- |
-| MainScene  | `Untagged`                     | `None`                       |
-| GameView   | `Untagged`                     | `None`                       |
-| SceneView  | `Untagged \| EditorOnly`       | `Skybox \| Grid \| Axis` (toggleable) |
-| AssetView  | `PreviewOnly`                  | `None`                       |
+| RenderTarget | Visibility Mask        | Feature Mask                          |
+| ------------ | ---------------------- | ------------------------------------- |
+| MainScene    | `MainScene`            | `None`                                |
+| GameView     | `MainScene`            | `None`                                |
+| SceneView    | `MainScene \| Overlay` | `Skybox \| Grid \| Axis` (toggleable) |
+| AssetView    | `Isolated`             | `None`                                |
 
 ---
 
@@ -259,22 +258,22 @@ auto entities = JzModelSpawner::SpawnModel(world, model);
 
 ## Editor Integration
 
-Editor views register a render view and retrieve the output via `JzRenderSystem`:
+Editor panels register a logical render target and retrieve its output via `JzRenderSystem`:
 
 ```cpp
 // In JzView: after registration
-auto *output = renderSystem.GetRenderOutput(m_viewHandle);
+auto *output = renderSystem.GetRenderOutput(m_renderTargetHandle);
 if (output != nullptr && output->IsValid()) {
     ImGui::Image(output->GetTextureID(), ImVec2(viewportWidth, viewportHeight));
 }
 ```
 
-Each frame, views can update camera and feature mask independently (`UpdateViewCamera`, `UpdateViewFeatures`) without recreating render targets.
-Pass/output names are now generated internally from the view name, so panel code does not
+Each frame, panels can update target camera and feature mask independently (`UpdateRenderTargetCamera`, `UpdateRenderTargetFeatures`) without recreating outputs.
+Pass/output names are generated internally from the render target name, so panel code does not
 need to maintain string-based render target identifiers.
 
-In editor mode, `JzREEditor::OnStart()` builds helper resources and registers
-helper passes through `JzRenderSystem::RegisterHelperPass()`. This keeps helper
+In editor mode, `JzREEditor::OnStart()` builds pass resources and registers
+render passes through `JzRenderSystem::RegisterRenderPass()`. This keeps pass
 resource ownership in the Editor layer while `JzRenderSystem` only executes the
 registered feature-gated pass list.
 
@@ -356,12 +355,12 @@ sequenceDiagram
 
 ## Key Type Relationships
 
-| Component               | Resource     | RHI Objects                                   |
-| ----------------------- | ------------ | --------------------------------------------- |
-| `JzMeshComponent`       | `JzMesh`     | `JzGPUVertexArrayObject`, `JzGPUBufferObject` |
-| `JzMaterialComponent`   | `JzMaterial` | `JzRHIPipeline`, `JzGPUTextureObject`         |
-| `JzCameraComponent` | -            | Uniform data                                  |
-| `Jz*LightComponent` | -            | Uniform data                                  |
+| Component             | Resource     | RHI Objects                                   |
+| --------------------- | ------------ | --------------------------------------------- |
+| `JzMeshComponent`     | `JzMesh`     | `JzGPUVertexArrayObject`, `JzGPUBufferObject` |
+| `JzMaterialComponent` | `JzMaterial` | `JzRHIPipeline`, `JzGPUTextureObject`         |
+| `JzCameraComponent`   | -            | Uniform data                                  |
+| `Jz*LightComponent`   | -            | Uniform data                                  |
 
 ---
 

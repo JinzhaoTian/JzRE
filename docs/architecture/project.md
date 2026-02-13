@@ -73,36 +73,42 @@ Manages project lifecycle operations:
 
 ```json
 {
-    "project_name": "MyGame",
-    "project_id": "a1b2c3d4e5f6",
-    "engine_version": "1.0.0",
-    "content_root": "Content",
-    "config_root": "Config",
-    "default_scene": "Scenes/MainMenu.scene",
-    "startup_mode": "Editor",
-    "render_api": "Auto",
-    "target_platforms": ["Windows", "Linux"],
-    "asset_registry": "AssetRegistry.json",
-    "shader_cache": "Intermediate/ShaderCache",
-    "build_output": "Build",
-    "modules": [],
-    "plugins": [],
-    "project_version": 1,
-    "min_compatible_version": "1.0.0"
+  "project_name": "MyGame",
+  "project_id": "a1b2c3d4e5f6",
+  "engine_version": "1.0.0",
+  "content_root": "Content",
+  "config_root": "Config",
+  "default_scene": "Scenes/MainMenu.scene",
+  "startup_mode": "Authoring",
+  "render_api": "Auto",
+  "target_platforms": ["Windows", "Linux"],
+  "asset_registry": "AssetRegistry.json",
+  "shader_cache": "Intermediate/ShaderCache",
+  "build_output": "Build",
+  "modules": [],
+  "plugins": [],
+  "project_version": 1,
+  "min_compatible_version": "1.0.0"
 }
 ```
 
-### .editor (JSON, Optional)
+### .workspace (JSON, Optional)
 
-Editor-specific settings stored separately:
+Workspace-level host settings stored separately:
 
 ```json
 {
-    "editor_layout": "Config/EditorLayout.json",
-    "recent_scenes": ["Scenes/Level1.scene", "Scenes/MainMenu.scene"],
-    "editor_settings_file": "Config/Editor.json"
+  "workspace_layout": "Config/WorkspaceLayout.json",
+  "recent_scenes": ["Scenes/Level1.scene", "Scenes/MainMenu.scene"],
+  "workspace_settings_file": "Config/Workspace.json"
 }
 ```
+
+`JzProjectManager` reads legacy `.editor` files and legacy keys (`editor_layout`,
+`editor_settings_file`) for backward compatibility, but writes the new `.workspace`
+format and keys.
+When legacy settings are loaded successfully, the manager also writes a migrated
+`.workspace` file automatically.
 
 ---
 
@@ -113,7 +119,7 @@ When a new project is created:
 ```
 MyGame/
 ├── MyGame.jzreproject      # Project configuration
-├── MyGame.editor           # Editor settings (optional)
+├── MyGame.workspace        # Workspace settings (optional)
 ├── Content/                # Asset root
 ├── Config/                 # Configuration files
 ├── Intermediate/           # Cached/generated files
@@ -196,13 +202,13 @@ assetManager.SetContentRoot(config.GetContentPath());
 assetManager.LoadRegistry(config.GetAssetRegistryPath());
 ```
 
-### With JzEditor
+### With Host Tooling
 
 ```cpp
-// Editor can load/save editor-specific settings
-auto editorSettings = projectManager.LoadEditorSettings();
-if (editorSettings) {
-    LoadEditorLayout(editorSettings->editorLayout);
+// Host tooling can load/save workspace-specific settings
+auto workspaceSettings = projectManager.LoadWorkspaceSettings();
+if (workspaceSettings) {
+    LoadWorkspaceLayout(workspaceSettings->workspaceLayout);
 }
 ```
 

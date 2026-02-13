@@ -390,7 +390,7 @@ void JzRE::JzRERuntime::Run()
 
         SynchronizeSystems();
 
-        // Call render hook for additional rendering (e.g., ImGui UI)
+        // Call render hook for additional rendering (e.g., host UI)
         OnRender(deltaTime);
 
         OnFrameEnd();
@@ -460,7 +460,7 @@ void JzRE::JzRERuntime::OnUpdate([[maybe_unused]] F32 deltaTime)
 void JzRE::JzRERuntime::OnRender([[maybe_unused]] F32 deltaTime)
 {
     // Default implementation does nothing
-    // Override in subclass to render additional content (e.g., ImGui UI)
+    // Override in subclass to render additional content (e.g., host UI)
 }
 
 void JzRE::JzRERuntime::OnStop()

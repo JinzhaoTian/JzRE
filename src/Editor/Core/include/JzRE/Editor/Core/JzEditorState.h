@@ -39,7 +39,7 @@ struct JzEditorState {
     Bool sceneSkyboxEnabled = true;
 
     /**
-     * @brief Whether SceneView axis helper rendering is enabled.
+     * @brief Whether SceneView axis rendering is enabled.
      */
     Bool sceneAxisEnabled = true;
 
@@ -107,9 +107,9 @@ struct JzEditorState {
     }
 
     /**
-     * @brief Enable or disable SceneView axis helper rendering.
+     * @brief Enable or disable SceneView axis rendering.
      *
-     * @param enabled True to enable axis helper, false to disable.
+     * @param enabled True to enable axis, false to disable.
      */
     void SetSceneAxisEnabled(Bool enabled)
     {

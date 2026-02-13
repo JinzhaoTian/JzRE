@@ -25,14 +25,14 @@ void JzRE::JzSceneView::Update(JzRE::F32 deltaTime)
     JzView::Update(deltaTime);
 
     // Ensure the render target is registered when RenderSystem becomes available.
-    if (IsOpened() && m_viewHandle == JzRenderSystem::INVALID_VIEW_HANDLE && JzServiceContainer::Has<JzRenderSystem>()) {
+    if (IsOpened() && m_renderTargetHandle == INVALID_RENDER_TARGET_HANDLE && JzServiceContainer::Has<JzRenderSystem>()) {
         RegisterRenderTarget();
     }
 
     // Keep the view camera binding up to date (main camera can be recreated).
-    if (m_viewHandle != JzRenderSystem::INVALID_VIEW_HANDLE && JzServiceContainer::Has<JzRenderSystem>()) {
+    if (m_renderTargetHandle != INVALID_RENDER_TARGET_HANDLE && JzServiceContainer::Has<JzRenderSystem>()) {
         auto &renderSystem = JzServiceContainer::Get<JzRenderSystem>();
-        renderSystem.UpdateViewCamera(m_viewHandle, GetCameraEntity());
+        renderSystem.UpdateRenderTargetCamera(m_renderTargetHandle, GetCameraEntity());
     }
 
     if (!JzServiceContainer::Has<JzWorld>()) {
@@ -230,9 +230,9 @@ void JzRE::JzSceneView::EnsureCameraInputComponent()
         world.AddComponent<JzCameraInputComponent>(camera);
     }
 
-    // Tag editor camera so global input sync doesn't override panel input.
-    if (!world.HasComponent<JzEditorCameraInputOverrideTag>(camera)) {
-        world.AddComponent<JzEditorCameraInputOverrideTag>(camera);
+    // Tag scene camera so global input sync does not override panel-local input.
+    if (!world.HasComponent<JzCameraInputIsolationTag>(camera)) {
+        world.AddComponent<JzCameraInputIsolationTag>(camera);
     }
 }
 
@@ -241,10 +241,10 @@ JzRE::JzEntity JzRE::JzSceneView::GetCameraEntity()
     return m_editorCamera;
 }
 
-JzRE::JzRenderViewFeatures JzRE::JzSceneView::GetRenderFeatures() const
+JzRE::JzRenderTargetFeatures JzRE::JzSceneView::GetRenderFeatures() const
 {
-    JzRenderViewFeatures features =
-        JzRenderViewFeatures::Skybox | JzRenderViewFeatures::Axis | JzRenderViewFeatures::Grid;
+    JzRenderTargetFeatures features =
+        JzRenderTargetFeatures::Skybox | JzRenderTargetFeatures::Axis | JzRenderTargetFeatures::Grid;
 
     if (!JzServiceContainer::Has<JzEditorState>()) {
         return features;
@@ -253,18 +253,18 @@ JzRE::JzRenderViewFeatures JzRE::JzSceneView::GetRenderFeatures() const
     const auto &editorState = JzServiceContainer::Get<JzEditorState>();
 
     if (!editorState.sceneSkyboxEnabled) {
-        features = static_cast<JzRenderViewFeatures>(static_cast<U32>(features) &
-                                                     ~static_cast<U32>(JzRenderViewFeatures::Skybox));
+        features = static_cast<JzRenderTargetFeatures>(static_cast<U32>(features) &
+                                                     ~static_cast<U32>(JzRenderTargetFeatures::Skybox));
     }
 
     if (!editorState.sceneAxisEnabled) {
-        features = static_cast<JzRenderViewFeatures>(static_cast<U32>(features) &
-                                                     ~static_cast<U32>(JzRenderViewFeatures::Axis));
+        features = static_cast<JzRenderTargetFeatures>(static_cast<U32>(features) &
+                                                     ~static_cast<U32>(JzRenderTargetFeatures::Axis));
     }
 
     if (!editorState.sceneGridEnabled) {
-        features = static_cast<JzRenderViewFeatures>(static_cast<U32>(features) &
-                                                     ~static_cast<U32>(JzRenderViewFeatures::Grid));
+        features = static_cast<JzRenderTargetFeatures>(static_cast<U32>(features) &
+                                                     ~static_cast<U32>(JzRenderTargetFeatures::Grid));
     }
 
     return features;

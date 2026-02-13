@@ -177,7 +177,6 @@ void JzRenderGraph::Reset()
     m_buffers.clear();
     m_textureResources.clear();
     m_bufferResources.clear();
-    m_outputs.clear();
     m_executionOrder.clear();
     m_hasCycle = false;
 
@@ -187,25 +186,6 @@ void JzRenderGraph::Reset()
     for (auto &entry : m_bufferPool) {
         entry.inUse = false;
     }
-}
-
-void JzRenderGraph::RegisterOutput(const String &name, JzRenderOutput *output)
-{
-    if (name.empty() || output == nullptr) {
-        return;
-    }
-
-    m_outputs[name] = output;
-}
-
-JzRenderOutput *JzRenderGraph::GetOutput(const String &name) const
-{
-    auto iter = m_outputs.find(name);
-    if (iter == m_outputs.end()) {
-        return nullptr;
-    }
-
-    return iter->second;
 }
 
 void JzRenderGraph::DumpGraph(const String &path) const

@@ -12,17 +12,17 @@ namespace JzRE {
 /**
  * @brief Visibility mask for entity filtering during rendering.
  *
- * Used to control which entities are rendered in different views:
- * - GameView: Untagged only (game objects)
- * - SceneView: Untagged | EditorOnly (game objects + editor helpers)
- * - AssetView: PreviewOnly (preview entities only)
+ * Used to control which entities are rendered by different render targets:
+ * - MainScene: default gameplay entities (without channel tags)
+ * - Overlay: auxiliary helpers and debug overlays
+ * - Isolated: entities dedicated to isolated previews/sandbox outputs
  */
 enum class JzRenderVisibility : U8 {
-    None        = 0,
-    EditorOnly  = 1 << 0, ///< Entities with JzEditorOnlyTag (grid, gizmo, etc.)
-    PreviewOnly = 1 << 1, ///< Entities with JzPreviewOnlyTag (asset preview)
-    Untagged    = 1 << 2, ///< Regular game entities (no special tag)
-    All         = EditorOnly | PreviewOnly | Untagged,
+    None      = 0,
+    Overlay   = 1 << 0, ///< Entities with JzOverlayRenderTag
+    Isolated  = 1 << 1, ///< Entities with JzIsolatedRenderTag
+    MainScene = 1 << 2, ///< Entities without explicit render-channel tags
+    All       = Overlay | Isolated | MainScene,
 };
 
 /**

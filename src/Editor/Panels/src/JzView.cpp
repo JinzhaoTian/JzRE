@@ -29,12 +29,14 @@ JzView::~JzView()
 
 void JzView::Update(F32 deltaTime)
 {
-    if (m_viewHandle == JzRenderSystem::INVALID_VIEW_HANDLE || !JzServiceContainer::Has<JzRenderSystem>()) {
+    (void)deltaTime;
+
+    if (m_renderTargetHandle == INVALID_RENDER_TARGET_HANDLE || !JzServiceContainer::Has<JzRenderSystem>()) {
         return;
     }
 
     auto &renderSystem = JzServiceContainer::Get<JzRenderSystem>();
-    renderSystem.UpdateViewFeatures(m_viewHandle, GetRenderFeatures());
+    renderSystem.UpdateRenderTargetFeatures(m_renderTargetHandle, GetRenderFeatures());
 }
 
 JzEntity JzView::GetCameraEntity()
@@ -62,7 +64,7 @@ JzIVec2 JzView::GetSafeSize() const
 
 void JzView::RegisterRenderTarget()
 {
-    if (m_viewHandle != JzRenderSystem::INVALID_VIEW_HANDLE) {
+    if (m_renderTargetHandle != INVALID_RENDER_TARGET_HANDLE) {
         return;
     }
 
@@ -72,7 +74,7 @@ void JzView::RegisterRenderTarget()
 
     auto &renderSystem = JzServiceContainer::Get<JzRenderSystem>();
 
-    JzRenderSystem::JzRenderViewDesc desc;
+    JzRenderTargetDesc desc;
     desc.name           = m_name;
     desc.camera         = GetCameraEntity();
     desc.visibility     = GetVisibility();
@@ -80,12 +82,12 @@ void JzView::RegisterRenderTarget()
     desc.shouldRender   = [this]() { return IsOpened() && IsVisible(); };
     desc.getDesiredSize = [this]() { return GetSafeSize(); };
 
-    m_viewHandle = renderSystem.RegisterView(std::move(desc));
+    m_renderTargetHandle = renderSystem.RegisterRenderTarget(std::move(desc));
 }
 
 void JzView::UnregisterRenderTarget()
 {
-    if (m_viewHandle == JzRenderSystem::INVALID_VIEW_HANDLE) {
+    if (m_renderTargetHandle == INVALID_RENDER_TARGET_HANDLE) {
         return;
     }
 
@@ -94,14 +96,14 @@ void JzView::UnregisterRenderTarget()
     }
 
     auto &renderSystem = JzServiceContainer::Get<JzRenderSystem>();
-    renderSystem.UnregisterView(m_viewHandle);
-    m_viewHandle = JzRenderSystem::INVALID_VIEW_HANDLE;
+    renderSystem.UnregisterRenderTarget(m_renderTargetHandle);
+    m_renderTargetHandle = INVALID_RENDER_TARGET_HANDLE;
 }
 
 void JzView::UpdateFrameTexture()
 {
     // Register render target lazily after RenderSystem is available.
-    if (IsOpened() && m_viewHandle == JzRenderSystem::INVALID_VIEW_HANDLE && JzServiceContainer::Has<JzRenderSystem>()) {
+    if (IsOpened() && m_renderTargetHandle == INVALID_RENDER_TARGET_HANDLE && JzServiceContainer::Has<JzRenderSystem>()) {
         RegisterRenderTarget();
     }
 
@@ -115,7 +117,7 @@ void JzView::UpdateFrameTexture()
     }
 
     auto &renderSystem = JzServiceContainer::Get<JzRenderSystem>();
-    auto *output       = renderSystem.GetRenderOutput(m_viewHandle);
+    auto *output       = renderSystem.GetRenderOutput(m_renderTargetHandle);
     if (!output || !output->IsValid()) {
         return;
     }
