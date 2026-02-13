@@ -82,16 +82,6 @@ protected:
         return JzRenderVisibility::Untagged | JzRenderVisibility::EditorOnly;
     }
 
-    String GetPassName() const override
-    {
-        return "SceneViewPass";
-    }
-
-    String GetOutputName() const override
-    {
-        return "SceneView_Color";
-    }
-
     /**
      * @brief SceneView enables editor helper features by default (skybox, grid, axis).
      */

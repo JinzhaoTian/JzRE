@@ -11,6 +11,14 @@ This document describes the ECS-based rendering pipeline in JzRE. The rendering 
 
 This keeps one ECS world while allowing each render target to opt in to editor-specific passes.
 
+View runtime data is unified in a single record (`JzRenderView`) that contains:
+
+- `handle`: stable view identifier
+- `desc`: logical view settings (`camera`, `visibility`, `features`, callbacks)
+- `target`: owned `JzRenderTarget` output for this view
+
+This removes duplicated state between "view descriptors" and separate target/output maps.
+
 ---
 
 ## Architecture
@@ -250,13 +258,20 @@ Editor views register a render view and retrieve the output via `JzRenderSystem`
 
 ```cpp
 // In JzView: after registration
-auto *output = renderSystem.GetRenderOutput(GetOutputName());
-if (output && output->IsValid()) {
+auto *output = renderSystem.GetRenderOutput(m_viewHandle);
+if (output != nullptr && output->IsValid()) {
     ImGui::Image(output->GetTextureID(), ImVec2(viewportWidth, viewportHeight));
 }
 ```
 
 Each frame, views can update camera and feature mask independently (`UpdateViewCamera`, `UpdateViewFeatures`) without recreating render targets.
+Pass/output names are now generated internally from the view name, so panel code does not
+need to maintain string-based render target identifiers.
+
+In editor mode, `JzREEditor::OnStart()` now builds helper resources and registers
+helper passes through `JzRenderSystem::RegisterHelperPass()`. This keeps helper
+resource ownership in the Editor layer while `JzRenderSystem` only executes the
+registered feature-gated pass list.
 
 The Editor overrides `ShouldBlitToScreen()` to return `false`, preventing automatic screen blit.
 

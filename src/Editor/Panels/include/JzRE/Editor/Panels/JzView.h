@@ -94,20 +94,6 @@ protected:
     }
 
     /**
-     * @brief Get the render pass name for this view.
-     *
-     * Override in subclasses to provide explicit pass names.
-     */
-    virtual String GetPassName() const;
-
-    /**
-     * @brief Get the output name for this view.
-     *
-     * Override in subclasses to provide explicit output names.
-     */
-    virtual String GetOutputName() const;
-
-    /**
      * @brief Register this view's render target with RenderSystem.
      *
      * Called during construction if the view is opened.

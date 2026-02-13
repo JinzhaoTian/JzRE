@@ -78,10 +78,20 @@ graph TB
 
 - a visibility mask for entity filtering (`EditorOnly`, `PreviewOnly`, `Untagged`)
 - a feature mask for optional helper passes (`Skybox`, `Axis`, `Grid`, `Gizmo`)
+- an owned `JzRenderTarget` bound to the same view record (`JzRenderView`)
 
 The helper passes use the same RHI API path (`CreatePipeline`, `BindPipeline`, `BindVertexArray`, `Draw`) and are selected per target, so SceneView can render editor skybox/axis while GameView and runtime outputs stay clean.
 
 Current editor helper implementation reuses the line-color pipeline for both axis and ground grid rendering, with dedicated VAOs/VBs for each helper geometry.
+`JzREEditor::OnStart()` constructs helper resources and registers pass descriptors
+through `JzRenderSystem::RegisterHelperPass()`. The runtime render loop then executes
+all feature-matched helper passes via one shared flow (`BindPipeline` -> `BindVertexArray`
+-> `setupPass` -> `Draw`).
+
+Render output lookup no longer depends on a separate output cache map in `JzRenderSystem`.
+Editor panels query outputs by `ViewHandle`, while view output names are generated internally
+from view names and resolved from registered view records (with RenderGraph output fallback
+for non-view graph exports).
 
 ---
 

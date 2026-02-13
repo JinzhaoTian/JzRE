@@ -56,16 +56,6 @@ protected:
         return JzRenderVisibility::PreviewOnly;
     }
 
-    String GetPassName() const override
-    {
-        return "AssetPreviewPass";
-    }
-
-    String GetOutputName() const override
-    {
-        return "AssetPreview_Color";
-    }
-
     void     _Draw_Impl() override;
     JzEntity GetCameraEntity() override;
 

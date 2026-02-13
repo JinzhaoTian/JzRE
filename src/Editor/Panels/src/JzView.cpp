@@ -5,6 +5,7 @@
 
 #include "JzRE/Editor/Panels/JzView.h"
 
+#include <algorithm>
 #include <imgui.h>
 
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
@@ -42,16 +43,6 @@ JzEntity JzView::GetCameraEntity()
     return INVALID_ENTITY;
 }
 
-String JzView::GetPassName() const
-{
-    return m_name + "Pass";
-}
-
-String JzView::GetOutputName() const
-{
-    return m_name + "_Color";
-}
-
 void JzView::_Draw_Impl()
 {
     UpdateFrameTexture();
@@ -83,8 +74,6 @@ void JzView::RegisterRenderTarget()
 
     JzRenderSystem::JzRenderViewDesc desc;
     desc.name           = m_name;
-    desc.passName       = GetPassName();
-    desc.outputName     = GetOutputName();
     desc.camera         = GetCameraEntity();
     desc.visibility     = GetVisibility();
     desc.features       = GetRenderFeatures();
@@ -111,7 +100,7 @@ void JzView::UnregisterRenderTarget()
 
 void JzView::UpdateFrameTexture()
 {
-    // Register render target lazily so derived overrides provide correct names.
+    // Register render target lazily after RenderSystem is available.
     if (IsOpened() && m_viewHandle == JzRenderSystem::INVALID_VIEW_HANDLE && JzServiceContainer::Has<JzRenderSystem>()) {
         RegisterRenderTarget();
     }
@@ -126,7 +115,7 @@ void JzView::UpdateFrameTexture()
     }
 
     auto &renderSystem = JzServiceContainer::Get<JzRenderSystem>();
-    auto *output       = renderSystem.GetRenderOutput(GetOutputName());
+    auto *output       = renderSystem.GetRenderOutput(m_viewHandle);
     if (!output || !output->IsValid()) {
         return;
     }

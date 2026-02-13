@@ -53,7 +53,7 @@ protected:
     /**
      * @brief Called before the main loop starts
      *
-     * Initializes editor-specific components.
+     * Initializes editor-specific components and registers SceneView helper passes.
      */
     void OnStart() override;
 
@@ -80,7 +80,7 @@ protected:
     /**
      * @brief Called after the main loop ends
      *
-     * Cleans up editor-specific components.
+     * Cleans up editor-specific components and helper rendering resources.
      */
     void OnStop() override;
 
@@ -94,7 +94,23 @@ public:
     static std::filesystem::path FindProjectFile(const std::filesystem::path &path);
 
 private:
+    /**
+     * @brief GPU resources owned by editor helper passes.
+     */
+    struct JzEditorHelperResources;
+
+    /**
+     * @brief Build and register SceneView helper passes (skybox/grid/axis).
+     */
+    void InitializeEditorHelperPasses();
+
+    /**
+     * @brief Unregister helper passes and release owned GPU resources.
+     */
+    void ReleaseEditorHelperPasses();
+
     std::filesystem::path       m_openPath;
     std::unique_ptr<JzEditorUI> m_editorUI;
+    std::unique_ptr<JzEditorHelperResources> m_editorHelperResources;
 };
 } // namespace JzRE
