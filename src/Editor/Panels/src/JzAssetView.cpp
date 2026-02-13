@@ -127,11 +127,6 @@ void JzRE::JzAssetView::PreviewModel(const std::filesystem::path &path)
     // Create preview camera if needed
     CreatePreviewCamera();
 
-    // Ensure view is registered before binding camera (RenderSystem may initialize later).
-    if (IsOpened() && m_renderTargetHandle == INVALID_RENDER_TARGET_HANDLE && JzServiceContainer::Has<JzRenderSystem>()) {
-        RegisterRenderTarget();
-    }
-
     m_previewMode = JzEPreviewMode::Model;
     JzRE_LOG_INFO("Previewing model: {}", path.filename().string());
 }
@@ -220,11 +215,6 @@ void JzRE::JzAssetView::CreatePreviewCamera()
 
     // Add camera input component - JzCameraSystem reads this for orbit control
     world.AddComponent<JzCameraInputComponent>(m_previewCamera);
-
-    // Ensure the render target exists before updating the view's camera.
-    if (IsOpened() && m_renderTargetHandle == INVALID_RENDER_TARGET_HANDLE && JzServiceContainer::Has<JzRenderSystem>()) {
-        RegisterRenderTarget();
-    }
 
     // Create dedicated input state for this preview
     CreatePreviewInputState();
@@ -346,11 +336,6 @@ JzRE::JzEntity JzRE::JzAssetView::GetCameraEntity()
 void JzRE::JzAssetView::Update(JzRE::F32 deltaTime)
 {
     JzView::Update(deltaTime);
-
-    // Ensure the render target is registered when RenderSystem becomes available.
-    if (IsOpened() && m_renderTargetHandle == INVALID_RENDER_TARGET_HANDLE && JzServiceContainer::Has<JzRenderSystem>()) {
-        RegisterRenderTarget();
-    }
 
     if (m_renderTargetHandle != INVALID_RENDER_TARGET_HANDLE && JzServiceContainer::Has<JzRenderSystem>() && m_previewCamera != INVALID_ENTITY) {
         auto &renderSystem = JzServiceContainer::Get<JzRenderSystem>();

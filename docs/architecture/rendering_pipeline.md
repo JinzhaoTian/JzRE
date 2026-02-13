@@ -78,50 +78,47 @@ Implementation note:
 
 1. Reads `JzWindowStateComponent`.
 2. Tracks framebuffer size changes and window visibility.
-3. Ensures the main `JzRenderOutput` matches frame size.
-4. Resolves geometry pipeline from `shaders/standard` for the current frame.
-5. Configures `JzRenderGraph` allocator and transition callbacks.
-6. Resets graph and records passes.
-7. Compiles and executes graph.
-8. Blits main output framebuffer to screen only when window is visible.
+3. Resolves geometry pipeline from `shaders/standard` for the current frame.
+4. Configures `JzRenderGraph` allocator and transition callbacks.
+5. Resets graph and records passes for all render targets (default + registered) in a unified loop.
+6. Compiles and executes graph.
+7. Blits default target framebuffer to screen only when window is visible.
+
+## Default Render Target
+
+A **default render target** (`DefaultScene`) is created at `JzRenderSystem` construction time:
+
+- `visibility = MainScene`, `features = None`, `camera = INVALID_ENTITY` (falls back to main camera).
+- `getDesiredSize` returns `m_frameSize` (window framebuffer size).
+- The handle is stored as `m_defaultRenderTargetHandle` and cannot be unregistered.
+- GPU resources (textures/framebuffer) are allocated on first `Update()` via `EnsureSize()` when the window size becomes available.
+
+The default target replaces the former `m_mainOutput` dedicated path. Runtime examples work without explicit `RegisterRenderTarget` calls.
 
 ## RenderGraph Recording in `JzRenderSystem`
 
-### Main scene pass
+### Unified render target loop
 
-The system creates two graph textures and binds them to main output resources:
+All targets (default and registered) are processed in a single loop:
 
-- `MainScene_Color` -> `m_mainOutput->GetColorTexture()`
-- `MainScene_Depth` -> `m_mainOutput->GetDepthTexture()`
+For each render target:
 
-Then it records `MainScenePass`:
+1. Resolve target size (`getDesiredSize` callback) and `EnsureSize()`.
+2. Skip if output is not valid.
+3. Bind output color/depth textures into graph.
+4. Determine contribution scope: default target uses `MainScene`, registered targets use `RegisteredTarget`.
+5. Add one **geometry pass** via `ExecuteGeometryStage()`.
+6. For each registered `JzRenderGraphContribution`, add one contribution pass filtered by scope.
 
-- Setup: declare color/depth writes, render target, viewport.
-- Execute: run built-in geometry contribution through
-  `ExecuteContribution(world, passContext, ..., geometryPipeline, geometryContribution)`.
+### Geometry stage (`ExecuteGeometryStage`)
 
-Main scene pass renders with visibility mask `MainScene`.
-
-### Per render-target passes
-
-For each registered logical target (`RegisterRenderTarget`):
-
-- Resolve target size (`getDesiredSize` callback).
-- Ensure `JzRenderOutput` size/resources are valid.
-- Bind output color/depth textures into graph.
-- Add one geometry pass with optional `shouldRender` predicate.
-- Geometry pass executes built-in geometry contribution (clear + entity draw).
-- For each registered `JzRenderGraphContribution`, add one contribution pass on the same target textures.
-
-### Unified geometry stage
-
-Built-in geometry contribution executes through `ExecuteContribution(...)` with `clearTarget=true`:
+The built-in geometry stage executes directly (not through `ExecuteContribution`):
 
 1. `ResolveCameraFrameData(...)`: resolve camera matrices and clear color.
-2. `BeginRenderTargetPass(...)`: use `JzRGPassContext` framebuffer/viewport, bind geometry pipeline, clear.
+2. `BeginRenderTargetPass(...)`: bind framebuffer/pipeline, set viewport, clear.
 3. `DrawVisibleEntities(...)`: draw ECS entities filtered by `JzRenderVisibility`.
 
-Feature behavior is now appended through target-scoped contribution passes in `JzRenderGraph`.
+This separation ensures the geometry stage does not go through contribution dispatch logic.
 
 ### Contribution model
 
@@ -130,9 +127,11 @@ Runtime supports `JzRenderGraphContribution` registration:
 - `RegisterGraphContribution(...)` registers/updates contributions by name.
 - each contribution declares `requiredFeature` for target feature gating.
 - each contribution declares `scope` (`MainScene`, `RegisteredTarget`, or `All`) for placement.
-- `clearTarget` controls whether contribution starts with a clear+geometry-pipeline setup.
+  - `MainScene` = default target only.
+  - `RegisteredTarget` = non-default targets only.
+  - `All` = both.
 - `enabledExecute` can add dynamic run conditions.
-- `execute(context)` performs actual draw logic.
+- `execute(context)` performs actual draw logic via `BeginContributionTargetPass`.
 
 Compatibility note:
 
@@ -192,7 +191,8 @@ OpenGL backend currently treats `ResourceBarrier(...)` as no-op (implicit transi
 
 Editor panels are runtime consumers via render targets:
 
-- `JzView` registers a logical target through `JzRenderSystem::RegisterRenderTarget`.
+- `JzView` registers a logical target at construction time through `JzRenderSystem::RegisterRenderTarget`.
+- Initially-closed panels also register at construction; `shouldRender` controls pass execution.
 - Panel fetches `JzRenderOutput` by handle and shows texture in ImGui.
 - `JzSceneView` updates camera binding and feature mask each frame.
 

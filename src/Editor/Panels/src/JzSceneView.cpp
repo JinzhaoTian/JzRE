@@ -24,11 +24,6 @@ void JzRE::JzSceneView::Update(JzRE::F32 deltaTime)
 {
     JzView::Update(deltaTime);
 
-    // Ensure the render target is registered when RenderSystem becomes available.
-    if (IsOpened() && m_renderTargetHandle == INVALID_RENDER_TARGET_HANDLE && JzServiceContainer::Has<JzRenderSystem>()) {
-        RegisterRenderTarget();
-    }
-
     // Keep the view camera binding up to date (main camera can be recreated).
     if (m_renderTargetHandle != INVALID_RENDER_TARGET_HANDLE && JzServiceContainer::Has<JzRenderSystem>()) {
         auto &renderSystem = JzServiceContainer::Get<JzRenderSystem>();

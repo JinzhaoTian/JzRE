@@ -113,14 +113,25 @@ Current `JzRERuntime::Run()` flow (simplified):
 
 `Present()` currently performs `device->Finish()` then `SwapBuffers()`.
 
+## Render Target Lifecycle
+
+RenderTarget/RenderOutput creation follows a two-phase model:
+
+1. **Record creation (construction time)**: `JzRenderTarget` record and `JzRenderOutput` object are created. No GPU resources are allocated. This happens in `JzRenderSystem` constructor (default target) and `JzView` constructor (panel targets).
+2. **GPU resource allocation (first Update)**: `JzRenderOutput::EnsureSize()` allocates textures and framebuffer when window size becomes available during the first `JzRenderSystem::Update()` call.
+
+The default render target (`DefaultScene`) is created at `JzRenderSystem` construction, uses `getDesiredSize = m_frameSize`, and cannot be unregistered. Panel targets are created at `JzView` construction (including initially-closed panels); `shouldRender` controls whether passes execute.
+
 ## Editor Layer
 
 The Editor uses runtime extension points rather than editor-specific runtime internals:
 
-- `JzView` registers logical render targets.
+- `JzView` registers logical render targets at construction time.
+- Initially-closed panels also register; `shouldRender` controls pass execution.
 - panels query `JzRenderOutput` by handle and display textures.
 - editor feature drawing is appended as graph contributions
   with scope control (`MainScene` / `RegisteredTarget` / `All`).
+  - `MainScene` = default target only, `RegisteredTarget` = non-default targets only.
   Contributions can read pass execution metadata through `JzRenderGraphContributionContext::passContext`.
 
 ## Key Patterns

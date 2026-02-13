@@ -9,14 +9,15 @@
 #include "JzRE/Editor/UI/JzPanelWindow.h"
 #include "JzRE/Runtime/Core/JzRETypes.h"
 #include "JzRE/Runtime/Function/ECS/JzEntity.h"
-#include "JzRE/Runtime/Function/ECS/JzRenderSystem.h"
+#include "JzRE/Runtime/Function/Rendering/JzRenderTarget.h"
+#include "JzRE/Runtime/Function/Rendering/JzRenderVisibility.h"
 
 namespace JzRE {
 
 /**
  * @brief Base class for all view panels.
  *
- * Views register their render targets with RenderSystem lazily (first draw/update).
+ * Views register their render targets with RenderSystem at construction time.
  * RenderSystem renders all registered targets during World::Update().
  * Views only display the pre-rendered texture in their _Draw_Impl().
  */

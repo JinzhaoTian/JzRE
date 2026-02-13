@@ -7,6 +7,7 @@
 
 #include <algorithm>
 
+#include "JzRE/Runtime/Core/JzLogger.h"
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
 #include "JzRE/Runtime/Function/ECS/JzAssetComponents.h"
 #include "JzRE/Runtime/Function/ECS/JzCameraComponents.h"
@@ -22,13 +23,24 @@
 
 namespace JzRE {
 
-JzRenderSystem::JzRenderSystem() :
-    m_mainOutput(std::make_shared<JzRenderOutput>("MainSceneOutput")) { }
+JzRenderSystem::JzRenderSystem()
+{
+    // Create the default render target at construction (record + output object only,
+    // GPU resources are allocated on first Update() via EnsureSize).
+    JzRenderTargetDesc defaultDesc;
+    defaultDesc.name           = "DefaultScene";
+    defaultDesc.camera         = INVALID_ENTITY;
+    defaultDesc.visibility     = JzRenderVisibility::MainScene;
+    defaultDesc.features       = JzRenderTargetFeatures::None;
+    defaultDesc.shouldRender   = nullptr;
+    defaultDesc.getDesiredSize = [this]() { return m_frameSize; };
+
+    m_defaultRenderTargetHandle = RegisterRenderTarget(std::move(defaultDesc));
+}
 
 void JzRenderSystem::OnInit(JzWorld &world)
 {
     (void)world;
-    // Resources are created lazily in Update().
 }
 
 void JzRenderSystem::Update(JzWorld &world, F32 delta)
@@ -48,7 +60,6 @@ void JzRenderSystem::Update(JzWorld &world, F32 delta)
     }
 
     if (m_frameSizeChanged) {
-        EnsureMainOutput();
         m_frameSizeChanged = false;
     }
 
@@ -82,78 +93,7 @@ void JzRenderSystem::Update(JzWorld &world, F32 delta)
 
     m_renderGraph.Reset();
 
-    JzRenderGraphContribution geometryContribution;
-    geometryContribution.name            = "Geometry";
-    geometryContribution.requiredFeature = JzRenderTargetFeatures::None;
-    geometryContribution.scope           = JzRenderGraphContributionScope::All;
-    geometryContribution.clearTarget     = true;
-    geometryContribution.execute =
-        [this, geometryPipeline](const JzRenderGraphContributionContext &context) {
-            DrawVisibleEntities(context.world, context.visibility, geometryPipeline);
-        };
-
-    if (EnsureMainOutput() && m_mainOutput) {
-        JzRGTexture mainColor = m_renderGraph.CreateTexture(
-            {m_frameSize, JzETextureResourceFormat::RGBA8, false, "MainScene_Color"});
-        JzRGTexture mainDepth = m_renderGraph.CreateTexture(
-            {m_frameSize, JzETextureResourceFormat::Depth24, false, "MainScene_Depth"});
-        m_renderGraph.BindTexture(mainColor, m_mainOutput->GetColorTexture());
-        m_renderGraph.BindTexture(mainDepth, m_mainOutput->GetDepthTexture());
-        m_renderGraph.BindRenderTarget(mainColor, mainDepth, m_mainOutput->GetFramebuffer());
-
-        m_renderGraph.AddPass({
-            "MainScenePass",
-            nullptr,
-            [this, mainColor, mainDepth](JzRGBuilder &builder) {
-                builder.Write(mainColor, JzRGUsage::Write);
-                builder.Write(mainDepth, JzRGUsage::Write);
-                builder.SetRenderTarget(mainColor, mainDepth);
-                builder.SetViewport(m_frameSize);
-            },
-            [this, &world, geometryPipeline, geometryContribution](const JzRGPassContext &passContext) {
-                ExecuteContribution(world, passContext, INVALID_ENTITY,
-                                    JzRenderVisibility::MainScene, JzRenderTargetFeatures::None,
-                                    geometryPipeline, geometryContribution);
-            },
-        });
-
-        for (const auto &contribution : m_graphContributions) {
-            const auto contributionName = contribution.name;
-            if (contributionName.empty()) {
-                continue;
-            }
-            if (!HasContributionScope(contribution.scope, JzRenderGraphContributionScope::MainScene)) {
-                continue;
-            }
-
-            m_renderGraph.AddPass({
-                "MainScene_" + contributionName + "_ContributionPass",
-                [this, requiredFeature = contribution.requiredFeature,
-                 contributionEnabled = contribution.enabledExecute]() {
-                    if (!IsContributionEnabled(JzRenderTargetFeatures::None, requiredFeature)) {
-                        return false;
-                    }
-                    if (contributionEnabled && !contributionEnabled()) {
-                        return false;
-                    }
-                    return true;
-                },
-                [this, mainColor, mainDepth](JzRGBuilder &builder) {
-                    builder.Write(mainColor, JzRGUsage::Write);
-                    builder.Write(mainDepth, JzRGUsage::Write);
-                    builder.SetRenderTarget(mainColor, mainDepth);
-                    builder.SetViewport(m_frameSize);
-                },
-                [this, &world, contribution, geometryPipeline](const JzRGPassContext &passContext) {
-                    ExecuteContribution(world, passContext, INVALID_ENTITY,
-                                        JzRenderVisibility::MainScene,
-                                        JzRenderTargetFeatures::None, geometryPipeline,
-                                        contribution);
-                },
-            });
-        }
-    }
-
+    // Unified render target loop: default target and registered targets share the same path.
     for (auto &record : m_renderTargets) {
         auto &desc = record.desc;
         if (!record.output) {
@@ -172,7 +112,7 @@ void JzRenderSystem::Update(JzWorld &world, F32 delta)
         }
 
         const String colorName   = desc.name + "_Color";
-        const String depthName   = colorName + "_Depth";
+        const String depthName   = desc.name + "_Depth";
         JzRGTexture  targetColor = m_renderGraph.CreateTexture(
             {desiredSize, JzETextureResourceFormat::RGBA8, false, colorName});
         JzRGTexture targetDepth = m_renderGraph.CreateTexture(
@@ -182,6 +122,11 @@ void JzRenderSystem::Update(JzWorld &world, F32 delta)
         m_renderGraph.BindTexture(targetDepth, output.GetDepthTexture());
         m_renderGraph.BindRenderTarget(targetColor, targetDepth, output.GetFramebuffer());
 
+        // Determine contribution scope for this target.
+        const Bool isDefault   = (record.handle == m_defaultRenderTargetHandle);
+        const auto targetScope = isDefault ? JzRenderGraphContributionScope::MainScene : JzRenderGraphContributionScope::RegisteredTarget;
+
+        // Geometry pass: direct execution, no contribution dispatch.
         m_renderGraph.AddPass({
             desc.name + "_GeometryPass",
             desc.shouldRender ? desc.shouldRender : nullptr,
@@ -192,20 +137,18 @@ void JzRenderSystem::Update(JzWorld &world, F32 delta)
                 builder.SetViewport(desiredSize);
             },
             [this, &world, camera = desc.camera, visibility = desc.visibility,
-             features = desc.features, geometryPipeline,
-             geometryContribution](const JzRGPassContext &passContext) {
-                ExecuteContribution(world, passContext, camera, visibility, features,
-                                    geometryPipeline, geometryContribution);
+             geometryPipeline](const JzRGPassContext &passContext) {
+                ExecuteGeometryStage(world, passContext, camera, visibility, geometryPipeline);
             },
         });
 
+        // Contribution passes for this target.
         for (const auto &contribution : m_graphContributions) {
             const auto contributionName = contribution.name;
             if (contributionName.empty()) {
                 continue;
             }
-            if (!HasContributionScope(contribution.scope,
-                                      JzRenderGraphContributionScope::RegisteredTarget)) {
+            if (!HasContributionScope(contribution.scope, targetScope)) {
                 continue;
             }
 
@@ -234,10 +177,9 @@ void JzRenderSystem::Update(JzWorld &world, F32 delta)
                     builder.SetViewport(desiredSize);
                 },
                 [this, &world, camera = desc.camera,
-                 visibility = desc.visibility, features = desc.features, contribution,
-                 geometryPipeline](const JzRGPassContext &passContext) {
+                 visibility = desc.visibility, features = desc.features, contribution](const JzRGPassContext &passContext) {
                     ExecuteContribution(world, passContext, camera, visibility, features,
-                                        geometryPipeline, contribution);
+                                        contribution);
                 },
             });
         }
@@ -268,30 +210,6 @@ JzIVec2 JzRenderSystem::GetCurrentFrameSize() const
     return m_frameSize;
 }
 
-std::shared_ptr<JzGPUFramebufferObject> JzRenderSystem::GetFramebuffer() const
-{
-    if (!m_mainOutput) {
-        return nullptr;
-    }
-    return m_mainOutput->GetFramebuffer();
-}
-
-std::shared_ptr<JzGPUTextureObject> JzRenderSystem::GetColorTexture() const
-{
-    if (!m_mainOutput) {
-        return nullptr;
-    }
-    return m_mainOutput->GetColorTexture();
-}
-
-std::shared_ptr<JzGPUTextureObject> JzRenderSystem::GetDepthTexture() const
-{
-    if (!m_mainOutput) {
-        return nullptr;
-    }
-    return m_mainOutput->GetDepthTexture();
-}
-
 JzRenderOutput *JzRenderSystem::GetRenderOutput(JzRenderTargetHandle handle) const
 {
     auto iter = std::find_if(m_renderTargets.begin(), m_renderTargets.end(),
@@ -303,6 +221,11 @@ JzRenderOutput *JzRenderSystem::GetRenderOutput(JzRenderTargetHandle handle) con
     }
 
     return iter->output.get();
+}
+
+JzRenderOutput *JzRenderSystem::GetDefaultRenderOutput() const
+{
+    return GetRenderOutput(m_defaultRenderTargetHandle);
 }
 
 void JzRenderSystem::BeginFrame()
@@ -335,12 +258,13 @@ void JzRenderSystem::EndFrame()
 
 void JzRenderSystem::BlitToScreen(U32 screenWidth, U32 screenHeight)
 {
-    if (!m_mainOutput || !m_mainOutput->IsValid()) {
+    auto *output = GetDefaultRenderOutput();
+    if (!output || !output->IsValid()) {
         return;
     }
 
     auto &device = JzServiceContainer::Get<JzDevice>();
-    device.BlitFramebufferToScreen(m_mainOutput->GetFramebuffer(), static_cast<U32>(m_frameSize.x),
+    device.BlitFramebufferToScreen(output->GetFramebuffer(), static_cast<U32>(m_frameSize.x),
                                    static_cast<U32>(m_frameSize.y), screenWidth, screenHeight);
 }
 
@@ -371,20 +295,6 @@ void JzRenderSystem::ClearGraphContributions()
     m_graphContributions.clear();
 }
 
-Bool JzRenderSystem::EnsureMainOutput()
-{
-    if (!m_mainOutput) {
-        m_mainOutput = std::make_shared<JzRenderOutput>("MainSceneOutput");
-    }
-
-    if (!m_mainOutput || m_frameSize.x <= 0 || m_frameSize.y <= 0) {
-        return false;
-    }
-
-    m_mainOutput->EnsureSize(m_frameSize);
-    return m_mainOutput->IsValid();
-}
-
 std::shared_ptr<JzRHIPipeline> JzRenderSystem::ResolveGeometryPipeline() const
 {
     auto &assetManager = JzServiceContainer::Get<JzAssetManager>();
@@ -402,10 +312,31 @@ std::shared_ptr<JzRHIPipeline> JzRenderSystem::ResolveGeometryPipeline() const
     return mainVariant->GetPipeline();
 }
 
+void JzRenderSystem::ExecuteGeometryStage(
+    JzWorld &world, const JzRGPassContext &passContext, JzEntity camera,
+    JzRenderVisibility visibility, std::shared_ptr<JzRHIPipeline> geometryPipeline)
+{
+    if (!passContext.framebuffer || !geometryPipeline) {
+        return;
+    }
+    if (passContext.viewport.x <= 0 || passContext.viewport.y <= 0) {
+        return;
+    }
+
+    JzMat4 viewMatrix       = JzMat4x4::Identity();
+    JzMat4 projectionMatrix = JzMat4x4::Identity();
+    JzVec3 clearColor(0.1f, 0.1f, 0.1f);
+    ResolveCameraFrameData(world, camera, viewMatrix, projectionMatrix, clearColor);
+
+    BeginRenderTargetPass(passContext, viewMatrix, projectionMatrix, clearColor,
+                          geometryPipeline);
+    DrawVisibleEntities(world, visibility, geometryPipeline);
+}
+
 void JzRenderSystem::ExecuteContribution(
     JzWorld &world, const JzRGPassContext &passContext, JzEntity camera,
     JzRenderVisibility visibility, JzRenderTargetFeatures targetFeatures,
-    std::shared_ptr<JzRHIPipeline> geometryPipeline, const JzRenderGraphContribution &contribution)
+    const JzRenderGraphContribution &contribution)
 {
     if (!passContext.framebuffer || !contribution.execute) {
         return;
@@ -425,15 +356,7 @@ void JzRenderSystem::ExecuteContribution(
     JzVec3 clearColor(0.1f, 0.1f, 0.1f);
     ResolveCameraFrameData(world, camera, viewMatrix, projectionMatrix, clearColor);
 
-    if (contribution.clearTarget) {
-        if (!geometryPipeline) {
-            return;
-        }
-        BeginRenderTargetPass(passContext, viewMatrix, projectionMatrix, clearColor,
-                              std::move(geometryPipeline));
-    } else {
-        BeginContributionTargetPass(passContext);
-    }
+    BeginContributionTargetPass(passContext);
 
     JzRenderGraphContributionContext context{
         world,
@@ -522,8 +445,7 @@ void JzRenderSystem::BeginRenderTargetPass(
     pipeline->SetUniform("projection", projectionMatrix);
 }
 
-void JzRenderSystem::BeginContributionTargetPass(
-    const JzRGPassContext &passContext)
+void JzRenderSystem::BeginContributionTargetPass(const JzRGPassContext &passContext)
 {
     auto &device = passContext.device;
     device.BindFramebuffer(passContext.framebuffer);
@@ -541,10 +463,10 @@ void JzRenderSystem::BeginContributionTargetPass(
 void JzRenderSystem::CleanupResources()
 {
     m_graphContributions.clear();
-    m_mainOutput.reset();
     m_renderTargets.clear();
-    m_nextRenderTargetHandle = 1;
-    m_isInitialized          = false;
+    m_defaultRenderTargetHandle = INVALID_RENDER_TARGET_HANDLE;
+    m_nextRenderTargetHandle    = 1;
+    m_isInitialized             = false;
 }
 
 JzRenderTargetHandle JzRenderSystem::RegisterRenderTarget(JzRenderTargetDesc desc)
@@ -572,6 +494,11 @@ JzRenderTargetHandle JzRenderSystem::RegisterRenderTarget(JzRenderTargetDesc des
 
 void JzRenderSystem::UnregisterRenderTarget(JzRenderTargetHandle handle)
 {
+    if (handle == m_defaultRenderTargetHandle) {
+        JzRE_LOG_WARN("Cannot unregister the default render target (handle={})", handle);
+        return;
+    }
+
     auto it = std::find_if(m_renderTargets.begin(), m_renderTargets.end(),
                            [handle](const JzRenderTarget &record) {
                                return record.handle == handle;
@@ -633,16 +560,18 @@ void JzRenderSystem::DrawVisibleEntities(JzWorld &world, JzRenderVisibility visi
         if (!IsEntityVisible(world, entity, visibility)) {
             continue;
         }
-        DrawEntity(world, entity, assetManager, device, pipeline);
+        DrawEntity(world, entity, pipeline);
     }
 }
 
-void JzRenderSystem::DrawEntity(JzWorld &world, JzEntity entity, JzAssetManager &assetManager,
-                                JzDevice &device, std::shared_ptr<JzRHIPipeline> pipeline)
+void JzRenderSystem::DrawEntity(JzWorld &world, JzEntity entity, std::shared_ptr<JzRHIPipeline> pipeline)
 {
     if (!pipeline) {
         return;
     }
+
+    auto &device       = JzServiceContainer::Get<JzDevice>();
+    auto &assetManager = JzServiceContainer::Get<JzAssetManager>();
 
     auto &transform = world.GetComponent<JzTransformComponent>(entity);
     auto &meshComp  = world.GetComponent<JzMeshAssetComponent>(entity);

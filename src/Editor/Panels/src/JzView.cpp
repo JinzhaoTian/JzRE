@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <imgui.h>
 
+#include "JzRE/Runtime/Core/JzLogger.h"
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
 #include "JzRE/Runtime/Function/ECS/JzRenderSystem.h"
 #include "JzRE/Runtime/Function/Rendering/JzRenderOutput.h"
@@ -20,6 +21,9 @@ JzView::JzView(const String &name, Bool is_opened) :
 {
     m_frame    = &CreateWidget<JzFrame>();
     scrollable = false;
+
+    // Register render target at construction (including initially-closed panels).
+    RegisterRenderTarget();
 }
 
 JzView::~JzView()
@@ -36,6 +40,7 @@ void JzView::Update(F32 deltaTime)
     }
 
     auto &renderSystem = JzServiceContainer::Get<JzRenderSystem>();
+    renderSystem.UpdateRenderTargetVisibility(m_renderTargetHandle, GetVisibility());
     renderSystem.UpdateRenderTargetFeatures(m_renderTargetHandle, GetRenderFeatures());
 }
 
@@ -69,6 +74,7 @@ void JzView::RegisterRenderTarget()
     }
 
     if (!JzServiceContainer::Has<JzRenderSystem>()) {
+        JzRE_LOG_ERROR("JzView::RegisterRenderTarget() called before JzRenderSystem is available (panel={})", m_name);
         return;
     }
 
@@ -102,11 +108,6 @@ void JzView::UnregisterRenderTarget()
 
 void JzView::UpdateFrameTexture()
 {
-    // Register render target lazily after RenderSystem is available.
-    if (IsOpened() && m_renderTargetHandle == INVALID_RENDER_TARGET_HANDLE && JzServiceContainer::Has<JzRenderSystem>()) {
-        RegisterRenderTarget();
-    }
-
     auto size = GetSafeSize();
     if (size.x <= 0 || size.y <= 0) {
         return;

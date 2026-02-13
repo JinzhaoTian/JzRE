@@ -6,7 +6,6 @@
 #pragma once
 
 #include <memory>
-#include <utility>
 #include <vector>
 
 #include "JzRE/Runtime/Core/JzMatrix.h"
@@ -18,14 +17,8 @@
 #include "JzRE/Runtime/Function/Rendering/JzRenderGraph.h"
 #include "JzRE/Runtime/Function/Rendering/JzRenderGraphContribution.h"
 #include "JzRE/Runtime/Function/Rendering/JzRenderOutput.h"
-#include "JzRE/Runtime/Function/Rendering/JzRenderPass.h"
 #include "JzRE/Runtime/Function/Rendering/JzRenderTarget.h"
 #include "JzRE/Runtime/Function/Rendering/JzRenderVisibility.h"
-#include "JzRE/Runtime/Platform/Command/JzRHIDrawCommand.h"
-#include "JzRE/Runtime/Platform/RHI/JzGPUBufferObject.h"
-#include "JzRE/Runtime/Platform/RHI/JzGPUFramebufferObject.h"
-#include "JzRE/Runtime/Platform/RHI/JzGPUTextureObject.h"
-#include "JzRE/Runtime/Platform/RHI/JzGPUVertexArrayObject.h"
 #include "JzRE/Runtime/Platform/RHI/JzRHIPipeline.h"
 
 namespace JzRE {
@@ -37,7 +30,8 @@ class JzDevice;
  * @brief Enhanced render system that integrates with camera system.
  *
  * This system manages:
- * - Main and registered render outputs
+ * - A default render target (created at construction, non-removable)
+ * - Registered render targets for editor panels
  * - RenderGraph pass recording and execution
  * - Rendering all entities with Transform + Mesh + Material components
  * - Blitting to screen for standalone runtime
@@ -67,21 +61,6 @@ public:
      * @brief Get the current frame size.
      */
     JzIVec2 GetCurrentFrameSize() const;
-
-    /**
-     * @brief Get the framebuffer.
-     */
-    std::shared_ptr<JzGPUFramebufferObject> GetFramebuffer() const;
-
-    /**
-     * @brief Get the color texture for host UI presentation.
-     */
-    std::shared_ptr<JzGPUTextureObject> GetColorTexture() const;
-
-    /**
-     * @brief Get the depth texture.
-     */
-    std::shared_ptr<JzGPUTextureObject> GetDepthTexture() const;
 
     /**
      * @brief Get a render output by render target handle.
@@ -171,14 +150,26 @@ public:
 
 private:
     /**
-     * @brief Ensure the main output size/resources match current frame size.
+     * @brief Get the default render target output (created at construction).
      */
-    Bool EnsureMainOutput();
+    JzRenderOutput *GetDefaultRenderOutput() const;
 
     /**
      * @brief Resolve the geometry rendering pipeline from shader assets.
      */
     std::shared_ptr<JzRHIPipeline> ResolveGeometryPipeline() const;
+
+    /**
+     * @brief Execute the built-in geometry stage for a render target.
+     *
+     * Directly performs BeginRenderTargetPass -> DrawVisibleEntities.
+     * Does NOT call ExecuteContribution to avoid contribution dispatch logic.
+     */
+    void ExecuteGeometryStage(JzWorld                       &world,
+                              const JzRGPassContext         &passContext,
+                              JzEntity                       camera,
+                              JzRenderVisibility             visibility,
+                              std::shared_ptr<JzRHIPipeline> geometryPipeline);
 
     /**
      * @brief Execute one contribution for a render target.
@@ -188,7 +179,6 @@ private:
                              JzEntity                         camera,
                              JzRenderVisibility               visibility,
                              JzRenderTargetFeatures           targetFeatures,
-                             std::shared_ptr<JzRHIPipeline>   geometryPipeline,
                              const JzRenderGraphContribution &contribution);
 
     /**
@@ -221,8 +211,7 @@ private:
     /**
      * @brief Draw a single renderable entity with the geometry pipeline.
      */
-    void DrawEntity(JzWorld &world, JzEntity entity, JzAssetManager &assetManager,
-                    JzDevice &device, std::shared_ptr<JzRHIPipeline> pipeline);
+    void DrawEntity(JzWorld &world, JzEntity entity, std::shared_ptr<JzRHIPipeline> pipeline);
 
     /**
      * @brief Check if an entity should be rendered by the current visibility mask.
@@ -252,12 +241,11 @@ private:
     Bool    m_isInitialized    = false;
 
     std::vector<JzRenderTarget> m_renderTargets;
-    JzRenderTargetHandle        m_nextRenderTargetHandle = 1;
+    JzRenderTargetHandle        m_nextRenderTargetHandle    = 1;
+    JzRenderTargetHandle        m_defaultRenderTargetHandle = INVALID_RENDER_TARGET_HANDLE;
 
     JzRenderGraph                          m_renderGraph;
     std::vector<JzRenderGraphContribution> m_graphContributions;
-
-    std::shared_ptr<JzRenderOutput> m_mainOutput;
 };
 
 } // namespace JzRE
