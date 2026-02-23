@@ -13,6 +13,7 @@
 
 #include "JzRE/Runtime/Core/JzRETypes.h"
 #include "JzRE/Runtime/Core/JzVector.h"
+#include "JzRE/Runtime/Platform/Command/JzRHICommandList.h"
 #include "JzRE/Runtime/Platform/RHI/JzGPUBufferObject.h"
 #include "JzRE/Runtime/Platform/RHI/JzGPUFramebufferObject.h"
 #include "JzRE/Runtime/Platform/RHI/JzGPUTextureObject.h"
@@ -66,7 +67,7 @@ struct JzRGTransition {
  * @brief Runtime execution context for one RenderGraph pass.
  */
 struct JzRGPassContext {
-    JzDevice                               &device;
+    JzRHICommandList                       &commandList;
     JzIVec2                                 viewport{0, 0};
     JzRGTexture                             colorHandle{};
     JzRGTexture                             depthHandle{};
@@ -119,7 +120,8 @@ struct JzRGPassDesc {
  */
 class JzRenderGraph {
 public:
-    using TransitionCallback = std::function<void(const JzRGPassDesc &,
+    using TransitionCallback = std::function<void(JzRHICommandList &,
+                                                  const JzRGPassDesc &,
                                                   const std::vector<JzRGTransition> &)>;
 
     JzRenderGraph();

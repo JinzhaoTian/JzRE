@@ -67,8 +67,10 @@ void JzRenderSystem::Update(JzWorld &world, F32 delta)
     m_isInitialized       = geometryPipeline != nullptr;
 
     m_renderGraph.SetTransitionCallback(
-        [this](const JzRGPassDesc &passDesc, const std::vector<JzRGTransition> &transitions) {
-            ApplyRenderGraphTransitions(passDesc, transitions);
+        [this](JzRHICommandList &commandList,
+               const JzRGPassDesc &passDesc,
+               const std::vector<JzRGTransition> &transitions) {
+            ApplyRenderGraphTransitions(commandList, passDesc, transitions);
         });
 
     auto &device = JzServiceContainer::Get<JzDevice>();
@@ -264,8 +266,19 @@ void JzRenderSystem::BlitToScreen(U32 screenWidth, U32 screenHeight)
     }
 
     auto &device = JzServiceContainer::Get<JzDevice>();
-    device.BlitFramebufferToScreen(output->GetFramebuffer(), static_cast<U32>(m_frameSize.x),
-                                   static_cast<U32>(m_frameSize.y), screenWidth, screenHeight);
+    auto  commandList = device.CreateCommandList("RenderSystem_BlitToScreen");
+    if (!commandList) {
+        return;
+    }
+
+    commandList->Begin();
+    commandList->BlitFramebufferToScreen(output->GetFramebuffer(),
+                                         static_cast<U32>(m_frameSize.x),
+                                         static_cast<U32>(m_frameSize.y),
+                                         screenWidth,
+                                         screenHeight);
+    commandList->End();
+    device.ExecuteCommandList(commandList);
 }
 
 Bool JzRenderSystem::IsInitialized() const
@@ -328,9 +341,9 @@ void JzRenderSystem::ExecuteGeometryStage(
     JzVec3 clearColor(0.1f, 0.1f, 0.1f);
     ResolveCameraFrameData(world, camera, viewMatrix, projectionMatrix, clearColor);
 
-    BeginRenderTargetPass(passContext, viewMatrix, projectionMatrix, clearColor,
+    BeginRenderTargetPass(passContext, passContext.commandList, viewMatrix, projectionMatrix, clearColor,
                           geometryPipeline);
-    DrawVisibleEntities(world, visibility, geometryPipeline);
+    DrawVisibleEntities(world, passContext.commandList, visibility, geometryPipeline);
 }
 
 void JzRenderSystem::ExecuteContribution(
@@ -356,7 +369,7 @@ void JzRenderSystem::ExecuteContribution(
     JzVec3 clearColor(0.1f, 0.1f, 0.1f);
     ResolveCameraFrameData(world, camera, viewMatrix, projectionMatrix, clearColor);
 
-    BeginContributionTargetPass(passContext);
+    BeginContributionTargetPass(passContext, passContext.commandList);
 
     JzRenderGraphContributionContext context{
         world,
@@ -366,6 +379,7 @@ void JzRenderSystem::ExecuteContribution(
         passContext.viewport,
         viewMatrix,
         projectionMatrix,
+        &passContext.commandList,
         &passContext};
     contribution.execute(context);
 }
@@ -407,6 +421,7 @@ void JzRenderSystem::ResolveCameraFrameData(
 
 void JzRenderSystem::BeginRenderTargetPass(
     const JzRGPassContext &passContext,
+    JzRHICommandList &commandList,
     const JzMat4 &viewMatrix, const JzMat4 &projectionMatrix, const JzVec3 &clearColor,
     std::shared_ptr<JzRHIPipeline> pipeline)
 {
@@ -414,9 +429,8 @@ void JzRenderSystem::BeginRenderTargetPass(
         return;
     }
 
-    auto &device = passContext.device;
-    device.BindFramebuffer(passContext.framebuffer);
-    device.BindPipeline(pipeline);
+    commandList.BindFramebuffer(passContext.framebuffer);
+    commandList.BindPipeline(pipeline);
 
     JzViewport viewport;
     viewport.x        = 0.0f;
@@ -425,7 +439,7 @@ void JzRenderSystem::BeginRenderTargetPass(
     viewport.height   = static_cast<F32>(passContext.viewport.y);
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
-    device.SetViewport(viewport);
+    commandList.SetViewport(viewport);
 
     JzClearParams clearParams;
     clearParams.clearColor   = true;
@@ -437,7 +451,7 @@ void JzRenderSystem::BeginRenderTargetPass(
     clearParams.colorA       = 1.0f;
     clearParams.depth        = 1.0f;
     clearParams.stencil      = 0;
-    device.Clear(clearParams);
+    commandList.Clear(clearParams);
 
     JzMat4 modelMatrix = JzMat4x4::Identity();
     pipeline->SetUniform("model", modelMatrix);
@@ -445,10 +459,10 @@ void JzRenderSystem::BeginRenderTargetPass(
     pipeline->SetUniform("projection", projectionMatrix);
 }
 
-void JzRenderSystem::BeginContributionTargetPass(const JzRGPassContext &passContext)
+void JzRenderSystem::BeginContributionTargetPass(const JzRGPassContext &passContext,
+                                                 JzRHICommandList      &commandList)
 {
-    auto &device = passContext.device;
-    device.BindFramebuffer(passContext.framebuffer);
+    commandList.BindFramebuffer(passContext.framebuffer);
 
     JzViewport viewport;
     viewport.x        = 0.0f;
@@ -457,7 +471,7 @@ void JzRenderSystem::BeginContributionTargetPass(const JzRGPassContext &passCont
     viewport.height   = static_cast<F32>(passContext.viewport.y);
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
-    device.SetViewport(viewport);
+    commandList.SetViewport(viewport);
 }
 
 void JzRenderSystem::CleanupResources()
@@ -543,15 +557,13 @@ void JzRenderSystem::UpdateRenderTargetVisibility(JzRenderTargetHandle handle,
     }
 }
 
-void JzRenderSystem::DrawVisibleEntities(JzWorld &world, JzRenderVisibility visibility,
+void JzRenderSystem::DrawVisibleEntities(JzWorld &world, JzRHICommandList &commandList,
+                                         JzRenderVisibility visibility,
                                          std::shared_ptr<JzRHIPipeline> pipeline)
 {
     if (!pipeline) {
         return;
     }
-
-    auto &device       = JzServiceContainer::Get<JzDevice>();
-    auto &assetManager = JzServiceContainer::Get<JzAssetManager>();
 
     auto views = world.View<JzTransformComponent, JzMeshAssetComponent, JzMaterialAssetComponent,
                             JzAssetReadyTag>();
@@ -560,17 +572,17 @@ void JzRenderSystem::DrawVisibleEntities(JzWorld &world, JzRenderVisibility visi
         if (!IsEntityVisible(world, entity, visibility)) {
             continue;
         }
-        DrawEntity(world, entity, pipeline);
+        DrawEntity(world, commandList, entity, pipeline);
     }
 }
 
-void JzRenderSystem::DrawEntity(JzWorld &world, JzEntity entity, std::shared_ptr<JzRHIPipeline> pipeline)
+void JzRenderSystem::DrawEntity(JzWorld &world, JzRHICommandList &commandList, JzEntity entity,
+                                std::shared_ptr<JzRHIPipeline> pipeline)
 {
     if (!pipeline) {
         return;
     }
 
-    auto &device       = JzServiceContainer::Get<JzDevice>();
     auto &assetManager = JzServiceContainer::Get<JzAssetManager>();
 
     auto &transform = world.GetComponent<JzTransformComponent>(entity);
@@ -597,11 +609,11 @@ void JzRenderSystem::DrawEntity(JzWorld &world, JzEntity entity, std::shared_ptr
     Bool        hasDiffuseTexture = material && material->HasDiffuseTexture();
     pipeline->SetUniform("hasDiffuseTexture", hasDiffuseTexture);
     if (hasDiffuseTexture) {
-        device.BindTexture(material->GetDiffuseTexture(), 0);
+        commandList.BindTexture(material->GetDiffuseTexture(), 0);
         pipeline->SetUniform("diffuseTexture", 0);
     }
 
-    device.BindVertexArray(vertexArray);
+    commandList.BindVertexArray(vertexArray);
 
     JzDrawIndexedParams drawParams;
     drawParams.primitiveType = JzEPrimitiveType::Triangles;
@@ -610,7 +622,7 @@ void JzRenderSystem::DrawEntity(JzWorld &world, JzEntity entity, std::shared_ptr
     drawParams.firstIndex    = 0;
     drawParams.vertexOffset  = 0;
     drawParams.firstInstance = 0;
-    device.DrawIndexed(drawParams);
+    commandList.DrawIndexed(drawParams);
 }
 
 Bool JzRenderSystem::IsEntityVisible(JzWorld &world, JzEntity entity,
@@ -643,7 +655,9 @@ Bool JzRenderSystem::IsContributionEnabled(JzRenderTargetFeatures targetFeatures
 }
 
 void JzRenderSystem::ApplyRenderGraphTransitions(
-    const JzRGPassDesc &passDesc, const std::vector<JzRGTransition> &transitions)
+    JzRHICommandList                  &commandList,
+    const JzRGPassDesc                &passDesc,
+    const std::vector<JzRGTransition> &transitions)
 {
     (void)passDesc;
 
@@ -651,7 +665,6 @@ void JzRenderSystem::ApplyRenderGraphTransitions(
         return;
     }
 
-    auto                             &device = JzServiceContainer::Get<JzDevice>();
     std::vector<JzRHIResourceBarrier> barriers;
     barriers.reserve(transitions.size());
 
@@ -700,7 +713,7 @@ void JzRenderSystem::ApplyRenderGraphTransitions(
     }
 
     if (!barriers.empty()) {
-        device.ResourceBarrier(barriers);
+        commandList.ResourceBarrier(barriers);
     }
 }
 

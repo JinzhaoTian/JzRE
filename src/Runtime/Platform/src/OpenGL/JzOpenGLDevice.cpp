@@ -4,8 +4,9 @@
  */
 
 #include "JzRE/Runtime/Platform/OpenGL/JzOpenGLDevice.h"
-#include "JzRE/Runtime/Platform/RHI/JzDevice.h"
+
 #include <iostream>
+
 #include "JzRE/Runtime/Platform/OpenGL/JzOpenGLBuffer.h"
 #include "JzRE/Runtime/Platform/OpenGL/JzOpenGLTexture.h"
 
@@ -85,9 +86,128 @@ std::shared_ptr<JzRE::JzRHICommandList> JzRE::JzOpenGLDevice::CreateCommandList(
 
 void JzRE::JzOpenGLDevice::ExecuteCommandList(std::shared_ptr<JzRE::JzRHICommandList> commandList)
 {
-    if (commandList && !commandList->IsEmpty()) {
-        commandList->Execute();
+    if (!commandList || commandList->IsEmpty()) {
+        return;
     }
+
+    const auto commands = commandList->GetCommands();
+    for (const auto &command : commands) {
+        DispatchCommand(command);
+    }
+}
+
+void JzRE::JzOpenGLDevice::ExecuteCommandLists(
+    const std::vector<std::shared_ptr<JzRHICommandList>> &commandLists)
+{
+    for (const auto &commandList : commandLists) {
+        ExecuteCommandList(commandList);
+    }
+}
+
+void JzRE::JzOpenGLDevice::DispatchCommand(const JzRE::JzRHIRecordedCommand &command)
+{
+    switch (command.type) {
+        case JzRHIECommandType::Clear: {
+            if (const auto *payload = std::get_if<JzClearParams>(&command.payload)) {
+                Clear(*payload);
+            }
+            break;
+        }
+        case JzRHIECommandType::Draw: {
+            if (const auto *payload = std::get_if<JzDrawParams>(&command.payload)) {
+                Draw(*payload);
+            }
+            break;
+        }
+        case JzRHIECommandType::DrawIndexed: {
+            if (const auto *payload = std::get_if<JzDrawIndexedParams>(&command.payload)) {
+                DrawIndexed(*payload);
+            }
+            break;
+        }
+        case JzRHIECommandType::BindPipeline: {
+            if (const auto *payload = std::get_if<JzRHIBindPipelinePayload>(&command.payload)) {
+                BindPipeline(payload->pipeline);
+            }
+            break;
+        }
+        case JzRHIECommandType::BindVertexArray: {
+            if (const auto *payload = std::get_if<JzRHIBindVertexArrayPayload>(&command.payload)) {
+                BindVertexArray(payload->vertexArray);
+            }
+            break;
+        }
+        case JzRHIECommandType::BindTexture: {
+            if (const auto *payload = std::get_if<JzRHIBindTexturePayload>(&command.payload)) {
+                BindTexture(payload->texture, payload->slot);
+            }
+            break;
+        }
+        case JzRHIECommandType::BindFramebuffer: {
+            if (const auto *payload = std::get_if<JzRHIBindFramebufferPayload>(&command.payload)) {
+                BindFramebuffer(payload->framebuffer);
+            }
+            break;
+        }
+        case JzRHIECommandType::SetViewport: {
+            if (const auto *payload = std::get_if<JzViewport>(&command.payload)) {
+                SetViewport(*payload);
+            }
+            break;
+        }
+        case JzRHIECommandType::SetScissor: {
+            if (const auto *payload = std::get_if<JzScissorRect>(&command.payload)) {
+                SetScissor(*payload);
+            }
+            break;
+        }
+        case JzRHIECommandType::BeginRenderPass: {
+            if (const auto *payload = std::get_if<JzRHIBeginRenderPassPayload>(&command.payload)) {
+                BeginRenderPass(*payload);
+            }
+            break;
+        }
+        case JzRHIECommandType::EndRenderPass: {
+            if (const auto *payload = std::get_if<JzRHIEndRenderPassPayload>(&command.payload)) {
+                EndRenderPass(*payload);
+            }
+            break;
+        }
+        case JzRHIECommandType::ResourceBarrier: {
+            if (const auto *payload = std::get_if<JzRHIResourceBarrierPayload>(&command.payload)) {
+                ResourceBarrier(payload->barriers);
+            }
+            break;
+        }
+        case JzRHIECommandType::BlitFramebufferToScreen: {
+            if (const auto *payload = std::get_if<JzRHIBlitFramebufferToScreenPayload>(&command.payload)) {
+                BlitFramebufferToScreen(
+                    payload->framebuffer,
+                    payload->srcWidth,
+                    payload->srcHeight,
+                    payload->dstWidth,
+                    payload->dstHeight);
+            }
+            break;
+        }
+    }
+}
+
+void JzRE::JzOpenGLDevice::BeginRenderPass(const JzRE::JzRHIBeginRenderPassPayload &payload)
+{
+    BindFramebuffer(payload.framebuffer);
+    if (payload.renderPass) {
+        payload.renderPass->OnBegin(*this, payload.framebuffer);
+    }
+}
+
+void JzRE::JzOpenGLDevice::EndRenderPass(const JzRE::JzRHIEndRenderPassPayload &payload)
+{
+    if (payload.renderPass) {
+        payload.renderPass->OnEnd(*this);
+    }
+
+    BindFramebuffer(nullptr);
 }
 
 void JzRE::JzOpenGLDevice::BeginFrame()

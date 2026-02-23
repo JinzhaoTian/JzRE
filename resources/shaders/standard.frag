@@ -17,12 +17,11 @@ struct Material {
 
 #if JZ_BACKEND_VULKAN
 layout (set = 0, binding = 1) uniform JzStandardMaterialUniforms {
-    vec3 materialAmbient;
-    vec3 materialDiffuse;
-    vec3 materialSpecular;
-    float materialShininess;
+    Material material;
     int hasDiffuseTexture;
 } uStandardMaterial;
+#define material uStandardMaterial.material
+#define hasDiffuseTexture uStandardMaterial.hasDiffuseTexture
 layout (set = 0, binding = 2) uniform sampler2D diffuseTexture;
 #else
 // Uniforms
@@ -33,28 +32,15 @@ uniform bool hasDiffuseTexture;
 
 void main()
 {
-    Material materialData;
-    bool hasDiffuseTextureValue = false;
-#if JZ_BACKEND_VULKAN
-    materialData.ambient   = uStandardMaterial.materialAmbient;
-    materialData.diffuse   = uStandardMaterial.materialDiffuse;
-    materialData.specular  = uStandardMaterial.materialSpecular;
-    materialData.shininess = uStandardMaterial.materialShininess;
-    hasDiffuseTextureValue = (uStandardMaterial.hasDiffuseTexture != 0);
-#else
-    materialData           = material;
-    hasDiffuseTextureValue = hasDiffuseTexture;
-#endif
-
     vec3 finalColor;
 
-    if (hasDiffuseTextureValue) {
+    if (hasDiffuseTexture != 0) {
         // Sample diffuse texture and multiply by material diffuse color
         vec4 texColor = texture(diffuseTexture, TexCoords);
-        finalColor = texColor.rgb * materialData.diffuse;
+        finalColor = texColor.rgb * material.diffuse;
     } else {
         // Use material diffuse color directly
-        finalColor = materialData.diffuse;
+        finalColor = material.diffuse;
     }
 
     FragColor = vec4(finalColor, 1.0);

@@ -153,8 +153,14 @@ void JzRenderGraph::Execute(JzDevice &device)
 
         m_builder.SetActivePassIndex(index);
 
+        auto commandList = device.CreateCommandList("RenderGraph_" + pass.desc.name);
+        if (!commandList) {
+            continue;
+        }
+        commandList->Begin();
+
         if (m_transitionCallback && !pass.transitions.empty()) {
-            m_transitionCallback(pass.desc, pass.transitions);
+            m_transitionCallback(*commandList, pass.desc, pass.transitions);
         }
 
         if (pass.desc.execute) {
@@ -163,7 +169,7 @@ void JzRenderGraph::Execute(JzDevice &device)
             auto framebuffer  = ResolveFramebuffer(device, pass, colorTexture, depthTexture);
 
             if (pass.colorTarget.id != 0 || pass.depthTarget.id != 0 || framebuffer) {
-                device.BindFramebuffer(framebuffer);
+                commandList->BindFramebuffer(framebuffer);
             }
 
             if (pass.viewport.x > 0 && pass.viewport.y > 0) {
@@ -174,19 +180,22 @@ void JzRenderGraph::Execute(JzDevice &device)
                 viewport.height   = static_cast<F32>(pass.viewport.y);
                 viewport.minDepth = 0.0f;
                 viewport.maxDepth = 1.0f;
-                device.SetViewport(viewport);
+                commandList->SetViewport(viewport);
             }
 
             const JzRGPassContext context{
-                device,
+                *commandList,
                 pass.viewport,
                 pass.colorTarget,
                 pass.depthTarget,
-                std::move(framebuffer),
-                std::move(colorTexture),
-                std::move(depthTexture)};
+                framebuffer,
+                colorTexture,
+                depthTexture};
             pass.desc.execute(context);
         }
+
+        commandList->End();
+        device.ExecuteCommandList(commandList);
     }
 }
 

@@ -1,19 +1,16 @@
 /**
  * @author    Jinzhao Tian
- * @copyright Copyright (c) 2025 JzRE
+ * @copyright Copyright (c) 2026 JzRE
  */
 
 #include "JzRE/Runtime/Platform/Command/JzRHICommandList.h"
-#include "JzRE/Runtime/Core/JzLogger.h"
-#include "JzRE/Runtime/Platform/Command/JzRHIBindPipelineCommand.h"
-#include "JzRE/Runtime/Platform/Command/JzRHIBindVertexArrayCommand.h"
-#include "JzRE/Runtime/Platform/Command/JzRHIBindTextureCommand.h"
-#include "JzRE/Runtime/Platform/Command/JzRHIRenderPassCommand.h"
 
-// RHICommandBuffer实现
+#include "JzRE/Runtime/Core/JzLogger.h"
+
 JzRE::JzRHICommandList::JzRHICommandList(const JzRE::String &debugName) :
     m_debugName(debugName),
-    m_isRecording(false) { }
+    m_isRecording(false)
+{ }
 
 JzRE::JzRHICommandList::~JzRHICommandList()
 {
@@ -27,8 +24,10 @@ void JzRE::JzRHICommandList::Begin()
         JzRE_LOG_ERROR("Command buffer is recording");
         return;
     }
+
+    // Avoid recursive lock from calling Reset() under the same mutex.
+    m_commands.clear();
     m_isRecording = true;
-    Reset();
 }
 
 void JzRE::JzRHICommandList::End()
@@ -44,34 +43,28 @@ void JzRE::JzRHICommandList::End()
 void JzRE::JzRHICommandList::Reset()
 {
     std::lock_guard<std::mutex> lock(m_commandMutex);
+    m_isRecording = false;
     m_commands.clear();
 }
 
-void JzRE::JzRHICommandList::Execute()
+std::vector<JzRE::JzRHIRecordedCommand> JzRE::JzRHICommandList::GetCommands() const
 {
     std::lock_guard<std::mutex> lock(m_commandMutex);
     if (m_isRecording) {
-        JzRE_LOG_ERROR("Cannot execute command buffer that is recording");
-        return;
+        JzRE_LOG_WARN("Command buffer '{}' is still recording; returning current snapshot", m_debugName);
     }
-
-    for (auto &command : m_commands) {
-        command->Execute();
-    }
-}
-
-JzRE::Bool JzRE::JzRHICommandList::IsRecording() const
-{
-    return m_isRecording;
+    return m_commands;
 }
 
 JzRE::Bool JzRE::JzRHICommandList::IsEmpty() const
 {
+    std::lock_guard<std::mutex> lock(m_commandMutex);
     return m_commands.empty();
 }
 
 JzRE::Size JzRE::JzRHICommandList::GetCommandCount() const
 {
+    std::lock_guard<std::mutex> lock(m_commandMutex);
     return m_commands.size();
 }
 
@@ -80,75 +73,128 @@ const JzRE::String &JzRE::JzRHICommandList::GetDebugName() const
     return m_debugName;
 }
 
+JzRE::Bool JzRE::JzRHICommandList::IsRecording() const
+{
+    std::lock_guard<std::mutex> lock(m_commandMutex);
+    return m_isRecording;
+}
+
 void JzRE::JzRHICommandList::Clear(const JzRE::JzClearParams &params)
 {
-    AddCommand<JzRHIClearCommand>(params);
+    AddCommand(JzRHIECommandType::Clear, params);
 }
 
 void JzRE::JzRHICommandList::Draw(const JzRE::JzDrawParams &params)
 {
-    AddCommand<JzRHIDrawCommand>(params);
+    AddCommand(JzRHIECommandType::Draw, params);
 }
 
 void JzRE::JzRHICommandList::DrawIndexed(const JzRE::JzDrawIndexedParams &params)
 {
-    AddCommand<JzRHIDrawIndexedCommand>(params);
+    AddCommand(JzRHIECommandType::DrawIndexed, params);
 }
 
 void JzRE::JzRHICommandList::BindPipeline(std::shared_ptr<JzRE::JzRHIPipeline> pipeline)
 {
-    AddCommand<JzRHIBindPipelineCommand>(pipeline);
+    JzRHIBindPipelinePayload payload;
+    payload.pipeline = std::move(pipeline);
+    AddCommand(JzRHIECommandType::BindPipeline, std::move(payload));
 }
 
 void JzRE::JzRHICommandList::BindVertexArray(std::shared_ptr<JzRE::JzGPUVertexArrayObject> vertexArray)
 {
-    AddCommand<JzRHIBindVertexArrayCommand>(vertexArray);
+    JzRHIBindVertexArrayPayload payload;
+    payload.vertexArray = std::move(vertexArray);
+    AddCommand(JzRHIECommandType::BindVertexArray, std::move(payload));
 }
 
 void JzRE::JzRHICommandList::BindTexture(std::shared_ptr<JzRE::JzGPUTextureObject> texture, U32 slot)
 {
-    AddCommand<JzRHIBindTextureCommand>(texture, slot);
+    JzRHIBindTexturePayload payload;
+    payload.texture = std::move(texture);
+    payload.slot    = slot;
+    AddCommand(JzRHIECommandType::BindTexture, std::move(payload));
+}
+
+void JzRE::JzRHICommandList::BindFramebuffer(std::shared_ptr<JzRE::JzGPUFramebufferObject> framebuffer)
+{
+    JzRHIBindFramebufferPayload payload;
+    payload.framebuffer = std::move(framebuffer);
+    AddCommand(JzRHIECommandType::BindFramebuffer, std::move(payload));
 }
 
 void JzRE::JzRHICommandList::SetViewport(const JzRE::JzViewport &viewport)
 {
-    AddCommand<JzRHISetViewportCommand>(viewport);
+    AddCommand(JzRHIECommandType::SetViewport, viewport);
 }
 
 void JzRE::JzRHICommandList::SetScissor(const JzRE::JzScissorRect &scissor)
 {
-    AddCommand<JzRHISetScissorCommand>(scissor);
+    AddCommand(JzRHIECommandType::SetScissor, scissor);
+}
+
+void JzRE::JzRHICommandList::ResourceBarrier(const std::vector<JzRE::JzRHIResourceBarrier> &barriers)
+{
+    if (barriers.empty()) {
+        return;
+    }
+
+    JzRHIResourceBarrierPayload payload;
+    payload.barriers = barriers;
+    AddCommand(JzRHIECommandType::ResourceBarrier, std::move(payload));
+}
+
+void JzRE::JzRHICommandList::BlitFramebufferToScreen(
+    std::shared_ptr<JzRE::JzGPUFramebufferObject> framebuffer,
+    U32 srcWidth, U32 srcHeight,
+    U32 dstWidth, U32 dstHeight)
+{
+    JzRHIBlitFramebufferToScreenPayload payload;
+    payload.framebuffer = std::move(framebuffer);
+    payload.srcWidth    = srcWidth;
+    payload.srcHeight   = srcHeight;
+    payload.dstWidth    = dstWidth;
+    payload.dstHeight   = dstHeight;
+    AddCommand(JzRHIECommandType::BlitFramebufferToScreen, std::move(payload));
 }
 
 void JzRE::JzRHICommandList::BeginRenderPass(std::shared_ptr<JzRE::JzGPUFramebufferObject> framebuffer)
 {
-    AddCommand<JzRHIBeginRenderPassCommand>(framebuffer);
+    BeginRenderPass(nullptr, std::move(framebuffer));
 }
 
 void JzRE::JzRHICommandList::BeginRenderPass(std::shared_ptr<JzRE::JzRHIRenderPass>        renderPass,
                                              std::shared_ptr<JzRE::JzGPUFramebufferObject> framebuffer)
 {
-    AddCommand<JzRHIBeginRenderPassCommand>(std::move(framebuffer), std::move(renderPass));
+    JzRHIBeginRenderPassPayload payload;
+    payload.framebuffer = std::move(framebuffer);
+    payload.renderPass  = std::move(renderPass);
+    AddCommand(JzRHIECommandType::BeginRenderPass, std::move(payload));
 }
 
 void JzRE::JzRHICommandList::EndRenderPass()
 {
-    AddCommand<JzRHIEndRenderPassCommand>();
+    EndRenderPass(nullptr);
 }
 
 void JzRE::JzRHICommandList::EndRenderPass(std::shared_ptr<JzRE::JzRHIRenderPass> renderPass)
 {
-    AddCommand<JzRHIEndRenderPassCommand>(std::move(renderPass));
+    JzRHIEndRenderPassPayload payload;
+    payload.renderPass = std::move(renderPass);
+    AddCommand(JzRHIECommandType::EndRenderPass, std::move(payload));
 }
 
-template <typename T, typename... Args>
-void JzRE::JzRHICommandList::AddCommand(Args &&...args)
+template <typename TPayload>
+void JzRE::JzRHICommandList::AddCommand(JzRE::JzRHIECommandType type, TPayload &&payload)
 {
+    std::lock_guard<std::mutex> lock(m_commandMutex);
     if (!m_isRecording) {
-        JzRE_LOG_ERROR("Command buffer is not recording");
+        JzRE_LOG_ERROR("Command buffer '{}' is not recording", m_debugName);
         return;
     }
 
-    std::lock_guard<std::mutex> lock(m_commandMutex);
-    m_commands.push_back(std::make_unique<T>(std::forward<Args>(args)...));
+    JzRHIRecordedCommand command;
+    command.type    = type;
+    command.payload = std::forward<TPayload>(payload);
+    m_commands.push_back(std::move(command));
 }

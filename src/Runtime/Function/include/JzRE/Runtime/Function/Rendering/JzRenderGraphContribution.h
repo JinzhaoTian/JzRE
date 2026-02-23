@@ -17,6 +17,7 @@
 namespace JzRE {
 
 struct JzRGPassContext;
+class JzRHICommandList;
 class JzWorld;
 
 /**
@@ -30,6 +31,7 @@ struct JzRenderGraphContributionContext {
     JzIVec2                targetSize;
     const JzMat4          &viewMatrix;
     const JzMat4          &projectionMatrix;
+    JzRHICommandList      *commandList = nullptr;
     const JzRGPassContext *passContext = nullptr;
 };
 

@@ -31,7 +31,7 @@ JzREEditor (Executable)
 | Strict dependency flow              | Upper layers depend on lower layers only.                                                           |
 | ECS-centric runtime                 | Runtime frame behavior is driven by `JzWorld` systems.                                              |
 | Service locator for shared services | Runtime services are exposed via `JzServiceContainer`.                                              |
-| Multi-path rendering API            | Immediate-mode draw is the current default path; command list API is available as an optional path. |
+| Command-list rendering API          | Runtime/editor rendering is recorded through `JzRHICommandList` and executed by backend devices.     |
 
 ## Runtime and Editor Boundary
 
@@ -66,8 +66,8 @@ Current backend status:
 
 Notes on rendering command path:
 
-- default runtime render flow uses immediate device calls
-- `JzRHICommandList` exists as optional deferred recording utility
+- runtime/editor render flow records commands through `JzRHICommandList`
+- backend devices execute recorded lists via `ExecuteCommandList(...)`
 
 ## Resource Layer
 
@@ -163,19 +163,13 @@ for (auto [entity, transform, meshAsset] : view.each()) {
 }
 ```
 
-### Immediate RHI Path (Current Default)
-
-```cpp
-device.BindPipeline(pipeline);
-device.BindVertexArray(vertexArray);
-device.DrawIndexed(drawParams);
-```
-
-### Command List (Available)
+### Command List Rendering Path (Current)
 
 ```cpp
 auto cmd = device.CreateCommandList("Pass");
 cmd->Begin();
+cmd->BindPipeline(pipeline);
+cmd->BindVertexArray(vertexArray);
 cmd->DrawIndexed(drawParams);
 cmd->End();
 device.ExecuteCommandList(cmd);

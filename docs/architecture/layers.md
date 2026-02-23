@@ -103,7 +103,7 @@ Platform/
 │   │   └── JzGPU*Object.h (Buffer, Texture, Shader, Framebuffer, VertexArray)
 │   ├── Command/      # RHI command pattern (deferred execution)
 │   │   ├── JzRHICommand.h, JzRHICommandList.h, JzRHICommandQueue.h
-│   │   └── Jz*Command.h (Clear, Draw, Bind, SetViewport, RenderPass, etc.)
+│   │   └── Variant payload-based command stream recording
 │   ├── Threading/    # Multi-threaded rendering infrastructure
 │   │   ├── JzRenderThreadPool.h, JzRenderThreadContext.h
 │   │   ├── JzRenderTask.h, JzCommandBufferTask.h

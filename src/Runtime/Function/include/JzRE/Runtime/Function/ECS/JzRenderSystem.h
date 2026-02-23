@@ -25,6 +25,7 @@ namespace JzRE {
 
 class JzAssetManager;
 class JzDevice;
+class JzRHICommandList;
 
 /**
  * @brief Enhanced render system that integrates with camera system.
@@ -192,6 +193,7 @@ private:
      * @brief Bind framebuffer/pipeline, set viewport, and clear target.
      */
     void BeginRenderTargetPass(const JzRGPassContext         &passContext,
+                               JzRHICommandList              &commandList,
                                const JzMat4                  &viewMatrix,
                                const JzMat4                  &projectionMatrix,
                                const JzVec3                  &clearColor,
@@ -200,18 +202,21 @@ private:
     /**
      * @brief Bind framebuffer and viewport for contribution passes.
      */
-    void BeginContributionTargetPass(const JzRGPassContext &passContext);
+    void BeginContributionTargetPass(const JzRGPassContext &passContext,
+                                     JzRHICommandList      &commandList);
 
     /**
      * @brief Render entities for a visibility mask.
      */
-    void DrawVisibleEntities(JzWorld &world, JzRenderVisibility visibility,
+    void DrawVisibleEntities(JzWorld &world, JzRHICommandList &commandList,
+                             JzRenderVisibility visibility,
                              std::shared_ptr<JzRHIPipeline> pipeline);
 
     /**
      * @brief Draw a single renderable entity with the geometry pipeline.
      */
-    void DrawEntity(JzWorld &world, JzEntity entity, std::shared_ptr<JzRHIPipeline> pipeline);
+    void DrawEntity(JzWorld &world, JzRHICommandList &commandList, JzEntity entity,
+                    std::shared_ptr<JzRHIPipeline> pipeline);
 
     /**
      * @brief Check if an entity should be rendered by the current visibility mask.
@@ -227,7 +232,8 @@ private:
     /**
      * @brief Apply render graph transitions (backend-specific).
      */
-    void ApplyRenderGraphTransitions(const JzRGPassDesc                &passDesc,
+    void ApplyRenderGraphTransitions(JzRHICommandList                  &commandList,
+                                     const JzRGPassDesc                &passDesc,
                                      const std::vector<JzRGTransition> &transitions);
 
     /**

@@ -328,7 +328,7 @@ void JzRenderer::RecordCommands(const std::vector<RenderBatch>& batches) {
 
 ### Dependencies
 
-- Command-list to backend submission path for Vulkan/D3D12 style APIs
+- ✅ Command-list to backend submission path is implemented in `JzDevice` (`ExecuteCommandList`, `ExecuteCommandLists`)
 - Render graph/task scheduler integration
 
 ---

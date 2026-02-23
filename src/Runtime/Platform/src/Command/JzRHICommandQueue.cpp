@@ -4,7 +4,11 @@
  */
 
 #include "JzRE/Runtime/Platform/Command/JzRHICommandQueue.h"
+
 #include <thread>
+
+#include "JzRE/Runtime/Core/JzServiceContainer.h"
+#include "JzRE/Runtime/Platform/RHI/JzDevice.h"
 
 JzRE::JzRHICommandQueue::JzRHICommandQueue() { }
 
@@ -43,11 +47,18 @@ void JzRE::JzRHICommandQueue::ExecuteAll()
         pendingCommandLists.clear();
     }
 
-    // 单线程执行所有命令缓冲
-    // TODO: 实现多线程并行执行
-    for (auto &commandBuffer : commandBuffersToExecute) {
-        commandBuffer->Execute();
+    if (commandBuffersToExecute.empty()) {
+        isExecuting = false;
+        return;
     }
+
+    if (!JzServiceContainer::Has<JzDevice>()) {
+        isExecuting = false;
+        return;
+    }
+
+    auto &device = JzServiceContainer::Get<JzDevice>();
+    device.ExecuteCommandLists(commandBuffersToExecute);
 
     isExecuting = false;
 }

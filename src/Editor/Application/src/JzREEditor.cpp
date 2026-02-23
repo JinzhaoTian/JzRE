@@ -288,9 +288,13 @@ void JzRE::JzREEditor::InitializeEditorRenderContributions()
         skyboxContribution.execute         =
             [pipeline = resources.skyboxPipeline, vertexArray = resources.skyboxVAO, drawParams](
                 const JzRenderGraphContributionContext &context) {
-                auto &device = JzServiceContainer::Get<JzDevice>();
-                device.BindPipeline(pipeline);
-                device.BindVertexArray(vertexArray);
+                if (context.commandList == nullptr) {
+                    return;
+                }
+
+                auto &commandList = *context.commandList;
+                commandList.BindPipeline(pipeline);
+                commandList.BindVertexArray(vertexArray);
 
                 JzVec3 sunDirection(0.3f, -1.0f, -0.5f);
                 auto   lightView = context.world.View<JzDirectionalLightComponent>();
@@ -312,7 +316,7 @@ void JzRE::JzREEditor::InitializeEditorRenderContributions()
                 pipeline->SetUniform("sunSize", 0.04f);
                 pipeline->SetUniform("exposure", 1.0f);
 
-                device.Draw(drawParams);
+                commandList.Draw(drawParams);
             };
         m_renderSystem->RegisterGraphContribution(std::move(skyboxContribution));
     }
@@ -332,11 +336,15 @@ void JzRE::JzREEditor::InitializeEditorRenderContributions()
         axisContribution.execute         =
             [pipeline = resources.linePipeline, vertexArray = resources.axisVAO, drawParams,
              setupLineContribution](const JzRenderGraphContributionContext &context) {
-                auto &device = JzServiceContainer::Get<JzDevice>();
-                device.BindPipeline(pipeline);
-                device.BindVertexArray(vertexArray);
+                if (context.commandList == nullptr) {
+                    return;
+                }
+
+                auto &commandList = *context.commandList;
+                commandList.BindPipeline(pipeline);
+                commandList.BindVertexArray(vertexArray);
                 setupLineContribution(pipeline, context);
-                device.Draw(drawParams);
+                commandList.Draw(drawParams);
             };
         m_renderSystem->RegisterGraphContribution(std::move(axisContribution));
     }
@@ -356,11 +364,15 @@ void JzRE::JzREEditor::InitializeEditorRenderContributions()
         gridContribution.execute         =
             [pipeline = resources.linePipeline, vertexArray = resources.gridVAO, drawParams,
              setupLineContribution](const JzRenderGraphContributionContext &context) {
-                auto &device = JzServiceContainer::Get<JzDevice>();
-                device.BindPipeline(pipeline);
-                device.BindVertexArray(vertexArray);
+                if (context.commandList == nullptr) {
+                    return;
+                }
+
+                auto &commandList = *context.commandList;
+                commandList.BindPipeline(pipeline);
+                commandList.BindVertexArray(vertexArray);
                 setupLineContribution(pipeline, context);
-                device.Draw(drawParams);
+                commandList.Draw(drawParams);
             };
         m_renderSystem->RegisterGraphContribution(std::move(gridContribution));
     }

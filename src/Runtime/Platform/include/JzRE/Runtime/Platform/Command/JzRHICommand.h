@@ -19,13 +19,13 @@ enum class JzRHIECommandType : U8 {
     BindPipeline,
     BindVertexArray,
     BindTexture,
-    SetUniform,
+    BindFramebuffer,
     SetViewport,
     SetScissor,
     BeginRenderPass,
     EndRenderPass,
-    CopyTexture,
-    UpdateBuffer
+    ResourceBarrier,
+    BlitFramebufferToScreen
 };
 
 /**
