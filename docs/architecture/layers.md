@@ -2,7 +2,7 @@
 
 ## Overview
 
-JzRE is a cross-platform, multi-graphics-API game engine built with C++20. The codebase is organized into a layered **Runtime + Editor** architecture.
+JzRE is a cross-platform, multi-graphics-API game engine built with C++20. The codebase is organized as layered Runtime modules plus a standalone Editor example.
 
 ---
 
@@ -10,8 +10,8 @@ JzRE is a cross-platform, multi-graphics-API game engine built with C++20. The c
 
 ```mermaid
 graph TB
-    subgraph "Editor Application"
-        EditorApp[JzREEditor Executable]
+    subgraph "Standalone EditorExample"
+        EditorApp[EditorExample Executable]
         EditorModule[JzEditor]
         UIModule[UI - ImGui Wrappers]
     end
@@ -162,7 +162,7 @@ High-level runtime entry point and graphics context coordination.
 
 ---
 
-## Editor Module (`src/Editor/`)
+## Editor Example Module (`examples/EditorExample/`)
 
 Development tools built on top of Runtime:
 
@@ -182,7 +182,8 @@ Development tools built on top of Runtime:
 
 ```mermaid
 graph LR
-    App --> Editor
+    RootApps["Root Build Apps (RuntimeExample/Tests/Programs)"] --> JzRuntime
+    EditorExample --> Editor
     Editor --> JzRuntime
     JzRuntime --> JzRuntimeFunction
     JzRuntimeFunction --> JzRuntimeResource
@@ -204,8 +205,8 @@ The Runtime layers (`Core`, `Platform`, `Resource`, `Function`, `Interface`) mus
 | Rule | Required Behavior | Not Allowed |
 | ---- | ----------------- | ----------- |
 | Runtime API boundary | Use generic domain names (`view`, `layer`, `feature`, `camera`) | Expose editor product names (`SceneView`, `AssetView`, `GameView`, `Editor`) |
-| Runtime dependencies | Depend only on runtime modules and platform/resource libraries | Include or link editor modules (`src/Editor/**`) |
-| UI/tooling integration | Keep UI-specific code in Editor module | Use `imgui` or editor panel types in runtime headers/sources |
+| Runtime dependencies | Depend only on runtime modules and platform/resource libraries | Include or link editor modules (`examples/EditorExample/**`) |
+| UI/tooling integration | Keep UI-specific code in Editor example module | Use `imgui` or editor panel types in runtime headers/sources |
 | Cross-layer extension | Define runtime extension points that Editor can consume | Hardcode editor-only policies into runtime system logic |
 
 Existing violations are considered technical debt and should be migrated toward the rules above.

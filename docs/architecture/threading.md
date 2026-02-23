@@ -8,7 +8,7 @@ This document describes the evolution plan from single-threaded to multi-threade
 
 ## Current State
 
-### Implemented Architecture (JzREEditor)
+### Implemented Architecture (EditorExample / JzREEditor)
 
 **Last Updated**: 2026-01-10
 
@@ -46,9 +46,9 @@ This document describes the evolution plan from single-threaded to multi-threade
 | Thread Pool  | `JzThreadPool.h`     | ✅ Implemented | General task parallel execution    |
 | Task Queue   | `JzTaskQueue.h`      | ✅ Implemented | Priority task scheduling           |
 | Command List | `JzRHICommandList.h` | ✅ Implemented | Thread-safe command recording      |
-| Frame Sync   | `JzREEditor.cpp`     | ✅ Implemented | Main/worker thread synchronization |
+| Frame Sync   | `examples/EditorExample/Application/src/JzREEditor.cpp` | ✅ Implemented | Main/worker thread synchronization |
 
-### JzREEditor Thread Synchronization Implementation
+### EditorExample (JzREEditor) Thread Synchronization Implementation
 
 ```cpp
 // Frame data structure

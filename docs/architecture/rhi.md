@@ -22,8 +22,8 @@ There is no runtime immediate draw path in the `JzDevice` public API.
 
 ```mermaid
 graph TB
-    subgraph "Runtime/Editor"
-        App[JzRERuntime / JzREEditor]
+    subgraph "Runtime/EditorExample"
+        App[JzRERuntime / EditorExample]
         Render[JzRenderSystem]
     end
 

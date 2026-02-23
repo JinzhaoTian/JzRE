@@ -14,7 +14,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Suppress duplicate library warnings on macOS
-# This is caused by vcpkg packages (freetype, imgui) having overlapping transitive dependencies
+# This can be caused by vcpkg packages having overlapping transitive dependencies
 if(APPLE)
     add_link_options("-Wl,-no_warn_duplicate_libraries")
 endif()

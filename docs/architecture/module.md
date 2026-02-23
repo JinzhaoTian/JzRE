@@ -79,14 +79,17 @@ JzRE/
 │   │       │       └── JzPlatformEventAdapter.h
 │   │       └── src/ECS/
 │   │
-│   ├── Editor/                     # Editor Application
-│   │   ├── Application/            # JzEditorUI, JzREHub, JzREEditor, JzCanvas
-│   │   ├── Core/                   # Editor-specific events
-│   │   ├── Panels/                 # 30+ editor panels
-│   │   └── UI/                     # 40+ ImGui widget wrappers
-│
 ├── tests/                          # GTest-based tests
 ├── examples/                       # Example applications
+│   ├── RuntimeExample/             # Runtime-only sample built by root CMake
+│   └── EditorExample/              # Standalone editor sample project
+│       ├── CMakeLists.txt          # Independent project entry
+│       ├── vcpkg.json              # Editor-specific manifest (includes imgui)
+│       ├── Application/            # JzEditorUI, JzREHub, JzREEditor, JzCanvas
+│       ├── Core/                   # Editor-specific events
+│       ├── Panels/                 # 30+ editor panels
+│       └── UI/                     # 40+ ImGui widget wrappers
+│
 ├── docs/                           # Documentation
 ├── resources/                      # Engine resources (shaders, textures)
 └── programs/JzREHeaderTool/        # Code generation tool (libclang)
@@ -98,6 +101,8 @@ JzRE/
 
 ```mermaid
 graph TD
+    RootBuild["Root Build (RuntimeExample/Tests/Programs)"] --> JzRERuntime
+    EditorExample["EditorExample (standalone project)"] --> Editor
     Editor --> JzRERuntime
     JzRERuntime --> JzRuntimeFunction
     JzRuntimeFunction --> JzRuntimeResource
@@ -111,8 +116,8 @@ graph TD
 
 ### Dependency Direction
 
-- `src/Runtime/**` must not include headers from `src/Editor/**`.
-- `src/Editor/**` may include and link `src/Runtime/**`.
+- `src/Runtime/**` must not include headers from `examples/EditorExample/**`.
+- `examples/EditorExample/**` may include and link `src/Runtime/**`.
 
 ### Public API Naming
 
@@ -146,9 +151,6 @@ unless it is explicitly documented legacy scheduled for removal.
 ```cmake
 # Runtime module (contains Platform, Core, Resource, Function layers)
 add_subdirectory(Runtime)
-
-# Editor module (depends on Runtime)
-add_subdirectory(Editor)
 ```
 
 ### src/Runtime/CMakeLists.txt
@@ -166,6 +168,23 @@ target_link_libraries(JzRERuntime INTERFACE
     JzRuntimeResource
     JzRuntimeFunction
 )
+```
+
+### examples/EditorExample/CMakeLists.txt (Standalone)
+
+```cmake
+project(EditorExample LANGUAGES CXX C)
+
+set(JzRE_REPOSITORY_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../..")
+add_subdirectory("${JzRE_REPOSITORY_ROOT}/src/Runtime" "${CMAKE_CURRENT_BINARY_DIR}/Runtime")
+
+add_subdirectory(Core)
+add_subdirectory(UI)
+add_subdirectory(Panels)
+add_subdirectory(Application)
+
+add_executable(EditorExample main.cpp)
+target_link_libraries(EditorExample PUBLIC JzEditor)
 ```
 
 ---
@@ -214,13 +233,21 @@ cmake --build build
 ### Run
 
 ```bash
-./build/JzRE/JzRE
+./build/JzRE/RuntimeExample --input ./build/JzRE/models/crate.obj
 ```
 
 ### Test
 
 ```bash
 cd build && ctest --output-on-failure
+```
+
+### Standalone EditorExample
+
+```bash
+cmake -S examples/EditorExample -B examples/EditorExample/build
+cmake --build examples/EditorExample/build
+./examples/EditorExample/build/EditorExample/EditorExample
 ```
 
 ---
@@ -234,7 +261,15 @@ cd build && ctest --output-on-failure
 | `JzRuntimeResource` | Static     | JzRuntimeCore, JzRuntimePlatform, assimp, stb, freetype   |
 | `JzRuntimeFunction` | Static     | JzRuntimeCore, JzRuntimePlatform, JzRuntimeResource, entt |
 | `JzRERuntime`       | Interface  | All runtime layers                                        |
-| `JzEditor`          | Static     | JzRERuntime, imgui (docking)                              |
-| `JzREEditor`        | Executable | JzRERuntime, JzEditor                                     |
 | `TESTJzRECore`      | Executable | JzRuntimeCore, GTest::gtest_main                          |
 | `TESTJzREPlatform`  | Executable | JzRuntimePlatform, GTest::gtest_main                      |
+
+Standalone `examples/EditorExample` targets:
+
+| Target              | Type       | Dependencies                                              |
+| ------------------- | ---------- | --------------------------------------------------------- |
+| `JzEditorCore`      | Interface  | JzRERuntime                                               |
+| `JzEditorUI`        | Static     | JzEditorCore, imgui, vulkan                              |
+| `JzEditorPanels`    | Static     | JzEditorUI                                                |
+| `JzEditor`          | Static     | JzEditorPanels                                            |
+| `EditorExample`     | Executable | JzEditor                                                  |

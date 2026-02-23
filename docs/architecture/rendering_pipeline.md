@@ -205,7 +205,7 @@ OpenGL backend currently treats `ResourceBarrier(...)` as no-op (implicit transi
 Vulkan backend consumes barrier transitions and applies layout changes before pass execution.
 Vulkan backend also resolves shader parameters through descriptor-backed uniform/sampler binding at draw time.
 
-## Editor Integration Path
+## EditorExample Integration Path
 
 Editor panels are runtime consumers via render targets:
 
@@ -262,9 +262,9 @@ sequenceDiagram
 - `src/Runtime/Function/src/ECS/JzWorld.cpp`
 - `src/Runtime/Function/src/ECS/JzRenderSystem.cpp`
 - `src/Runtime/Function/src/Rendering/JzRenderGraph.cpp`
-- `src/Editor/Panels/src/JzView.cpp`
-- `src/Editor/Panels/src/JzSceneView.cpp`
-- `src/Editor/Application/src/JzREEditor.cpp`
+- `examples/EditorExample/Panels/src/JzView.cpp`
+- `examples/EditorExample/Panels/src/JzSceneView.cpp`
+- `examples/EditorExample/Application/src/JzREEditor.cpp`
 
 ## Runtime Shutdown Sequence
 

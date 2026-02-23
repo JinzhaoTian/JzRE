@@ -123,6 +123,151 @@
                 "problemMatcher": "$msCompile"
             },
             "detail": "Clean build artifacts and then build project"
+        },
+        {
+            "label": "EditorExample: Configure",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "-S",
+                "${workspaceFolder}/examples/EditorExample",
+                "-B",
+                "${workspaceFolder}/examples/EditorExample/build",
+                "-DCMAKE_C_COMPILER=clang",
+                "-DCMAKE_CXX_COMPILER=clang++",
+                "-DCMAKE_BUILD_TYPE=Debug",
+                "-DCMAKE_TOOLCHAIN_FILE=${env:HOME}/vcpkg/scripts/buildsystems/vcpkg.cmake",
+                "-DVCPKG_TARGET_TRIPLET=arm64-osx",
+                "-DVCPKG_HOST_TRIPLET=arm64-osx"
+            ],
+            "linux": {
+                "args": [
+                    "-S",
+                    "${workspaceFolder}/examples/EditorExample",
+                    "-B",
+                    "${workspaceFolder}/examples/EditorExample/build",
+                    "-DCMAKE_C_COMPILER=gcc",
+                    "-DCMAKE_CXX_COMPILER=g++",
+                    "-DCMAKE_BUILD_TYPE=Debug",
+                    "-DCMAKE_TOOLCHAIN_FILE=${env:HOME}/vcpkg/scripts/buildsystems/vcpkg.cmake",
+                    "-DVCPKG_TARGET_TRIPLET=x64-linux",
+                    "-DVCPKG_HOST_TRIPLET=x64-linux"
+                ]
+            },
+            "windows": {
+                "args": [
+                    "-S",
+                    "${workspaceFolder}/examples/EditorExample",
+                    "-B",
+                    "${workspaceFolder}/examples/EditorExample/build",
+                    "-G",
+                    "Ninja",
+                    "-DCMAKE_C_COMPILER=cl",
+                    "-DCMAKE_CXX_COMPILER=cl",
+                    "-DCMAKE_TOOLCHAIN_FILE=${env:VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+                    "-DVCPKG_TARGET_TRIPLET=x64-windows-static",
+                    "-DVCPKG_HOST_TRIPLET=x64-windows-static",
+                    "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebug",
+                    "-DCMAKE_C_FLAGS_INIT=/utf-8",
+                    "-DCMAKE_CXX_FLAGS_INIT=/utf-8 /EHsc"
+                ]
+            },
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": [],
+            "detail": "Configure standalone EditorExample project"
+        },
+        {
+            "label": "EditorExample: Build",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build",
+                "${workspaceFolder}/examples/EditorExample/build",
+                "--config",
+                "Debug",
+                "-j"
+            ],
+            "dependsOn": "EditorExample: Configure",
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": {
+                "owner": "cpp",
+                "fileLocation": ["relative", "${workspaceFolder}"],
+                "pattern": {
+                    "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+                    "file": 1,
+                    "line": 2,
+                    "column": 3,
+                    "severity": 4,
+                    "message": 5
+                }
+            },
+            "windows": {
+                "problemMatcher": "$msCompile"
+            },
+            "detail": "Build standalone EditorExample"
+        },
+        {
+            "label": "EditorExample: Clean",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build",
+                "${workspaceFolder}/examples/EditorExample/build",
+                "--target",
+                "clean"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": [],
+            "detail": "Clean standalone EditorExample artifacts"
+        },
+        {
+            "label": "EditorExample: Clean & Build",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "EditorExample: Clean",
+                "EditorExample: Build"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": {
+                "owner": "cpp",
+                "fileLocation": ["relative", "${workspaceFolder}"],
+                "pattern": {
+                    "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+                    "file": 1,
+                    "line": 2,
+                    "column": 3,
+                    "severity": 4,
+                    "message": 5
+                }
+            },
+            "windows": {
+                "problemMatcher": "$msCompile"
+            },
+            "detail": "Clean and build standalone EditorExample"
         }
     ]
 }

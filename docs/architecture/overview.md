@@ -4,23 +4,27 @@
 
 JzRE is a cross-platform game engine built with C++20.
 
-Architecture is split into Runtime and Editor:
+Architecture is split into a mainline Runtime and a standalone Editor example:
 
-- Runtime (`src/Runtime/**`) provides engine capabilities.
-- Editor (`src/Editor/**`) consumes runtime interfaces.
+- Runtime (`src/Runtime/**`) provides engine capabilities and is built from the root project.
+- Editor example (`examples/EditorExample/**`) consumes runtime interfaces in an independent CMake project.
 
-Dependency direction is strictly top-down from Editor to Core.
+Dependency direction is strictly top-down from editor integration to Core.
 
 ## Layered Architecture
 
 ```text
-JzREEditor (Executable)
-  -> JzEditor (Editor UI/tools)
-    -> JzRERuntime (runtime integration surface)
-      -> JzRuntimeFunction (ECS, systems)
-        -> JzRuntimeResource (assets/factories/cache)
-          -> JzRuntimePlatform (RHI, window, backend)
-            -> JzRuntimeCore (types/math/logging/threading)
+Mainline Build (root CMakeLists.txt)
+  -> JzRERuntime (runtime integration surface)
+    -> JzRuntimeFunction (ECS, systems)
+      -> JzRuntimeResource (assets/factories/cache)
+        -> JzRuntimePlatform (RHI, window, backend)
+          -> JzRuntimeCore (types/math/logging/threading)
+
+Standalone Example Build (examples/EditorExample/CMakeLists.txt)
+  -> EditorExample (Executable target)
+    -> JzEditor (Editor UI/tools)
+      -> JzRERuntime (same runtime layers as above)
 ```
 
 ## Design Principles
@@ -191,5 +195,5 @@ device.ExecuteCommandList(cmd);
 - `src/Runtime/Interface/src/JzRERuntime.cpp`
 - `src/Runtime/Function/src/ECS/JzWorld.cpp`
 - `src/Runtime/Function/src/ECS/JzRenderSystem.cpp`
-- `src/Editor/Panels/src/JzView.cpp`
-- `src/Editor/Application/src/JzREEditor.cpp`
+- `examples/EditorExample/Panels/src/JzView.cpp`
+- `examples/EditorExample/Application/src/JzREEditor.cpp`

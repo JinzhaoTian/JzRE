@@ -2,54 +2,54 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "JzRE Debug (Windows)",
+            "name": "EditorExample Debug (Windows)",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/JzRE/JzRE.exe",
+            "program": "${workspaceFolder}/examples/EditorExample/build/EditorExample/EditorExample.exe",
             "args": [],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/build/JzRE",
+            "cwd": "${workspaceFolder}/examples/EditorExample/build/EditorExample",
             "environment": [],
             "console": "integratedTerminal",
-            "preLaunchTask": "CMake: Build"
+            "preLaunchTask": "EditorExample: Build"
         },
         {
-            "name": "JzRE Debug (Windows, Clean + Build)",
+            "name": "EditorExample Debug (Windows, Clean + Build)",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/JzRE/JzRE.exe",
+            "program": "${workspaceFolder}/examples/EditorExample/build/EditorExample/EditorExample.exe",
             "args": [],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/build/JzRE",
+            "cwd": "${workspaceFolder}/examples/EditorExample/build/EditorExample",
             "environment": [],
             "console": "integratedTerminal",
-            "preLaunchTask": "CMake: Clean & Build"
+            "preLaunchTask": "EditorExample: Clean & Build"
         },
         {
-            "name": "JzRE Debug (macOS/Linux)",
+            "name": "EditorExample Debug (macOS/Linux)",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/JzRE/JzRE",
+            "program": "${workspaceFolder}/examples/EditorExample/build/EditorExample/EditorExample",
             "args": [],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/build/JzRE",
+            "cwd": "${workspaceFolder}/examples/EditorExample/build/EditorExample",
             "environment": [],
             "externalConsole": false,
             "MIMode": "lldb",
-            "preLaunchTask": "CMake: Build"
+            "preLaunchTask": "EditorExample: Build"
         },
         {
-            "name": "JzRE Debug (macOS/Linux, Clean + Build)",
+            "name": "EditorExample Debug (macOS/Linux, Clean + Build)",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/JzRE/JzRE",
+            "program": "${workspaceFolder}/examples/EditorExample/build/EditorExample/EditorExample",
             "args": [],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/build/JzRE",
+            "cwd": "${workspaceFolder}/examples/EditorExample/build/EditorExample",
             "environment": [],
             "externalConsole": false,
             "MIMode": "lldb",
-            "preLaunchTask": "CMake: Clean & Build"
+            "preLaunchTask": "EditorExample: Clean & Build"
         },
         {
             "name": "RuntimeExample Debug (Windows)",

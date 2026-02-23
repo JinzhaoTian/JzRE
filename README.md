@@ -4,11 +4,11 @@ A cross-platform, multi-graphics-API game engine built with modern C++20.
 
 ## Features
 
-- **Layered Architecture**: Clean separation between Core, Platform, Resource, Function, and Editor layers
+- **Layered Runtime Architecture**: Clean separation between Core, Platform, Resource, Function, and Interface layers
 - **RHI Abstraction**: Graphics API abstraction supporting OpenGL + Vulkan (Auto-select + fallback)
 - **ECS**: Entity-Component-System using EnTT library
 - **Resource Management**: Automatic caching with reference-counted unloading
-- **ImGui Editor**: Built-in development tools with docking support
+- **Standalone Editor Example**: ImGui-based editor app maintained under `examples/EditorExample/`
 
 ## Build
 
@@ -36,9 +36,9 @@ cmake -B build
 cmake --build build
 ```
 
-4. **Run**
+4. **Run Runtime Example**
 ```bash
-./build/JzRE/JzRE
+./build/JzRE/RuntimeExample --input ./build/JzRE/models/crate.obj
 ```
 
 ### Testing
@@ -49,16 +49,38 @@ cd build && ctest --output-on-failure
 
 To disable tests: `cmake -B build -DBUILD_TESTS=OFF`
 
+## Standalone Editor Example
+
+`EditorExample` is intentionally separated from the root build graph.
+
+1. **Configure**
+```bash
+cmake -S examples/EditorExample -B examples/EditorExample/build
+```
+
+2. **Build**
+```bash
+cmake --build examples/EditorExample/build
+```
+
+3. **Run**
+```bash
+./examples/EditorExample/build/EditorExample/EditorExample
+```
+
 ## Architecture
 
 ```
-App (JzRE executable)
-  └── Editor (JzEditor)
-        └── Runtime
-              ├── Function Layer (ECS, Rendering, Scene, Input, Window)
-              ├── Resource Layer (ResourceManager, Asset Factories)
-              ├── Platform Layer (RHI, Graphics Backends, OS APIs)
-              └── Core Layer (Types, Math, Threading, Events, Logging)
+Runtime Applications (mainline build)
+  └── JzRERuntime
+        ├── Function Layer (ECS, Rendering, Scene, Input, Window)
+        ├── Resource Layer (ResourceManager, Asset Factories)
+        ├── Platform Layer (RHI, Graphics Backends, OS APIs)
+        └── Core Layer (Types, Math, Threading, Events, Logging)
+
+EditorExample (standalone example build)
+  └── JzEditor + JzREEditor
+        └── JzRERuntime (same runtime layers as above)
 ```
 
 For detailed architecture documentation, see [docs/architecture/overview.md](docs/architecture/overview.md).
@@ -75,11 +97,10 @@ For detailed architecture documentation, see [docs/architecture/overview.md](doc
 
 ## Dependencies
 
-Managed via vcpkg:
+Mainline dependencies are managed via `vcpkg.json` in repository root:
 
 - **glfw3** - Window and input
 - **glad** - OpenGL loader
-- **imgui** - Editor UI (docking branch)
 - **vulkan** - Vulkan loader and headers
 - **shaderc** - GLSL to SPIR-V compiler
 - **spirv-reflect** - SPIR-V reflection
@@ -87,6 +108,8 @@ Managed via vcpkg:
 - **entt** - ECS library
 - **spdlog** - Logging
 - **freetype** - Font rendering
+
+`examples/EditorExample/vcpkg.json` adds editor-only dependencies (notably `imgui`).
 
 ## License
 
