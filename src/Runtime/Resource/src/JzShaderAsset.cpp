@@ -10,6 +10,7 @@
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
 #include "JzRE/Runtime/Platform/RHI/JzDevice.h"
 #include "JzRE/Runtime/Platform/RHI/JzRHIPipeline.h"
+#include "JzShaderVertexLayoutUtils.h"
 
 #include <fstream>
 #include <regex>
@@ -219,6 +220,9 @@ std::shared_ptr<JzShaderVariant> JzShaderAsset::GetVariant(const std::unordered_
     // Build pipeline descriptor
     JzPipelineDesc pipeDesc{};
     pipeDesc.shaders = {vsDesc, fsDesc};
+    if (const auto vertexLayout = JzShaderVertexLayoutUtils::BuildVertexLayoutFromVertexSource(vertexWithDefines); vertexLayout.has_value()) {
+        pipeDesc.vertexLayout = *vertexLayout;
+    }
     if (m_program) {
         pipeDesc.renderState = m_program->GetRenderState();
     }
@@ -416,6 +420,9 @@ Bool JzShaderAsset::CompileProgram()
     // Build pipeline descriptor
     JzPipelineDesc pipeDesc{};
     pipeDesc.shaders = {vsDesc, fsDesc};
+    if (const auto vertexLayout = JzShaderVertexLayoutUtils::BuildVertexLayoutFromVertexSource(vertexWithDefines); vertexLayout.has_value()) {
+        pipeDesc.vertexLayout = *vertexLayout;
+    }
 
     // Set default render state
     JzRenderState renderState;

@@ -9,7 +9,7 @@ The rendering path is ECS-driven:
 - `JzRERuntime::Run()` drives the frame loop.
 - `JzWorld::Update()` executes registered systems in order.
 - `JzRenderSystem` builds and executes a per-frame `JzRenderGraph`.
-- RHI calls are issued through `JzDevice` (OpenGL/Vulkan backend selected at runtime).
+- RHI command lists are recorded and executed through `JzDevice` (OpenGL/Vulkan backend selected at runtime).
 
 ## Runtime Frame Entry
 
@@ -92,6 +92,11 @@ Implementation note:
 6. Compiles and executes graph.
 7. Blits default target framebuffer to screen only when window is visible.
 
+Backend note:
+
+- OpenGL executes the recorded framebuffer blit.
+- Vulkan currently renders to swapchain in the runtime path, uses swapchain color+depth attachments for depth-tested 3D passes, and treats `BlitFramebufferToScreen(...)` as a no-op compatibility command.
+
 ## Default Render Target
 
 A **default render target** (`DefaultScene`) is created at `JzRenderSystem` construction time:
@@ -123,8 +128,8 @@ For each render target:
 The built-in geometry stage executes directly (not through `ExecuteContribution`):
 
 1. `ResolveCameraFrameData(...)`: resolve camera matrices and clear color.
-2. `BeginRenderTargetPass(...)`: bind framebuffer/pipeline, set viewport, clear.
-3. `DrawVisibleEntities(...)`: draw ECS entities filtered by `JzRenderVisibility`.
+2. `BeginRenderTargetPass(...)`: record framebuffer/pipeline/viewport/clear commands.
+3. `DrawVisibleEntities(...)`: record ECS draw commands filtered by `JzRenderVisibility`.
 
 This separation ensures the geometry stage does not go through contribution dispatch logic.
 
@@ -173,7 +178,8 @@ Per draw call:
 
 - model/view/projection and material uniforms are set.
 - diffuse texture is bound when material has one.
-- `device.DrawIndexed(...)` is issued with mesh index count.
+- pipeline vertex layout is built from vertex shader input declarations and attached to `JzPipelineDesc`.
+- `commandList.DrawIndexed(...)` is recorded with mesh index count.
 
 ## RenderGraph Compile/Execute Behavior
 
@@ -188,13 +194,16 @@ Per draw call:
 `JzRenderGraph::Execute(device)`:
 
 - Executes passes in computed order.
+- Creates one `JzRHICommandList` per pass.
 - Applies transition callback before pass execute.
 - Resolves framebuffer from pass render-target bindings (`BindRenderTarget`) or internal cache.
-- Binds framebuffer/viewport and builds a `JzRGPassContext` for pass execution.
+- Records framebuffer/viewport commands and builds a `JzRGPassContext` for pass execution.
+- Ends and submits pass command list via `device.ExecuteCommandList(...)`.
 - Skips passes when `enabledExecute` returns false.
 
 OpenGL backend currently treats `ResourceBarrier(...)` as no-op (implicit transitions).
 Vulkan backend consumes barrier transitions and applies layout changes before pass execution.
+Vulkan backend also resolves shader parameters through descriptor-backed uniform/sampler binding at draw time.
 
 ## Editor Integration Path
 
@@ -240,7 +249,7 @@ sequenceDiagram
     World->>Camera: Update
     World->>Light: Update
     World->>Render: Update
-    Render->>Device: Bind/Clear/Draw/Blit
+    Render->>Device: Record CommandList + ExecuteCommandList
     Runtime->>Runtime: OnRender(delta)
     Runtime->>Device: EndFrame
     Runtime->>Input: ClearFrameState()

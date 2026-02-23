@@ -199,6 +199,7 @@ JzVulkanDevice::JzVulkanDevice(JzIWindowBackend &windowBackend) :
     if (!CreateSwapchain() ||
         !CreateSwapchainImageViews() ||
         !CreateSwapchainRenderPass() ||
+        !CreateSwapchainDepthResources() ||
         !CreateSwapchainFramebuffers()) {
         JzRE_LOG_ERROR("JzVulkanDevice: failed to create swapchain resources");
         return;
@@ -226,6 +227,21 @@ JzVulkanDevice::JzVulkanDevice(JzIWindowBackend &windowBackend) :
 
     m_isInitialized = true;
 
+    {
+        const U32 whitePixel = 0xFFFFFFFFU;
+        JzGPUTextureObjectDesc fallbackDesc{};
+        fallbackDesc.type      = JzETextureResourceType::Texture2D;
+        fallbackDesc.format    = JzETextureResourceFormat::RGBA8;
+        fallbackDesc.width     = 1;
+        fallbackDesc.height    = 1;
+        fallbackDesc.data      = &whitePixel;
+        fallbackDesc.debugName = "VulkanFallbackWhite";
+        m_fallbackTexture      = std::dynamic_pointer_cast<JzVulkanTexture>(CreateTexture(fallbackDesc));
+        if (!m_fallbackTexture) {
+            JzRE_LOG_WARN("JzVulkanDevice: failed to create fallback texture");
+        }
+    }
+
     JzRE_LOG_INFO("JzVulkanDevice: initialized with '{}'", GetDeviceName());
 }
 
@@ -236,6 +252,9 @@ JzVulkanDevice::~JzVulkanDevice()
     }
 
     Finish();
+
+    m_boundTextures.clear();
+    m_fallbackTexture.reset();
 
     DestroyFrameSyncObjects();
     DestroySwapchainObjects();
@@ -355,8 +374,124 @@ std::shared_ptr<JzRHICommandList> JzVulkanDevice::CreateCommandList(const String
 
 void JzVulkanDevice::ExecuteCommandList(std::shared_ptr<JzRHICommandList> commandList)
 {
-    if (commandList && !commandList->IsEmpty()) {
-        commandList->Execute();
+    if (!commandList || commandList->IsEmpty()) {
+        return;
+    }
+
+    const auto commands = commandList->GetCommands();
+    for (const auto &command : commands) {
+        DispatchCommand(command);
+    }
+}
+
+void JzVulkanDevice::ExecuteCommandLists(const std::vector<std::shared_ptr<JzRHICommandList>> &commandLists)
+{
+    for (const auto &commandList : commandLists) {
+        ExecuteCommandList(commandList);
+    }
+}
+
+void JzVulkanDevice::DispatchCommand(const JzRHIRecordedCommand &command)
+{
+    switch (command.type) {
+        case JzRHIECommandType::Clear: {
+            if (const auto *payload = std::get_if<JzClearParams>(&command.payload)) {
+                Clear(*payload);
+            }
+            break;
+        }
+        case JzRHIECommandType::Draw: {
+            if (const auto *payload = std::get_if<JzDrawParams>(&command.payload)) {
+                Draw(*payload);
+            }
+            break;
+        }
+        case JzRHIECommandType::DrawIndexed: {
+            if (const auto *payload = std::get_if<JzDrawIndexedParams>(&command.payload)) {
+                DrawIndexed(*payload);
+            }
+            break;
+        }
+        case JzRHIECommandType::BindPipeline: {
+            if (const auto *payload = std::get_if<JzRHIBindPipelinePayload>(&command.payload)) {
+                BindPipeline(payload->pipeline);
+            }
+            break;
+        }
+        case JzRHIECommandType::BindVertexArray: {
+            if (const auto *payload = std::get_if<JzRHIBindVertexArrayPayload>(&command.payload)) {
+                BindVertexArray(payload->vertexArray);
+            }
+            break;
+        }
+        case JzRHIECommandType::BindTexture: {
+            if (const auto *payload = std::get_if<JzRHIBindTexturePayload>(&command.payload)) {
+                BindTexture(payload->texture, payload->slot);
+            }
+            break;
+        }
+        case JzRHIECommandType::BindFramebuffer: {
+            if (const auto *payload = std::get_if<JzRHIBindFramebufferPayload>(&command.payload)) {
+                BindFramebuffer(payload->framebuffer);
+            }
+            break;
+        }
+        case JzRHIECommandType::SetViewport: {
+            if (const auto *payload = std::get_if<JzViewport>(&command.payload)) {
+                SetViewport(*payload);
+            }
+            break;
+        }
+        case JzRHIECommandType::SetScissor: {
+            if (const auto *payload = std::get_if<JzScissorRect>(&command.payload)) {
+                SetScissor(*payload);
+            }
+            break;
+        }
+        case JzRHIECommandType::BeginRenderPass: {
+            if (const auto *payload = std::get_if<JzRHIBeginRenderPassPayload>(&command.payload)) {
+                BeginRenderPass(*payload);
+            }
+            break;
+        }
+        case JzRHIECommandType::EndRenderPass: {
+            if (const auto *payload = std::get_if<JzRHIEndRenderPassPayload>(&command.payload)) {
+                EndRenderPass(*payload);
+            }
+            break;
+        }
+        case JzRHIECommandType::ResourceBarrier: {
+            if (const auto *payload = std::get_if<JzRHIResourceBarrierPayload>(&command.payload)) {
+                ResourceBarrier(payload->barriers);
+            }
+            break;
+        }
+        case JzRHIECommandType::BlitFramebufferToScreen: {
+            if (const auto *payload = std::get_if<JzRHIBlitFramebufferToScreenPayload>(&command.payload)) {
+                BlitFramebufferToScreen(
+                    payload->framebuffer,
+                    payload->srcWidth,
+                    payload->srcHeight,
+                    payload->dstWidth,
+                    payload->dstHeight);
+            }
+            break;
+        }
+    }
+}
+
+void JzVulkanDevice::BeginRenderPass(const JzRHIBeginRenderPassPayload &payload)
+{
+    BindFramebuffer(payload.framebuffer);
+    if (payload.renderPass) {
+        payload.renderPass->OnBegin(*this, payload.framebuffer);
+    }
+}
+
+void JzVulkanDevice::EndRenderPass(const JzRHIEndRenderPassPayload &payload)
+{
+    if (payload.renderPass) {
+        payload.renderPass->OnEnd(*this);
     }
 }
 
@@ -429,6 +564,7 @@ void JzVulkanDevice::BeginFrame()
 
     m_isFrameActive   = true;
     m_readyForPresent = false;
+    m_boundTextures.clear();
 
     m_stats.drawCalls = 0;
     m_stats.triangles = 0;
@@ -646,10 +782,19 @@ void JzVulkanDevice::Clear(const JzClearParams &params)
         };
     }
 
-    if (params.clearDepth) {
-        auto &depthAttachment               = clearAttachments[attachmentCount++];
-        depthAttachment.aspectMask          = VK_IMAGE_ASPECT_DEPTH_BIT;
-        depthAttachment.clearValue.depthStencil = {params.depth, params.stencil};
+    if (params.clearDepth || params.clearStencil) {
+        auto &depthAttachment = clearAttachments[attachmentCount++];
+        depthAttachment.aspectMask = 0;
+        if (params.clearDepth) {
+            depthAttachment.aspectMask |= VK_IMAGE_ASPECT_DEPTH_BIT;
+        }
+        if (params.clearStencil) {
+            depthAttachment.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+        }
+        depthAttachment.clearValue.depthStencil = {
+            params.depth,
+            params.stencil,
+        };
     }
 
     if (attachmentCount == 0) {
@@ -672,9 +817,46 @@ void JzVulkanDevice::Clear(const JzClearParams &params)
 
 void JzVulkanDevice::Draw(const JzDrawParams &params)
 {
-    if (m_currentPipeline) {
-        m_currentPipeline->CommitParameters();
+    if (!m_isFrameActive || params.vertexCount == 0) {
+        return;
     }
+
+    auto &frame = m_frames[m_currentFrameIndex];
+    if (!m_currentPipeline || m_currentPipeline->GetPipeline() == VK_NULL_HANDLE) {
+        return;
+    }
+
+    vkCmdBindPipeline(frame.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_currentPipeline->GetPipeline());
+    m_currentPipeline->BindResources(frame.commandBuffer, m_boundTextures);
+
+    if (m_currentVertexArray) {
+        std::vector<std::pair<U32, VkBuffer>> bindings;
+        bindings.reserve(m_currentVertexArray->GetVertexBuffers().size());
+
+        for (const auto &entry : m_currentVertexArray->GetVertexBuffers()) {
+            const auto vkBuffer = std::dynamic_pointer_cast<JzVulkanBuffer>(entry.second);
+            if (!vkBuffer || vkBuffer->GetBuffer() == VK_NULL_HANDLE) {
+                continue;
+            }
+
+            bindings.emplace_back(entry.first, vkBuffer->GetBuffer());
+        }
+
+        std::sort(bindings.begin(), bindings.end(), [](const auto &lhs, const auto &rhs) {
+            return lhs.first < rhs.first;
+        });
+
+        for (const auto &[binding, buffer] : bindings) {
+            const VkDeviceSize offset = 0;
+            vkCmdBindVertexBuffers(frame.commandBuffer, binding, 1, &buffer, &offset);
+        }
+    }
+
+    vkCmdDraw(frame.commandBuffer,
+              params.vertexCount,
+              params.instanceCount,
+              params.firstVertex,
+              params.firstInstance);
 
     m_stats.drawCalls++;
     m_stats.vertices += params.vertexCount;
@@ -685,9 +867,55 @@ void JzVulkanDevice::Draw(const JzDrawParams &params)
 
 void JzVulkanDevice::DrawIndexed(const JzDrawIndexedParams &params)
 {
-    if (m_currentPipeline) {
-        m_currentPipeline->CommitParameters();
+    if (!m_isFrameActive || params.indexCount == 0) {
+        return;
     }
+
+    auto &frame = m_frames[m_currentFrameIndex];
+    if (!m_currentPipeline || m_currentPipeline->GetPipeline() == VK_NULL_HANDLE) {
+        return;
+    }
+
+    vkCmdBindPipeline(frame.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_currentPipeline->GetPipeline());
+    m_currentPipeline->BindResources(frame.commandBuffer, m_boundTextures);
+
+    if (m_currentVertexArray) {
+        std::vector<std::pair<U32, VkBuffer>> bindings;
+        bindings.reserve(m_currentVertexArray->GetVertexBuffers().size());
+
+        for (const auto &entry : m_currentVertexArray->GetVertexBuffers()) {
+            const auto vkBuffer = std::dynamic_pointer_cast<JzVulkanBuffer>(entry.second);
+            if (!vkBuffer || vkBuffer->GetBuffer() == VK_NULL_HANDLE) {
+                continue;
+            }
+
+            bindings.emplace_back(entry.first, vkBuffer->GetBuffer());
+        }
+
+        std::sort(bindings.begin(), bindings.end(), [](const auto &lhs, const auto &rhs) {
+            return lhs.first < rhs.first;
+        });
+
+        for (const auto &[binding, buffer] : bindings) {
+            const VkDeviceSize offset = 0;
+            vkCmdBindVertexBuffers(frame.commandBuffer, binding, 1, &buffer, &offset);
+        }
+
+        const auto indexBuffer = std::dynamic_pointer_cast<JzVulkanBuffer>(m_currentVertexArray->GetIndexBuffer());
+        if (!indexBuffer || indexBuffer->GetBuffer() == VK_NULL_HANDLE) {
+            return;
+        }
+        vkCmdBindIndexBuffer(frame.commandBuffer, indexBuffer->GetBuffer(), 0, VK_INDEX_TYPE_UINT32);
+    } else {
+        return;
+    }
+
+    vkCmdDrawIndexed(frame.commandBuffer,
+                     params.indexCount,
+                     params.instanceCount,
+                     params.firstIndex,
+                     params.vertexOffset,
+                     params.firstInstance);
 
     m_stats.drawCalls++;
     m_stats.vertices += params.indexCount;
@@ -708,9 +936,18 @@ void JzVulkanDevice::BindVertexArray(std::shared_ptr<JzGPUVertexArrayObject> ver
 
 void JzVulkanDevice::BindTexture(std::shared_ptr<JzGPUTextureObject> texture, U32 slot)
 {
-    (void)texture;
-    (void)slot;
-    // Descriptor set binding for mesh/material draw will be added in a follow-up.
+    if (!texture) {
+        m_boundTextures.erase(slot);
+        return;
+    }
+
+    auto vkTexture = std::dynamic_pointer_cast<JzVulkanTexture>(std::move(texture));
+    if (!vkTexture) {
+        m_boundTextures.erase(slot);
+        return;
+    }
+
+    m_boundTextures[slot] = std::move(vkTexture);
 }
 
 void JzVulkanDevice::BindFramebuffer(std::shared_ptr<JzGPUFramebufferObject> framebuffer)
@@ -722,26 +959,14 @@ void JzVulkanDevice::BlitFramebufferToScreen(std::shared_ptr<JzGPUFramebufferObj
                                              U32 srcWidth, U32 srcHeight,
                                              U32 dstWidth, U32 dstHeight)
 {
-    auto vkFramebuffer = std::dynamic_pointer_cast<JzVulkanFramebuffer>(std::move(framebuffer));
-    if (!vkFramebuffer || !vkFramebuffer->IsComplete()) {
-        return;
-    }
-
-    const auto &colorAttachments = vkFramebuffer->GetColorAttachments();
-    if (colorAttachments.empty() || !colorAttachments[0]) {
-        return;
-    }
-
-    auto colorTexture = std::dynamic_pointer_cast<JzVulkanTexture>(colorAttachments[0]);
-    if (!colorTexture) {
-        return;
-    }
-
-    m_pendingBlitTexture   = std::move(colorTexture);
-    m_pendingBlitSrcWidth  = srcWidth;
-    m_pendingBlitSrcHeight = srcHeight;
-    m_pendingBlitDstWidth  = dstWidth;
-    m_pendingBlitDstHeight = dstHeight;
+    (void)framebuffer;
+    (void)srcWidth;
+    (void)srcHeight;
+    (void)dstWidth;
+    (void)dstHeight;
+    // Runtime currently records render passes with framebuffer bind semantics that are
+    // emulated on Vulkan by direct swapchain rendering. Keep blit as a no-op here so
+    // command stream remains unified while avoiding an extra overwrite of swapchain.
 }
 
 void JzVulkanDevice::ResourceBarrier(const std::vector<JzRHIResourceBarrier> &barriers)
@@ -1158,6 +1383,14 @@ Bool JzVulkanDevice::CreateSwapchainImageViews()
 
 Bool JzVulkanDevice::CreateSwapchainRenderPass()
 {
+    if (m_swapchainDepthFormat == VK_FORMAT_UNDEFINED) {
+        m_swapchainDepthFormat = FindSupportedDepthFormat();
+    }
+    if (m_swapchainDepthFormat == VK_FORMAT_UNDEFINED) {
+        JzRE_LOG_ERROR("JzVulkanDevice: failed to find supported depth format");
+        return false;
+    }
+
     VkAttachmentDescription colorAttachment{};
     colorAttachment.format         = m_swapchainImageFormat;
     colorAttachment.samples        = VK_SAMPLE_COUNT_1_BIT;
@@ -1172,22 +1405,42 @@ Bool JzVulkanDevice::CreateSwapchainRenderPass()
     colorAttachmentRef.attachment = 0;
     colorAttachmentRef.layout     = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
+    VkAttachmentDescription depthAttachment{};
+    depthAttachment.format         = m_swapchainDepthFormat;
+    depthAttachment.samples        = VK_SAMPLE_COUNT_1_BIT;
+    depthAttachment.loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    depthAttachment.storeOp        = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    depthAttachment.stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    depthAttachment.initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED;
+    depthAttachment.finalLayout    = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+    VkAttachmentReference depthAttachmentRef{};
+    depthAttachmentRef.attachment = 1;
+    depthAttachmentRef.layout     = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
     VkSubpassDescription subpass{};
     subpass.pipelineBindPoint    = VK_PIPELINE_BIND_POINT_GRAPHICS;
     subpass.colorAttachmentCount = 1;
     subpass.pColorAttachments    = &colorAttachmentRef;
+    subpass.pDepthStencilAttachment = &depthAttachmentRef;
 
     VkSubpassDependency dependency{};
     dependency.srcSubpass      = VK_SUBPASS_EXTERNAL;
     dependency.dstSubpass      = 0;
-    dependency.srcStageMask    = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    dependency.dstStageMask    = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    dependency.dstAccessMask   = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    dependency.srcStageMask    = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+    dependency.dstStageMask    = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+    dependency.dstAccessMask   = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
+    const std::array<VkAttachmentDescription, 2> attachments = {
+        colorAttachment,
+        depthAttachment,
+    };
 
     VkRenderPassCreateInfo renderPassInfo{};
     renderPassInfo.sType           = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    renderPassInfo.attachmentCount = 1;
-    renderPassInfo.pAttachments    = &colorAttachment;
+    renderPassInfo.attachmentCount = static_cast<U32>(attachments.size());
+    renderPassInfo.pAttachments    = attachments.data();
     renderPassInfo.subpassCount    = 1;
     renderPassInfo.pSubpasses      = &subpass;
     renderPassInfo.dependencyCount = 1;
@@ -1196,18 +1449,103 @@ Bool JzVulkanDevice::CreateSwapchainRenderPass()
     return vkCreateRenderPass(m_device, &renderPassInfo, nullptr, &m_swapchainRenderPass) == VK_SUCCESS;
 }
 
+Bool JzVulkanDevice::CreateSwapchainDepthResources()
+{
+    if (m_swapchainDepthFormat == VK_FORMAT_UNDEFINED) {
+        m_swapchainDepthFormat = FindSupportedDepthFormat();
+    }
+    if (m_swapchainDepthFormat == VK_FORMAT_UNDEFINED) {
+        JzRE_LOG_ERROR("JzVulkanDevice: failed to find supported depth format");
+        return false;
+    }
+
+    JzRE_LOG_INFO("JzVulkanDevice: using swapchain depth format {}", static_cast<I32>(m_swapchainDepthFormat));
+
+    m_swapchainDepthImages.resize(m_swapchainImages.size(), VK_NULL_HANDLE);
+    m_swapchainDepthImageMemories.resize(m_swapchainImages.size(), VK_NULL_HANDLE);
+    m_swapchainDepthImageViews.resize(m_swapchainImages.size(), VK_NULL_HANDLE);
+
+    for (Size i = 0; i < m_swapchainImages.size(); ++i) {
+        VkImageCreateInfo imageInfo{};
+        imageInfo.sType         = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+        imageInfo.imageType     = VK_IMAGE_TYPE_2D;
+        imageInfo.extent.width  = m_swapchainExtent.width;
+        imageInfo.extent.height = m_swapchainExtent.height;
+        imageInfo.extent.depth  = 1;
+        imageInfo.mipLevels     = 1;
+        imageInfo.arrayLayers   = 1;
+        imageInfo.format        = m_swapchainDepthFormat;
+        imageInfo.tiling        = VK_IMAGE_TILING_OPTIMAL;
+        imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        imageInfo.usage         = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+        imageInfo.samples       = VK_SAMPLE_COUNT_1_BIT;
+        imageInfo.sharingMode   = VK_SHARING_MODE_EXCLUSIVE;
+
+        if (vkCreateImage(m_device, &imageInfo, nullptr, &m_swapchainDepthImages[i]) != VK_SUCCESS) {
+            JzRE_LOG_ERROR("JzVulkanDevice: vkCreateImage failed for swapchain depth image");
+            return false;
+        }
+
+        VkMemoryRequirements memoryRequirements{};
+        vkGetImageMemoryRequirements(m_device, m_swapchainDepthImages[i], &memoryRequirements);
+
+        VkMemoryAllocateInfo allocInfo{};
+        allocInfo.sType           = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        allocInfo.allocationSize  = memoryRequirements.size;
+        allocInfo.memoryTypeIndex = FindMemoryType(
+            memoryRequirements.memoryTypeBits,
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+        if (vkAllocateMemory(m_device, &allocInfo, nullptr, &m_swapchainDepthImageMemories[i]) != VK_SUCCESS) {
+            JzRE_LOG_ERROR("JzVulkanDevice: vkAllocateMemory failed for swapchain depth image");
+            return false;
+        }
+
+        if (vkBindImageMemory(m_device, m_swapchainDepthImages[i], m_swapchainDepthImageMemories[i], 0) != VK_SUCCESS) {
+            JzRE_LOG_ERROR("JzVulkanDevice: vkBindImageMemory failed for swapchain depth image");
+            return false;
+        }
+
+        VkImageViewCreateInfo viewInfo{};
+        viewInfo.sType    = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        viewInfo.image    = m_swapchainDepthImages[i];
+        viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        viewInfo.format   = m_swapchainDepthFormat;
+        viewInfo.subresourceRange.aspectMask     = GetImageAspectMask(m_swapchainDepthFormat);
+        viewInfo.subresourceRange.baseMipLevel   = 0;
+        viewInfo.subresourceRange.levelCount     = 1;
+        viewInfo.subresourceRange.baseArrayLayer = 0;
+        viewInfo.subresourceRange.layerCount     = 1;
+
+        if (vkCreateImageView(m_device, &viewInfo, nullptr, &m_swapchainDepthImageViews[i]) != VK_SUCCESS) {
+            JzRE_LOG_ERROR("JzVulkanDevice: vkCreateImageView failed for swapchain depth image");
+            return false;
+        }
+    }
+
+    return true;
+}
+
 Bool JzVulkanDevice::CreateSwapchainFramebuffers()
 {
     m_swapchainFramebuffers.resize(m_swapchainImageViews.size());
 
     for (Size i = 0; i < m_swapchainImageViews.size(); ++i) {
-        VkImageView attachment = m_swapchainImageViews[i];
+        if (i >= m_swapchainDepthImageViews.size() || m_swapchainDepthImageViews[i] == VK_NULL_HANDLE) {
+            JzRE_LOG_ERROR("JzVulkanDevice: missing swapchain depth image view for framebuffer {}", i);
+            return false;
+        }
+
+        const std::array<VkImageView, 2> attachments = {
+            m_swapchainImageViews[i],
+            m_swapchainDepthImageViews[i],
+        };
 
         VkFramebufferCreateInfo framebufferInfo{};
         framebufferInfo.sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
         framebufferInfo.renderPass      = m_swapchainRenderPass;
-        framebufferInfo.attachmentCount = 1;
-        framebufferInfo.pAttachments    = &attachment;
+        framebufferInfo.attachmentCount = static_cast<U32>(attachments.size());
+        framebufferInfo.pAttachments    = attachments.data();
         framebufferInfo.width           = m_swapchainExtent.width;
         framebufferInfo.height          = m_swapchainExtent.height;
         framebufferInfo.layers          = 1;
@@ -1267,6 +1605,24 @@ void JzVulkanDevice::DestroySwapchainObjects()
         }
     }
     m_swapchainFramebuffers.clear();
+
+    for (auto imageView : m_swapchainDepthImageViews) {
+        if (imageView != VK_NULL_HANDLE) {
+            vkDestroyImageView(m_device, imageView, nullptr);
+        }
+    }
+    m_swapchainDepthImageViews.clear();
+
+    for (Size i = 0; i < m_swapchainDepthImages.size(); ++i) {
+        if (m_swapchainDepthImages[i] != VK_NULL_HANDLE) {
+            vkDestroyImage(m_device, m_swapchainDepthImages[i], nullptr);
+        }
+        if (i < m_swapchainDepthImageMemories.size() && m_swapchainDepthImageMemories[i] != VK_NULL_HANDLE) {
+            vkFreeMemory(m_device, m_swapchainDepthImageMemories[i], nullptr);
+        }
+    }
+    m_swapchainDepthImages.clear();
+    m_swapchainDepthImageMemories.clear();
 
     if (m_swapchainRenderPass != VK_NULL_HANDLE) {
         vkDestroyRenderPass(m_device, m_swapchainRenderPass, nullptr);
@@ -1334,6 +1690,7 @@ Bool JzVulkanDevice::RecreateSwapchain()
     if (!CreateSwapchain() ||
         !CreateSwapchainImageViews() ||
         !CreateSwapchainRenderPass() ||
+        !CreateSwapchainDepthResources() ||
         !CreateSwapchainFramebuffers()) {
         return false;
     }
@@ -1428,6 +1785,29 @@ VkExtent2D JzVulkanDevice::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR &capa
     return actualExtent;
 }
 
+VkFormat JzVulkanDevice::FindSupportedDepthFormat() const
+{
+    if (m_physicalDevice == VK_NULL_HANDLE) {
+        return VK_FORMAT_UNDEFINED;
+    }
+
+    constexpr std::array<VkFormat, 3> candidates = {
+        VK_FORMAT_D32_SFLOAT,
+        VK_FORMAT_D32_SFLOAT_S8_UINT,
+        VK_FORMAT_D24_UNORM_S8_UINT,
+    };
+
+    for (const VkFormat format : candidates) {
+        VkFormatProperties properties{};
+        vkGetPhysicalDeviceFormatProperties(m_physicalDevice, format, &properties);
+        if ((properties.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) != 0) {
+            return format;
+        }
+    }
+
+    return VK_FORMAT_UNDEFINED;
+}
+
 Bool JzVulkanDevice::BeginSwapchainRenderPass()
 {
     auto &frame = m_frames[m_currentFrameIndex];
@@ -1436,10 +1816,11 @@ Bool JzVulkanDevice::BeginSwapchainRenderPass()
         return false;
     }
 
-    VkClearValue clearValues[1]{};
+    VkClearValue clearValues[2]{};
     clearValues[0].color = {
         {m_currentClear.colorR, m_currentClear.colorG, m_currentClear.colorB, m_currentClear.colorA},
     };
+    clearValues[1].depthStencil = {m_currentClear.depth, m_currentClear.stencil};
 
     VkRenderPassBeginInfo renderPassBeginInfo{};
     renderPassBeginInfo.sType             = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -1447,7 +1828,7 @@ Bool JzVulkanDevice::BeginSwapchainRenderPass()
     renderPassBeginInfo.framebuffer       = m_swapchainFramebuffers[m_currentImageIndex];
     renderPassBeginInfo.renderArea.offset = {0, 0};
     renderPassBeginInfo.renderArea.extent = m_swapchainExtent;
-    renderPassBeginInfo.clearValueCount   = 1;
+    renderPassBeginInfo.clearValueCount   = 2;
     renderPassBeginInfo.pClearValues      = clearValues;
 
     vkCmdBeginRenderPass(frame.commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);

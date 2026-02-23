@@ -75,11 +75,65 @@ struct JzRenderState {
 };
 
 /**
+ * @brief Vertex attribute format.
+ */
+enum class JzEVertexAttributeFormat : U8 {
+    Float,
+    Float2,
+    Float3,
+    Float4,
+    Int,
+    Int2,
+    Int3,
+    Int4,
+    UInt,
+    UInt2,
+    UInt3,
+    UInt4,
+};
+
+/**
+ * @brief Vertex buffer binding description.
+ */
+struct JzVertexBindingDesc {
+    U32  binding     = 0;
+    U32  stride      = 0;
+    Bool perInstance = false;
+};
+
+/**
+ * @brief Vertex attribute description.
+ */
+struct JzVertexAttributeDesc {
+    U32                     location = 0;
+    U32                     binding  = 0;
+    JzEVertexAttributeFormat format  = JzEVertexAttributeFormat::Float3;
+    U32                     offset   = 0;
+};
+
+/**
+ * @brief Vertex layout description for a graphics pipeline.
+ */
+struct JzVertexLayoutDesc {
+    std::vector<JzVertexBindingDesc>   bindings;
+    std::vector<JzVertexAttributeDesc> attributes;
+
+    /**
+     * @brief Whether this layout contains enough information for pipeline creation.
+     */
+    Bool IsValid() const
+    {
+        return !bindings.empty() && !attributes.empty();
+    }
+};
+
+/**
  * @brief Pipeline description
  */
 struct JzPipelineDesc {
     std::vector<JzShaderProgramDesc> shaders;
     JzRenderState                    renderState;
+    JzVertexLayoutDesc               vertexLayout;
     String                           debugName;
 };
 

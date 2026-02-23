@@ -11,17 +11,12 @@ Current backend status:
 
 ## Current Runtime Rendering Path
 
-The current runtime render path is **immediate-mode device calls** through `JzDevice`:
+The runtime render path is **command-list first** through `JzDevice`:
 
-- `BindFramebuffer`
-- `BindPipeline`
-- `SetViewport`
-- `Clear`
-- `BindVertexArray`
-- `BindTexture`
-- `Draw` / `DrawIndexed`
+1. Runtime/editor code records commands to `JzRHICommandList`.
+2. Backend executes the recorded list via `ExecuteCommandList(...)`.
 
-`JzRHICommandList` exists and can record commands, but the default runtime flow (`JzRenderSystem`) does not use command-list recording as its primary path.
+There is no runtime immediate draw path in the `JzDevice` public API.
 
 ## Architecture
 
@@ -35,7 +30,7 @@ graph TB
     subgraph "RHI Abstraction"
         Context[JzGraphicsContext]
         Device[JzDevice]
-        CmdList[JzRHICommandList (optional path)]
+        CmdList[JzRHICommandList (primary path)]
         Pipeline[JzRHIPipeline]
         Buffer[JzGPUBufferObject]
         Texture[JzGPUTextureObject]
@@ -97,33 +92,30 @@ Current `Present()` behavior:
 `JzDevice` is the central RHI abstraction:
 
 - resource creation: pipeline, buffer, texture, shader, VAO, framebuffer
-- draw API: immediate rendering commands
-- optional command-list creation/execution
-- resource barriers
-- capability/statistics query
+- command-list creation/execution (`CreateCommandList`, `ExecuteCommandList`, `ExecuteCommandLists`)
+- frame lifecycle (`BeginFrame`, `EndFrame`, `Flush`, `Finish`)
 
-### `JzRHICommandList` (Optional Path)
+### `JzRHICommandList` (Primary Path)
 
 `JzRHICommandList` supports:
 
 - `Begin` / `End`
-- command recording (`Clear`, `BindPipeline`, `DrawIndexed`, ...)
-- execution through `device.ExecuteCommandList(...)`
-
-This path is available, but current `JzRenderSystem` directly issues immediate commands.
+- command recording (`BindFramebuffer`, `BindPipeline`, `SetViewport`, `Clear`, `DrawIndexed`, barriers, blit, ...)
+- snapshot handoff to backend execution via `device.ExecuteCommandList(...)`
 
 ## RenderGraph and Barrier Integration
 
 `JzRenderSystem` connects `JzRenderGraph` transitions to RHI barriers:
 
 - graph transition callback builds `JzRHIResourceBarrier` list
-- calls `device.ResourceBarrier(barriers)` before pass execution
+- records barriers into pass command list via `commandList.ResourceBarrier(barriers)`
 - graph execution runs via `JzRenderGraph::Execute(device)` and provides
   per-pass `JzRGPassContext` (framebuffer/viewport/resource bindings)
 
 Backend behavior today:
 
 - OpenGL implementation treats barriers as no-op (implicit transitions).
+- Vulkan implementation applies texture layout transitions from recorded barriers.
 
 ## OpenGL Backend Notes
 
@@ -150,11 +142,8 @@ Backend characteristics:
 In the runtime frame loop:
 
 1. ECS systems update (`JzWorld::Update`).
-2. `JzRenderSystem` performs immediate RHI draw calls through:
-   built-in geometry contribution (`ExecuteContribution` with
-   `ResolveCameraFrameData -> BeginRenderTargetPass -> DrawVisibleEntities`,
-   where the geometry pipeline is resolved from `shaders/standard` per frame
-   and pass targets are provided by `JzRGPassContext`
+2. `JzRenderSystem` records pass commands into `JzRHICommandList` through:
+   built-in geometry contribution (`ResolveCameraFrameData -> BeginRenderTargetPass -> DrawVisibleEntities`)
    plus graph contribution passes (`JzRenderGraphContribution`).
    Editor integrations register these passes via `RegisterGraphContribution(...)`.
 3. Host UI (`OnRender`) runs.
@@ -174,25 +163,12 @@ For Vulkan this avoids late destruction of objects such as shader modules after 
 Additionally, Vulkan shader objects track a device lifetime flag and skip
 `vkDestroyShaderModule` if the device teardown has already begun.
 
-## Example: Immediate Rendering
-
-```cpp
-context.BeginFrame();
-
-device.BindFramebuffer(framebuffer);
-device.BindPipeline(pipeline);
-device.BindVertexArray(vertexArray);
-device.DrawIndexed(drawParams);
-
-context.EndFrame();
-context.Present();
-```
-
-## Example: Command List (Available)
+## Example: Command List Rendering
 
 ```cpp
 auto cmd = device.CreateCommandList("MainPass");
 cmd->Begin();
+cmd->BindFramebuffer(framebuffer);
 cmd->BindPipeline(pipeline);
 cmd->BindVertexArray(vertexArray);
 cmd->DrawIndexed(drawParams);
@@ -207,8 +183,19 @@ Current Vulkan backend includes:
 - instance/surface/physical+logical device initialization
 - swapchain + frame synchronization (frames-in-flight)
 - per-frame `BeginFrame/EndFrame/Present` lifecycle
+- swapchain render pass with color + depth attachments (depth-tested 3D rendering)
 - Vulkan resource objects (`Buffer`, `Texture`, `Framebuffer`, `VertexArray`, `Shader`, `Pipeline`)
+- pipeline setup:
+  - descriptor set layouts from SPIR-V reflection
+  - vertex input state from `JzPipelineDesc.vertexLayout` (generated from vertex shader `layout(location=...) in` declarations in shader asset/registry compile path)
+  - SPIR-V reflected vertex input fallback when no explicit layout is provided
+- descriptor-backed parameter binding for `SetUniform(...)` and `BindTexture(...)`:
+  - uniform buffers are uploaded from pipeline parameter cache
+  - combined image samplers are resolved from bound texture slots (with a fallback white texture)
 - Editor ImGui Vulkan backend integration with texture bridge
+
+Current compatibility note:
+- `BlitFramebufferToScreen(...)` is treated as a Vulkan no-op in runtime direct-swapchain mode.
 
 Default runtime/editor policy is platform auto-selection:
 - prefer Vulkan (including macOS MoltenVK path)

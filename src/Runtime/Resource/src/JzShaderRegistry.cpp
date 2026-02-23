@@ -16,6 +16,7 @@
 #include "JzRE/Runtime/Platform/RHI/JzDevice.h"
 #include "JzRE/Runtime/Platform/RHI/JzRHIPipeline.h"
 #include "JzRE/Runtime/Resource/JzShaderVariant.h"
+#include "JzShaderVertexLayoutUtils.h"
 
 namespace JzRE {
 
@@ -119,6 +120,9 @@ Bool BuildPipelineFromSources(JzDevice                              &device,
     JzPipelineDesc pipelineDesc{};
     pipelineDesc.shaders     = {vsDesc, fsDesc};
     pipelineDesc.renderState = renderState;
+    if (const auto vertexLayout = JzShaderVertexLayoutUtils::BuildVertexLayoutFromVertexSource(vsDesc.source); vertexLayout.has_value()) {
+        pipelineDesc.vertexLayout = *vertexLayout;
+    }
     pipelineDesc.debugName   = pipelineDebugName;
 
     if (!source.geometrySource.empty()) {
