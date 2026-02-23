@@ -29,10 +29,12 @@ target_include_directories(
 
 # External dependencies
 find_package(imgui CONFIG REQUIRED)
+find_package(Vulkan REQUIRED)
 
 target_link_libraries(
     JzEditorUI
     PUBLIC
     imgui::imgui
+    Vulkan::Vulkan
     JzEditorCore
 )

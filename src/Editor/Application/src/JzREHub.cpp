@@ -5,6 +5,7 @@
 
 #include "JzRE/Editor/JzREHub.h"
 #include <algorithm>
+#include <array>
 #include <cctype>
 #include <fstream>
 #include <memory>
@@ -31,11 +32,53 @@
 #include "JzRE/Editor/UI/JzConverter.h"
 #include "JzRE/Runtime/Platform/Dialog/JzOpenFileDialog.h"
 #include "JzRE/Runtime/Platform/RHI/JzGraphicsContext.h"
+#include "JzRE/Runtime/Platform/RHI/JzDeviceFactory.h"
 #include "JzRE/Runtime/Function/Project/JzProjectManager.h"
+
+namespace {
+
+std::filesystem::path ResolveEditorResourcePath(const std::filesystem::path &relativePath)
+{
+    const auto cwd      = std::filesystem::current_path();
+    const auto buildDir = cwd / "build" / "JzRE";
+
+    const std::array<std::filesystem::path, 2> roots = {cwd, buildDir};
+    for (const auto &root : roots) {
+        const auto candidate = root / relativePath;
+        if (std::filesystem::exists(candidate)) {
+            return candidate;
+        }
+    }
+
+    if (std::filesystem::exists(buildDir)) {
+        return buildDir / relativePath;
+    }
+
+    return cwd / relativePath;
+}
+
+} // namespace
 
 JzRE::JzREHub::JzREHub(JzERHIType rhiType)
 {
     JzServiceContainer::Init();
+
+    const auto requestedRhi = rhiType;
+    auto       selectedRhi  = requestedRhi;
+    if (selectedRhi == JzERHIType::Unknown) {
+        selectedRhi = JzDeviceFactory::GetDefaultRHIType();
+    }
+    if (selectedRhi == JzERHIType::Vulkan && !JzDeviceFactory::IsVulkanSupported()) {
+        JzRE_LOG_WARN("JzREHub: Vulkan requested but unavailable, fallback to OpenGL");
+        selectedRhi = JzERHIType::OpenGL;
+    }
+    if (selectedRhi == JzERHIType::Unknown) {
+        selectedRhi = JzERHIType::OpenGL;
+    }
+
+    JzRE_LOG_INFO("JzREHub: requested RHI '{}', selected RHI '{}'",
+                  JzDeviceFactory::GetRHITypeName(requestedRhi),
+                  JzDeviceFactory::GetRHITypeName(selectedRhi));
 
     JzWindowConfig windowConfig;
     windowConfig.title     = "JzRE Hub";
@@ -45,20 +88,20 @@ JzRE::JzREHub::JzREHub(JzERHIType rhiType)
     windowConfig.decorated = false;
 
     m_windowSystem = std::make_unique<JzWindowSystem>();
-    m_windowSystem->InitializeWindow(rhiType, windowConfig);
+    m_windowSystem->InitializeWindow(selectedRhi, windowConfig);
     m_windowSystem->SetAlignCentered();
 
     m_graphicsContext   = std::make_unique<JzGraphicsContext>();
     auto *windowBackend = m_windowSystem->GetBackend();
     if (windowBackend) {
-        m_graphicsContext->Initialize(*windowBackend, rhiType);
+        m_graphicsContext->Initialize(*windowBackend, selectedRhi);
         JzServiceContainer::Provide<JzGraphicsContext>(*m_graphicsContext);
         JzServiceContainer::Provide<JzDevice>(m_graphicsContext->GetDevice());
     }
 
     m_uiManager = std::make_unique<JzUIManager>(*m_windowSystem);
 
-    const auto fontPath = std::filesystem::current_path() / "fonts" / "SourceHanSansCN-Regular.otf";
+    const auto fontPath = ResolveEditorResourcePath("fonts/SourceHanSansCN-Regular.otf");
     m_uiManager->LoadFont("sourcehansanscn-regular-16", fontPath.string(), 16);
     m_uiManager->UseFont("sourcehansanscn-regular-16");
     m_uiManager->EnableEditorLayoutSave(false);
@@ -105,7 +148,17 @@ std::optional<std::filesystem::path> JzRE::JzREHub::Run()
 {
     while (!m_windowSystem->ShouldClose()) {
         m_windowSystem->PollWindowEvents();
+
+        if (m_graphicsContext) {
+            m_graphicsContext->BeginFrame();
+        }
+
         m_uiManager->Render();
+
+        if (m_graphicsContext) {
+            m_graphicsContext->EndFrame();
+        }
+
         if (m_graphicsContext) {
             m_graphicsContext->Present();
         }
@@ -124,7 +177,7 @@ JzRE::JzREHubMenuBar::JzREHubMenuBar(JzRE::JzWindowSystem &windowSystem) :
     m_backgroudColor("#2A2A2A"),
     m_isDragging(false)
 {
-    const auto iconsDir = std::filesystem::current_path() / "icons";
+    const auto iconsDir = ResolveEditorResourcePath("icons");
 
     auto &actions = CreateWidget<JzGroup>(JzEHorizontalAlignment::RIGHT, JzVec2(80.f, 0.f), JzVec2(0.f, 0.f));
 
@@ -211,7 +264,7 @@ void JzRE::JzREHubMenuBar::HandleDragging()
 
 JzRE::JzREHubPanel::JzREHubPanel() :
     JzPanelWindow("JzRE Hub", true),
-    m_workspaceFilePath(std::filesystem::current_path() / "config" / "workspace.json")
+    m_workspaceFilePath(ResolveEditorResourcePath("config/workspace.json"))
 {
     resizable = false;
     movable   = false;

@@ -80,6 +80,28 @@ private:
 };
 
 /**
+ * @brief Vulkan shader compiler implementation.
+ */
+class JzVulkanShaderCompiler : public IShaderCompiler {
+public:
+    explicit JzVulkanShaderCompiler(JzDevice &device);
+
+    Bool Compile(const JzShaderSourceData                 &source,
+                 const JzShaderCompileConfig              &config,
+                 const std::unordered_map<String, String> &defines,
+                 std::shared_ptr<JzRHIPipeline>           &pipeline,
+                 String                                   &log) override;
+
+    const char *GetName() const override
+    {
+        return "Vulkan";
+    }
+
+private:
+    JzDevice &m_device;
+};
+
+/**
  * @brief Specialized shader registry with advanced features
  *
  * Extends basic asset registry functionality with:

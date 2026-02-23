@@ -149,6 +149,10 @@ void JzRE::JzOpenGLDevice::Clear(const JzRE::JzClearParams &params)
 
 void JzRE::JzOpenGLDevice::Draw(const JzRE::JzDrawParams &params)
 {
+    if (m_currentPipeline) {
+        m_currentPipeline->CommitParameters();
+    }
+
     GLenum mode = ConvertPrimitiveType(params.primitiveType);
 
     if (params.instanceCount > 1) {
@@ -172,6 +176,10 @@ void JzRE::JzOpenGLDevice::Draw(const JzRE::JzDrawParams &params)
 
 void JzRE::JzOpenGLDevice::DrawIndexed(const JzRE::JzDrawIndexedParams &params)
 {
+    if (m_currentPipeline) {
+        m_currentPipeline->CommitParameters();
+    }
+
     GLenum mode = ConvertPrimitiveType(params.primitiveType);
 
     // 假设索引类型为 GL_UNSIGNED_INT
@@ -204,6 +212,7 @@ void JzRE::JzOpenGLDevice::BindPipeline(std::shared_ptr<JzRE::JzRHIPipeline> pip
     if (glPipeline && glPipeline->IsLinked()) {
         glUseProgram(glPipeline->GetProgram());
         ApplyRenderState(pipeline->GetRenderState());
+        glPipeline->CommitParameters();
         m_currentPipeline = glPipeline;
     }
 }

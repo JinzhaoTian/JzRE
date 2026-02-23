@@ -6,6 +6,7 @@
 #include "JzRE/Editor/UI/JzIconButton.h"
 #include <imgui.h>
 #include "JzRE/Editor/UI/JzConverter.h"
+#include "JzRE/Editor/UI/JzImGuiTextureBridge.h"
 
 JzRE::JzIconButton::JzIconButton(std::shared_ptr<JzRE::JzGPUTextureObject> iconTexture) :
     m_iconTexture(iconTexture),
@@ -51,7 +52,7 @@ void JzRE::JzIconButton::_Draw_Impl()
         }
 
         ImGui::GetWindowDrawList()->AddImage(
-            (ImTextureID)(uintptr_t)(m_iconTexture->GetTextureID()),
+            JzImGuiTextureBridge::Resolve(m_iconTexture),
             iconMinPos,
             iconMaxPos,
             ImVec2(0.f, 0.f),

@@ -315,6 +315,7 @@ void JzRE::JzAssetView::_Draw_Impl()
         auto size = GetSafeSize();
         if (size.x > 0 && size.y > 0) {
             m_frame->frameTextureId = m_previewTexture->GetTextureID();
+            m_frame->frameTexture   = m_previewTexture;
             m_frame->frameSize      = JzVec2(static_cast<F32>(size.x), static_cast<F32>(size.y));
         }
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));

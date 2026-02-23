@@ -7,7 +7,7 @@ JzRE RHI provides a cross-API rendering abstraction.
 Current backend status:
 
 - OpenGL: implemented and used in runtime/editor.
-- Vulkan: interface planned, runtime path not implemented.
+- Vulkan: implemented for runtime/editor, with automatic fallback to OpenGL on initialization failure.
 
 ## Current Runtime Rendering Path
 
@@ -89,8 +89,8 @@ Responsibilities:
 
 Current `Present()` behavior:
 
-1. `device->Finish()`
-2. `windowBackend->SwapBuffers()`
+1. OpenGL path: `device->Finish()` then `windowBackend->SwapBuffers()`
+2. Vulkan path: device-side `Flush()` submit + `vkQueuePresentKHR`
 
 ### `JzDevice`
 
@@ -189,9 +189,18 @@ cmd->End();
 device.ExecuteCommandList(cmd);
 ```
 
-## Future Direction (Vulkan)
+## Vulkan Runtime Notes
 
-Vulkan interfaces are present at the abstraction level, but production runtime path is still OpenGL-first.
+Current Vulkan backend includes:
+- instance/surface/physical+logical device initialization
+- swapchain + frame synchronization (frames-in-flight)
+- per-frame `BeginFrame/EndFrame/Present` lifecycle
+- Vulkan resource objects (`Buffer`, `Texture`, `Framebuffer`, `VertexArray`, `Shader`, `Pipeline`)
+- Editor ImGui Vulkan backend integration with texture bridge
+
+Default runtime/editor policy is platform auto-selection:
+- prefer Vulkan (including macOS MoltenVK path)
+- fallback to OpenGL with explicit logs when Vulkan is unavailable
 
 ## Source References
 

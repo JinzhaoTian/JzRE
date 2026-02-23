@@ -9,12 +9,116 @@
 
 #include <sstream>
 
+#include <shaderc/shaderc.hpp>
+#include <spirv_reflect.h>
+
 #include "JzRE/Runtime/Core/JzLogger.h"
 #include "JzRE/Runtime/Platform/RHI/JzDevice.h"
 #include "JzRE/Runtime/Platform/RHI/JzRHIPipeline.h"
 #include "JzRE/Runtime/Resource/JzShaderVariant.h"
 
 namespace JzRE {
+
+namespace {
+
+String BuildDefinesBlock(const std::unordered_map<String, String> &defines,
+                         const std::unordered_map<String, String> &sourceDefines,
+                         const String                             &backendMacro,
+                         const String                             &backendValue)
+{
+    String definesBlock;
+    definesBlock.reserve(1024);
+
+    definesBlock += "#define ";
+    definesBlock += backendMacro;
+    definesBlock += " ";
+    definesBlock += backendValue;
+    definesBlock += "\n";
+
+    for (const auto &[name, value] : defines) {
+        definesBlock += "#define " + name + " " + value + "\n";
+    }
+    for (const auto &[name, value] : sourceDefines) {
+        definesBlock += "#define " + name + " " + value + "\n";
+    }
+
+    return definesBlock;
+}
+
+Bool ValidateSpirvWithReflection(const String &source, shaderc_shader_kind kind, const String &stageName, String &log)
+{
+    shaderc::Compiler       compiler;
+    shaderc::CompileOptions options;
+
+    options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
+    options.SetOptimizationLevel(shaderc_optimization_level_performance);
+
+    auto result = compiler.CompileGlslToSpv(source, kind, stageName.c_str(), "main", options);
+    if (result.GetCompilationStatus() != shaderc_compilation_status_success) {
+        log = "shaderc compile failed(" + stageName + "): " + result.GetErrorMessage();
+        return false;
+    }
+
+    std::vector<U32> spirv(result.cbegin(), result.cend());
+
+    SpvReflectShaderModule module{};
+    const auto             reflectResult = spvReflectCreateShaderModule(
+        spirv.size() * sizeof(U32),
+        spirv.data(),
+        &module);
+    if (reflectResult != SPV_REFLECT_RESULT_SUCCESS) {
+        log = "spirv-reflect failed(" + stageName + ")";
+        return false;
+    }
+
+    spvReflectDestroyShaderModule(&module);
+    return true;
+}
+
+Bool BuildPipelineFromSources(JzDevice                              &device,
+                              const JzShaderSourceData              &source,
+                              const JzRenderState                   &renderState,
+                              const String                          &definesBlock,
+                              std::shared_ptr<JzRHIPipeline>        &pipeline,
+                              const String                          &pipelineDebugName,
+                              String                                &log)
+{
+    JzShaderProgramDesc vsDesc{};
+    vsDesc.type       = JzEShaderProgramType::Vertex;
+    vsDesc.source     = definesBlock + source.vertexSource;
+    vsDesc.entryPoint = "main";
+    vsDesc.debugName  = pipelineDebugName + "_VS";
+
+    JzShaderProgramDesc fsDesc{};
+    fsDesc.type       = JzEShaderProgramType::Fragment;
+    fsDesc.source     = definesBlock + source.fragmentSource;
+    fsDesc.entryPoint = "main";
+    fsDesc.debugName  = pipelineDebugName + "_FS";
+
+    JzPipelineDesc pipelineDesc{};
+    pipelineDesc.shaders     = {vsDesc, fsDesc};
+    pipelineDesc.renderState = renderState;
+    pipelineDesc.debugName   = pipelineDebugName;
+
+    if (!source.geometrySource.empty()) {
+        JzShaderProgramDesc gsDesc{};
+        gsDesc.type       = JzEShaderProgramType::Geometry;
+        gsDesc.source     = definesBlock + source.geometrySource;
+        gsDesc.entryPoint = "main";
+        gsDesc.debugName  = pipelineDebugName + "_GS";
+        pipelineDesc.shaders.push_back(gsDesc);
+    }
+
+    pipeline = device.CreatePipeline(pipelineDesc);
+    if (!pipeline) {
+        log = "failed to create pipeline object";
+        return false;
+    }
+
+    return true;
+}
+
+} // namespace
 
 // ==================== JzOpenGLShaderCompiler ====================
 
@@ -28,73 +132,81 @@ Bool JzOpenGLShaderCompiler::Compile(const JzShaderSourceData                 &s
                                      std::shared_ptr<JzRHIPipeline>           &pipeline,
                                      String                                   &log)
 {
-    // Generate defines string
-    String definesStr;
-    for (const auto &[name, value] : defines) {
-        definesStr += "#define " + name + " " + value + "\n";
-    }
+    (void)config;
 
-    // Also add source-level defines
-    for (const auto &[name, value] : source.defines) {
-        definesStr += "#define " + name + " " + value + "\n";
-    }
-
-    // Prepend defines to shader sources
-    String vertexWithDefines   = definesStr + source.vertexSource;
-    String fragmentWithDefines = definesStr + source.fragmentSource;
-
-    // Create shader descriptors
-    JzShaderProgramDesc vsDesc{};
-    vsDesc.type       = JzEShaderProgramType::Vertex;
-    vsDesc.source     = vertexWithDefines;
-    vsDesc.entryPoint = "main";
-    vsDesc.debugName  = "CompiledVariant_VS";
-
-    JzShaderProgramDesc fsDesc{};
-    fsDesc.type       = JzEShaderProgramType::Fragment;
-    fsDesc.source     = fragmentWithDefines;
-    fsDesc.entryPoint = "main";
-    fsDesc.debugName  = "CompiledVariant_FS";
-
-    // Build pipeline descriptor
-    JzPipelineDesc pipeDesc{};
-    pipeDesc.shaders = {vsDesc, fsDesc};
-
-    // Set default render state
     JzRenderState renderState;
     renderState.depthTest = true;
     renderState.cullMode  = JzECullMode::Front;
-    pipeDesc.renderState  = renderState;
 
-    pipeDesc.debugName = "CompiledVariant_Pipeline";
-
-    // Add geometry shader if present
-    if (!source.geometrySource.empty()) {
-        String              geometryWithDefines = definesStr + source.geometrySource;
-        JzShaderProgramDesc gsDesc{};
-        gsDesc.type       = JzEShaderProgramType::Geometry;
-        gsDesc.source     = geometryWithDefines;
-        gsDesc.entryPoint = "main";
-        gsDesc.debugName  = "CompiledVariant_GS";
-        pipeDesc.shaders.push_back(gsDesc);
-    }
-
-    pipeline = m_device.CreatePipeline(pipeDesc);
-    if (!pipeline) {
-        log = "Failed to create pipeline";
-        return false;
-    }
-
-    return true;
+    const String definesBlock = BuildDefinesBlock(defines, source.defines, "JZ_BACKEND_OPENGL", "1");
+    return BuildPipelineFromSources(
+        m_device,
+        source,
+        renderState,
+        definesBlock,
+        pipeline,
+        "CompiledVariant_OpenGL",
+        log);
 }
 
 // ==================== JzShaderRegistry ====================
 
+// ==================== JzVulkanShaderCompiler ====================
+
+JzVulkanShaderCompiler::JzVulkanShaderCompiler(JzDevice &device) :
+    m_device(device)
+{ }
+
+Bool JzVulkanShaderCompiler::Compile(const JzShaderSourceData                 &source,
+                                     const JzShaderCompileConfig              &config,
+                                     const std::unordered_map<String, String> &defines,
+                                     std::shared_ptr<JzRHIPipeline>           &pipeline,
+                                     String                                   &log)
+{
+    (void)config;
+
+    JzRenderState renderState;
+    renderState.depthTest = true;
+    renderState.cullMode  = JzECullMode::Front;
+
+    const String definesBlock = BuildDefinesBlock(defines, source.defines, "JZ_BACKEND_VULKAN", "1");
+
+    const String vertexSource   = definesBlock + source.vertexSource;
+    const String fragmentSource = definesBlock + source.fragmentSource;
+    if (!ValidateSpirvWithReflection(vertexSource, shaderc_glsl_vertex_shader, "VulkanVertex", log)) {
+        JzRE_LOG_WARN("JzVulkanShaderCompiler: vertex pre-validation skipped: {}", log);
+        log.clear();
+    }
+    if (!ValidateSpirvWithReflection(fragmentSource, shaderc_glsl_fragment_shader, "VulkanFragment", log)) {
+        JzRE_LOG_WARN("JzVulkanShaderCompiler: fragment pre-validation skipped: {}", log);
+        log.clear();
+    }
+    if (!source.geometrySource.empty()) {
+        const String geometrySource = definesBlock + source.geometrySource;
+        if (!ValidateSpirvWithReflection(geometrySource, shaderc_glsl_geometry_shader, "VulkanGeometry", log)) {
+            JzRE_LOG_WARN("JzVulkanShaderCompiler: geometry pre-validation skipped: {}", log);
+            log.clear();
+        }
+    }
+
+    return BuildPipelineFromSources(
+        m_device,
+        source,
+        renderState,
+        definesBlock,
+        pipeline,
+        "CompiledVariant_Vulkan",
+        log);
+}
+
 JzShaderRegistry::JzShaderRegistry(JzDevice &device) :
     m_device(device)
 {
-    // Create default OpenGL compiler
-    m_compiler = std::make_unique<JzOpenGLShaderCompiler>(device);
+    if (m_device.GetRHIType() == JzERHIType::Vulkan) {
+        m_compiler = std::make_unique<JzVulkanShaderCompiler>(device);
+    } else {
+        m_compiler = std::make_unique<JzOpenGLShaderCompiler>(device);
+    }
 
     JzRE_LOG_INFO("JzShaderRegistry: Initialized with {} compiler", m_compiler->GetName());
 }

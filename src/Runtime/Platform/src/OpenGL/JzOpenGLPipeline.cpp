@@ -5,6 +5,8 @@
 
 #include "JzRE/Runtime/Platform/OpenGL/JzOpenGLPipeline.h"
 
+#include <type_traits>
+
 JzRE::JzOpenGLPipeline::JzOpenGLPipeline(const JzRE::JzPipelineDesc &desc) :
     JzRE::JzRHIPipeline(desc)
 {
@@ -51,69 +53,43 @@ const JzRE::String &JzRE::JzOpenGLPipeline::GetLinkLog() const
     return m_linkLog;
 }
 
-void JzRE::JzOpenGLPipeline::SetUniform(const JzRE::String &name, JzRE::I32 value)
+void JzRE::JzOpenGLPipeline::CommitParameters()
 {
-    glUseProgram(m_program);
-    GLint location = GetUniformLocation(name);
-    if (location != -1) {
-        glUniform1i(location, value);
+    if (!m_isLinked || !HasDirtyParameters()) {
+        return;
     }
-}
 
-void JzRE::JzOpenGLPipeline::SetUniform(const JzRE::String &name, JzRE::F32 value)
-{
     glUseProgram(m_program);
-    GLint location = GetUniformLocation(name);
-    if (location != -1) {
-        glUniform1f(location, value);
-    }
-}
 
-void JzRE::JzOpenGLPipeline::SetUniform(const JzRE::String &name, const JzRE::JzVec2 &value)
-{
-    glUseProgram(m_program);
-    GLint location = GetUniformLocation(name);
-    if (location != -1) {
-        glUniform2fv(location, 1, value.Data());
-    }
-}
+    for (const auto &[name, value] : GetParameterCache()) {
+        const GLint location = GetUniformLocation(name);
+        if (location == -1) {
+            continue;
+        }
 
-void JzRE::JzOpenGLPipeline::SetUniform(const JzRE::String &name, const JzRE::JzVec3 &value)
-{
-    glUseProgram(m_program);
-    GLint location = GetUniformLocation(name);
-    if (location != -1) {
-        glUniform3fv(location, 1, value.Data());
+        std::visit(
+            [location](const auto &typedValue) {
+                using TValue = std::decay_t<decltype(typedValue)>;
+                if constexpr (std::is_same_v<TValue, I32>) {
+                    glUniform1i(location, typedValue);
+                } else if constexpr (std::is_same_v<TValue, F32>) {
+                    glUniform1f(location, typedValue);
+                } else if constexpr (std::is_same_v<TValue, JzVec2>) {
+                    glUniform2fv(location, 1, typedValue.Data());
+                } else if constexpr (std::is_same_v<TValue, JzVec3>) {
+                    glUniform3fv(location, 1, typedValue.Data());
+                } else if constexpr (std::is_same_v<TValue, JzVec4>) {
+                    glUniform4fv(location, 1, typedValue.Data());
+                } else if constexpr (std::is_same_v<TValue, JzMat3>) {
+                    glUniformMatrix3fv(location, 1, GL_TRUE, typedValue.Data());
+                } else if constexpr (std::is_same_v<TValue, JzMat4>) {
+                    glUniformMatrix4fv(location, 1, GL_TRUE, typedValue.Data());
+                }
+            },
+            value);
     }
-}
 
-void JzRE::JzOpenGLPipeline::SetUniform(const JzRE::String &name, const JzRE::JzVec4 &value)
-{
-    glUseProgram(m_program);
-    GLint location = GetUniformLocation(name);
-    if (location != -1) {
-        glUniform4fv(location, 1, value.Data());
-    }
-}
-
-void JzRE::JzOpenGLPipeline::SetUniform(const JzRE::String &name, const JzRE::JzMat3 &value)
-{
-    glUseProgram(m_program);
-    GLint location = GetUniformLocation(name);
-    if (location != -1) {
-        // GL_TRUE to transpose: JzMat uses row-major storage, OpenGL expects column-major
-        glUniformMatrix3fv(location, 1, GL_TRUE, value.Data());
-    }
-}
-
-void JzRE::JzOpenGLPipeline::SetUniform(const JzRE::String &name, const JzRE::JzMat4 &value)
-{
-    glUseProgram(m_program);
-    GLint location = GetUniformLocation(name);
-    if (location != -1) {
-        // GL_TRUE to transpose: JzMat4x4 uses row-major storage, OpenGL expects column-major
-        glUniformMatrix4fv(location, 1, GL_TRUE, value.Data());
-    }
+    MarkParametersCommitted();
 }
 
 JzRE::Bool JzRE::JzOpenGLPipeline::LinkProgram()

@@ -5,7 +5,7 @@ A cross-platform, multi-graphics-API game engine built with modern C++20.
 ## Features
 
 - **Layered Architecture**: Clean separation between Core, Platform, Resource, Function, and Editor layers
-- **RHI Abstraction**: Graphics API abstraction supporting OpenGL (Vulkan planned)
+- **RHI Abstraction**: Graphics API abstraction supporting OpenGL + Vulkan (Auto-select + fallback)
 - **ECS**: Entity-Component-System using EnTT library
 - **Resource Management**: Automatic caching with reference-counted unloading
 - **ImGui Editor**: Built-in development tools with docking support
@@ -80,6 +80,9 @@ Managed via vcpkg:
 - **glfw3** - Window and input
 - **glad** - OpenGL loader
 - **imgui** - Editor UI (docking branch)
+- **vulkan** - Vulkan loader and headers
+- **shaderc** - GLSL to SPIR-V compiler
+- **spirv-reflect** - SPIR-V reflection
 - **assimp** - 3D model loading
 - **entt** - ECS library
 - **spdlog** - Logging

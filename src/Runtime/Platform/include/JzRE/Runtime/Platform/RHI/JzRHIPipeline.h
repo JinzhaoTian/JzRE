@@ -6,10 +6,13 @@
 #pragma once
 
 #include <vector>
+#include <unordered_map>
+#include <utility>
 #include "JzRE/Runtime/Core/JzRETypes.h"
 #include "JzRE/Runtime/Core/JzVector.h"
 #include "JzRE/Runtime/Core/JzMatrix.h"
 #include "JzRE/Runtime/Platform/RHI/JzGPUShaderProgramObject.h"
+#include "JzRE/Runtime/Platform/RHI/JzShaderParameter.h"
 
 namespace JzRE {
 
@@ -112,7 +115,10 @@ public:
      * @param name The name of the uniform
      * @param value The value to set
      */
-    virtual void SetUniform(const String &name, I32 value) = 0;
+    void SetUniform(const String &name, I32 value)
+    {
+        SetParameter(name, value);
+    }
 
     /**
      * @brief Set a uniform value
@@ -120,7 +126,10 @@ public:
      * @param name The name of the uniform
      * @param value The value to set
      */
-    virtual void SetUniform(const String &name, F32 value) = 0;
+    void SetUniform(const String &name, F32 value)
+    {
+        SetParameter(name, value);
+    }
 
     /**
      * @brief Set a uniform value
@@ -128,7 +137,10 @@ public:
      * @param name The name of the uniform
      * @param value The value to set
      */
-    virtual void SetUniform(const String &name, const JzVec2 &value) = 0;
+    void SetUniform(const String &name, const JzVec2 &value)
+    {
+        SetParameter(name, value);
+    }
 
     /**
      * @brief Set a uniform value
@@ -136,7 +148,10 @@ public:
      * @param name The name of the uniform
      * @param value The value to set
      */
-    virtual void SetUniform(const String &name, const JzVec3 &value) = 0;
+    void SetUniform(const String &name, const JzVec3 &value)
+    {
+        SetParameter(name, value);
+    }
 
     /**
      * @brief Set a uniform value
@@ -144,7 +159,10 @@ public:
      * @param name The name of the uniform
      * @param value The value to set
      */
-    virtual void SetUniform(const String &name, const JzVec4 &value) = 0;
+    void SetUniform(const String &name, const JzVec4 &value)
+    {
+        SetParameter(name, value);
+    }
 
     /**
      * @brief Set a uniform value
@@ -152,7 +170,10 @@ public:
      * @param name The name of the uniform
      * @param value The value to set
      */
-    virtual void SetUniform(const String &name, const JzMat3 &value) = 0;
+    void SetUniform(const String &name, const JzMat3 &value)
+    {
+        SetParameter(name, value);
+    }
 
     /**
      * @brief Set a uniform value
@@ -160,9 +181,47 @@ public:
      * @param name The name of the uniform
      * @param value The value to set
      */
-    virtual void SetUniform(const String &name, const JzMat4 &value) = 0;
+    void SetUniform(const String &name, const JzMat4 &value)
+    {
+        SetParameter(name, value);
+    }
+
+    /**
+     * @brief Commit cached uniform values to backend state.
+     */
+    virtual void CommitParameters() = 0;
+
+    /**
+     * @brief Whether any cached parameter changed since last commit.
+     */
+    Bool HasDirtyParameters() const
+    {
+        return m_parametersDirty;
+    }
+
+    /**
+     * @brief Get cached parameter map.
+     */
+    const std::unordered_map<String, JzShaderParameterValue> &GetParameterCache() const
+    {
+        return m_parameterCache;
+    }
 
 protected:
+    template <typename TValue>
+    void SetParameter(const String &name, TValue &&value)
+    {
+        m_parameterCache[name] = std::forward<TValue>(value);
+        m_parametersDirty      = true;
+    }
+
+    void MarkParametersCommitted()
+    {
+        m_parametersDirty = false;
+    }
+
     JzPipelineDesc desc;
+    std::unordered_map<String, JzShaderParameterValue> m_parameterCache;
+    Bool                                                m_parametersDirty = false;
 };
 } // namespace JzRE

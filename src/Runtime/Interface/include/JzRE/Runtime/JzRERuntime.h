@@ -32,7 +32,7 @@ struct JzRERuntimeSettings {
     String                windowTitle     = "JzRE Runtime";
     JzIVec2               windowSize      = {1280, 720};
     Bool                  windowDecorated = true;
-    JzERHIType            rhiType         = JzERHIType::OpenGL;
+    JzERHIType            rhiType         = JzERHIType::Unknown;
     std::filesystem::path projectFile; // Optional: path to .jzreproject file
 };
 

@@ -495,6 +495,36 @@ When compiling, keywords are prepended as defines:
 // ... rest of shader source
 ```
 
+### Backend-Aware Compilation
+
+`JzShaderRegistry` selects a compiler implementation from the active RHI device:
+
+- `JzOpenGLShaderCompiler` for `JzERHIType::OpenGL`
+- `JzVulkanShaderCompiler` for `JzERHIType::Vulkan`
+
+Both compilers prepend backend macros so the same shader source can branch per API:
+
+```glsl
+#if JZ_BACKEND_VULKAN
+// Vulkan-only path
+#endif
+
+#if JZ_BACKEND_OPENGL
+// OpenGL-only path
+#endif
+```
+
+At runtime, `JzShaderAsset` also injects both macros (`JZ_BACKEND_OPENGL` and `JZ_BACKEND_VULKAN`) for variant compilation, keeping shader authoring unified across backends.
+
+### Vulkan Validation Path
+
+For Vulkan, the compiler path uses:
+
+- `shaderc` to compile GLSL into SPIR-V
+- `spirv-reflect` to validate generated SPIR-V modules before pipeline creation
+
+If pre-validation fails, a warning is logged and pipeline creation is still attempted so editor/runtime iteration can continue with diagnostic output.
+
 ### Shader File Loading
 
 Shaders are loaded from external files in the `shaders/` directory (relative to the executable working directory). The ShaderManager provides methods to load shader programs from files:
@@ -512,6 +542,8 @@ Bool LoadShaderProgram(const String& name,
 ```
 
 Shader files are stored in `resources/shaders/` in the source tree and copied to the build directory during CMake configuration.
+
+Shared helper code can be placed under `resources/shaders/include/` (for example `JzShaderCommon.glsl`) and included by both runtime and editor shaders.
 
 ### Usage
 

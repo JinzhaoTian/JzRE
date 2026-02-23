@@ -1,4 +1,5 @@
 #version 330 core
+#include "include/JzShaderCommon.glsl"
 
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aNormal;
@@ -26,4 +27,5 @@ void main()
     
     // Final clip space position
     gl_Position = projection * view * vec4(FragPos, 1.0);
+    JZ_FLIP_CLIP_Y(gl_Position);
 }

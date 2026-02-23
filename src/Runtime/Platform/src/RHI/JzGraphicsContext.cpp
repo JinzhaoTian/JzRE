@@ -19,10 +19,15 @@ void JzGraphicsContext::Initialize(JzIWindowBackend &windowBackend, JzERHIType r
     m_windowBackend = &windowBackend;
     m_rhiType       = rhiType;
 
-    // Ensure the window context is current before creating the device.
-    m_windowBackend->MakeContextCurrent();
+    // OpenGL requires an active context for loader/device initialization.
+    if (m_rhiType == JzERHIType::OpenGL) {
+        m_windowBackend->MakeContextCurrent();
+    }
 
-    m_device = JzDeviceFactory::CreateDevice(m_rhiType);
+    m_device = JzDeviceFactory::CreateDevice(m_rhiType, m_windowBackend);
+    if (m_device) {
+        m_rhiType = m_device->GetRHIType();
+    }
 }
 
 void JzGraphicsContext::Shutdown()
@@ -47,6 +52,10 @@ const JzDevice &JzGraphicsContext::GetDevice() const
 void JzGraphicsContext::MakeCurrentContext(U32 threadIndex)
 {
     if (!m_windowBackend) {
+        return;
+    }
+
+    if (m_rhiType != JzERHIType::OpenGL) {
         return;
     }
 
@@ -78,9 +87,17 @@ void JzGraphicsContext::Present()
         return;
     }
 
-    // Ensure GPU work is finished before swapping.
-    m_device->Finish();
-    m_windowBackend->SwapBuffers();
+    if (m_rhiType == JzERHIType::OpenGL) {
+        // Ensure GPU work is finished before swapping.
+        m_device->Finish();
+        m_windowBackend->SwapBuffers();
+        return;
+    }
+
+    if (m_rhiType == JzERHIType::Vulkan) {
+        // Vulkan backend handles queue submission and present internally.
+        m_device->Flush();
+    }
 }
 
 Bool JzGraphicsContext::IsInitialized() const

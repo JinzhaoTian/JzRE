@@ -9,7 +9,7 @@ The rendering path is ECS-driven:
 - `JzRERuntime::Run()` drives the frame loop.
 - `JzWorld::Update()` executes registered systems in order.
 - `JzRenderSystem` builds and executes a per-frame `JzRenderGraph`.
-- RHI calls are issued through `JzDevice` (OpenGL backend currently).
+- RHI calls are issued through `JzDevice` (OpenGL/Vulkan backend selected at runtime).
 
 ## Runtime Frame Entry
 
@@ -36,9 +36,17 @@ while (IsRunning()) {
     OnFrameBegin();
     OnUpdate(deltaTime);
 
+    if (m_graphicsContext) {
+        m_graphicsContext->BeginFrame();
+    }
+
     m_world->Update(deltaTime);
 
     OnRender(deltaTime);
+
+    if (m_graphicsContext) {
+        m_graphicsContext->EndFrame();
+    }
     OnFrameEnd();
 
     if (m_inputSystem) {
@@ -186,6 +194,7 @@ Per draw call:
 - Skips passes when `enabledExecute` returns false.
 
 OpenGL backend currently treats `ResourceBarrier(...)` as no-op (implicit transitions).
+Vulkan backend consumes barrier transitions and applies layout changes before pass execution.
 
 ## Editor Integration Path
 
@@ -218,10 +227,11 @@ sequenceDiagram
     participant Camera as JzCameraSystem
     participant Light as JzLightSystem
     participant Render as JzRenderSystem
-    participant Device as JzDevice/OpenGL
+    participant Device as JzDevice(OpenGL/Vulkan)
 
     Runtime->>Window: PollWindowEvents()
     Runtime->>Runtime: OnUpdate(delta)
+    Runtime->>Device: BeginFrame
     Runtime->>World: Update(delta)
     World->>Window: Update
     World->>Input: Update
@@ -232,8 +242,9 @@ sequenceDiagram
     World->>Render: Update
     Render->>Device: Bind/Clear/Draw/Blit
     Runtime->>Runtime: OnRender(delta)
+    Runtime->>Device: EndFrame
     Runtime->>Input: ClearFrameState()
-    Runtime->>Device: Present (Finish + SwapBuffers)
+    Runtime->>Device: Present (OpenGL swap / Vulkan queue present)
 ```
 
 ## Source References

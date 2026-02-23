@@ -16,6 +16,31 @@
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
 #include "JzRE/Runtime/Function/ECS/JzWindowSystem.h"
 #include "JzRE/Editor/Core/JzEditorState.h"
+#include <array>
+
+namespace {
+
+std::filesystem::path ResolveEditorResourcePath(const std::filesystem::path &relativePath)
+{
+    const auto cwd      = std::filesystem::current_path();
+    const auto buildDir = cwd / "build" / "JzRE";
+
+    const std::array<std::filesystem::path, 2> roots = {cwd, buildDir};
+    for (const auto &root : roots) {
+        const auto candidate = root / relativePath;
+        if (std::filesystem::exists(candidate)) {
+            return candidate;
+        }
+    }
+
+    if (std::filesystem::exists(buildDir)) {
+        return buildDir / relativePath;
+    }
+
+    return cwd / relativePath;
+}
+
+} // namespace
 
 JzRE::JzEditorUI::JzEditorUI(JzRE::JzRERuntime &runtime) :
     m_runtime(&runtime)
@@ -76,12 +101,12 @@ void JzRE::JzEditorUI::InitializePanels()
         sceneView.SetSelectedEntity(INVALID_ENTITY);
     };
 
-    const auto layoutConfigPath = std::filesystem::current_path() / "config" / "layout.ini";
+    const auto layoutConfigPath = ResolveEditorResourcePath("config/layout.ini");
     m_uiManager->ResetLayout(layoutConfigPath.string());
     m_uiManager->SetEditorLayoutSaveFilename(layoutConfigPath.string());
     m_uiManager->EnableEditorLayoutSave(true);
 
-    const auto fontPath = std::filesystem::current_path() / "fonts" / "SourceHanSansCN-Regular.otf";
+    const auto fontPath = ResolveEditorResourcePath("fonts/SourceHanSansCN-Regular.otf");
     m_uiManager->LoadFont("sourcehansanscn-regular-18", fontPath.string(), 18);
     m_uiManager->LoadFont("sourcehansanscn-regular-16", fontPath.string(), 16);
     m_uiManager->LoadFont("sourcehansanscn-regular-14", fontPath.string(), 14);

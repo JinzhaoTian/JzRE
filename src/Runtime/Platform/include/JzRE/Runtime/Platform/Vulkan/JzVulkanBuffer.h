@@ -1,54 +1,56 @@
 /**
  * @author    Jinzhao Tian
- * @copyright Copyright (c) 2025 JzRE
+ * @copyright Copyright (c) 2026 JzRE
  */
 
 #pragma once
 
+#include <vulkan/vulkan.h>
+
 #include "JzRE/Runtime/Platform/RHI/JzGPUBufferObject.h"
 
 namespace JzRE {
+
+class JzVulkanDevice;
+
 /**
- * @brief Vulkan Buffer Implementation (Stub)
+ * @brief Vulkan implementation of GPU buffer object.
  */
 class JzVulkanBuffer : public JzGPUBufferObject {
 public:
     /**
-     * @brief Constructor
+     * @brief Constructor.
      *
-     * @param desc
+     * @param device Vulkan device owner.
+     * @param desc Buffer description.
      */
-    JzVulkanBuffer(const JzGPUBufferObjectDesc &desc);
+    JzVulkanBuffer(JzVulkanDevice &device, const JzGPUBufferObjectDesc &desc);
 
     /**
-     * @brief Destructor
+     * @brief Destructor.
      */
     ~JzVulkanBuffer() override;
 
-    /**
-     * @brief Update data
-     *
-     * @param data
-     * @param size
-     * @param offset
-     */
     void UpdateData(const void *data, Size size, Size offset = 0) override;
-
-    /**
-     * @brief Map Buffer
-     *
-     * @return void*
-     */
     void *MapBuffer() override;
+    void  UnmapBuffer() override;
 
     /**
-     * @brief Upmap Buffer
+     * @brief Native Vulkan buffer handle.
      */
-    void UnmapBuffer() override;
+    VkBuffer GetBuffer() const
+    {
+        return m_buffer;
+    }
 
 private:
-    // VkBuffer buffer;
-    // VkDeviceMemory memory;
-    // VkDevice device;
+    static VkBufferUsageFlags ConvertBufferUsage(JzEGPUBufferObjectType type);
+
+private:
+    JzVulkanDevice *m_owner  = nullptr;
+    VkBuffer        m_buffer = VK_NULL_HANDLE;
+    VkDeviceMemory  m_memory = VK_NULL_HANDLE;
+    void           *m_mapped = nullptr;
 };
+
 } // namespace JzRE

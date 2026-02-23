@@ -16,6 +16,7 @@
 #include "JzRE/Runtime/Function/ECS/JzWindowComponents.h"
 
 #include "JzRE/Runtime/Platform/RHI/JzGraphicsContext.h"
+#include "JzRE/Runtime/Platform/RHI/JzDeviceFactory.h"
 
 // Resource factories for JzAssetManager
 #include "JzRE/Runtime/Resource/JzShaderAssetFactory.h"
@@ -143,6 +144,25 @@ void JzRE::JzRERuntime::RegisterSystems()
     // Window system must be registered first to handle window/input events
     m_windowSystem = m_world->RegisterSystem<JzWindowSystem>();
     JzServiceContainer::Provide<JzWindowSystem>(*m_windowSystem);
+
+    // Resolve RHI before window creation to avoid API/window-context mismatch.
+    auto requestedRhiType = m_settings.rhiType;
+    auto selectedRhiType  = requestedRhiType;
+    if (selectedRhiType == JzERHIType::Unknown) {
+        selectedRhiType = JzDeviceFactory::GetDefaultRHIType();
+    }
+    if (selectedRhiType == JzERHIType::Vulkan && !JzDeviceFactory::IsVulkanSupported()) {
+        JzRE_LOG_WARN("JzRERuntime: Vulkan requested but unavailable, fallback to OpenGL");
+        selectedRhiType = JzERHIType::OpenGL;
+    }
+    if (selectedRhiType == JzERHIType::Unknown) {
+        selectedRhiType = JzERHIType::OpenGL;
+    }
+    m_settings.rhiType = selectedRhiType;
+
+    JzRE_LOG_INFO("JzRERuntime: requested RHI '{}', selected RHI '{}'",
+                  JzDeviceFactory::GetRHITypeName(requestedRhiType),
+                  JzDeviceFactory::GetRHITypeName(selectedRhiType));
 
     // Create GLFW window via the window system
     JzWindowConfig windowConfig;
@@ -386,12 +406,20 @@ void JzRE::JzRERuntime::Run()
         // Call user update logic
         OnUpdate(deltaTime);
 
+        if (m_graphicsContext) {
+            m_graphicsContext->BeginFrame();
+        }
+
         UpdateSystems(deltaTime);
 
         SynchronizeSystems();
 
         // Call render hook for additional rendering (e.g., host UI)
         OnRender(deltaTime);
+
+        if (m_graphicsContext) {
+            m_graphicsContext->EndFrame();
+        }
 
         OnFrameEnd();
 

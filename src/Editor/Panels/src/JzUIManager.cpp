@@ -1,18 +1,28 @@
 /**
  * @author    Jinzhao Tian
- * @copyright Copyright (c) 2025 JzRE
+ * @copyright Copyright (c) 2026 JzRE
  */
 
 #include "JzRE/Editor/Panels/JzUIManager.h"
-#include "JzRE/Runtime/Function/ECS/JzWindowSystem.h"
+
+#include <array>
+#include <filesystem>
+
 #include <GLFW/glfw3.h>
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
+#include <imgui_impl_vulkan.h>
+
+#include "JzRE/Editor/UI/JzImGuiTextureBridge.h"
+#include "JzRE/Runtime/Core/JzLogger.h"
+#include "JzRE/Runtime/Core/JzServiceContainer.h"
+#include "JzRE/Runtime/Function/ECS/JzWindowSystem.h"
+#include "JzRE/Runtime/Platform/RHI/JzDevice.h"
+#include "JzRE/Runtime/Platform/Vulkan/JzVulkanDevice.h"
 
 JzRE::JzUIManager::JzUIManager(JzWindowSystem &windowSystem)
 {
-    /* Setup Dear ImGui context */
     ImGui::CreateContext();
 
     ImGuiIO &io                          = ImGui::GetIO();
@@ -20,50 +30,86 @@ JzRE::JzUIManager::JzUIManager(JzWindowSystem &windowSystem)
 
     SetDocking(false);
 
-    /* Setup Platform/Renderer backends */
     auto *glfwWindow = static_cast<GLFWwindow *>(windowSystem.GetPlatformWindowHandle());
-    ImGui_ImplGlfw_InitForOpenGL(glfwWindow, true);
-    ImGui_ImplOpenGL3_Init("#version 150");
+    if (!glfwWindow) {
+        JzRE_LOG_ERROR("JzUIManager: invalid GLFW window handle");
+        return;
+    }
+
+    Bool backendInitialized = false;
+
+    if (JzServiceContainer::Has<JzDevice>()) {
+        auto &device = JzServiceContainer::Get<JzDevice>();
+        if (device.GetRHIType() == JzERHIType::Vulkan) {
+            backendInitialized = InitializeVulkanBackend(glfwWindow);
+        }
+    }
+
+    if (!backendInitialized) {
+        backendInitialized = InitializeOpenGLBackend(glfwWindow);
+    }
+
+    if (!backendInitialized) {
+        JzRE_LOG_ERROR("JzUIManager: failed to initialize ImGui backend");
+    }
 
     ImGui::StyleColorsDark();
-
     ApplyTheme();
+
+    JzImGuiTextureBridge::Initialize();
 }
 
 JzRE::JzUIManager::~JzUIManager()
 {
-    /* Shutdown Dear ImGui context */
-    ImGui_ImplOpenGL3_Shutdown();
+    JzImGuiTextureBridge::Shutdown();
+    ShutdownBackend();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
 }
 
 void JzRE::JzUIManager::Render()
 {
-    if (m_canvas) {
-        /* Start the Dear ImGui frame */
+    if (!m_canvas) {
+        return;
+    }
 
-        // Prepare OpenGL state and resources
-        ImGui_ImplOpenGL3_NewFrame();
-        // Process mouse, keyboard, and other input
-        ImGui_ImplGlfw_NewFrame();
+    switch (m_backend) {
+        case JzEImGuiBackend::OpenGL:
+            ImGui_ImplOpenGL3_NewFrame();
+            ImGui_ImplGlfw_NewFrame();
+            ImGui::NewFrame();
 
-        /* Prepare to draw */
+            m_canvas->Draw();
 
-        // Reset ImGui internal state
-        ImGui::NewFrame();
+            ImGui::Render();
+            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+            break;
 
-        m_canvas->Draw();
+        case JzEImGuiBackend::Vulkan: {
+            ImGui_ImplVulkan_NewFrame();
+            ImGui_ImplGlfw_NewFrame();
+            ImGui::NewFrame();
 
-        // Generate drawing data, calculate vertex, index and other data
-        ImGui::Render();
+            m_canvas->Draw();
 
-        /* Actually Render */
-        ImDrawData *draw_data = ImGui::GetDrawData();
-        ImGui_ImplOpenGL3_RenderDrawData(draw_data);
+            ImGui::Render();
 
-        // (Option) For multi-viewport
-        // if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) { ... }
+            if (!JzServiceContainer::Has<JzDevice>()) {
+                return;
+            }
+
+            auto &device = JzServiceContainer::Get<JzDevice>();
+            auto *vkDevice = dynamic_cast<JzVulkanDevice *>(&device);
+            if (!vkDevice || !vkDevice->IsFrameRecording()) {
+                return;
+            }
+
+            ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), vkDevice->GetCurrentCommandBuffer());
+            break;
+        }
+
+        case JzEImGuiBackend::Unknown:
+            break;
     }
 }
 
@@ -122,6 +168,11 @@ void JzRE::JzUIManager::ResetLayout(const JzRE::String &configPath) const
 
 JzRE::Bool JzRE::JzUIManager::LoadFont(const JzRE::String &fontId, const JzRE::String &fontPath, JzRE::F32 fontSize)
 {
+    if (!std::filesystem::exists(fontPath)) {
+        JzRE_LOG_WARN("JzUIManager: font file not found '{}'", fontPath);
+        return false;
+    }
+
     if (m_fonts.find(fontId) == m_fonts.end()) {
         auto   &io           = ImGui::GetIO();
         ImFont *fontInstance = io.Fonts->AddFontFromFileTTF(fontPath.c_str(),
@@ -244,4 +295,128 @@ void JzRE::JzUIManager::ApplyTheme()
     style.ScrollbarRounding        = 0.0f;
     style.GrabRounding             = 0.0f;
     style.TabRounding              = 0.0f;
+}
+
+JzRE::Bool JzRE::JzUIManager::InitializeOpenGLBackend(void *glfwWindow)
+{
+    if (ImGui_ImplGlfw_InitForOpenGL(static_cast<GLFWwindow *>(glfwWindow), true) == 0) {
+        return false;
+    }
+
+    if (ImGui_ImplOpenGL3_Init("#version 150") == 0) {
+        ImGui_ImplGlfw_Shutdown();
+        return false;
+    }
+
+    m_backend = JzEImGuiBackend::OpenGL;
+    JzRE_LOG_INFO("JzUIManager: initialized ImGui OpenGL backend");
+    return true;
+}
+
+JzRE::Bool JzRE::JzUIManager::InitializeVulkanBackend(void *glfwWindow)
+{
+    if (!JzServiceContainer::Has<JzDevice>()) {
+        return false;
+    }
+
+    auto &device = JzServiceContainer::Get<JzDevice>();
+    auto *vkDevice = dynamic_cast<JzVulkanDevice *>(&device);
+    if (!vkDevice || !vkDevice->IsInitialized()) {
+        return false;
+    }
+
+    if (ImGui_ImplGlfw_InitForVulkan(static_cast<GLFWwindow *>(glfwWindow), true) == 0) {
+        return false;
+    }
+
+    std::array<VkDescriptorPoolSize, 11> poolSizes = {
+        VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_SAMPLER, 1000},
+        VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000},
+        VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000},
+        VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000},
+        VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000},
+        VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000},
+        VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000},
+        VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000},
+        VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000},
+        VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000},
+        VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000},
+    };
+
+    VkDescriptorPoolCreateInfo poolInfo{};
+    poolInfo.sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    poolInfo.flags         = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+    poolInfo.maxSets       = static_cast<U32>(poolSizes.size()) * 1000;
+    poolInfo.poolSizeCount = static_cast<U32>(poolSizes.size());
+    poolInfo.pPoolSizes    = poolSizes.data();
+
+    if (vkCreateDescriptorPool(vkDevice->GetVkDevice(), &poolInfo, nullptr, &m_vulkanDescriptorPool) != VK_SUCCESS) {
+        ImGui_ImplGlfw_Shutdown();
+        return false;
+    }
+
+    ImGui_ImplVulkan_InitInfo initInfo{};
+    initInfo.ApiVersion      = VK_API_VERSION_1_0;
+    initInfo.Instance        = vkDevice->GetVkInstance();
+    initInfo.PhysicalDevice  = vkDevice->GetVkPhysicalDevice();
+    initInfo.Device          = vkDevice->GetVkDevice();
+    initInfo.QueueFamily     = vkDevice->GetGraphicsQueueFamilyIndex();
+    initInfo.Queue           = vkDevice->GetGraphicsQueue();
+    initInfo.PipelineCache   = VK_NULL_HANDLE;
+    initInfo.DescriptorPool  = m_vulkanDescriptorPool;
+    initInfo.RenderPass      = vkDevice->GetSwapchainRenderPass();
+    initInfo.Subpass         = 0;
+    initInfo.MinImageCount   = 2;
+    initInfo.ImageCount      = 2;
+    initInfo.MSAASamples     = VK_SAMPLE_COUNT_1_BIT;
+    initInfo.Allocator       = nullptr;
+    initInfo.CheckVkResultFn = nullptr;
+
+#ifdef IMGUI_IMPL_VULKAN_HAS_DYNAMIC_RENDERING
+    initInfo.UseDynamicRendering = false;
+#endif
+
+    if (ImGui_ImplVulkan_Init(&initInfo) == 0) {
+        vkDestroyDescriptorPool(vkDevice->GetVkDevice(), m_vulkanDescriptorPool, nullptr);
+        m_vulkanDescriptorPool = VK_NULL_HANDLE;
+        ImGui_ImplGlfw_Shutdown();
+        return false;
+    }
+
+    if (!ImGui_ImplVulkan_CreateFontsTexture()) {
+        JzRE_LOG_WARN("JzUIManager: failed to upload ImGui font texture for Vulkan backend");
+    }
+
+    m_backend = JzEImGuiBackend::Vulkan;
+    JzRE_LOG_INFO("JzUIManager: initialized ImGui Vulkan backend");
+    return true;
+}
+
+void JzRE::JzUIManager::ShutdownBackend()
+{
+    switch (m_backend) {
+        case JzEImGuiBackend::OpenGL:
+            ImGui_ImplOpenGL3_Shutdown();
+            break;
+
+        case JzEImGuiBackend::Vulkan:
+            if (JzServiceContainer::Has<JzDevice>()) {
+                auto &device = JzServiceContainer::Get<JzDevice>();
+                if (auto *vkDevice = dynamic_cast<JzVulkanDevice *>(&device)) {
+                    vkDevice->Finish();
+                    ImGui_ImplVulkan_Shutdown();
+
+                    if (m_vulkanDescriptorPool != VK_NULL_HANDLE) {
+                        vkDestroyDescriptorPool(vkDevice->GetVkDevice(), m_vulkanDescriptorPool, nullptr);
+                        m_vulkanDescriptorPool = VK_NULL_HANDLE;
+                    }
+                }
+            }
+            break;
+
+        case JzEImGuiBackend::Unknown:
+            break;
+    }
+
+    m_backend = JzEImGuiBackend::Unknown;
 }

@@ -11,7 +11,7 @@
 
 int main(int argc, char **argv)
 {
-    auto rhiType = JzRE::JzERHIType::OpenGL;
+    auto rhiType = JzRE::JzERHIType::Unknown;
 
     std::optional<std::filesystem::path> openPath;
 

@@ -3,6 +3,7 @@
 #include <imgui.h>
 #include "JzRE/Runtime/Core/JzRETypes.h"
 #include "JzRE/Editor/UI/JzConverter.h"
+#include "JzRE/Editor/UI/JzImGuiTextureBridge.h"
 
 JzRE::JzImageButton::JzImageButton(std::shared_ptr<JzGPUTextureObject> texture, const JzVec2 &size) :
     m_texture(texture),
@@ -19,7 +20,7 @@ void JzRE::JzImageButton::_Draw_Impl()
     }
 
     if (ImGui::ImageButton(m_widgetID.c_str(),
-                           (ImTextureID)(uintptr_t)m_texture->GetTextureID(),
+                           JzImGuiTextureBridge::Resolve(m_texture),
                            JzConverter::ToImVec2(buttonSize),
                            ImVec2(0.f, 1.f),
                            ImVec2(1.f, 0.f),

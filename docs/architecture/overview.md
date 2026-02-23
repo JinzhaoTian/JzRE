@@ -61,8 +61,8 @@ Key responsibilities:
 
 Current backend status:
 
-- OpenGL: implemented and used
-- Vulkan: planned
+- OpenGL: implemented and kept as compatibility backend
+- Vulkan: implemented (runtime/editor path available, automatic fallback to OpenGL)
 
 Notes on rendering command path:
 
@@ -106,12 +106,16 @@ Current `JzRERuntime::Run()` flow (simplified):
 
 1. poll window events (`m_windowSystem->PollWindowEvents()`)
 2. `OnUpdate(delta)`
-3. `m_world->Update(delta)`
-4. `OnRender(delta)`
-5. clear input frame state
-6. `m_graphicsContext->Present()`
+3. `m_graphicsContext->BeginFrame()`
+4. `m_world->Update(delta)`
+5. `OnRender(delta)`
+6. `m_graphicsContext->EndFrame()`
+7. clear input frame state
+8. `m_graphicsContext->Present()`
 
-`Present()` currently performs `device->Finish()` then `SwapBuffers()`.
+`Present()` behavior:
+- OpenGL: `Finish()` + `SwapBuffers()`
+- Vulkan: device-side submit + present (swapchain path)
 
 ## Render Target Lifecycle
 

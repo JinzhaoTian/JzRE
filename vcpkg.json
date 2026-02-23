@@ -17,8 +17,21 @@
             "features": [
                 "glfw-binding",
                 "opengl3-binding",
+                "vulkan-binding",
                 "docking-experimental"
             ]
+        },
+        {
+            "name": "vulkan",
+            "version>=": "2023-12-17"
+        },
+        {
+            "name": "shaderc",
+            "version>=": "2025.2"
+        },
+        {
+            "name": "spirv-reflect",
+            "version>=": "1.4.309.0"
         },
         {
             "name": "assimp",

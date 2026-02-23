@@ -478,6 +478,17 @@ std::unordered_map<String, String> defines = {
 auto shadowVariant = shader->GetVariant(defines);
 ```
 
+### Cross-API Shader Contract
+
+Shader assets are compiled against the currently selected RHI backend. The compile path injects:
+
+- `JZ_BACKEND_OPENGL`
+- `JZ_BACKEND_VULKAN`
+
+This keeps a single shader source compatible with both OpenGL and Vulkan. Runtime/editor built-in shaders use the same source files and backend macros instead of maintaining backend-specific shader duplicates.
+
+For Vulkan, shader compilation is validated through `shaderc` + `spirv-reflect` before pipeline object creation.
+
 ### Hot Reload Support
 
 `JzShaderAsset` supports hot reloading for development. Hot reload is now integrated into `JzAssetSystem`:
@@ -555,4 +566,3 @@ src/Runtime/Function/include/JzRE/Runtime/Function/ECS/
 src/Runtime/Function/src/ECS/
 └── JzAssetSystem.cpp         # Full implementation (absorbed JzAssetLoadingSystem)
 ```
-

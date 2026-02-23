@@ -6,6 +6,7 @@
 #pragma once
 
 #include <unordered_map>
+#include <vulkan/vulkan.h>
 #include <imgui.h>
 #include "JzRE/Runtime/Core/JzRETypes.h"
 #include "JzCanvas.h"
@@ -120,6 +121,19 @@ public:
     void ApplyTheme();
 
 private:
+    enum class JzEImGuiBackend : U8 {
+        Unknown = 0,
+        OpenGL,
+        Vulkan
+    };
+
+    Bool InitializeOpenGLBackend(void *glfwWindow);
+    Bool InitializeVulkanBackend(void *glfwWindow);
+    void ShutdownBackend();
+
+private:
+    JzEImGuiBackend                           m_backend = JzEImGuiBackend::Unknown;
+    VkDescriptorPool                          m_vulkanDescriptorPool = VK_NULL_HANDLE;
     Bool                                      m_dockingState;
     JzCanvas                                 *m_canvas             = nullptr;
     String                                    m_layoutSaveFilename = "imgui.ini";

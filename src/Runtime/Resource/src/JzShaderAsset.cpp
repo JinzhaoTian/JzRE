@@ -17,6 +17,32 @@
 
 namespace JzRE {
 
+namespace {
+
+String BuildDefinesBlock(const std::unordered_map<String, String> &variantDefines,
+                         const std::unordered_map<String, String> &sourceDefines,
+                         JzERHIType                                 rhiType)
+{
+    String definesBlock;
+    definesBlock.reserve(1024);
+
+    definesBlock += "#define JZ_BACKEND_OPENGL ";
+    definesBlock += (rhiType == JzERHIType::OpenGL) ? "1\n" : "0\n";
+    definesBlock += "#define JZ_BACKEND_VULKAN ";
+    definesBlock += (rhiType == JzERHIType::Vulkan) ? "1\n" : "0\n";
+
+    for (const auto &[name, value] : variantDefines) {
+        definesBlock += "#define " + name + " " + value + "\n";
+    }
+    for (const auto &[name, value] : sourceDefines) {
+        definesBlock += "#define " + name + " " + value + "\n";
+    }
+
+    return definesBlock;
+}
+
+} // namespace
+
 JzShaderAsset::JzShaderAsset(const String &vertexPath, const String &fragmentPath) :
     m_vertexPath(vertexPath),
     m_fragmentPath(fragmentPath)
@@ -149,17 +175,12 @@ std::shared_ptr<JzShaderVariant> JzShaderAsset::GetVariant(const std::unordered_
     }
 
     // Create preprocessor defines string
-    String definesStr;
-    for (const auto &[name, value] : defines) {
-        definesStr += "#define " + name + " " + value + "\n";
-    }
+    auto &device     = JzServiceContainer::Get<JzDevice>();
+    auto  definesStr = BuildDefinesBlock(defines, m_sourceData.defines, device.GetRHIType());
 
     // Prepend defines to shader sources
     String vertexWithDefines   = definesStr + m_sourceData.vertexSource;
     String fragmentWithDefines = definesStr + m_sourceData.fragmentSource;
-
-    // Compile variant using device from service container
-    auto &device = JzServiceContainer::Get<JzDevice>();
 
     // Create shader descriptors
     JzShaderProgramDesc vsDesc{};
@@ -352,16 +373,11 @@ Bool JzShaderAsset::CompileProgram()
     }
 
     // Apply any default defines
-    String definesStr;
-    for (const auto &[name, value] : m_sourceData.defines) {
-        definesStr += "#define " + name + " " + value + "\n";
-    }
+    auto &device     = JzServiceContainer::Get<JzDevice>();
+    auto  definesStr = BuildDefinesBlock({}, m_sourceData.defines, device.GetRHIType());
 
     String vertexWithDefines   = definesStr + m_sourceData.vertexSource;
     String fragmentWithDefines = definesStr + m_sourceData.fragmentSource;
-
-    // Compile using device from service container
-    auto &device = JzServiceContainer::Get<JzDevice>();
 
     // Create shader descriptors
     JzShaderProgramDesc vsDesc{};

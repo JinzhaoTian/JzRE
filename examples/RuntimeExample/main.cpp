@@ -14,7 +14,7 @@
 struct CommandLineArgs {
     std::string      inputModel;
     std::string      projectFile;
-    JzRE::JzERHIType graphicApi = JzRE::JzERHIType::OpenGL;
+    JzRE::JzERHIType graphicApi = JzRE::JzERHIType::Unknown;
 };
 
 /**
@@ -29,7 +29,7 @@ void PrintUsage(const char *programName)
               << "Options:\n"
               << "  --project, -p      Path to .jzreproject file (optional, auto-configures paths)\n"
               << "  --input, -i        Path to the model file to open (required if no project)\n"
-              << "  --graphic_api, -g  Graphics API to use: opengl, vulkan (default: opengl)\n"
+              << "  --graphic_api, -g  Graphics API to use: opengl, vulkan (default: auto)\n"
               << "  --help, -h         Show this help message\n"
               << "\n"
               << "Examples:\n"
@@ -256,7 +256,15 @@ int main(int argc, char *argv[])
     if (!args.inputModel.empty()) {
         std::cout << "  Model: " << args.inputModel << "\n";
     }
-    std::cout << "  Graphics API: " << (args.graphicApi == JzRE::JzERHIType::OpenGL ? "OpenGL" : "Vulkan") << "\n";
+    std::cout << "  Graphics API: ";
+    if (args.graphicApi == JzRE::JzERHIType::OpenGL) {
+        std::cout << "OpenGL";
+    } else if (args.graphicApi == JzRE::JzERHIType::Vulkan) {
+        std::cout << "Vulkan";
+    } else {
+        std::cout << "Auto";
+    }
+    std::cout << "\n";
 
     RuntimeExample app(args);
     app.Run();

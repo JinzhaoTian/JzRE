@@ -52,60 +52,9 @@ public:
     const String &GetLinkLog() const;
 
     /**
-     * @brief Set a uniform value
-     *
-     * @param name The name of the uniform
-     * @param value The value to set
+     * @brief Upload cached parameters to OpenGL uniforms.
      */
-    void SetUniform(const String &name, I32 value) override;
-
-    /**
-     * @brief Set a uniform value
-     *
-     * @param name The name of the uniform
-     * @param value The value to set
-     */
-    void SetUniform(const String &name, F32 value) override;
-
-    /**
-     * @brief Set a uniform value
-     *
-     * @param name The name of the uniform
-     * @param value The value to set
-     */
-    void SetUniform(const String &name, const JzVec2 &value) override;
-
-    /**
-     * @brief Set a uniform value
-     *
-     * @param name The name of the uniform
-     * @param value The value to set
-     */
-    void SetUniform(const String &name, const JzVec3 &value) override;
-
-    /**
-     * @brief Set a uniform value
-     *
-     * @param name The name of the uniform
-     * @param value The value to set
-     */
-    void SetUniform(const String &name, const JzVec4 &value) override;
-
-    /**
-     * @brief Set a uniform value
-     *
-     * @param name The name of the uniform
-     * @param value The value to set
-     */
-    void SetUniform(const String &name, const JzMat3 &value) override;
-
-    /**
-     * @brief Set a uniform value
-     *
-     * @param name The name of the uniform
-     * @param value The value to set
-     */
-    void SetUniform(const String &name, const JzMat4 &value) override;
+    void CommitParameters() override;
 
 private:
     /**

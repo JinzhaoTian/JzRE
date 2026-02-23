@@ -5,7 +5,10 @@
 
 #pragma once
 
+#include <memory>
+
 #include "JzRE/Runtime/Core/JzVector.h"
+#include "JzRE/Runtime/Platform/RHI/JzGPUTextureObject.h"
 #include "JzRE/Editor/UI/JzWidget.h"
 
 namespace JzRE {
@@ -27,7 +30,8 @@ protected:
     void _Draw_Impl() override;
 
 public:
-    void  *frameTextureId;
+    std::shared_ptr<JzGPUTextureObject> frameTexture;
+    void  *frameTextureId = nullptr;
     JzVec2 frameSize;
 };
 

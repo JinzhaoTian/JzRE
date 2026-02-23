@@ -124,6 +124,7 @@ void JzView::UpdateFrameTexture()
     }
 
     m_frame->frameTextureId = output->GetTextureID();
+    m_frame->frameTexture   = output->GetColorTexture();
     m_frame->frameSize      = JzVec2(static_cast<F32>(size.x), static_cast<F32>(size.y));
 }
 

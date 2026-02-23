@@ -1,4 +1,5 @@
 #version 330 core
+#include "include/JzShaderCommon.glsl"
 
 layout (location = 0) in vec2 aPos;
 
@@ -11,4 +12,5 @@ void main()
 
     // Keep depth close to far plane so skybox fills only untouched pixels after geometry pass.
     gl_Position = vec4(aPos.xy, 0.999999, 1.0);
+    JZ_FLIP_CLIP_Y(gl_Position);
 }

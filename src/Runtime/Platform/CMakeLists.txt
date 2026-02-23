@@ -3,15 +3,22 @@ add_library(JzRuntimePlatform STATIC)
 
 # Collect all RHI sources from src/ subdirectories
 file(GLOB_RECURSE PLATFORM_HEADERS CONFIGURE_DEPENDS "include/*.h")
-file(GLOB_RECURSE RHI_SOURCES CONFIGURE_DEPENDS "src/*.cpp")
+file(GLOB_RECURSE PLATFORM_COMMON_SOURCES CONFIGURE_DEPENDS "src/*.cpp")
+list(FILTER PLATFORM_COMMON_SOURCES EXCLUDE REGEX ".*/src/OpenGL/.*")
+list(FILTER PLATFORM_COMMON_SOURCES EXCLUDE REGEX ".*/src/Vulkan/.*")
+list(FILTER PLATFORM_COMMON_SOURCES EXCLUDE REGEX ".*/src/Windows/.*")
+list(FILTER PLATFORM_COMMON_SOURCES EXCLUDE REGEX ".*/src/Linux/.*")
+list(FILTER PLATFORM_COMMON_SOURCES EXCLUDE REGEX ".*/src/macOS/.*")
 
 # OpenGL backend - from src/OpenGL/
 file(GLOB OPENGL_SOURCES CONFIGURE_DEPENDS "src/OpenGL/*.cpp")
-file(GLOB OPENGL_HEADERS CONFIGURE_DEPENDS "include/OpenGL/*.h")
+file(GLOB OPENGL_HEADERS CONFIGURE_DEPENDS "include/JzRE/Runtime/Platform/OpenGL/*.h")
 
-# Vulkan backend (conditional)
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/include/Vulkan" AND IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/Vulkan")
-    file(GLOB VULKAN_HEADERS CONFIGURE_DEPENDS "include/Vulkan/*.h")
+# Vulkan backend
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/include/JzRE/Runtime/Platform/Vulkan"
+   AND IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/JzRE/Runtime/Platform/Vulkan")
+    file(GLOB VULKAN_HEADERS CONFIGURE_DEPENDS "include/JzRE/Runtime/Platform/Vulkan/*.h")
+    file(GLOB VULKAN_SOURCES CONFIGURE_DEPENDS "src/Vulkan/*.cpp")
 endif()
 
 # Platform-specific sources - from src/{Platform}/
@@ -26,9 +33,10 @@ endif()
 # Combine all sources
 set(ALL_PLATFORM_SOURCES
     ${PLATFORM_HEADERS}
-    ${RHI_SOURCES}
+    ${PLATFORM_COMMON_SOURCES}
     ${OPENGL_SOURCES}
     ${OPENGL_HEADERS}
+    ${VULKAN_SOURCES}
     ${VULKAN_HEADERS}
     ${PLATFORM_SPECIFIC_SOURCES}
 )
@@ -56,12 +64,16 @@ target_include_directories(JzRuntimePlatform
 # Graphics API dependencies
 find_package(glad CONFIG REQUIRED)
 find_package(glfw3 CONFIG REQUIRED)
+find_package(Vulkan REQUIRED)
+find_package(unofficial-shaderc CONFIG REQUIRED)
+find_package(unofficial-spirv-reflect CONFIG REQUIRED)
 
 # Platform-specific libraries
 if(WIN32)
     find_package(OpenGL REQUIRED)
     set(JZ_PLATFORM_LIBS opengl32 gdi32)
     set(JZ_OPENGL_LIBS OpenGL::GL)
+    set(JZ_VULKAN_LIBS Vulkan::Vulkan)
 elseif(APPLE)
     find_library(COCOA_LIB Cocoa REQUIRED)
     find_library(IOKIT_LIB IOKit REQUIRED)
@@ -71,12 +83,14 @@ elseif(APPLE)
     find_library(UNIFORMTYPEIDENTIFIERS_LIB UniformTypeIdentifiers REQUIRED)
     set(JZ_PLATFORM_LIBS ${COCOA_LIB} ${IOKIT_LIB} ${COREVIDEO_LIB} ${UNIFORMTYPEIDENTIFIERS_LIB})
     set(JZ_OPENGL_LIBS ${OPENGL_LIB} ${GLUT_LIB})
+    set(JZ_VULKAN_LIBS Vulkan::Vulkan)
 elseif(UNIX)
     find_package(OpenGL REQUIRED)
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(X11 REQUIRED x11)
     set(JZ_PLATFORM_LIBS ${X11_LIBRARIES} ${CMAKE_DL_LIBS})
     set(JZ_OPENGL_LIBS OpenGL::GL)
+    set(JZ_VULKAN_LIBS Vulkan::Vulkan)
 endif()
 
 # Threading support
@@ -89,6 +103,8 @@ target_link_libraries(JzRuntimePlatform
         glfw
         Threads::Threads
         ${JZ_OPENGL_LIBS}
+        ${JZ_VULKAN_LIBS}
         ${JZ_PLATFORM_LIBS}
+        unofficial::shaderc::shaderc
+        unofficial::spirv-reflect
 )
-

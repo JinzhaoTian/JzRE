@@ -4,23 +4,87 @@
  */
 
 #include "JzRE/Runtime/Platform/RHI/JzDeviceFactory.h"
-#include <iostream>
-#include "JzRE/Runtime/Platform/OpenGL/JzOpenGLDevice.h"
 
-std::unique_ptr<JzRE::JzDevice> JzRE::JzDeviceFactory::CreateDevice(JzRE::JzERHIType rhiType)
+#include <algorithm>
+#include <cstring>
+#include <vector>
+
+#define GLFW_INCLUDE_NONE
+#include <GLFW/glfw3.h>
+#include <vulkan/vulkan.h>
+
+#include "JzRE/Runtime/Core/JzLogger.h"
+#include "JzRE/Runtime/Platform/OpenGL/JzOpenGLDevice.h"
+#include "JzRE/Runtime/Platform/Vulkan/JzVulkanDevice.h"
+#include "JzRE/Runtime/Platform/Window/JzIWindowBackend.h"
+
+namespace {
+
+JzRE::Bool HasRequiredInstanceExtensions()
 {
-    if (rhiType == JzERHIType::Unknown) {
-        rhiType = GetDefaultRHIType();
+    uint32_t      requiredCount      = 0;
+    const char **requiredExtensions = glfwGetRequiredInstanceExtensions(&requiredCount);
+    if (!requiredExtensions || requiredCount == 0) {
+        return false;
     }
 
-    switch (rhiType) {
+    uint32_t resultCount = 0;
+    if (vkEnumerateInstanceExtensionProperties(nullptr, &resultCount, nullptr) != VK_SUCCESS) {
+        return false;
+    }
+
+    std::vector<VkExtensionProperties> available(resultCount);
+    if (vkEnumerateInstanceExtensionProperties(nullptr, &resultCount, available.data()) != VK_SUCCESS) {
+        return false;
+    }
+
+    for (uint32_t i = 0; i < requiredCount; ++i) {
+        const char *required = requiredExtensions[i];
+        const JzRE::Bool found = std::any_of(
+            available.begin(), available.end(),
+            [required](const VkExtensionProperties &prop) {
+                return std::strcmp(prop.extensionName, required) == 0;
+            });
+        if (!found) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+} // namespace
+
+std::unique_ptr<JzRE::JzDevice> JzRE::JzDeviceFactory::CreateDevice(JzRE::JzERHIType rhiType, JzIWindowBackend *windowBackend)
+{
+    const auto requestedType = rhiType;
+    auto       selectedType  = rhiType;
+    if (selectedType == JzERHIType::Unknown) {
+        selectedType = GetDefaultRHIType();
+    }
+
+    if (selectedType == JzERHIType::Vulkan && !IsVulkanSupported()) {
+        JzRE_LOG_WARN("JzDeviceFactory: Vulkan requested but unavailable, falling back to OpenGL");
+        selectedType = JzERHIType::OpenGL;
+    }
+
+    if (selectedType == JzERHIType::Vulkan && !windowBackend) {
+        JzRE_LOG_WARN("JzDeviceFactory: Vulkan requires a window backend, falling back to OpenGL");
+        selectedType = JzERHIType::OpenGL;
+    }
+
+    JzRE_LOG_INFO("JzDeviceFactory: requested RHI '{}', selected RHI '{}'",
+                  GetRHITypeName(requestedType), GetRHITypeName(selectedType));
+
+    switch (selectedType) {
         case JzERHIType::OpenGL:
             return std::make_unique<JzOpenGLDevice>();
-        // case JzERHIType::Vulkan:
-        //     return std::make_unique<JzVulkanDevice>();
+        case JzERHIType::Vulkan:
+            return std::make_unique<JzVulkanDevice>(*windowBackend);
         default:
-            std::cerr << "不支持的RHI类型: " << static_cast<int>(rhiType) << std::endl;
-            return nullptr;
+            JzRE_LOG_WARN("JzDeviceFactory: Unsupported RHI type '{}', forcing OpenGL",
+                          GetRHITypeName(selectedType));
+            return std::make_unique<JzOpenGLDevice>();
     }
 }
 
@@ -28,24 +92,24 @@ std::vector<JzRE::JzERHIType> JzRE::JzDeviceFactory::GetSupportedRHITypes()
 {
     std::vector<JzERHIType> supportedTypes;
 
-    // OpenGL总是支持的（通过GLAD和GLFW）
-    supportedTypes.push_back(JzERHIType::OpenGL);
+    if (IsVulkanSupported()) {
+        supportedTypes.push_back(JzERHIType::Vulkan);
+    }
 
-    // Vulkan支持可以在运行时检测
-    // TODO: 添加Vulkan支持检测
-    // if (IsVulkanSupported()) {
-    //     supportedTypes.push_back(ERHIType::Vulkan);
-    // }
+    supportedTypes.push_back(JzERHIType::OpenGL);
 
     return supportedTypes;
 }
 
 JzRE::JzERHIType JzRE::JzDeviceFactory::GetDefaultRHIType()
 {
-    auto supportedTypes = GetSupportedRHITypes();
+    const auto supportedTypes = GetSupportedRHITypes();
 
-    // 优先选择Vulkan，回退到OpenGL
-    for (auto type : {/*JzERHIType::Vulkan,*/ JzERHIType::OpenGL}) {
+    const std::vector<JzERHIType> preferredTypes = {
+        JzERHIType::Vulkan,
+        JzERHIType::OpenGL};
+
+    for (auto type : preferredTypes) {
         for (auto supported : supportedTypes) {
             if (type == supported) {
                 return type;
@@ -58,13 +122,34 @@ JzRE::JzERHIType JzRE::JzDeviceFactory::GetDefaultRHIType()
 
 JzRE::Bool JzRE::JzDeviceFactory::IsRHITypeSupported(JzRE::JzERHIType rhiType)
 {
-    auto supportedTypes = GetSupportedRHITypes();
+    if (rhiType == JzERHIType::Unknown) {
+        return false;
+    }
+
+    const auto supportedTypes = GetSupportedRHITypes();
     for (auto supported : supportedTypes) {
         if (rhiType == supported) {
             return true;
         }
     }
     return false;
+}
+
+JzRE::Bool JzRE::JzDeviceFactory::IsVulkanSupported()
+{
+    if (glfwInit() != GLFW_TRUE) {
+        return false;
+    }
+
+    if (glfwVulkanSupported() != GLFW_TRUE) {
+        return false;
+    }
+
+    if (!HasRequiredInstanceExtensions()) {
+        return false;
+    }
+
+    return true;
 }
 
 JzRE::String JzRE::JzDeviceFactory::GetRHITypeName(JzRE::JzERHIType rhiType)

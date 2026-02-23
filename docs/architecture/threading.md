@@ -258,12 +258,12 @@ void JzSystemScheduler::Update(JzEntityManager& manager, F32 delta) {
 
 ## Phase 3: Multi-Threaded Command Recording
 
-**Goal**: Generate render commands in parallel (requires Vulkan backend).
+**Goal**: Generate render commands in parallel (Vulkan path enabled).
 
 ### Prerequisites
 
 - ✅ `JzRHICommandList` already supports thread-safe recording
-- ❌ Vulkan backend implementation needed
+- ✅ Vulkan backend runtime path is available
 
 ### Design
 
@@ -328,8 +328,8 @@ void JzRenderer::RecordCommands(const std::vector<RenderBatch>& batches) {
 
 ### Dependencies
 
-- Vulkan backend implementation
-- Or D3D12 backend implementation
+- Command-list to backend submission path for Vulkan/D3D12 style APIs
+- Render graph/task scheduler integration
 
 ---
 
@@ -496,5 +496,5 @@ JzRE's multi-threading evolution follows a progressive approach:
 
 1. **Existing Foundation**: `JzThreadPool` and `JzTaskQueue` provide threading infrastructure
 2. **OpenGL Limitation**: Current OpenGL backend doesn't support multi-threaded rendering
-3. **Vulkan Enablement**: Vulkan backend will enable true multi-threaded command recording
+3. **Vulkan Enablement**: Vulkan backend is integrated and ready for multi-threaded command recording evolution
 4. **Progressive Evolution**: Start from background I/O, gradually expand to full parallel rendering

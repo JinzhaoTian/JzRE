@@ -38,7 +38,7 @@ JzRE/
 │   │   │   │   ├── Window/         # IWindowBackend, GLFWWindowBackend
 │   │   │   │   ├── Dialog/         # File dialogs
 │   │   │   │   ├── OpenGL/         # OpenGL backend
-│   │   │   │   └── Vulkan/         # Vulkan backend (planned)
+│   │   │   │   └── Vulkan/         # Vulkan backend implementation
 │   │   │   └── src/
 │   │   │       ├── OpenGL/, Vulkan/
 │   │   │       └── Windows/, Linux/, macOS/
@@ -230,10 +230,11 @@ cd build && ctest --output-on-failure
 | Target              | Type       | Dependencies                                              |
 | ------------------- | ---------- | --------------------------------------------------------- |
 | `JzRuntimeCore`     | Static     | spdlog, fmt                                               |
-| `JzRuntimePlatform` | Static     | JzRuntimeCore, glad, glfw                                 |
+| `JzRuntimePlatform` | Static     | JzRuntimeCore, glad, glfw, vulkan, shaderc, spirv-reflect |
 | `JzRuntimeResource` | Static     | JzRuntimeCore, JzRuntimePlatform, assimp, stb, freetype   |
 | `JzRuntimeFunction` | Static     | JzRuntimeCore, JzRuntimePlatform, JzRuntimeResource, entt |
 | `JzRERuntime`       | Interface  | All runtime layers                                        |
 | `JzEditor`          | Static     | JzRERuntime, imgui (docking)                              |
 | `JzREEditor`        | Executable | JzRERuntime, JzEditor                                     |
 | `TESTJzRECore`      | Executable | JzRuntimeCore, GTest::gtest_main                          |
+| `TESTJzREPlatform`  | Executable | JzRuntimePlatform, GTest::gtest_main                      |

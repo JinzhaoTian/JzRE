@@ -189,11 +189,36 @@ void JzAssetManager::AddSearchPath(const String &path)
 String JzAssetManager::FindFullPath(const String &relativePath) const
 {
     namespace fs = std::filesystem;
+    const auto TryResolveShaderBasePath = [](const fs::path &basePath) -> String {
+        if (!basePath.extension().empty()) {
+            return "";
+        }
+
+        fs::path vertexPath = basePath;
+        vertexPath += ".vert";
+        if (fs::exists(vertexPath)) {
+            return basePath.string();
+        }
+
+        fs::path fragmentPath = basePath;
+        fragmentPath += ".frag";
+        if (fs::exists(fragmentPath)) {
+            return basePath.string();
+        }
+
+        return "";
+    };
 
     // If path is absolute and exists, return it
     fs::path p(relativePath);
     if (p.is_absolute() && fs::exists(p)) {
         return relativePath;
+    }
+    if (p.is_absolute()) {
+        auto shaderBasePath = TryResolveShaderBasePath(p);
+        if (!shaderBasePath.empty()) {
+            return shaderBasePath;
+        }
     }
 
     // Search in registered paths
@@ -204,11 +229,20 @@ String JzAssetManager::FindFullPath(const String &relativePath) const
         if (fs::exists(fullPath)) {
             return fullPath.string();
         }
+
+        auto shaderBasePath = TryResolveShaderBasePath(fullPath);
+        if (!shaderBasePath.empty()) {
+            return shaderBasePath;
+        }
     }
 
     // Try relative to current directory
     if (fs::exists(p)) {
         return fs::absolute(p).string();
+    }
+    auto shaderBasePath = TryResolveShaderBasePath(p);
+    if (!shaderBasePath.empty()) {
+        return fs::absolute(shaderBasePath).string();
     }
 
     return ""; // Not found
