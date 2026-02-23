@@ -38,4 +38,15 @@ void JzWorld::Update(F32 delta)
     }
 }
 
+void JzWorld::ShutdownSystems()
+{
+    for (auto iter = m_systems.rbegin(); iter != m_systems.rend(); ++iter) {
+        if (*iter) {
+            (*iter)->OnShutdown(*this);
+        }
+    }
+
+    m_systems.clear();
+}
+
 } // namespace JzRE

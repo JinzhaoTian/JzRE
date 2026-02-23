@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <atomic>
 #include <array>
 #include <functional>
 #include <memory>
@@ -210,6 +211,16 @@ public:
     VkCommandBuffer GetCurrentCommandBuffer() const;
 
     /**
+     * @brief Lifetime flag shared with Vulkan resources.
+     *
+     * Resources can use this to avoid calling vkDestroy* after device teardown.
+     */
+    const std::shared_ptr<std::atomic_bool> &GetLifetimeFlag() const
+    {
+        return m_lifetimeFlag;
+    }
+
+    /**
      * @brief Returns true when command buffer recording is active for the frame.
      */
     Bool IsFrameRecording() const
@@ -308,6 +319,8 @@ private:
     U32                              m_pendingBlitSrcHeight = 0;
     U32                              m_pendingBlitDstWidth  = 0;
     U32                              m_pendingBlitDstHeight = 0;
+
+    std::shared_ptr<std::atomic_bool> m_lifetimeFlag = std::make_shared<std::atomic_bool>(true);
 };
 
 } // namespace JzRE

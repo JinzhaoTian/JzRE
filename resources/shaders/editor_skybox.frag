@@ -1,9 +1,32 @@
 #version 330 core
+#include "include/JzShaderCommon.glsl"
 
-in vec2 vUV;
+JZ_VK_LAYOUT_LOCATION(0) in vec2 vUV;
 
-out vec4 FragColor;
+JZ_VK_LAYOUT_LOCATION(0) out vec4 FragColor;
 
+#if JZ_BACKEND_VULKAN
+layout (set = 0, binding = 0) uniform JzEditorSkyboxUniforms {
+    mat4 view;
+    mat4 projection;
+    vec3 topColor;
+    vec3 horizonColor;
+    vec3 groundColor;
+    vec3 sunDirection;
+    vec3 sunColor;
+    float sunSize;
+    float exposure;
+} uSkybox;
+#define view uSkybox.view
+#define projection uSkybox.projection
+#define topColor uSkybox.topColor
+#define horizonColor uSkybox.horizonColor
+#define groundColor uSkybox.groundColor
+#define sunDirection uSkybox.sunDirection
+#define sunColor uSkybox.sunColor
+#define sunSize uSkybox.sunSize
+#define exposure uSkybox.exposure
+#else
 uniform mat4 view;
 uniform mat4 projection;
 
@@ -14,6 +37,7 @@ uniform vec3 sunDirection;
 uniform vec3 sunColor;
 uniform float sunSize;
 uniform float exposure;
+#endif
 
 vec3 ComputeWorldDirection(vec2 uv)
 {

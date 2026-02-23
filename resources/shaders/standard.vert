@@ -5,13 +5,24 @@ layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aNormal;
 layout (location = 2) in vec2 aTexCoords;
 
-out vec3 FragPos;
-out vec3 Normal;
-out vec2 TexCoords;
+JZ_VK_LAYOUT_LOCATION(0) out vec3 FragPos;
+JZ_VK_LAYOUT_LOCATION(1) out vec3 Normal;
+JZ_VK_LAYOUT_LOCATION(2) out vec2 TexCoords;
 
+#if JZ_BACKEND_VULKAN
+layout (set = 0, binding = 0) uniform JzStandardVertexUniforms {
+    mat4 model;
+    mat4 view;
+    mat4 projection;
+} uStandardVS;
+#define model uStandardVS.model
+#define view uStandardVS.view
+#define projection uStandardVS.projection
+#else
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
+#endif
 
 void main()
 {

@@ -256,3 +256,14 @@ sequenceDiagram
 - `src/Editor/Panels/src/JzView.cpp`
 - `src/Editor/Panels/src/JzSceneView.cpp`
 - `src/Editor/Application/src/JzREEditor.cpp`
+
+## Runtime Shutdown Sequence
+
+To keep GPU object lifetimes valid across backends, runtime teardown follows:
+
+1. `JzWorld::ShutdownSystems()` (reverse order `OnShutdown`).
+2. Reset ECS system handles (`JzRenderSystem`, `JzAssetSystem`, etc.).
+3. Shutdown `JzGraphicsContext` / `JzDevice`.
+4. Release window backend and world.
+
+This ordering ensures resource-owning systems release Vulkan/OpenGL objects before device teardown.

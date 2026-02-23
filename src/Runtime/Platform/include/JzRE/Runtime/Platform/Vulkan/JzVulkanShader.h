@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <atomic>
+#include <memory>
 #include <vector>
 
 #include <vulkan/vulkan.h>
@@ -79,12 +81,13 @@ private:
     static VkShaderStageFlagBits ConvertStage(JzEShaderProgramType type);
 
 private:
-    JzVulkanDevice  *m_owner      = nullptr;
-    VkShaderModule   m_shaderModule = VK_NULL_HANDLE;
-    VkShaderStageFlagBits m_stage = VK_SHADER_STAGE_VERTEX_BIT;
-    Bool             m_isCompiled = false;
-    String           m_compileLog;
-    std::vector<U32> m_spirv;
+    VkDevice                           m_device       = VK_NULL_HANDLE;
+    std::shared_ptr<std::atomic_bool>  m_deviceAlive;
+    VkShaderModule                     m_shaderModule = VK_NULL_HANDLE;
+    VkShaderStageFlagBits              m_stage        = VK_SHADER_STAGE_VERTEX_BIT;
+    Bool                               m_isCompiled   = false;
+    String                             m_compileLog;
+    std::vector<U32>                   m_spirv;
 };
 
 } // namespace JzRE

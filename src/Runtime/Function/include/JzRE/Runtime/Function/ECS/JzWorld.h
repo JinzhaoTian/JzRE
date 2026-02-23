@@ -313,6 +313,15 @@ public:
      */
     void Update(F32 delta);
 
+    /**
+     * @brief Shutdown all registered systems and release their references.
+     *
+     * Calls `OnShutdown` in reverse registration order, then clears the
+     * internal system list so external shared_ptr holders can destruct systems
+     * deterministically.
+     */
+    void ShutdownSystems();
+
 private:
     entt::registry                         m_registry; ///< The EnTT registry holding all entities and components.
     std::vector<std::shared_ptr<JzSystem>> m_systems;  ///< Registered systems.

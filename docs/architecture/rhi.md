@@ -162,6 +162,18 @@ In the runtime frame loop:
 
 This is the behavior reflected by current code.
 
+## Shutdown Ordering
+
+Runtime shutdown uses a deterministic order to avoid backend resource lifetime issues:
+
+1. `JzWorld::ShutdownSystems()` runs `OnShutdown` in reverse system registration order.
+2. ECS system references are cleared (`m_systems.clear()`), then runtime-held system pointers are reset.
+3. `JzGraphicsContext` and `JzDevice` are shut down after system-owned GPU resources are released.
+
+For Vulkan this avoids late destruction of objects such as shader modules after `vkDestroyDevice`.
+Additionally, Vulkan shader objects track a device lifetime flag and skip
+`vkDestroyShaderModule` if the device teardown has already begun.
+
 ## Example: Immediate Rendering
 
 ```cpp

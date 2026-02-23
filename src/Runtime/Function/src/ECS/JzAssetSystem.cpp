@@ -63,6 +63,19 @@ void JzAssetSystem::Update(JzWorld &world, F32 delta)
 
 void JzAssetSystem::OnShutdown(JzWorld &world)
 {
+    if (world.HasContext<JzAssetManager*>()) {
+        world.RemoveContext<JzAssetManager*>();
+    }
+
+    if (JzServiceContainer::Has<JzAssetManager>()) {
+        JzServiceContainer::Remove<JzAssetManager>();
+    }
+
+    if (m_assetManager) {
+        m_assetManager->Shutdown();
+        m_assetManager.reset();
+    }
+
     JzRE_LOG_INFO("JzAssetSystem: Shutdown");
 }
 

@@ -45,6 +45,27 @@ String BuildDefinesBlock(const std::unordered_map<String, String> &defines,
     return definesBlock;
 }
 
+String InjectDefinesAfterVersion(const String &source, const String &definesBlock)
+{
+    if (definesBlock.empty()) {
+        return source;
+    }
+
+    if (source.rfind("#version", 0) == 0) {
+        const auto lineEnd = source.find('\n');
+        if (lineEnd != String::npos) {
+            String merged;
+            merged.reserve(source.size() + definesBlock.size() + 1);
+            merged.append(source, 0, lineEnd + 1);
+            merged += definesBlock;
+            merged.append(source, lineEnd + 1, String::npos);
+            return merged;
+        }
+    }
+
+    return definesBlock + source;
+}
+
 Bool ValidateSpirvWithReflection(const String &source, shaderc_shader_kind kind, const String &stageName, String &log)
 {
     shaderc::Compiler       compiler;
@@ -85,13 +106,13 @@ Bool BuildPipelineFromSources(JzDevice                              &device,
 {
     JzShaderProgramDesc vsDesc{};
     vsDesc.type       = JzEShaderProgramType::Vertex;
-    vsDesc.source     = definesBlock + source.vertexSource;
+    vsDesc.source     = InjectDefinesAfterVersion(source.vertexSource, definesBlock);
     vsDesc.entryPoint = "main";
     vsDesc.debugName  = pipelineDebugName + "_VS";
 
     JzShaderProgramDesc fsDesc{};
     fsDesc.type       = JzEShaderProgramType::Fragment;
-    fsDesc.source     = definesBlock + source.fragmentSource;
+    fsDesc.source     = InjectDefinesAfterVersion(source.fragmentSource, definesBlock);
     fsDesc.entryPoint = "main";
     fsDesc.debugName  = pipelineDebugName + "_FS";
 
@@ -103,7 +124,7 @@ Bool BuildPipelineFromSources(JzDevice                              &device,
     if (!source.geometrySource.empty()) {
         JzShaderProgramDesc gsDesc{};
         gsDesc.type       = JzEShaderProgramType::Geometry;
-        gsDesc.source     = definesBlock + source.geometrySource;
+        gsDesc.source     = InjectDefinesAfterVersion(source.geometrySource, definesBlock);
         gsDesc.entryPoint = "main";
         gsDesc.debugName  = pipelineDebugName + "_GS";
         pipelineDesc.shaders.push_back(gsDesc);
@@ -171,8 +192,8 @@ Bool JzVulkanShaderCompiler::Compile(const JzShaderSourceData                 &s
 
     const String definesBlock = BuildDefinesBlock(defines, source.defines, "JZ_BACKEND_VULKAN", "1");
 
-    const String vertexSource   = definesBlock + source.vertexSource;
-    const String fragmentSource = definesBlock + source.fragmentSource;
+    const String vertexSource   = InjectDefinesAfterVersion(source.vertexSource, definesBlock);
+    const String fragmentSource = InjectDefinesAfterVersion(source.fragmentSource, definesBlock);
     if (!ValidateSpirvWithReflection(vertexSource, shaderc_glsl_vertex_shader, "VulkanVertex", log)) {
         JzRE_LOG_WARN("JzVulkanShaderCompiler: vertex pre-validation skipped: {}", log);
         log.clear();
@@ -182,7 +203,7 @@ Bool JzVulkanShaderCompiler::Compile(const JzShaderSourceData                 &s
         log.clear();
     }
     if (!source.geometrySource.empty()) {
-        const String geometrySource = definesBlock + source.geometrySource;
+        const String geometrySource = InjectDefinesAfterVersion(source.geometrySource, definesBlock);
         if (!ValidateSpirvWithReflection(geometrySource, shaderc_glsl_geometry_shader, "VulkanGeometry", log)) {
             JzRE_LOG_WARN("JzVulkanShaderCompiler: geometry pre-validation skipped: {}", log);
             log.clear();

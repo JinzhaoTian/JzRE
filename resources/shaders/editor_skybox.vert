@@ -3,7 +3,7 @@
 
 layout (location = 0) in vec2 aPos;
 
-out vec2 vUV;
+JZ_VK_LAYOUT_LOCATION(0) out vec2 vUV;
 
 void main()
 {

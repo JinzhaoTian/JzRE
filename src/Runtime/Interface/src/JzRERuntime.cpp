@@ -295,8 +295,16 @@ void JzRE::JzRERuntime::ShutdownSubsystems()
     m_assetImporter.reset();
     m_assetExporter.reset();
 
+    // Ensure system-level shutdown runs before graphics context/device teardown.
+    if (m_world) {
+        m_world->ShutdownSystems();
+    }
+
     // Shutdown all subsystems in reverse order of initialization
     JzServiceContainer::Remove<JzRenderSystem>();
+    JzServiceContainer::Remove<JzAssetSystem>();
+    JzServiceContainer::Remove<JzEventSystem>();
+    JzServiceContainer::Remove<JzWindowSystem>();
     m_renderSystem.reset();
     m_lightSystem.reset();
     m_cameraSystem.reset();
@@ -311,6 +319,7 @@ void JzRE::JzRERuntime::ShutdownSubsystems()
     }
 
     m_windowSystem.reset();
+    JzServiceContainer::Remove<JzWorld>();
     m_world.reset();
 }
 

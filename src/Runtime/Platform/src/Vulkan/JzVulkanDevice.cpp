@@ -231,6 +231,10 @@ JzVulkanDevice::JzVulkanDevice(JzIWindowBackend &windowBackend) :
 
 JzVulkanDevice::~JzVulkanDevice()
 {
+    if (m_lifetimeFlag) {
+        m_lifetimeFlag->store(false, std::memory_order_release);
+    }
+
     Finish();
 
     DestroyFrameSyncObjects();

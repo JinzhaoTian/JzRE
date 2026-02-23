@@ -41,6 +41,27 @@ String BuildDefinesBlock(const std::unordered_map<String, String> &variantDefine
     return definesBlock;
 }
 
+String InjectDefinesAfterVersion(const String &source, const String &definesBlock)
+{
+    if (definesBlock.empty()) {
+        return source;
+    }
+
+    if (source.rfind("#version", 0) == 0) {
+        const auto lineEnd = source.find('\n');
+        if (lineEnd != String::npos) {
+            String merged;
+            merged.reserve(source.size() + definesBlock.size() + 1);
+            merged.append(source, 0, lineEnd + 1);
+            merged += definesBlock;
+            merged.append(source, lineEnd + 1, String::npos);
+            return merged;
+        }
+    }
+
+    return definesBlock + source;
+}
+
 } // namespace
 
 JzShaderAsset::JzShaderAsset(const String &vertexPath, const String &fragmentPath) :
@@ -178,9 +199,9 @@ std::shared_ptr<JzShaderVariant> JzShaderAsset::GetVariant(const std::unordered_
     auto &device     = JzServiceContainer::Get<JzDevice>();
     auto  definesStr = BuildDefinesBlock(defines, m_sourceData.defines, device.GetRHIType());
 
-    // Prepend defines to shader sources
-    String vertexWithDefines   = definesStr + m_sourceData.vertexSource;
-    String fragmentWithDefines = definesStr + m_sourceData.fragmentSource;
+    // Inject defines after #version to keep GLSL valid for Vulkan.
+    String vertexWithDefines   = InjectDefinesAfterVersion(m_sourceData.vertexSource, definesStr);
+    String fragmentWithDefines = InjectDefinesAfterVersion(m_sourceData.fragmentSource, definesStr);
 
     // Create shader descriptors
     JzShaderProgramDesc vsDesc{};
@@ -376,8 +397,8 @@ Bool JzShaderAsset::CompileProgram()
     auto &device     = JzServiceContainer::Get<JzDevice>();
     auto  definesStr = BuildDefinesBlock({}, m_sourceData.defines, device.GetRHIType());
 
-    String vertexWithDefines   = definesStr + m_sourceData.vertexSource;
-    String fragmentWithDefines = definesStr + m_sourceData.fragmentSource;
+    String vertexWithDefines   = InjectDefinesAfterVersion(m_sourceData.vertexSource, definesStr);
+    String fragmentWithDefines = InjectDefinesAfterVersion(m_sourceData.fragmentSource, definesStr);
 
     // Create shader descriptors
     JzShaderProgramDesc vsDesc{};
@@ -407,7 +428,7 @@ Bool JzShaderAsset::CompileProgram()
 
     // Add geometry shader if present
     if (!m_sourceData.geometrySource.empty()) {
-        String              geometryWithDefines = definesStr + m_sourceData.geometrySource;
+        String              geometryWithDefines = InjectDefinesAfterVersion(m_sourceData.geometrySource, definesStr);
         JzShaderProgramDesc gsDesc{};
         gsDesc.type       = JzEShaderProgramType::Geometry;
         gsDesc.source     = geometryWithDefines;

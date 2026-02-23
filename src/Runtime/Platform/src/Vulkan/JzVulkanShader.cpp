@@ -34,11 +34,26 @@ shaderc_shader_kind ConvertShaderKind(JzEShaderProgramType type)
     return shaderc_glsl_infer_from_source;
 }
 
+String UpgradeVersionForVulkan(const String &source)
+{
+    static constexpr const char *kVulkanVersionLine = "#version 450 core\n";
+
+    if (source.rfind("#version", 0) == 0) {
+        const auto lineEnd = source.find('\n');
+        if (lineEnd != String::npos) {
+            return String(kVulkanVersionLine) + source.substr(lineEnd + 1);
+        }
+    }
+
+    return String(kVulkanVersionLine) + source;
+}
+
 } // namespace
 
 JzVulkanShader::JzVulkanShader(JzVulkanDevice &device, const JzShaderProgramDesc &desc) :
     JzGPUShaderProgramObject(desc),
-    m_owner(&device)
+    m_device(device.GetVkDevice()),
+    m_deviceAlive(device.GetLifetimeFlag())
 {
     m_stage = ConvertStage(desc.type);
     Compile();
@@ -46,11 +61,14 @@ JzVulkanShader::JzVulkanShader(JzVulkanDevice &device, const JzShaderProgramDesc
 
 JzVulkanShader::~JzVulkanShader()
 {
-    if (!m_owner || m_shaderModule == VK_NULL_HANDLE) {
+    if (m_shaderModule == VK_NULL_HANDLE) {
         return;
     }
 
-    vkDestroyShaderModule(m_owner->GetVkDevice(), m_shaderModule, nullptr);
+    if (m_deviceAlive && m_deviceAlive->load(std::memory_order_acquire) && m_device != VK_NULL_HANDLE) {
+        vkDestroyShaderModule(m_device, m_shaderModule, nullptr);
+    }
+
     m_shaderModule = VK_NULL_HANDLE;
 }
 
@@ -60,7 +78,7 @@ Bool JzVulkanShader::Compile()
     m_compileLog.clear();
     m_spirv.clear();
 
-    if (!m_owner || m_owner->GetVkDevice() == VK_NULL_HANDLE) {
+    if (m_device == VK_NULL_HANDLE) {
         m_compileLog = "invalid Vulkan device";
         return false;
     }
@@ -72,8 +90,10 @@ Bool JzVulkanShader::Compile()
     options.SetOptimizationLevel(shaderc_optimization_level_performance);
     options.SetGenerateDebugInfo();
 
+    const String sourceForVulkan = UpgradeVersionForVulkan(desc.source);
+
     const auto result = compiler.CompileGlslToSpv(
-        desc.source,
+        sourceForVulkan,
         ConvertShaderKind(desc.type),
         desc.debugName.empty() ? "JzVulkanShader" : desc.debugName.c_str(),
         desc.entryPoint.empty() ? "main" : desc.entryPoint.c_str(),
@@ -92,7 +112,7 @@ Bool JzVulkanShader::Compile()
     createInfo.codeSize = m_spirv.size() * sizeof(U32);
     createInfo.pCode    = m_spirv.data();
 
-    if (vkCreateShaderModule(m_owner->GetVkDevice(), &createInfo, nullptr, &m_shaderModule) != VK_SUCCESS) {
+    if (vkCreateShaderModule(m_device, &createInfo, nullptr, &m_shaderModule) != VK_SUCCESS) {
         m_compileLog = "vkCreateShaderModule failed";
         JzRE_LOG_ERROR("JzVulkanShader: {}", m_compileLog);
         return false;
