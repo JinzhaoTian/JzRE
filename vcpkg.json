@@ -2,6 +2,7 @@
     "name": "jzre",
     "version": "0.1.0",
     "description": "JzRE project dependencies",
+    "license": "MIT",
     "dependencies": [
         {
             "name": "glfw3",

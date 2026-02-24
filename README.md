@@ -113,4 +113,4 @@ Mainline dependencies are managed via `vcpkg.json` in repository root:
 
 ## License
 
-See [LICENSE](LICENSE) for details.
+JzRE is licensed under the MIT License. See [LICENSE](LICENSE) for details.
