@@ -1,0 +1,253 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  shader-cook:
+    name: shader-cook (linux)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup vcpkg
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgJsonGlob: "**/vcpkg.json"
+
+      - name: Install shader toolchain from lock file
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          read_lock_value() {
+            local section="$1"
+            local key="$2"
+            awk -v section="$section" -v key="$key" '
+              $0 ~ "^\\[" section "\\]$" { in_section=1; next }
+              $0 ~ "^\\[" && in_section { in_section=0 }
+              in_section && $1 == key { gsub(/"/, "", $3); print $3; exit }
+            ' tools/shader-toolchain.lock
+          }
+
+          DXC_URL="$(read_lock_value dxc url)"
+          DXC_SHA="$(read_lock_value dxc sha256)"
+          SPVC_URL="$(read_lock_value spirv_cross url)"
+          SPVC_SHA="$(read_lock_value spirv_cross sha256)"
+
+          mkdir -p .toolchain
+          curl -L -o .toolchain/dxc.tar.gz "${DXC_URL}"
+          echo "${DXC_SHA}  .toolchain/dxc.tar.gz" | sha256sum -c -
+          tar -xf .toolchain/dxc.tar.gz -C .toolchain
+
+          curl -L -o .toolchain/spirv-cross.tar.gz "${SPVC_URL}"
+          echo "${SPVC_SHA}  .toolchain/spirv-cross.tar.gz" | sha256sum -c -
+          tar -xf .toolchain/spirv-cross.tar.gz -C .toolchain
+
+          DXC_BIN="$(find .toolchain -type f -name dxc | head -n 1)"
+          SPVC_BIN="$(find .toolchain -type f -name spirv-cross | head -n 1)"
+
+          test -n "${DXC_BIN}" && test -n "${SPVC_BIN}"
+          chmod +x "${DXC_BIN}" "${SPVC_BIN}"
+
+          mkdir -p "${HOME}/.local/bin"
+          cp "${DXC_BIN}" "${HOME}/.local/bin/dxc"
+          cp "${SPVC_BIN}" "${HOME}/.local/bin/spirv-cross"
+          echo "${HOME}/.local/bin" >> "${GITHUB_PATH}"
+
+      - name: Configure
+        shell: bash
+        run: |
+          cmake -S . -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_TOOLCHAIN_FILE="${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" \
+            -DVCPKG_TARGET_TRIPLET=x64-linux \
+            -DBUILD_TESTS=OFF \
+            -DJzRE_ENABLE_ENGINE_SHADER_COOK=ON
+
+      - name: Cook engine shaders
+        run: cmake --build build --target JzRECookEngineShaders --config Release
+
+      - name: Upload cooked shaders
+        uses: actions/upload-artifact@v4
+        with:
+          name: engine-shaders
+          path: build/JzRE/EngineContent/Shaders
+
+  build:
+    needs: shader-cook
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            os_name: linux
+            arch: x64
+            triplet: x64-linux
+          - os: macos-14
+            os_name: macos
+            arch: arm64
+            triplet: arm64-osx
+          - os: windows-2022
+            os_name: windows
+            arch: x64
+            triplet: x64-windows-static
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup vcpkg
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgJsonGlob: "**/vcpkg.json"
+
+      - name: Download cooked shaders
+        uses: actions/download-artifact@v4
+        with:
+          name: engine-shaders
+          path: cooked/EngineContent/Shaders
+
+      - name: Configure
+        shell: bash
+        run: |
+          cmake -S . -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_TOOLCHAIN_FILE="${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" \
+            -DVCPKG_TARGET_TRIPLET=${{ matrix.triplet }} \
+            -DBUILD_TESTS=ON \
+            -DJzRE_ENABLE_ENGINE_SHADER_COOK=OFF
+
+      - name: Build
+        run: cmake --build build --config Release
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure -C Release
+
+      - name: Stage runtime and dev payloads
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          cmake -E rm -rf dist
+          cmake -E make_directory dist/runtime/JzRE
+          cmake -E copy_directory build/JzRE dist/runtime/JzRE
+          cmake -E rm -rf dist/runtime/JzRE/EngineContent/Shaders
+          cmake -E make_directory dist/runtime/JzRE/EngineContent/Shaders
+          cmake -E copy_directory cooked/EngineContent/Shaders dist/runtime/JzRE/EngineContent/Shaders
+
+          if find dist/runtime -type f \( -name '*.hlsl' -o -name '*.hlsli' -o -name '*.jzshader.src.json' \) | grep -q .; then
+            echo "Runtime package contains shader source files"
+            exit 1
+          fi
+
+          cmake -E make_directory dist/dev
+          cmake -E copy_directory dist/runtime/JzRE dist/dev/JzRE
+          cmake -E make_directory dist/dev/src/EngineContent/ShaderSource
+          cmake -E copy_directory src/EngineContent/ShaderSource dist/dev/src/EngineContent/ShaderSource
+          cmake -E copy tools/shader-toolchain.lock dist/dev/shader-toolchain.lock
+
+          if [ -f build/JzRE/JzREShaderTool.exe ]; then
+            cmake -E copy build/JzRE/JzREShaderTool.exe dist/dev/JzREShaderTool.exe
+          elif [ -f build/JzRE/JzREShaderTool ]; then
+            cmake -E copy build/JzRE/JzREShaderTool dist/dev/JzREShaderTool
+          fi
+
+      - name: Upload runtime payload
+        uses: actions/upload-artifact@v4
+        with:
+          name: runtime-${{ matrix.os_name }}-${{ matrix.arch }}
+          path: dist/runtime
+
+      - name: Upload dev payload
+        uses: actions/upload-artifact@v4
+        with:
+          name: dev-${{ matrix.os_name }}-${{ matrix.arch }}
+          path: dist/dev
+
+  package-runtime:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download runtime payloads
+        uses: actions/download-artifact@v4
+        with:
+          pattern: runtime-*
+          path: release/runtime
+
+      - name: Build runtime archives
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF_NAME}"
+          mkdir -p out
+          for dir in release/runtime/runtime-*; do
+            name="$(basename "${dir}")"
+            suffix="${name#runtime-}"
+            (cd release/runtime && zip -r "../../out/JzRE-runtime-${suffix}-${TAG}.zip" "${name}")
+          done
+
+      - name: Upload runtime archives
+        uses: actions/upload-artifact@v4
+        with:
+          name: packaged-runtime
+          path: out/JzRE-runtime-*.zip
+
+  package-dev:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download dev payloads
+        uses: actions/download-artifact@v4
+        with:
+          pattern: dev-*
+          path: release/dev
+
+      - name: Build dev archives
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF_NAME}"
+          mkdir -p out
+          for dir in release/dev/dev-*; do
+            name="$(basename "${dir}")"
+            suffix="${name#dev-}"
+            (cd release/dev && zip -r "../../out/JzRE-dev-${suffix}-${TAG}.zip" "${name}")
+          done
+
+      - name: Upload dev archives
+        uses: actions/upload-artifact@v4
+        with:
+          name: packaged-dev
+          path: out/JzRE-dev-*.zip
+
+  release:
+    needs:
+      - package-runtime
+      - package-dev
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - name: Download packaged runtime
+        uses: actions/download-artifact@v4
+        with:
+          name: packaged-runtime
+          path: artifacts
+
+      - name: Download packaged dev
+        uses: actions/download-artifact@v4
+        with:
+          name: packaged-dev
+          path: artifacts
+
+      - name: Publish GitHub Release assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/*.zip

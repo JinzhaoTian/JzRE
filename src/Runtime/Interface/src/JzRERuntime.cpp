@@ -28,6 +28,7 @@
 // Asset import/export services
 #include "JzRE/Runtime/Function/Asset/JzAssetImporter.h"
 #include "JzRE/Runtime/Function/Asset/JzAssetExporter.h"
+#include "JzRE/Runtime/Function/Asset/JzShaderCookService.h"
 
 JzRE::JzRERuntime::JzRERuntime(const JzRERuntimeSettings &settings) :
     m_settings(settings)
@@ -217,10 +218,17 @@ void JzRE::JzRERuntime::RegisterSystems()
 
 void JzRE::JzRERuntime::InitializeSubsystems()
 {
+    const Bool hasLoadedProject = m_projectManager.HasLoadedProject();
+    Bool       enableAutoCook   = false;
+    if (hasLoadedProject) {
+        enableAutoCook = m_projectManager.GetConfig().shaderAutoCook;
+    }
+
     // Initialize asset system (creates and initializes internal JzAssetManager)
     JzAssetManagerConfig assetConfig;
     assetConfig.maxCacheMemoryMB = 512;
     assetConfig.asyncWorkerCount = 2;
+    assetConfig.enableHotReload  = enableAutoCook;
     m_assetSystem->Initialize(*m_world, assetConfig);
 
     // Register resource factories
@@ -230,8 +238,14 @@ void JzRE::JzRERuntime::InitializeSubsystems()
     m_assetSystem->RegisterFactory<JzTexture>(std::make_unique<JzTextureFactory>());
     m_assetSystem->RegisterFactory<JzMaterial>(std::make_unique<JzMaterialFactory>());
 
-    // Add search paths based on project or engine defaults
-    if (m_projectManager.HasLoadedProject()) {
+    const auto enginePath       = std::filesystem::current_path();
+    const auto engineContent    = (enginePath / "EngineContent");
+    const auto engineModelsPath = (engineContent / "Models");
+    const auto engineTexPath    = (engineContent / "Textures");
+    const auto engineShaderPath = (engineContent / "Shaders");
+
+    // Add search paths based on project content and engine fallback content.
+    if (hasLoadedProject) {
         const auto &config      = m_projectManager.GetConfig();
         auto        contentPath = config.GetContentPath();
 
@@ -239,23 +253,42 @@ void JzRE::JzRERuntime::InitializeSubsystems()
         m_assetSystem->AddSearchPath(contentPath.string());
         m_assetSystem->AddSearchPath((contentPath / "Models").string());
         m_assetSystem->AddSearchPath((contentPath / "Textures").string());
-        m_assetSystem->AddSearchPath((contentPath / "Shaders").string());
+        m_assetSystem->AddSearchPath(config.GetShaderCookedPath().string());
         m_assetSystem->AddSearchPath((contentPath / "Materials").string());
-    } else {
-        // Default engine paths when no project is loaded
-        auto enginePath = std::filesystem::current_path();
-        m_assetSystem->AddSearchPath(enginePath.string());
-        m_assetSystem->AddSearchPath((enginePath / "resources").string());
-        m_assetSystem->AddSearchPath((enginePath / "resources" / "models").string());
-        m_assetSystem->AddSearchPath((enginePath / "resources" / "textures").string());
-        m_assetSystem->AddSearchPath((enginePath / "resources" / "shaders").string());
     }
+
+    m_assetSystem->AddSearchPath(enginePath.string());
+    m_assetSystem->AddSearchPath(engineContent.string());
+    m_assetSystem->AddSearchPath(engineModelsPath.string());
+    m_assetSystem->AddSearchPath(engineTexPath.string());
+    m_assetSystem->AddSearchPath(engineShaderPath.string());
+
+    // Keep compatibility with existing sample output layouts.
+    m_assetSystem->AddSearchPath((enginePath / "models").string());
+    m_assetSystem->AddSearchPath((enginePath / "textures").string());
+    m_assetSystem->AddSearchPath((enginePath / "shaders").string());
 
     // Create and register asset import/export services
     m_assetImporter = std::make_unique<JzAssetImporter>();
     m_assetExporter = std::make_unique<JzAssetExporter>();
     JzServiceContainer::Provide<JzAssetImporter>(*m_assetImporter);
     JzServiceContainer::Provide<JzAssetExporter>(*m_assetExporter);
+
+    // Project-mode incremental source cooking bridge.
+    if (hasLoadedProject && enableAutoCook) {
+        const auto &config = m_projectManager.GetConfig();
+
+        JzShaderCookServiceConfig cookConfig;
+        cookConfig.sourceRoot          = config.GetShaderSourcePath();
+        cookConfig.outputRoot          = config.GetShaderCookedPath();
+        cookConfig.scanIntervalSeconds = 0.5f;
+
+        m_shaderCookService = std::make_unique<JzShaderCookService>(cookConfig);
+        if (!m_shaderCookService->Initialize()) {
+            JzRE_LOG_WARN("JzRERuntime: Shader auto-cook service initialization failed");
+            m_shaderCookService.reset();
+        }
+    }
 }
 
 void JzRE::JzRERuntime::PreloadAssets()
@@ -285,6 +318,10 @@ void JzRE::JzRERuntime::UpdateSystems(F32 deltaTime)
     // plan B
     // systemManager.ExecuteSystems(deltaTime);
 
+    if (m_shaderCookService && m_assetSystem) {
+        m_shaderCookService->Update(deltaTime, *m_assetSystem);
+    }
+
     // Update all systems (camera matrices, light collection, culling)
     m_world->Update(deltaTime);
 }
@@ -306,6 +343,11 @@ void JzRE::JzRERuntime::SaveGameState()
 
 void JzRE::JzRERuntime::ShutdownSubsystems()
 {
+    if (m_shaderCookService) {
+        m_shaderCookService->Shutdown();
+        m_shaderCookService.reset();
+    }
+
     // Shutdown asset import/export services
     JzServiceContainer::Remove<JzAssetImporter>();
     JzServiceContainer::Remove<JzAssetExporter>();

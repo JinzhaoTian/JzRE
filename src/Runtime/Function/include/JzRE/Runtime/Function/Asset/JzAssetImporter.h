@@ -110,7 +110,7 @@ public:
      *   MODEL       -> "Models"
      *   TEXTURE     -> "Textures"
      *   SHADER      -> "Shaders" (`.jzshader`)
-     *   SHADER_PART -> "Shaders" (`.jzsblob`, `.jzshader.src.json`, `.hlsl`, `.hlsli`)
+     *   SHADER_PART -> "Shaders/src" (`.jzsblob`, `.jzshader.src.json`, `.hlsl`, `.hlsli`)
      *   MATERIAL    -> "Materials"
      *   FONT        -> "Fonts"
      *   SOUND       -> "Sounds"

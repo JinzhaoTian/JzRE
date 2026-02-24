@@ -58,7 +58,7 @@
             "program": "${workspaceFolder}/build/JzRE/RuntimeExample.exe",
             "args": [
                 "--input",
-                "${workspaceFolder}/build/JzRE/models/crate.obj",
+                "${workspaceFolder}/build/JzRE/EngineContent/Models/crate.obj",
                 "--graphic_api",
                 "vulkan"
             ],
@@ -75,7 +75,7 @@
             "program": "${workspaceFolder}/build/JzRE/RuntimeExample.exe",
             "args": [
                 "--input",
-                "${workspaceFolder}/build/JzRE/models/crate.obj",
+                "${workspaceFolder}/build/JzRE/EngineContent/Models/crate.obj",
                 "--graphic_api",
                 "vulkan"
             ],
@@ -92,7 +92,7 @@
             "program": "${workspaceFolder}/build/JzRE/RuntimeExample",
             "args": [
                 "--input",
-                "${workspaceFolder}/build/JzRE/models/crate.obj",
+                "${workspaceFolder}/build/JzRE/EngineContent/Models/crate.obj",
                 "--graphic_api",
                 "vulkan"
             ],
@@ -110,7 +110,7 @@
             "program": "${workspaceFolder}/build/JzRE/RuntimeExample",
             "args": [
                 "--input",
-                "${workspaceFolder}/build/JzRE/models/crate.obj",
+                "${workspaceFolder}/build/JzRE/EngineContent/Models/crate.obj",
                 "--graphic_api",
                 "vulkan"
             ],

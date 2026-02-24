@@ -93,6 +93,13 @@ Backends consume cooked payloads as follows:
 - D3D12: `DXIL` payload reserved in cooked artifacts (backend integration pending)
 - Metal: `MSL` text payload reserved in cooked artifacts (backend integration pending)
 
+Cooked payload delivery path:
+
+- Source manifests/HLSL are authored in `src/EngineContent/ShaderSource/` (engine defaults)
+  and `<ProjectRoot>/Content/Shaders/src/` (project overrides).
+- Build/CI cook jobs generate runtime artifacts under `EngineContent/Shaders`.
+- Runtime only consumes cooked payloads; no runtime source compilation path exists.
+
 ### `JzGraphicsContext`
 
 `JzGraphicsContext` owns:

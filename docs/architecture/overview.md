@@ -91,11 +91,14 @@ Key responsibilities:
 
 The shader pipeline is now offline-first:
 
-1. Author HLSL source + source manifest (`*.jzshader.src.json`) in `resources/shaders/src/`.
-2. Run `JzREShaderTool` to produce runtime artifacts:
+1. Author HLSL source + source manifest (`*.jzshader.src.json`) in
+   `src/EngineContent/ShaderSource/` (engine defaults) or
+   `<ProjectRoot>/Content/Shaders/src/` (project overrides).
+2. Run `JzREShaderTool` (or rely on CMake/CI auto-cook targets) to produce runtime artifacts:
    - `*.jzshader` (manifest)
    - `*.jzsblob` (binary chunk blob)
 3. Runtime loads `JzShader` from cooked manifest and selects variant by `keywordMask`.
+   Path priority is project cooked shaders first, then `EngineContent/Shaders`.
 4. `JzShaderProgramDesc` carries cooked payload format (`GLSL`, `SPIRV`, `DXIL`, `MSL`) and bytes to RHI backends.
 
 ## Function Layer

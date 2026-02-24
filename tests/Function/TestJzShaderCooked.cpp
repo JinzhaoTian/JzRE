@@ -354,3 +354,43 @@ TEST(JzShaderCooked, RejectsMissingBlobChunk)
 
     CleanupPath(tempDir);
 }
+
+TEST(JzShaderCooked, SupportsStemPathWithoutManifestExtension)
+{
+    const auto tempDir = MakeTempDirectory("stem_path");
+    CleanupPath(tempDir);
+
+    auto manifest = BuildBaseManifest();
+    ASSERT_TRUE(WriteCookedShader(tempDir, manifest));
+
+    JzRE::JzServiceContainer::Init();
+    JzTestDevice testDevice(JzRE::JzERHIType::OpenGL);
+    JzRE::JzServiceContainer::Provide<JzRE::JzDevice>(testDevice);
+
+    JzRE::JzShader shader((tempDir / "unit_shader").string());
+    ASSERT_TRUE(shader.Load());
+    EXPECT_TRUE(shader.IsCompiled());
+    EXPECT_NE(shader.GetMainVariant(), nullptr);
+
+    CleanupPath(tempDir);
+}
+
+TEST(JzShaderCooked, RejectsMissingBlobFile)
+{
+    const auto tempDir = MakeTempDirectory("missing_blob_file");
+    CleanupPath(tempDir);
+
+    auto manifest      = BuildBaseManifest();
+    manifest["blob"]   = "does_not_exist.jzsblob";
+    ASSERT_TRUE(WriteCookedShader(tempDir, manifest));
+
+    JzRE::JzServiceContainer::Init();
+    JzTestDevice testDevice(JzRE::JzERHIType::OpenGL);
+    JzRE::JzServiceContainer::Provide<JzRE::JzDevice>(testDevice);
+
+    JzRE::JzShader shader((tempDir / "unit_shader.jzshader").string());
+    EXPECT_FALSE(shader.Load());
+    EXPECT_EQ(shader.GetCompileStatus(), JzRE::JzEShaderCompileStatus::Failed);
+
+    CleanupPath(tempDir);
+}

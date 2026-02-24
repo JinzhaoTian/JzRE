@@ -38,10 +38,10 @@ JzRE::JzRERuntimeSettings CreateSettingsFromPath(JzRE::JzERHIType             rh
 }
 
 std::shared_ptr<JzRE::JzRHIPipeline> LoadEditorContributionPipeline(
-    JzRE::JzAssetSystem &assetSystem, const JzRE::String &primaryPath, const JzRE::String &fallbackPath)
+    JzRE::JzAssetSystem &assetSystem, const JzRE::String &shaderPath)
 {
     const auto tryLoad = [&assetSystem](const JzRE::String &path) -> std::shared_ptr<JzRE::JzRHIPipeline> {
-        const auto handle      = assetSystem.LoadSync<JzRE::JzShader>(path);
+        const auto handle = assetSystem.LoadSync<JzRE::JzShader>(path);
         auto      *shader = assetSystem.Get(handle);
         if (!shader || !shader->IsCompiled()) {
             return nullptr;
@@ -54,11 +54,7 @@ std::shared_ptr<JzRE::JzRHIPipeline> LoadEditorContributionPipeline(
         return pipeline;
     };
 
-    auto pipeline = tryLoad(primaryPath);
-    if (!pipeline && !fallbackPath.empty()) {
-        pipeline = tryLoad(fallbackPath);
-    }
-    return pipeline;
+    return tryLoad(shaderPath);
 }
 
 } // anonymous namespace
@@ -167,10 +163,8 @@ void JzRE::JzREEditor::InitializeEditorRenderContributions()
     m_editorRenderContributionResources = std::make_unique<JzEditorRenderContributionResources>();
     auto &resources                     = *m_editorRenderContributionResources;
 
-    resources.skyboxPipeline = LoadEditorContributionPipeline(
-        assetSystem, "shaders/editor_skybox.jzshader", "examples/EditorExample/resources/shaders/editor_skybox");
-    resources.linePipeline = LoadEditorContributionPipeline(
-        assetSystem, "shaders/editor_axis.jzshader", "examples/EditorExample/resources/shaders/editor_axis");
+    resources.skyboxPipeline = LoadEditorContributionPipeline(assetSystem, "shaders/editor_skybox.jzshader");
+    resources.linePipeline   = LoadEditorContributionPipeline(assetSystem, "shaders/editor_axis.jzshader");
 
     if (!resources.skyboxPipeline || !resources.linePipeline) {
         JzRE_LOG_WARN("JzREEditor: Editor contribution shaders are not fully available, contribution rendering may be incomplete.");

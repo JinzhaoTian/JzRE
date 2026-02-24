@@ -1,7 +1,7 @@
 set(JzRE_HEADERTOOL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/JzRE")
 
 set(JzRE_HEADERTOOL_PARAMS_PATH "${JzRE_HEADERTOOL_PATH}/precompile.json")
-configure_file("${CMAKE_SOURCE_DIR}/scripts/precompile/precompile.json.in" 
+configure_file("${CMAKE_CURRENT_LIST_DIR}/precompile.json.in"
                 ${JzRE_HEADERTOOL_PARAMS_PATH})
 
 if (WIN32)

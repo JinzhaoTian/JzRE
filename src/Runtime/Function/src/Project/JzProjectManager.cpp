@@ -29,6 +29,9 @@ constexpr const char *RenderAPI         = "render_api";
 constexpr const char *TargetPlatforms   = "target_platforms";
 constexpr const char *AssetRegistry     = "asset_registry";
 constexpr const char *ShaderCache       = "shader_cache";
+constexpr const char *ShaderSourceRoot  = "shader_source_root";
+constexpr const char *ShaderCookedRoot  = "shader_cooked_root";
+constexpr const char *ShaderAutoCook    = "shader_auto_cook";
 constexpr const char *BuildOutput       = "build_output";
 constexpr const char *ImportRules       = "import_rules";
 constexpr const char *Modules           = "modules";
@@ -504,6 +507,15 @@ JzEProjectResult JzProjectManager::ParseProjectFile(const std::filesystem::path 
         if (json.contains(Keys::ShaderCache)) {
             outConfig.shaderCache = json[Keys::ShaderCache].get<String>();
         }
+        if (json.contains(Keys::ShaderSourceRoot)) {
+            outConfig.shaderSourceRoot = json[Keys::ShaderSourceRoot].get<String>();
+        }
+        if (json.contains(Keys::ShaderCookedRoot)) {
+            outConfig.shaderCookedRoot = json[Keys::ShaderCookedRoot].get<String>();
+        }
+        if (json.contains(Keys::ShaderAutoCook)) {
+            outConfig.shaderAutoCook = json[Keys::ShaderAutoCook].get<Bool>();
+        }
         if (json.contains(Keys::BuildOutput)) {
             outConfig.buildOutput = json[Keys::BuildOutput].get<String>();
         }
@@ -579,6 +591,9 @@ JzEProjectResult JzProjectManager::WriteProjectFile(const std::filesystem::path 
         // Resource paths
         json[Keys::AssetRegistry] = config.assetRegistry.string();
         json[Keys::ShaderCache]   = config.shaderCache.string();
+        json[Keys::ShaderSourceRoot] = config.shaderSourceRoot.string();
+        json[Keys::ShaderCookedRoot] = config.shaderCookedRoot.string();
+        json[Keys::ShaderAutoCook]   = config.shaderAutoCook;
         json[Keys::BuildOutput]   = config.buildOutput.string();
 
         // Import rules
@@ -635,6 +650,12 @@ Bool JzProjectManager::CreateProjectDirectories(const std::filesystem::path &pro
 
     // Create Content directory
     std::filesystem::create_directories(projectRoot / "Content", ec);
+    if (ec) return false;
+
+    // Create shader source and cooked output directories.
+    std::filesystem::create_directories(projectRoot / "Content" / "Shaders" / "src", ec);
+    if (ec) return false;
+    std::filesystem::create_directories(projectRoot / "Content" / "Shaders", ec);
     if (ec) return false;
 
     // Create Config directory

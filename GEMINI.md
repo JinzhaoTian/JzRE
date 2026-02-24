@@ -33,7 +33,7 @@
 - `tests/`: Contains tests for the project (currently empty or not listed).
 - `examples/`: Contains example usage of the engine's features.
 - `docs/`: Contains project documentation (architecture, design, etc.).
-- `resources/`: Contains assets used by the engine, such as shaders, models, and textures. This directory is copied to the build output directory.
+- `examples/RuntimeExample/Models` and `examples/RuntimeExample/Textures`: Runtime sample asset sources copied to `build/JzRE/EngineContent/`.
 - `build/`: The default directory for all build artifacts.
 
 ## 4. Build and Run Commands

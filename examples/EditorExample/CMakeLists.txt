@@ -18,6 +18,12 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 set(JzRE_REPOSITORY_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../..")
 set(JzRE_OUTPUT_DIR ${CMAKE_BINARY_DIR}/EditorExample)
+set(JzRE_ENGINE_SHADER_SOURCE_DIR "${JzRE_REPOSITORY_ROOT}/src/EngineContent/ShaderSource")
+set(JzRE_ENGINE_SHADER_OUTPUT_DIR "${JzRE_OUTPUT_DIR}/EngineContent/Shaders")
+
+list(APPEND CMAKE_MODULE_PATH "${JzRE_REPOSITORY_ROOT}/cmake/modules")
+include(JzShaderCook)
+option(JzRE_EDITOR_ENABLE_ENGINE_SHADER_COOK "Cook engine shader artifacts for EditorExample" ON)
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${JzRE_OUTPUT_DIR})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${JzRE_OUTPUT_DIR})
@@ -31,7 +37,24 @@ endforeach()
 
 file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/resources/" DESTINATION ${JzRE_OUTPUT_DIR}/)
 
+if(JzRE_EDITOR_ENABLE_ENGINE_SHADER_COOK)
+    add_subdirectory("${JzRE_REPOSITORY_ROOT}/programs/JzREShaderTool" "${CMAKE_CURRENT_BINARY_DIR}/JzREShaderTool")
+endif()
 add_subdirectory("${JzRE_REPOSITORY_ROOT}/src/Runtime" "${CMAKE_CURRENT_BINARY_DIR}/Runtime")
+
+if(JzRE_EDITOR_ENABLE_ENGINE_SHADER_COOK)
+    jzre_add_shader_cook_target(
+        TARGET_NAME JzRECookEngineShaders
+        SOURCE_DIR ${JzRE_ENGINE_SHADER_SOURCE_DIR}
+        OUTPUT_DIR ${JzRE_ENGINE_SHADER_OUTPUT_DIR}
+        TOOL_TARGET JzREShaderTool
+    )
+else()
+    add_custom_target(JzRECookEngineShaders
+        COMMAND ${CMAKE_COMMAND} -E echo "JzRECookEngineShaders disabled"
+        VERBATIM
+    )
+endif()
 
 add_subdirectory(Core)
 add_subdirectory(UI)
@@ -61,3 +84,5 @@ target_link_libraries(
     PUBLIC
     JzEditor
 )
+
+add_dependencies(EditorExample JzRECookEngineShaders)

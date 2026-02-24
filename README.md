@@ -38,7 +38,8 @@ cmake --build build
 
 4. **Run Runtime Example**
 ```bash
-./build/JzRE/RuntimeExample --input ./build/JzRE/models/crate.obj
+cd build/JzRE
+./RuntimeExample --input ./EngineContent/Models/crate.obj
 ```
 
 ### Testing
@@ -110,6 +111,34 @@ Mainline dependencies are managed via `vcpkg.json` in repository root:
 - **freetype** - Font rendering
 
 `examples/EditorExample/vcpkg.json` adds editor-only dependencies (notably `imgui`).
+
+## Shader Workflow
+
+- Engine shader source files live in `src/EngineContent/ShaderSource/`.
+- Runtime consumes cooked files only: `.jzshader` + `.jzsblob`.
+- Root build generates cooked engine shaders into:
+  `build/JzRE/EngineContent/Shaders/` (target: `JzRECookEngineShaders`).
+- Project overrides should use:
+  - source: `<ProjectRoot>/Content/Shaders/src/`
+  - cooked: `<ProjectRoot>/Content/Shaders/`
+
+Manual cook example:
+
+```bash
+./build/JzRE/JzREShaderTool \
+  --input src/EngineContent/ShaderSource/standard.jzshader.src.json \
+  --output-dir build/JzRE/EngineContent/Shaders
+```
+
+## Release Packaging
+
+GitHub Actions release workflow (`.github/workflows/release.yml`) produces:
+
+- `JzRE-runtime-<os>-<arch>-<tag>.zip`
+- `JzRE-dev-<os>-<arch>-<tag>.zip`
+
+`runtime` archives contain cooked shader artifacts only.
+`dev` archives include runtime payload + `src/EngineContent/ShaderSource` + `JzREShaderTool`.
 
 ## License
 

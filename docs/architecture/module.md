@@ -11,6 +11,8 @@ This document describes the modular directory structure and CMake build configur
 ```
 JzRE/
 ├── src/
+│   ├── EngineContent/              # Engine default content source (authored assets)
+│   │   └── ShaderSource/           # Engine shader source manifests and HLSL
 │   ├── Runtime/                    # Game Engine Runtime
 │   │   ├── CMakeLists.txt
 │   │   ├── Interface/              # Runtime Application Interface
@@ -69,7 +71,7 @@ JzRE/
 │   │       │   ├── Rendering/
 │   │       │   │   └── JzRenderGraph.h, JzRenderOutput.h, JzRenderPass.h, JzRenderTarget.h
 │   │       │   ├── Asset/
-│   │       │   │   └── JzAssetImporter.h, JzAssetExporter.h
+│   │       │   │   └── JzAssetImporter.h, JzAssetExporter.h, JzShaderCookService.h
 │   │       │   ├── Project/
 │   │       │   │   └── JzProjectConfig.h, JzProjectManager.h
 │   │       │   └── Event/
@@ -82,6 +84,8 @@ JzRE/
 ├── tests/                          # GTest-based tests
 ├── examples/                       # Example applications
 │   ├── RuntimeExample/             # Runtime-only sample built by root CMake
+│   │   ├── Models/                 # Runtime sample asset source (models + model-linked textures)
+│   │   └── Textures/               # Runtime sample texture asset source
 │   └── EditorExample/              # Standalone editor sample project
 │       ├── CMakeLists.txt          # Independent project entry
 │       ├── vcpkg.json              # Editor-specific manifest (includes imgui)
@@ -89,10 +93,13 @@ JzRE/
 │       ├── Core/                   # Editor-specific events
 │       ├── Panels/                 # 30+ editor panels
 │       ├── UI/                     # 40+ ImGui widget wrappers
-│       └── resources/              # Editor-only assets (fonts/icons/layout/editor shaders)
+│       └── resources/              # Editor-only assets (fonts/icons/layout)
+│
+├── cmake/                          # Shared CMake helper scripts
+│   ├── modules/                    # Reusable include() modules
+│   └── precompile/                 # Header-tool precompile pipeline scripts
 │
 ├── docs/                           # Documentation
-├── resources/                      # Runtime/shared assets (models/textures/standard shaders)
 └── programs/                       # Tooling
     ├── JzREHeaderTool/             # Code generation tool (libclang)
     └── JzREShaderTool/             # Offline HLSL -> cooked shader pack tool
@@ -180,7 +187,15 @@ project(EditorExample LANGUAGES CXX C)
 
 set(JzRE_REPOSITORY_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../..")
 file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/resources/" DESTINATION ${JzRE_OUTPUT_DIR}/)
+add_subdirectory("${JzRE_REPOSITORY_ROOT}/programs/JzREShaderTool" "${CMAKE_CURRENT_BINARY_DIR}/JzREShaderTool")
 add_subdirectory("${JzRE_REPOSITORY_ROOT}/src/Runtime" "${CMAKE_CURRENT_BINARY_DIR}/Runtime")
+
+jzre_add_shader_cook_target(
+    TARGET_NAME JzRECookEngineShaders
+    SOURCE_DIR "${JzRE_REPOSITORY_ROOT}/src/EngineContent/ShaderSource"
+    OUTPUT_DIR "${JzRE_OUTPUT_DIR}/EngineContent/Shaders"
+    TOOL_TARGET JzREShaderTool
+)
 
 add_subdirectory(Core)
 add_subdirectory(UI)
@@ -189,6 +204,19 @@ add_subdirectory(Application)
 
 add_executable(EditorExample main.cpp)
 target_link_libraries(EditorExample PUBLIC JzEditor)
+```
+
+### Root CMakeLists.txt (Runtime asset sync)
+
+```cmake
+add_custom_target(JzRESyncEngineAssets ALL
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_SOURCE_DIR}/examples/RuntimeExample/Models"
+            "${JzRE_OUTPUT_DIR}/EngineContent/Models"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_SOURCE_DIR}/examples/RuntimeExample/Textures"
+            "${JzRE_OUTPUT_DIR}/EngineContent/Textures"
+)
 ```
 
 ---
@@ -237,7 +265,8 @@ cmake --build build
 ### Run
 
 ```bash
-./build/JzRE/RuntimeExample --input ./build/JzRE/models/crate.obj
+cd build/JzRE
+./RuntimeExample --input ./EngineContent/Models/crate.obj
 ```
 
 ### Test

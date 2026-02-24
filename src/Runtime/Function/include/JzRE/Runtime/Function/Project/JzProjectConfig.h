@@ -87,6 +87,9 @@ struct JzProjectConfig {
 
     std::filesystem::path assetRegistry{"AssetRegistry.json"};
     std::filesystem::path shaderCache{"Intermediate/ShaderCache"};
+    std::filesystem::path shaderSourceRoot{"Content/Shaders/src"};
+    std::filesystem::path shaderCookedRoot{"Content/Shaders"};
+    Bool                  shaderAutoCook{true};
     std::filesystem::path buildOutput{"Build"};
 
     std::vector<JzImportRule> importRules;
@@ -134,6 +137,22 @@ struct JzProjectConfig {
     [[nodiscard]] std::filesystem::path GetShaderCachePath() const
     {
         return rootPath / shaderCache;
+    }
+
+    /**
+     * @brief Get the absolute shader source directory path.
+     */
+    [[nodiscard]] std::filesystem::path GetShaderSourcePath() const
+    {
+        return rootPath / shaderSourceRoot;
+    }
+
+    /**
+     * @brief Get the absolute shader cooked output directory path.
+     */
+    [[nodiscard]] std::filesystem::path GetShaderCookedPath() const
+    {
+        return rootPath / shaderCookedRoot;
     }
 
     /**

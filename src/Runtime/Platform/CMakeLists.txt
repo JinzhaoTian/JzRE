@@ -70,9 +70,9 @@ find_package(unofficial-spirv-reflect CONFIG REQUIRED)
 # Platform-specific libraries
 if(WIN32)
     find_package(OpenGL REQUIRED)
-    set(JZ_PLATFORM_LIBS opengl32 gdi32)
-    set(JZ_OPENGL_LIBS OpenGL::GL)
-    set(JZ_VULKAN_LIBS Vulkan::Vulkan)
+    set(JzRE_PLATFORM_LIBS opengl32 gdi32)
+    set(JzRE_OPENGL_LIBS OpenGL::GL)
+    set(JzRE_VULKAN_LIBS Vulkan::Vulkan)
 elseif(APPLE)
     find_library(COCOA_LIB Cocoa REQUIRED)
     find_library(IOKIT_LIB IOKit REQUIRED)
@@ -80,16 +80,16 @@ elseif(APPLE)
     find_library(OPENGL_LIB OpenGL REQUIRED)
     find_library(GLUT_LIB GLUT REQUIRED)
     find_library(UNIFORMTYPEIDENTIFIERS_LIB UniformTypeIdentifiers REQUIRED)
-    set(JZ_PLATFORM_LIBS ${COCOA_LIB} ${IOKIT_LIB} ${COREVIDEO_LIB} ${UNIFORMTYPEIDENTIFIERS_LIB})
-    set(JZ_OPENGL_LIBS ${OPENGL_LIB} ${GLUT_LIB})
-    set(JZ_VULKAN_LIBS Vulkan::Vulkan)
+    set(JzRE_PLATFORM_LIBS ${COCOA_LIB} ${IOKIT_LIB} ${COREVIDEO_LIB} ${UNIFORMTYPEIDENTIFIERS_LIB})
+    set(JzRE_OPENGL_LIBS ${OPENGL_LIB} ${GLUT_LIB})
+    set(JzRE_VULKAN_LIBS Vulkan::Vulkan)
 elseif(UNIX)
     find_package(OpenGL REQUIRED)
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(X11 REQUIRED x11)
-    set(JZ_PLATFORM_LIBS ${X11_LIBRARIES} ${CMAKE_DL_LIBS})
-    set(JZ_OPENGL_LIBS OpenGL::GL)
-    set(JZ_VULKAN_LIBS Vulkan::Vulkan)
+    set(JzRE_PLATFORM_LIBS ${X11_LIBRARIES} ${CMAKE_DL_LIBS})
+    set(JzRE_OPENGL_LIBS OpenGL::GL)
+    set(JzRE_VULKAN_LIBS Vulkan::Vulkan)
 endif()
 
 # Threading support
@@ -101,8 +101,8 @@ target_link_libraries(JzRuntimePlatform
         glad::glad
         glfw
         Threads::Threads
-        ${JZ_OPENGL_LIBS}
-        ${JZ_VULKAN_LIBS}
-        ${JZ_PLATFORM_LIBS}
+        ${JzRE_OPENGL_LIBS}
+        ${JzRE_VULKAN_LIBS}
+        ${JzRE_PLATFORM_LIBS}
         unofficial::spirv-reflect
 )

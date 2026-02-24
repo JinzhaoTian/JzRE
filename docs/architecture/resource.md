@@ -168,7 +168,9 @@ classDiagram
 
 Shader loading is now offline-first:
 
-1. Author HLSL + source manifest (`*.jzshader.src.json`).
+1. Author HLSL + source manifest (`*.jzshader.src.json`) under:
+   - Engine defaults: `src/EngineContent/ShaderSource/`
+   - Project overrides: `<ProjectRoot>/Content/Shaders/src/`
 2. `JzREShaderTool` generates runtime artifacts:
    - `*.jzshader` (manifest: variants, targets, layouts)
    - `*.jzsblob` (binary/text chunk storage)
@@ -194,10 +196,10 @@ assetManager->RegisterFactory<JzFont>(std::make_unique<JzFontFactory>());
 
 // Search paths are also added
 assetManager->AddSearchPath(enginePath.string());
-assetManager->AddSearchPath((enginePath / "resources").string());
-assetManager->AddSearchPath((enginePath / "resources" / "models").string());
-assetManager->AddSearchPath((enginePath / "resources" / "textures").string());
-assetManager->AddSearchPath((enginePath / "resources" / "shaders").string());
+assetManager->AddSearchPath((enginePath / "EngineContent").string());
+assetManager->AddSearchPath((enginePath / "EngineContent" / "Models").string());
+assetManager->AddSearchPath((enginePath / "EngineContent" / "Textures").string());
+assetManager->AddSearchPath((enginePath / "EngineContent" / "Shaders").string());
 ```
 
 ### 2. Asset Loading
@@ -425,6 +427,13 @@ Shaders are now **offline-cooked** and loaded as:
 - `*.jzshader`: runtime manifest
 - `*.jzsblob`: runtime chunk blob
 
+Engine and project shader content are separated:
+
+- Engine source: `src/EngineContent/ShaderSource/`
+- Engine cooked output: `<build>/JzRE/EngineContent/Shaders/`
+- Project source: `<ProjectRoot>/Content/Shaders/src/`
+- Project cooked output: `<ProjectRoot>/Content/Shaders/`
+
 `JzShaderFactory` only creates `JzShader` from cooked manifests (`.jzshader`).
 
 ### Runtime Contract
@@ -483,6 +492,10 @@ The asset system now supports hot reloading for development workflows. This is i
 
 Shader hot reload is fully implemented for cooked runtime artifacts:
 
+- `JzShaderCookService` polls project source manifests and HLSL files.
+- On source change, it invokes `JzREShaderTool` and writes to project cooked output.
+- After successful cook, it triggers `JzAssetSystem::ForceHotReloadCheck()`.
+
 ```cpp
 // JzAssetSystem monitors cooked shader files and marks entities for reload
 // Entities with modified shaders get JzShaderDirtyTag
@@ -514,7 +527,7 @@ Located in `src/Runtime/Function/include/JzRE/Runtime/Function/Asset/JzAssetImpo
 
 Imports external files into the project's `Content/` directory:
 
-- Detects file type via `JzFileSystemUtils::GetFileType()` and routes to the correct subdirectory (`Models/`, `Textures/`, `Shaders/`, `Materials/`, `Fonts/`, `Sounds/`)
+- Detects file type via `JzFileSystemUtils::GetFileType()` and routes to the correct subdirectory (`Models/`, `Textures/`, `Shaders/`, `Shaders/src/`, `Materials/`, `Fonts/`, `Sounds/`)
 - Creates target directories if they don't exist
 - Supports overwrite control and manual subfolder override via `JzImportOptions`
 - Marks the project as dirty after successful import

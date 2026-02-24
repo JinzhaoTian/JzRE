@@ -91,8 +91,8 @@ JzRE::String JzRE::JzAssetImporter::GetSubdirectoryForType(JzEFileType fileType)
     switch (fileType) {
         case JzEFileType::MODEL: return "Models";
         case JzEFileType::TEXTURE: return "Textures";
-        case JzEFileType::SHADER:
-        case JzEFileType::SHADER_PART: return "Shaders";
+        case JzEFileType::SHADER: return "Shaders";
+        case JzEFileType::SHADER_PART: return "Shaders/src";
         case JzEFileType::MATERIAL: return "Materials";
         case JzEFileType::FONT: return "Fonts";
         case JzEFileType::SOUND: return "Sounds";

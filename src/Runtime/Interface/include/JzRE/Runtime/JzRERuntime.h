@@ -27,6 +27,7 @@ namespace JzRE {
 // Forward declarations for asset import/export services
 class JzAssetImporter;
 class JzAssetExporter;
+class JzShaderCookService;
 
 struct JzRERuntimeSettings {
     String                windowTitle     = "JzRE Runtime";
@@ -209,6 +210,7 @@ protected:
     // Asset import/export services
     std::unique_ptr<JzAssetImporter> m_assetImporter;
     std::unique_ptr<JzAssetExporter> m_assetExporter;
+    std::unique_ptr<JzShaderCookService> m_shaderCookService;
 
     JzEntity m_mainCameraEntity = INVALID_ENTITY;
     JzEntity m_windowEntity     = INVALID_ENTITY; ///< Primary window ECS entity

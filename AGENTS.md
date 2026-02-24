@@ -33,7 +33,7 @@ JzRE/
 │   └── Editor/           # ImGui-based editor panels and UI
 ├── docs/                 # Architecture documentation
 ├── tests/                # Unit tests (GTest)
-├── resources/            # Runtime assets (shaders, textures)
+├── examples/RuntimeExample/Models, Textures  # Runtime sample asset sources
 └── programs/             # Code generation tools (JzREHeaderTool)
 ```
 

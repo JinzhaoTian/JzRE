@@ -1,0 +1,12 @@
+# JzRE shader toolchain lock file.
+# Keep URLs and checksums pinned for reproducible local/CI shader cooking.
+
+[dxc]
+version = "v1.8.2505.1"
+url = "https://github.com/microsoft/DirectXShaderCompiler/releases/download/v1.8.2505.1/linux_dxc_2025_07_14.x86_64.tar.gz"
+sha256 = "f2213da1fc99dc8778c8823078e16ba97c7f80f86a1d4520ab1adf4b462bc48c"
+
+[spirv_cross]
+version = "2021-01-15"
+url = "https://github.com/KhronosGroup/SPIRV-Cross/releases/download/2021-01-15/spirv-cross-clang-trusty-64bit-9acb9ec31f.tar.gz"
+sha256 = "2e207445efab417ce737c9f320690f5e252d6ac7ee167a2911ef21c145f564f7"
