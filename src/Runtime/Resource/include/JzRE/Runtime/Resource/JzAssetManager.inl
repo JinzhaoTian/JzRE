@@ -1,7 +1,5 @@
 /**
- * @file    JzAssetManager.inl
- * @brief   Template implementation for JzAssetManager
- * @author  Jinzhao Tian
+ * @author    Jinzhao Tian
  * @copyright Copyright (c) 2025 JzRE
  */
 

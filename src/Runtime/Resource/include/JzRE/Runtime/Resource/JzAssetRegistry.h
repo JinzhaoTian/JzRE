@@ -1,7 +1,5 @@
 /**
- * @file    JzAssetRegistry.h
- * @brief   Type-independent asset registry with slot-based allocation
- * @author  Jinzhao Tian
+ * @author    Jinzhao Tian
  * @copyright Copyright (c) 2025 JzRE
  */
 

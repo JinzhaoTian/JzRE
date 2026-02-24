@@ -1,7 +1,5 @@
 /**
- * @file    JzAssetManager.cpp
- * @brief   Asset manager implementation
- * @author  Jinzhao Tian
+ * @author    Jinzhao Tian
  * @copyright Copyright (c) 2025 JzRE
  */
 

@@ -84,6 +84,14 @@ cmake --build build
 - **Comment Language**: All comments (including file headers and inline comments) **must** be written in **English**.
 - **Comment Content**:
   - File Header Comment: Only include `@author`, `@copyright`.
+  - File Header Template:
+    ```cpp
+    /**
+     * @author    Jinzhao Tian
+     * @copyright Copyright (c) [YEAR] JzRE
+     */
+    ```
+    Replace `[YEAR]` with the current year (for example, `2026`).
   - Class Comment: Must include `@brief`.
   - Function Comment: Must include `@brief`, `@param` (for each parameter), `@return` (return value), and `@throw` (exceptions thrown). Add a extra line between each types.
   - Key Algorithms or Complex Logic: Add clear English inline comments within the code block to explain the "why" behind the logic, not just the "what".

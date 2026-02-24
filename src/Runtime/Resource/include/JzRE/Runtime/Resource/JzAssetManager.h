@@ -1,7 +1,5 @@
 /**
- * @file    JzAssetManager.h
- * @brief   Modern asset manager with async loading and LRU caching
- * @author  Jinzhao Tian
+ * @author    Jinzhao Tian
  * @copyright Copyright (c) 2025 JzRE
  */
 

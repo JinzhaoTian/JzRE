@@ -1,3 +1,8 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2026 JzRE
+ */
+
 #include "JzRE/Editor/UI/JzFrame.h"
 #include "JzRE/Editor/UI/JzConverter.h"
 #include "JzRE/Editor/UI/JzImGuiTextureBridge.h"

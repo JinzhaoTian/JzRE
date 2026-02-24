@@ -1,7 +1,5 @@
 /**
- * @file    JzAssetId.h
- * @brief   Asset unique identifier with generation support
- * @author  Jinzhao Tian
+ * @author    Jinzhao Tian
  * @copyright Copyright (c) 2025 JzRE
  */
 

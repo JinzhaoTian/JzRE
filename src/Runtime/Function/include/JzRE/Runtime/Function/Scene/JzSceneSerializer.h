@@ -1,7 +1,5 @@
 /**
- * @file    JzSceneSerializer.h
- * @brief   Scene serialization and deserialization
- * @author  Jinzhao Tian
+ * @author    Jinzhao Tian
  * @copyright Copyright (c) 2025 JzRE
  */
 

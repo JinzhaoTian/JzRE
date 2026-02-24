@@ -1,7 +1,5 @@
 /**
- * @file    main.cpp
- * @brief   Offline shader tool for JzRE cooked shader assets
- * @author  Jinzhao Tian
+ * @author    Jinzhao Tian
  * @copyright Copyright (c) 2026 JzRE
  */
 

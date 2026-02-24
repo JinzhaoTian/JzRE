@@ -1,7 +1,5 @@
 /**
- * @file    JzShaderFactory.h
- * @brief   Factory for creating cooked JzShader resources
- * @author  Jinzhao Tian
+ * @author    Jinzhao Tian
  * @copyright Copyright (c) 2026 JzRE
  */
 

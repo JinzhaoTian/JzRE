@@ -97,9 +97,11 @@ File headers must include:
 ```cpp
 /**
  * @author    Jinzhao Tian
- * @copyright Copyright (c) 2025 JzRE
+ * @copyright Copyright (c) [YEAR] JzRE
  */
 ```
+
+Replace `[YEAR]` with the current year (for example, `2026`).
 
 ---
 

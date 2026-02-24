@@ -1,7 +1,5 @@
 /**
- * @file    JzAssetHandle.h
- * @brief   Type-safe asset handle template
- * @author  Jinzhao Tian
+ * @author    Jinzhao Tian
  * @copyright Copyright (c) 2025 JzRE
  */
 

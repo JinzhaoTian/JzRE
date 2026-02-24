@@ -1,7 +1,5 @@
 /**
- * @file    JzLRUCache.cpp
- * @brief   LRU cache manager implementation
- * @author  Jinzhao Tian
+ * @author    Jinzhao Tian
  * @copyright Copyright (c) 2025 JzRE
  */
 

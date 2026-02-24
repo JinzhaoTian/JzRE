@@ -1,7 +1,5 @@
 /**
- * @file    JzShader.h
- * @brief   Shader asset backed by cooked manifest + blob files
- * @author  Jinzhao Tian
+ * @author    Jinzhao Tian
  * @copyright Copyright (c) 2026 JzRE
  */
 

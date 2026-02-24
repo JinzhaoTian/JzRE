@@ -93,6 +93,17 @@ glfw3, glad, imgui (with docking), assimp, stb, gtest, nlohmann-json, spdlog, fm
 
 ## Documentation Requirements
 
+File headers must include:
+
+```cpp
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) [YEAR] JzRE
+ */
+```
+
+Replace `[YEAR]` with the current year (for example, `2026`).
+
 **IMPORTANT**: When making changes to the engine architecture, you MUST update the corresponding documentation in `/docs/architecture/`:
 
 | Document                | Content                                                            |

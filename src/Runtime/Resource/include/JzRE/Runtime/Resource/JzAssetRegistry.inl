@@ -1,7 +1,5 @@
 /**
- * @file    JzAssetRegistry.inl
- * @brief   Template implementation for JzAssetRegistry
- * @author  Jinzhao Tian
+ * @author    Jinzhao Tian
  * @copyright Copyright (c) 2025 JzRE
  */
 

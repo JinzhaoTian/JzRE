@@ -1,3 +1,8 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2026 JzRE
+ */
+
 #include "JzRE/Editor/UI/JzActorContextMenu.h"
 
 JzRE::JzActorContextMenu::JzActorContextMenu() { }

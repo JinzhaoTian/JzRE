@@ -1,3 +1,8 @@
+/**
+ * @author    Jinzhao Tian
+ * @copyright Copyright (c) 2026 JzRE
+ */
+
 #pragma once
 
 #include "JzRE/Editor/UI/JzFileContextMenu.h"

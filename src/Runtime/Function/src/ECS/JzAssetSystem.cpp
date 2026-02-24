@@ -1,7 +1,5 @@
 /**
- * @file    JzAssetSystem.cpp
- * @brief   Implementation of the ECS asset system facade
- * @author  Jinzhao Tian
+ * @author    Jinzhao Tian
  * @copyright Copyright (c) 2025 JzRE
  */
 

@@ -1,37 +1,6 @@
 /**
- * @file    JzAssetHeaders.h
- * @brief   Unified header for the asset management system
- * @author  Jinzhao Tian
+ * @author    Jinzhao Tian
  * @copyright Copyright (c) 2025 JzRE
- *
- * This header includes all components of the modern ECS-friendly asset system.
- * Include this single header to access all asset management functionality.
- *
- * @example
- * @code
- * #include "JzRE/Runtime/Resource/JzAssetHeaders.h"
- *
- * // Create and initialize asset manager
- * JzAssetManagerConfig config;
- * config.maxCacheMemoryMB = 512;
- * JzAssetManager assetManager(config);
- * assetManager.Initialize();
- *
- * // Register with service container
- * JzServiceContainer::Provide<JzAssetManager>(assetManager);
- *
- * // Load assets
- * auto meshHandle = assetManager.LoadSync<JzMesh>("cube.obj");
- * auto textureHandle = assetManager.LoadAsync<JzTexture>("diffuse.png");
- *
- * // Use in ECS
- * auto entity = world.CreateEntity();
- * world.AddComponent<JzMeshAssetComponent>(entity, meshHandle);
- * world.AddComponent<JzTransformComponent>(entity);
- *
- * // Register loading system
- * world.RegisterSystem<JzAssetLoadingSystem>();
- * @endcode
  */
 
 #pragma once

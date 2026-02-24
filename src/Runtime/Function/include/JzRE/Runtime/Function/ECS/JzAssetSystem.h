@@ -1,32 +1,6 @@
 /**
- * @file    JzAssetSystem.h
- * @brief   ECS system facade for asset management
- * @author  Jinzhao Tian
+ * @author    Jinzhao Tian
  * @copyright Copyright (c) 2025 JzRE
- *
- * JzAssetSystem is the primary entry point for all asset operations.
- * It wraps JzAssetManager (Resource layer) and provides high-level
- * ECS-oriented operations for loading, registering, and attaching
- * assets to entities.
- *
- * @example
- * @code
- * auto &assetSystem = JzServiceContainer::Get<JzAssetSystem>();
- *
- * // Load a model
- * auto modelHandle = assetSystem.LoadSync<JzModel>("cube.obj");
- * assetSystem.AddRef(modelHandle);
- *
- * // Spawn entities from the model
- * auto entities = assetSystem.SpawnModel(world, modelHandle);
- *
- * // Cleanup
- * for (auto entity : entities) {
- *     assetSystem.DetachAllAssets(world, entity);
- *     world.DestroyEntity(entity);
- * }
- * assetSystem.Release(modelHandle);
- * @endcode
  */
 
 #pragma once
