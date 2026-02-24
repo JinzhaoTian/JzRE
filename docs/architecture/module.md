@@ -88,10 +88,11 @@ JzRE/
 │       ├── Application/            # JzEditorUI, JzREHub, JzREEditor, JzCanvas
 │       ├── Core/                   # Editor-specific events
 │       ├── Panels/                 # 30+ editor panels
-│       └── UI/                     # 40+ ImGui widget wrappers
+│       ├── UI/                     # 40+ ImGui widget wrappers
+│       └── resources/              # Editor-only assets (fonts/icons/layout/editor shaders)
 │
 ├── docs/                           # Documentation
-├── resources/                      # Engine resources (cooked shaders, textures)
+├── resources/                      # Runtime/shared assets (models/textures/standard shaders)
 └── programs/                       # Tooling
     ├── JzREHeaderTool/             # Code generation tool (libclang)
     └── JzREShaderTool/             # Offline HLSL -> cooked shader pack tool
@@ -178,6 +179,7 @@ target_link_libraries(JzRERuntime INTERFACE
 project(EditorExample LANGUAGES CXX C)
 
 set(JzRE_REPOSITORY_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../..")
+file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/resources/" DESTINATION ${JzRE_OUTPUT_DIR}/)
 add_subdirectory("${JzRE_REPOSITORY_ROOT}/src/Runtime" "${CMAKE_CURRENT_BINARY_DIR}/Runtime")
 
 add_subdirectory(Core)

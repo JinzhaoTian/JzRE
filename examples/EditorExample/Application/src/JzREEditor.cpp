@@ -167,10 +167,10 @@ void JzRE::JzREEditor::InitializeEditorRenderContributions()
     m_editorRenderContributionResources = std::make_unique<JzEditorRenderContributionResources>();
     auto &resources                     = *m_editorRenderContributionResources;
 
-    resources.skyboxPipeline =
-        LoadEditorContributionPipeline(assetSystem, "shaders/editor_skybox.jzshader", "resources/shaders/editor_skybox");
-    resources.linePipeline =
-        LoadEditorContributionPipeline(assetSystem, "shaders/editor_axis.jzshader", "resources/shaders/editor_axis");
+    resources.skyboxPipeline = LoadEditorContributionPipeline(
+        assetSystem, "shaders/editor_skybox.jzshader", "examples/EditorExample/resources/shaders/editor_skybox");
+    resources.linePipeline = LoadEditorContributionPipeline(
+        assetSystem, "shaders/editor_axis.jzshader", "examples/EditorExample/resources/shaders/editor_axis");
 
     if (!resources.skyboxPipeline || !resources.linePipeline) {
         JzRE_LOG_WARN("JzREEditor: Editor contribution shaders are not fully available, contribution rendering may be incomplete.");
