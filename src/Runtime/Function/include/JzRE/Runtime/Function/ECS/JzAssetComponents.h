@@ -8,7 +8,6 @@
 #pragma once
 
 #include <memory>
-#include <unordered_map>
 #include <vector>
 
 #include "JzRE/Runtime/Core/JzRETypes.h"
@@ -19,7 +18,7 @@
 namespace JzRE {
 
 // Forward declarations
-class JzShaderVariant;
+class JzRHIPipeline;
 
 // ==================== Asset Reference Components ====================
 
@@ -97,33 +96,34 @@ struct JzMeshAssetComponent {
  * based on material features.
  */
 struct JzMaterialAssetComponent {
-    JzMaterialHandle    materialHandle;       ///< Handle to the material asset
-    JzShaderAssetHandle shaderHandle;         ///< Handle to associated shader (optional)
-    JzTextureHandle     diffuseTextureHandle; ///< Handle to diffuse texture (map_Kd)
-    JzTextureHandle     normalTextureHandle;  ///< Handle to normal map
+    JzMaterialHandle    materialHandle;        ///< Handle to the material asset
+    JzShaderHandle shaderHandle;          ///< Handle to associated shader (optional)
+    JzTextureHandle     diffuseTextureHandle;  ///< Handle to diffuse texture (map_Kd)
+    JzTextureHandle     normalTextureHandle;   ///< Handle to normal map
     JzTextureHandle     specularTextureHandle; ///< Handle to specular map
 
-    /// Shader variant defines based on material features
-    std::unordered_map<String, String> shaderDefines = {
-        {"USE_DIFFUSE_MAP", "0"},
-        {"USE_NORMAL_MAP", "0"},
-        {"USE_SPECULAR_MAP", "0"},
-        {"USE_PBR", "1"}
-    };
+    /// Shader keyword bits mapped by cooked shader manifests.
+    static constexpr U64 KeywordUseDiffuseMap  = 1ULL << 0;
+    static constexpr U64 KeywordUseNormalMap   = 1ULL << 1;
+    static constexpr U64 KeywordUseSpecularMap = 1ULL << 2;
+    static constexpr U64 KeywordUsePbr         = 1ULL << 3;
 
-    /// Cached shader variant (populated by AssetLoadingSystem)
-    std::shared_ptr<JzShaderVariant> cachedShaderVariant;
+    /// Shader variant keyword mask based on material features.
+    U64 shaderKeywordMask = KeywordUsePbr;
+
+    /// Cached shader pipeline (populated by AssetLoadingSystem)
+    std::shared_ptr<JzRHIPipeline> cachedShaderVariant;
 
     // Cached material properties (populated by AssetLoadingSystem)
     JzVec4 baseColor{1.0f, 1.0f, 1.0f, 1.0f};
     JzVec3 ambientColor{0.1f, 0.1f, 0.1f};
     JzVec3 diffuseColor{0.8f, 0.8f, 0.8f};
     JzVec3 specularColor{0.5f, 0.5f, 0.5f};
-    F32    shininess = 32.0f;
-    F32    opacity   = 1.0f;
-    F32    metallic  = 0.0f;
-    F32    roughness = 0.5f;
-    Bool   isReady   = false;
+    F32    shininess          = 32.0f;
+    F32    opacity            = 1.0f;
+    F32    metallic           = 0.0f;
+    F32    roughness          = 0.5f;
+    Bool   isReady            = false;
     Bool   hasDiffuseTexture  = false; ///< Whether a diffuse texture is bound
     Bool   hasNormalTexture   = false; ///< Whether a normal map is bound
     Bool   hasSpecularTexture = false; ///< Whether a specular map is bound
@@ -133,7 +133,7 @@ struct JzMaterialAssetComponent {
     explicit JzMaterialAssetComponent(JzMaterialHandle handle) :
         materialHandle(handle) { }
 
-    JzMaterialAssetComponent(JzMaterialHandle matHandle, JzShaderAssetHandle shaderHdl) :
+    JzMaterialAssetComponent(JzMaterialHandle matHandle, JzShaderHandle shaderHdl) :
         materialHandle(matHandle), shaderHandle(shaderHdl) { }
 
     /**
@@ -161,16 +161,24 @@ struct JzMaterialAssetComponent {
     }
 
     /**
-     * @brief Update shader defines based on current material features
+     * @brief Update shader keyword mask based on current material features.
      *
      * Call this after changing texture bindings to ensure the correct
-     * shader variant is used.
+     * cooked shader variant is selected.
      */
-    void UpdateShaderDefines()
+    void UpdateShaderKeywordMask()
     {
-        shaderDefines["USE_DIFFUSE_MAP"]  = hasDiffuseTexture ? "1" : "0";
-        shaderDefines["USE_NORMAL_MAP"]   = hasNormalTexture ? "1" : "0";
-        shaderDefines["USE_SPECULAR_MAP"] = hasSpecularTexture ? "1" : "0";
+        shaderKeywordMask = KeywordUsePbr;
+
+        if (hasDiffuseTexture) {
+            shaderKeywordMask |= KeywordUseDiffuseMap;
+        }
+        if (hasNormalTexture) {
+            shaderKeywordMask |= KeywordUseNormalMap;
+        }
+        if (hasSpecularTexture) {
+            shaderKeywordMask |= KeywordUseSpecularMap;
+        }
     }
 };
 
@@ -206,31 +214,30 @@ struct JzModelAssetComponent {
 };
 
 /**
- * @brief Shader asset reference component
+ * @brief Shader reference component
  *
  * Enhanced component supporting shader variants based on defines.
  * The AssetLoadingSystem will automatically compile and cache the
- * appropriate variant based on shaderDefines.
+ * appropriate variant based on keywordMask.
  */
-struct JzShaderAssetComponent {
-    JzShaderAssetHandle shaderHandle;
+struct JzShaderComponent {
+    JzShaderHandle shaderHandle;
 
-    /// Shader variant defines (e.g., {"USE_NORMAL_MAP", "1"})
-    std::unordered_map<String, String> shaderDefines;
+    /// Shader variant keyword bitmask.
+    U64 keywordMask = 0;
 
-    /// Cached compiled variant (populated by AssetLoadingSystem)
-    std::shared_ptr<JzShaderVariant> cachedVariant;
+    /// Cached compiled pipeline (populated by AssetLoadingSystem)
+    std::shared_ptr<JzRHIPipeline> cachedVariant;
 
     Bool isReady = false;
 
-    JzShaderAssetComponent() = default;
+    JzShaderComponent() = default;
 
-    explicit JzShaderAssetComponent(JzShaderAssetHandle handle) :
+    explicit JzShaderComponent(JzShaderHandle handle) :
         shaderHandle(handle) { }
 
-    JzShaderAssetComponent(JzShaderAssetHandle handle,
-                           const std::unordered_map<String, String> &defines) :
-        shaderHandle(handle), shaderDefines(defines) { }
+    JzShaderComponent(JzShaderHandle handle, U64 mask) :
+        shaderHandle(handle), keywordMask(mask) { }
 
     /**
      * @brief Check if the component has a valid shader reference
@@ -379,53 +386,4 @@ struct JzAssetReferenceComponent {
         return meshRefs.size() + materialRefs.size() + textureRefs.size() + modelRefs.size() + shaderRefs.size();
     }
 };
-
-// ==================== Render Queue Component ====================
-
-/**
- * @brief Render queue classification
- */
-enum class JzERenderQueue : U8 {
-    Background  = 0,  ///< Background elements (skybox)
-    Opaque      = 10, ///< Opaque geometry (default)
-    AlphaTest   = 20, ///< Alpha-tested geometry
-    Transparent = 30, ///< Transparent geometry (sorted)
-    Overlay     = 40  ///< UI overlays
-};
-
-/**
- * @brief Component for render queue and layer assignment
- *
- * Used for render sorting and batching.
- */
-struct JzRenderQueueComponent {
-    JzERenderQueue queue         = JzERenderQueue::Opaque;
-    U32            layer         = 0; ///< Render layer for masking
-    I32            sortOrder     = 0; ///< Custom sort order within queue
-    Bool           castShadow    = true;
-    Bool           receiveShadow = true;
-
-    JzRenderQueueComponent() = default;
-
-    JzRenderQueueComponent(JzERenderQueue q, U32 l = 0) :
-        queue(q), layer(l) { }
-};
-
-// ==================== Instance Rendering ====================
-
-/**
- * @brief Component for instanced rendering
- *
- * When multiple entities share the same mesh and material,
- * they can be batched for instanced rendering.
- */
-struct JzInstanceGroupComponent {
-    U32 batchId = 0; ///< Batch group identifier
-
-    JzInstanceGroupComponent() = default;
-
-    explicit JzInstanceGroupComponent(U32 id) :
-        batchId(id) { }
-};
-
 } // namespace JzRE

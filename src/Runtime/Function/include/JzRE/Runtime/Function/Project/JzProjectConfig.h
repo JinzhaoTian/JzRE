@@ -26,7 +26,9 @@ enum class JzEStartupMode : U8 {
 enum class JzERenderAPI : U8 {
     Auto,   // Automatically select best available
     OpenGL, // OpenGL backend
-    Vulkan  // Vulkan backend
+    Vulkan, // Vulkan backend
+    D3D12,  // Direct3D 12 backend
+    Metal   // Metal backend
 };
 
 /**

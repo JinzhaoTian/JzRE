@@ -134,8 +134,8 @@ Asset loading, caching, and lifecycle management.
 | `JzAssetHandle<T>`  | Type-safe handle with generation validation                          |
 | `JzLRUCache`        | LRU cache with memory budget management                              |
 | `Jz*Factory`        | Type-specific resource creation                                      |
-| Resource Types      | `JzTexture`, `JzMesh`, `JzModel`, `JzShaderAsset`, `JzMaterial`, `JzFont` |
-| Shader System       | `JzShaderProgram`, `JzShaderVariant`, `JzShaderVariantManager`       |
+| Resource Types      | `JzTexture`, `JzMesh`, `JzModel`, `JzShader`, `JzMaterial`, `JzFont` |
+| Shader System       | `JzShader`, `JzRHIPipeline`, cooked `Manifest + Blob` runtime loading |
 
 ### 4. Function Layer (`src/Runtime/Function/`)
 

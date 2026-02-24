@@ -1,0 +1,127 @@
+{
+  "version": 1,
+  "shaderName": "standard",
+  "keywords": [
+    { "name": "USE_DIFFUSE_MAP", "bit": 0 },
+    { "name": "USE_NORMAL_MAP", "bit": 1 },
+    { "name": "USE_SPECULAR_MAP", "bit": 2 },
+    { "name": "USE_PBR", "bit": 3 }
+  ],
+  "vertexLayouts": {
+    "default": {
+      "bindings": [
+        { "binding": 0, "stride": 56, "perInstance": false }
+      ],
+      "attributes": [
+        { "location": 0, "binding": 0, "format": "Float3", "offset": 0 },
+        { "location": 1, "binding": 0, "format": "Float3", "offset": 12 },
+        { "location": 2, "binding": 0, "format": "Float2", "offset": 24 },
+        { "location": 3, "binding": 0, "format": "Float3", "offset": 32 },
+        { "location": 4, "binding": 0, "format": "Float3", "offset": 44 }
+      ]
+    }
+  },
+  "renderState": {
+    "blendMode": "None",
+    "depthFunc": "Less",
+    "cullMode": "Back",
+    "depthTest": true,
+    "depthWrite": true,
+    "wireframe": false,
+    "msaa": 0
+  },
+  "stages": {
+    "Vertex": {
+      "file": "standard.hlsl",
+      "entryPoint": "VSMain",
+      "profile": "vs_6_6"
+    },
+    "Fragment": {
+      "file": "standard.hlsl",
+      "entryPoint": "PSMain",
+      "profile": "ps_6_6"
+    }
+  },
+  "variants": [
+    {
+      "keywordMask": 8,
+      "vertexLayout": "default",
+      "defines": {
+        "USE_DIFFUSE_MAP": "0",
+        "USE_NORMAL_MAP": "0",
+        "USE_SPECULAR_MAP": "0",
+        "USE_PBR": "1"
+      }
+    },
+    {
+      "keywordMask": 9,
+      "vertexLayout": "default",
+      "defines": {
+        "USE_DIFFUSE_MAP": "1",
+        "USE_NORMAL_MAP": "0",
+        "USE_SPECULAR_MAP": "0",
+        "USE_PBR": "1"
+      }
+    },
+    {
+      "keywordMask": 10,
+      "vertexLayout": "default",
+      "defines": {
+        "USE_DIFFUSE_MAP": "0",
+        "USE_NORMAL_MAP": "1",
+        "USE_SPECULAR_MAP": "0",
+        "USE_PBR": "1"
+      }
+    },
+    {
+      "keywordMask": 11,
+      "vertexLayout": "default",
+      "defines": {
+        "USE_DIFFUSE_MAP": "1",
+        "USE_NORMAL_MAP": "1",
+        "USE_SPECULAR_MAP": "0",
+        "USE_PBR": "1"
+      }
+    },
+    {
+      "keywordMask": 12,
+      "vertexLayout": "default",
+      "defines": {
+        "USE_DIFFUSE_MAP": "0",
+        "USE_NORMAL_MAP": "0",
+        "USE_SPECULAR_MAP": "1",
+        "USE_PBR": "1"
+      }
+    },
+    {
+      "keywordMask": 13,
+      "vertexLayout": "default",
+      "defines": {
+        "USE_DIFFUSE_MAP": "1",
+        "USE_NORMAL_MAP": "0",
+        "USE_SPECULAR_MAP": "1",
+        "USE_PBR": "1"
+      }
+    },
+    {
+      "keywordMask": 14,
+      "vertexLayout": "default",
+      "defines": {
+        "USE_DIFFUSE_MAP": "0",
+        "USE_NORMAL_MAP": "1",
+        "USE_SPECULAR_MAP": "1",
+        "USE_PBR": "1"
+      }
+    },
+    {
+      "keywordMask": 15,
+      "vertexLayout": "default",
+      "defines": {
+        "USE_DIFFUSE_MAP": "1",
+        "USE_NORMAL_MAP": "1",
+        "USE_SPECULAR_MAP": "1",
+        "USE_PBR": "1"
+      }
+    }
+  ]
+}

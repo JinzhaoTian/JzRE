@@ -156,7 +156,7 @@ private:
     JzRenderOutput *GetDefaultRenderOutput() const;
 
     /**
-     * @brief Resolve the geometry rendering pipeline from shader assets.
+     * @brief Resolve the geometry rendering pipeline from cooked shader resources.
      */
     std::shared_ptr<JzRHIPipeline> ResolveGeometryPipeline() const;
 

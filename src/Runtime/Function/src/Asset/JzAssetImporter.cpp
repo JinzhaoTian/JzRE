@@ -105,7 +105,7 @@ std::vector<std::pair<JzRE::String, JzRE::String>> JzRE::JzAssetImporter::GetSup
     return {
         {"Model Files", "*.fbx;*.obj"},
         {"Texture Files", "*.png;*.jpg;*.jpeg;*.tga;*.hdr"},
-        {"Shader Files", "*.ovfx;*.ovfxh"},
+        {"Shader Files", "*.jzshader;*.jzsblob;*.jzshader.src.json;*.hlsl;*.hlsli"},
         {"Material Files", "*.ovmat"},
         {"Font Files", "*.ttf"},
         {"Sound Files", "*.wav;*.mp3;*.ogg"}};

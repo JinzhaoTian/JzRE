@@ -19,7 +19,7 @@
 #include "JzRE/Runtime/Resource/JzAssetManager.h"
 #include "JzRE/Runtime/Resource/JzMaterial.h"
 #include "JzRE/Runtime/Resource/JzMesh.h"
-#include "JzRE/Runtime/Resource/JzShaderAsset.h"
+#include "JzRE/Runtime/Resource/JzShader.h"
 
 namespace JzRE {
 
@@ -67,8 +67,8 @@ void JzRenderSystem::Update(JzWorld &world, F32 delta)
     m_isInitialized       = geometryPipeline != nullptr;
 
     m_renderGraph.SetTransitionCallback(
-        [this](JzRHICommandList &commandList,
-               const JzRGPassDesc &passDesc,
+        [this](JzRHICommandList                  &commandList,
+               const JzRGPassDesc                &passDesc,
                const std::vector<JzRGTransition> &transitions) {
             ApplyRenderGraphTransitions(commandList, passDesc, transitions);
         });
@@ -265,7 +265,7 @@ void JzRenderSystem::BlitToScreen(U32 screenWidth, U32 screenHeight)
         return;
     }
 
-    auto &device = JzServiceContainer::Get<JzDevice>();
+    auto &device      = JzServiceContainer::Get<JzDevice>();
     auto  commandList = device.CreateCommandList("RenderSystem_BlitToScreen");
     if (!commandList) {
         return;
@@ -311,18 +311,25 @@ void JzRenderSystem::ClearGraphContributions()
 std::shared_ptr<JzRHIPipeline> JzRenderSystem::ResolveGeometryPipeline() const
 {
     auto &assetManager = JzServiceContainer::Get<JzAssetManager>();
-    auto  handle       = assetManager.LoadSync<JzShaderAsset>("shaders/standard");
-    auto *shaderAsset  = assetManager.Get(handle);
-    if (!shaderAsset || !shaderAsset->IsCompiled()) {
+    auto  handle       = assetManager.LoadSync<JzShader>("shaders/standard.jzshader");
+    auto *shader  = assetManager.Get(handle);
+    if (!shader || !shader->IsCompiled()) {
         return nullptr;
     }
 
-    auto mainVariant = shaderAsset->GetMainVariant();
-    if (!mainVariant || !mainVariant->IsValid()) {
-        return nullptr;
+    const U64 preferredMask = JzMaterialAssetComponent::KeywordUsePbr | JzMaterialAssetComponent::KeywordUseDiffuseMap;
+
+    auto preferredPipeline = shader->GetVariant(preferredMask);
+    if (preferredPipeline) {
+        return preferredPipeline;
     }
 
-    return mainVariant->GetPipeline();
+    auto mainPipeline = shader->GetMainVariant();
+    if (mainPipeline) {
+        return mainPipeline;
+    }
+
+    return nullptr;
 }
 
 void JzRenderSystem::ExecuteGeometryStage(
@@ -421,7 +428,7 @@ void JzRenderSystem::ResolveCameraFrameData(
 
 void JzRenderSystem::BeginRenderTargetPass(
     const JzRGPassContext &passContext,
-    JzRHICommandList &commandList,
+    JzRHICommandList      &commandList,
     const JzMat4 &viewMatrix, const JzMat4 &projectionMatrix, const JzVec3 &clearColor,
     std::shared_ptr<JzRHIPipeline> pipeline)
 {
@@ -558,7 +565,7 @@ void JzRenderSystem::UpdateRenderTargetVisibility(JzRenderTargetHandle handle,
 }
 
 void JzRenderSystem::DrawVisibleEntities(JzWorld &world, JzRHICommandList &commandList,
-                                         JzRenderVisibility visibility,
+                                         JzRenderVisibility             visibility,
                                          std::shared_ptr<JzRHIPipeline> pipeline)
 {
     if (!pipeline) {
@@ -611,6 +618,7 @@ void JzRenderSystem::DrawEntity(JzWorld &world, JzRHICommandList &commandList, J
     if (hasDiffuseTexture) {
         commandList.BindTexture(material->GetDiffuseTexture(), 0);
         pipeline->SetUniform("diffuseTexture", 0);
+        pipeline->SetUniform("SPIRV_Cross_CombineddiffuseTexturediffuseTextureSampler", 0);
     }
 
     commandList.BindVertexArray(vertexArray);

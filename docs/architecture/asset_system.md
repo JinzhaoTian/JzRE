@@ -193,7 +193,7 @@ struct JzAssetReadyTag {};       // All assets ready
 struct JzAssetLoadFailedTag {};  // Load failed
 
 // Hot reload tags (added by JzAssetSystem when source files change)
-struct JzShaderDirtyTag {};      // Shader source modified, recompiled
+struct JzShaderDirtyTag {};      // Cooked shader artifacts (.jzshader/.jzsblob) modified
 struct JzTextureDirtyTag {};     // Texture file modified
 struct JzMaterialDirtyTag {};    // Material definition modified
 ```
@@ -353,7 +353,7 @@ Load Request
 │        JzAssetSystem            │
 │                                 │
 │  UpdateAssetManager()           │
-│  ProcessMesh/Mat/ShaderAssets() │
+│   ProcessMesh/Mat/Shaders()     │
 │  UpdateComponentCaches()        │
 │  UpdateEntityAssetTags()        │
 └─────────────────────────────────┘
@@ -427,71 +427,68 @@ assetSystem.DetachAllAssets(entity);
 
 ## Shader Asset Integration
 
-The asset system includes built-in support for shader assets through `JzShaderAsset` and `JzShaderAssetFactory`.
+The asset system includes built-in support for cooked shader packages through `JzShader` and `JzShaderFactory`.
 
-### JzShaderAsset
+### JzShader
 
-A shader asset represents a complete shader program with vertex, fragment, and optional geometry shaders:
+A shader asset now represents a cooked runtime package:
 
 ```cpp
-class JzShaderAsset : public JzResource {
+class JzShader : public JzResource {
 public:
-    // Load from separate vertex and fragment files
-    JzShaderAsset(const String &vertexPath, const String &fragmentPath);
+    // Load from cooked manifest (.jzshader)
+    explicit JzShader(const String &shaderPath);
 
-    // Load from base name (expects .vert and .frag extensions)
-    explicit JzShaderAsset(const String &baseName);
+    // Get the default variant (keywordMask == 0)
+    std::shared_ptr<JzRHIPipeline> GetMainVariant() const;
 
-    // Get the compiled shader variant
-    std::shared_ptr<JzShaderVariant> GetMainVariant() const;
+    // Get a variant by keyword mask
+    std::shared_ptr<JzRHIPipeline> GetVariant(U64 keywordMask);
 
-    // Get a variant with specific defines
-    std::shared_ptr<JzShaderVariant> GetVariant(
-        const std::unordered_map<String, String> &defines);
+    // Build backend stage descriptors for one variant
+    std::vector<JzShaderProgramDesc> GetBackendProgramDesc(
+        JzERHIType rhiType, U64 keywordMask) const;
 };
 ```
 
 ### Shader Loading
 
 ```cpp
-// Load shader via asset manager
-auto shaderHandle = assetManager.LoadSync<JzShaderAsset>("shaders/standard");
+// Load cooked shader via asset manager
+auto shaderHandle = assetManager.LoadSync<JzShader>("shaders/standard.jzshader");
 
 // Get the shader asset
-JzShaderAsset* shader = assetManager.Get(shaderHandle);
+JzShader* shader = assetManager.Get(shaderHandle);
 if (shader && shader->IsCompiled()) {
-    auto variant = shader->GetMainVariant();
-    // Use variant->GetPipeline() for rendering
+    auto pipeline = shader->GetMainVariant();
+    // Use pipeline for rendering
 }
 ```
 
 ### Shader Variants
 
-Shader variants allow different preprocessor configurations:
+Shader variants are now selected via `keywordMask` (`U64`):
 
 ```cpp
-// Get variant with specific defines
-std::unordered_map<String, String> defines = {
-    {"USE_NORMAL_MAP", "1"},
-    {"USE_SHADOWS", "1"}
-};
-auto shadowVariant = shader->GetVariant(defines);
+// Example: enable bit 0 and bit 3
+const U64 keywordMask = (1ull << 0) | (1ull << 3);
+auto pipeline = shader->GetVariant(keywordMask);
 ```
 
 ### Cross-API Shader Contract
 
-Shader assets are compiled against the currently selected RHI backend. The compile path injects:
+Offline cooking produces one package per shader with target payloads:
 
-- `JZ_BACKEND_OPENGL`
-- `JZ_BACKEND_VULKAN`
+- OpenGL: GLSL text chunks
+- Vulkan: SPIR-V binary chunks
+- D3D12: DXIL binary chunks
+- Metal: MSL text chunks
 
-This keeps a single shader source compatible with both OpenGL and Vulkan. Runtime/editor built-in shaders use the same source files and backend macros instead of maintaining backend-specific shader duplicates.
-
-For Vulkan, shader compilation is validated through `shaderc` + `spirv-reflect` before pipeline object creation.
+Runtime no longer compiles shader source in `JzShader`. It loads cooked payloads and creates pipelines directly.
 
 ### Hot Reload Support
 
-`JzShaderAsset` supports hot reloading for development. Hot reload is now integrated into `JzAssetSystem`:
+`JzShader` hot reload now watches cooked files (`.jzshader` and `.jzsblob`). Hot reload is integrated into `JzAssetSystem`:
 
 ```cpp
 // JzAssetSystem automatically monitors shader files
@@ -503,7 +500,7 @@ if (shader->NeedsReload()) {
 }
 
 // ECS-integrated approach (recommended):
-auto view = world.View<JzShaderAssetComponent, JzShaderDirtyTag>();
+auto view = world.View<JzShaderComponent, JzShaderDirtyTag>();
 for (auto entity : view) {
     // Shader was hot-reloaded by JzAssetSystem
     // Handle re-binding uniforms, updating materials, etc.
@@ -515,27 +512,23 @@ for (auto entity : view) {
 
 `JzAssetSystem` integrates shader hot reload into the ECS update loop:
 
-1. **File Watching**: Monitors shader source files for modifications
-2. **Automatic Recompilation**: Recompiles shader variants when source changes
+1. **File Watching**: Monitors cooked shader files for modifications
+2. **Automatic Reload**: Reloads cooked manifests/blob chunks when files change
 3. **Entity Tagging**: Adds `JzShaderDirtyTag` to all entities using the modified shader
-4. **Cache Invalidation**: Updates `JzShaderVariantManager` cache
+4. **Cache Invalidation**: Drops cached variants and rebuilds on demand
 
 This enables seamless iteration during development without manual reload calls.
 
 ### Factory Registration
 
-The `JzShaderAssetFactory` is automatically registered during `JzAssetManager::Initialize()`:
+The `JzShaderFactory` accepts cooked shader manifest paths:
 
 ```cpp
-// Supports multiple path formats:
-// 1. Base name (looks for .vert and .frag)
-assetManager.LoadSync<JzShaderAsset>("shaders/standard");
+// 1. Explicit manifest path
+assetManager.LoadSync<JzShader>("shaders/standard.jzshader");
 
-// 2. Pipe-separated paths
-assetManager.LoadSync<JzShaderAsset>("shaders/custom.vert|shaders/custom.frag");
-
-// 3. Single file (finds matching counterpart)
-assetManager.LoadSync<JzShaderAsset>("shaders/custom.vert");
+// 2. Stem path (auto appends .jzshader)
+assetManager.LoadSync<JzShader>("shaders/standard");
 ```
 
 ## Files
@@ -550,13 +543,13 @@ src/Runtime/Resource/include/JzRE/Runtime/Resource/
 ├── JzAssetManager.inl    # Template implementation
 ├── JzLRUCache.h          # Memory management
 ├── JzAssetHeaders.h      # Unified header (aggregator, renamed from JzAssetSystem.h)
-├── JzShaderAsset.h       # Shader asset with variant support
-└── JzShaderAssetFactory.h # Factory for shader loading
+├── JzShader.h       # Shader asset with variant support
+└── JzShaderFactory.h # Factory for shader loading
 
 src/Runtime/Resource/src/
 ├── JzAssetManager.cpp
 ├── JzLRUCache.cpp
-└── JzShaderAsset.cpp
+└── JzShader.cpp
 
 src/Runtime/Function/include/JzRE/Runtime/Function/ECS/
 ├── JzAssetComponents.h       # ECS components (mesh, material, shader)

@@ -13,7 +13,7 @@
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
 #include "JzRE/Runtime/Function/ECS/JzLightComponents.h"
 #include "JzRE/Runtime/Platform/RHI/JzDevice.h"
-#include "JzRE/Runtime/Resource/JzShaderAsset.h"
+#include "JzRE/Runtime/Resource/JzShader.h"
 
 namespace {
 
@@ -41,17 +41,17 @@ std::shared_ptr<JzRE::JzRHIPipeline> LoadEditorContributionPipeline(
     JzRE::JzAssetSystem &assetSystem, const JzRE::String &primaryPath, const JzRE::String &fallbackPath)
 {
     const auto tryLoad = [&assetSystem](const JzRE::String &path) -> std::shared_ptr<JzRE::JzRHIPipeline> {
-        const auto handle      = assetSystem.LoadSync<JzRE::JzShaderAsset>(path);
-        auto      *shaderAsset = assetSystem.Get(handle);
-        if (!shaderAsset || !shaderAsset->IsCompiled()) {
+        const auto handle      = assetSystem.LoadSync<JzRE::JzShader>(path);
+        auto      *shader = assetSystem.Get(handle);
+        if (!shader || !shader->IsCompiled()) {
             return nullptr;
         }
 
-        auto variant = shaderAsset->GetMainVariant();
-        if (!variant || !variant->IsValid()) {
+        auto pipeline = shader->GetMainVariant();
+        if (!pipeline) {
             return nullptr;
         }
-        return variant->GetPipeline();
+        return pipeline;
     };
 
     auto pipeline = tryLoad(primaryPath);
@@ -168,9 +168,9 @@ void JzRE::JzREEditor::InitializeEditorRenderContributions()
     auto &resources                     = *m_editorRenderContributionResources;
 
     resources.skyboxPipeline =
-        LoadEditorContributionPipeline(assetSystem, "shaders/editor_skybox", "resources/shaders/editor_skybox");
+        LoadEditorContributionPipeline(assetSystem, "shaders/editor_skybox.jzshader", "resources/shaders/editor_skybox");
     resources.linePipeline =
-        LoadEditorContributionPipeline(assetSystem, "shaders/editor_axis", "resources/shaders/editor_axis");
+        LoadEditorContributionPipeline(assetSystem, "shaders/editor_axis.jzshader", "resources/shaders/editor_axis");
 
     if (!resources.skyboxPipeline || !resources.linePipeline) {
         JzRE_LOG_WARN("JzREEditor: Editor contribution shaders are not fully available, contribution rendering may be incomplete.");
@@ -265,7 +265,7 @@ void JzRE::JzREEditor::InitializeEditorRenderContributions()
         }
     }
 
-    auto setupLineContribution = [](const std::shared_ptr<JzRHIPipeline> &pipeline,
+    auto setupLineContribution = [](const std::shared_ptr<JzRHIPipeline>   &pipeline,
                                     const JzRenderGraphContributionContext &context) {
         const JzMat4 model = JzMat4x4::Identity();
         pipeline->SetUniform("model", model);
@@ -285,7 +285,7 @@ void JzRE::JzREEditor::InitializeEditorRenderContributions()
         skyboxContribution.name            = "EditorSkyboxContribution";
         skyboxContribution.requiredFeature = JzRenderTargetFeatures::Skybox;
         skyboxContribution.scope           = JzRenderGraphContributionScope::RegisteredTarget;
-        skyboxContribution.execute         =
+        skyboxContribution.execute =
             [pipeline = resources.skyboxPipeline, vertexArray = resources.skyboxVAO, drawParams](
                 const JzRenderGraphContributionContext &context) {
                 if (context.commandList == nullptr) {
@@ -333,7 +333,7 @@ void JzRE::JzREEditor::InitializeEditorRenderContributions()
         axisContribution.name            = "EditorAxisContribution";
         axisContribution.requiredFeature = JzRenderTargetFeatures::Axis;
         axisContribution.scope           = JzRenderGraphContributionScope::RegisteredTarget;
-        axisContribution.execute         =
+        axisContribution.execute =
             [pipeline = resources.linePipeline, vertexArray = resources.axisVAO, drawParams,
              setupLineContribution](const JzRenderGraphContributionContext &context) {
                 if (context.commandList == nullptr) {
@@ -361,7 +361,7 @@ void JzRE::JzREEditor::InitializeEditorRenderContributions()
         gridContribution.name            = "EditorGridContribution";
         gridContribution.requiredFeature = JzRenderTargetFeatures::Grid;
         gridContribution.scope           = JzRenderGraphContributionScope::RegisteredTarget;
-        gridContribution.execute         =
+        gridContribution.execute =
             [pipeline = resources.linePipeline, vertexArray = resources.gridVAO, drawParams,
              setupLineContribution](const JzRenderGraphContributionContext &context) {
                 if (context.commandList == nullptr) {

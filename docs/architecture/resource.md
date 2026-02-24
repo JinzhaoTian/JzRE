@@ -102,7 +102,7 @@ public:
 | Texture       | `JzTexture`  | `JzTextureFactory`  | Image resources    |
 | Mesh          | `JzMesh`     | `JzMeshFactory`     | Geometry data      |
 | Material      | `JzMaterial` | `JzMaterialFactory` | Render materials   |
-| Shader        | `JzShader`   | `JzShaderFactory`   | GPU programs       |
+| Shader        | `JzShader` | `JzShaderFactory` | Cooked shader package (`.jzshader` + `.jzsblob`) |
 | Model         | `JzModel`    | `JzModelFactory`    | Complete 3D models |
 | Font          | `JzFont`     | `JzFontFactory`     | Text rendering     |
 
@@ -141,8 +141,8 @@ classDiagram
     }
 
     class JzShader {
-        +GetProgram() JzGPUShaderProgramObject*
-        -m_program
+        +GetVariant(keywordMask) JzRHIPipeline*
+        +GetBackendProgramDesc(rhiType, keywordMask) vector
     }
 
     class JzModel {
@@ -164,6 +164,17 @@ classDiagram
     JzMaterial *-- JzShader
 ```
 
+### Shader Resource Workflow (Cooked Assets)
+
+Shader loading is now offline-first:
+
+1. Author HLSL + source manifest (`*.jzshader.src.json`).
+2. `JzREShaderTool` generates runtime artifacts:
+   - `*.jzshader` (manifest: variants, targets, layouts)
+   - `*.jzsblob` (binary/text chunk storage)
+3. `JzShaderFactory` resolves `.jzshader` paths only.
+4. `JzShader` loads manifest/blob and creates pipeline variants by `keywordMask`.
+
 ---
 
 ## Workflow
@@ -178,7 +189,7 @@ assetManager->RegisterFactory<JzModel>(std::make_unique<JzModelFactory>());
 assetManager->RegisterFactory<JzMesh>(std::make_unique<JzMeshFactory>());
 assetManager->RegisterFactory<JzTexture>(std::make_unique<JzTextureFactory>());
 assetManager->RegisterFactory<JzMaterial>(std::make_unique<JzMaterialFactory>());
-assetManager->RegisterFactory<JzShaderAsset>(std::make_unique<JzShaderAssetFactory>());
+assetManager->RegisterFactory<JzShader>(std::make_unique<JzShaderFactory>());
 assetManager->RegisterFactory<JzFont>(std::make_unique<JzFontFactory>());
 
 // Search paths are also added
@@ -291,14 +302,11 @@ public:
     }
 };
 
-// JzShaderFactory.h (with parameters)
+// JzShaderFactory.h
 class JzShaderFactory : public JzResourceFactory {
 public:
     JzResource* Create(const String& name) override {
-        // Parse shader paths
-        String vertPath = name + ".vert";
-        String fragPath = name + ".frag";
-        return new JzShader(vertPath, fragPath);
+        return new JzShader(name);
     }
 };
 ```
@@ -405,189 +413,64 @@ if (iconTexture) {
 
 ---
 
-## ShaderManager
+## Shader Assets (Cooked Manifest + Blob)
 
 ### Overview
 
-`JzShaderManager` provides centralized shader program management with a variant system for cross-platform shader compilation. It enables different shader configurations (e.g., with/without shadows, skeletal animation) through keyword-based variants.
+The runtime shader system no longer compiles `.vert/.frag` sources at runtime.
+Shaders are now **offline-cooked** and loaded as:
 
-### Architecture
+- `*.jzshader.src.json`: source descriptor (authoring-time input)
+- `*.hlsl` / `*.hlsli`: authoring sources
+- `*.jzshader`: runtime manifest
+- `*.jzsblob`: runtime chunk blob
 
-```mermaid
-classDiagram
-    class JzShaderManager {
-        +Initialize() void
-        +Shutdown() void
-        +RegisterShaderProgram(name, program) void
-        +GetShaderProgram(name) JzShaderProgram*
-        +GetVariant(programName, variantKey) JzShaderVariant*
-        +GetStandardShader(variantKey) JzShaderVariant*
-        +GetUnlitShader() JzShaderVariant*
-        -CompileVariant(program, variantKey) JzShaderVariant*
-        -GenerateDefines(program, variantKey) String
-        -RegisterBuiltInShaders() void
-    }
+`JzShaderFactory` only creates `JzShader` from cooked manifests (`.jzshader`).
 
-    class JzShaderProgram {
-        +GetName() String
-        +SetVertexSource(source) void
-        +SetFragmentSource(source) void
-        +AddKeyword(keyword) void
-        +GetKeywords() vector
-        +SetRenderState(state) void
-        +GetDefaultVariantKey() JzShaderVariantKey
-    }
+### Runtime Contract
 
-    class JzShaderVariant {
-        +GetKey() JzShaderVariantKey
-        +GetPipeline() JzRHIPipeline*
-        +IsValid() Bool
-    }
+`JzShader` loads cooked artifacts and provides:
 
-    class JzShaderVariantKey {
-        +keywordMask U64
-        +Hash struct
-    }
+- variant resolution by `keywordMask` (`U64`)
+- backend stage payload extraction (`GLSL`, `SPIRV`, `DXIL`, `MSL`)
+- pipeline creation through `JzDevice::CreatePipeline(...)`
+- reflection layout snapshots per stage key (`reflectionLayouts`)
 
-    class JzShaderKeyword {
-        +name String
-        +index U32
-        +defaultEnabled Bool
-    }
+`JzShaderProgramDesc` now carries payload bytes/text (`bytecodeOrText`) plus:
 
-    JzShaderManager *-- JzShaderProgram
-    JzShaderManager *-- JzShaderVariant
-    JzShaderProgram *-- JzShaderKeyword
-    JzShaderVariant --> JzShaderVariantKey
-    JzShaderVariant --> JzRHIPipeline
-```
+- `stage`
+- `format`
+- `entryPoint`
+- `reflectionKey`
 
-### Key Components
+No runtime HLSL/GLSL preprocessing or source compilation path remains in `JzShader`.
 
-| Component | Purpose |
-|-----------|---------|
-| `JzShaderManager` | Central manager for shader programs and variant caching |
-| `JzShaderProgram` | Defines a shader with source code and keyword definitions |
-| `JzShaderVariant` | A compiled variant holding the RHI pipeline |
-| `JzShaderVariantKey` | Bitmask identifying which keywords are enabled |
-| `JzShaderKeyword` | Definition of a variant keyword (name, index, default) |
+### Binding Convention
 
-### Variant System
+Resource binding truth is defined in HLSL register-space syntax:
 
-Variants are created by enabling/disabling keywords. Each keyword maps to a preprocessor `#define`:
+- `register(xN, spaceM)` -> `set = M`, `binding = N`
+- same mapping is applied across Vulkan/OpenGL/D3D12/Metal cooked targets
 
-```cpp
-// Define keywords in shader program
-program->AddKeyword({"SKINNED", 0, false});      // Bit 0
-program->AddKeyword({"SHADOWS", 1, false});      // Bit 1
-program->AddKeyword({"NORMAL_MAPPING", 2, false}); // Bit 2
+### Variant and Layout Flow
 
-// Request a variant with SKINNED enabled
-JzShaderVariantKeyBuilder builder;
-builder.EnableKeyword(0);  // Enable SKINNED
-auto variant = shaderManager.GetVariant("standard", builder.Build());
-```
-
-When compiling, keywords are prepended as defines:
-
-```glsl
-#define SKINNED 1
-// ... rest of shader source
-```
-
-### Backend-Aware Compilation
-
-`JzShaderRegistry` selects a compiler implementation from the active RHI device:
-
-- `JzOpenGLShaderCompiler` for `JzERHIType::OpenGL`
-- `JzVulkanShaderCompiler` for `JzERHIType::Vulkan`
-
-Both compilers prepend backend macros so the same shader source can branch per API:
-
-```glsl
-#if JZ_BACKEND_VULKAN
-// Vulkan-only path
-#endif
-
-#if JZ_BACKEND_OPENGL
-// OpenGL-only path
-#endif
-```
-
-At runtime, `JzShaderAsset` also injects both macros (`JZ_BACKEND_OPENGL` and `JZ_BACKEND_VULKAN`) for variant compilation, keeping shader authoring unified across backends.
-
-### Vulkan Validation Path
-
-For Vulkan, the compiler path uses:
-
-- `shaderc` to compile GLSL into SPIR-V
-- `spirv-reflect` to validate generated SPIR-V modules before pipeline creation
-
-If pre-validation fails, a warning is logged and pipeline creation is still attempted so editor/runtime iteration can continue with diagnostic output.
-
-### Shader File Loading
-
-Shaders are loaded from external files in the `shaders/` directory (relative to the executable working directory). The ShaderManager provides methods to load shader programs from files:
-
-```cpp
-// Load shader from files
-Bool LoadShaderProgram(const String& name,
-                       const std::filesystem::path& vertexPath,
-                       const std::filesystem::path& fragmentPath,
-                       const std::filesystem::path& geometryPath = {});
-
-// Built-in shaders are loaded from:
-// - shaders/standard.vert, shaders/standard.frag
-// - shaders/unlit.vert, shaders/unlit.frag
-```
-
-Shader files are stored in `resources/shaders/` in the source tree and copied to the build directory during CMake configuration.
-
-Shared helper code can be placed under `resources/shaders/include/` (for example `JzShaderCommon.glsl`) and included by both runtime and editor shaders.
+1. Material/system logic computes `keywordMask`.
+2. `JzShader::GetVariant(keywordMask)` resolves cooked variant data.
+3. Runtime picks target stages by active `JzERHIType`.
+4. Stage `reflectionKey` values are merged into `JzPipelineDesc.shaderLayout`.
+5. Pipeline is created from cooked stage payloads only.
 
 ### Usage
 
 ```cpp
-// Get ShaderManager from service container
-auto& shaderManager = JzServiceContainer::Get<JzShaderManager>();
+auto shaderHandle = assetSystem.LoadSync<JzShader>("shaders/standard.jzshader");
+auto *shader = assetSystem.Get(shaderHandle);
 
-// Get default standard shader (no keywords enabled)
-auto variant = shaderManager.GetStandardShader();
-
-// Get variant with specific features
-JzShaderVariantKeyBuilder builder;
-builder.EnableKeyword(0);  // SKINNED
-builder.EnableKeyword(1);  // SHADOWS
-auto skinnedShadowVariant = shaderManager.GetVariant("standard", builder.Build());
-
-// Use the pipeline
-if (variant && variant->IsValid()) {
-    device.BindPipeline(variant->GetPipeline());
+const U64 keywordMask = materialComp.shaderKeywordMask;
+auto pipeline = shader ? shader->GetVariant(keywordMask) : nullptr;
+if (pipeline) {
+    // Bind pipeline through recorded RHI command list.
 }
-
-// Load custom shader from files
-auto shaderDir = std::filesystem::current_path() / "shaders";
-shaderManager.LoadShaderProgram("custom", shaderDir / "custom.vert", shaderDir / "custom.frag");
-```
-
-### Built-in Shaders
-
-The ShaderManager provides two built-in shaders:
-
-| Shader | Description | Keywords |
-|--------|-------------|----------|
-| `standard` | Blinn-Phong lighting with material support | SKINNED, SHADOWS, NORMAL_MAPPING |
-| `unlit` | Simple unlit shader with color uniform | None |
-
-### Initialization
-
-ShaderManager is initialized automatically by `JzRERuntime` after device creation:
-
-```cpp
-// In JzRERuntime constructor (automatic)
-m_shaderManager = std::make_unique<JzShaderManager>();
-m_shaderManager->Initialize();
-JzServiceContainer::Provide<JzShaderManager>(*m_shaderManager);
 ```
 
 ---
@@ -598,16 +481,16 @@ The asset system now supports hot reloading for development workflows. This is i
 
 ### Shader Hot Reload
 
-Shader hot reload is fully implemented:
+Shader hot reload is fully implemented for cooked runtime artifacts:
 
 ```cpp
-// JzAssetSystem monitors shader files and marks entities for reload
+// JzAssetSystem monitors cooked shader files and marks entities for reload
 // Entities with modified shaders get JzShaderDirtyTag
 
 // In your system, check for dirty shaders:
-auto view = world.View<JzShaderAssetComponent, JzShaderDirtyTag>();
+auto view = world.View<JzShaderComponent, JzShaderDirtyTag>();
 for (auto entity : view) {
-    auto& shaderComp = world.GetComponent<JzShaderAssetComponent>(entity);
+    auto& shaderComp = world.GetComponent<JzShaderComponent>(entity);
     // Shader has been reloaded - update pipeline, rebind uniforms, etc.
     world.GetRegistry().remove<JzShaderDirtyTag>(entity);
 }
@@ -617,7 +500,7 @@ for (auto entity : view) {
 
 | Tag                 | Purpose                                    |
 |---------------------|--------------------------------------------|
-| `JzShaderDirtyTag`  | Shader source files modified, recompiled   |
+| `JzShaderDirtyTag`  | `.jzshader/.jzsblob` changed, shader variant cache invalidated |
 | `JzTextureDirtyTag` | Texture file modified, reloaded            |
 | `JzMaterialDirtyTag`| Material definition modified               |
 

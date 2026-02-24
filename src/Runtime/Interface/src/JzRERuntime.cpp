@@ -19,7 +19,7 @@
 #include "JzRE/Runtime/Platform/RHI/JzDeviceFactory.h"
 
 // Resource factories for JzAssetManager
-#include "JzRE/Runtime/Resource/JzShaderAssetFactory.h"
+#include "JzRE/Runtime/Resource/JzShaderFactory.h"
 #include "JzRE/Runtime/Resource/JzModelFactory.h"
 #include "JzRE/Runtime/Resource/JzMeshFactory.h"
 #include "JzRE/Runtime/Resource/JzTextureFactory.h"
@@ -60,7 +60,23 @@ void JzRE::JzRERuntime::Startup()
 
             // Apply render API from project config
             if (config.renderAPI != JzERenderAPI::Auto) {
-                m_settings.rhiType = (config.renderAPI == JzERenderAPI::Vulkan) ? JzERHIType::Vulkan : JzERHIType::OpenGL;
+                switch (config.renderAPI) {
+                    case JzERenderAPI::OpenGL:
+                        m_settings.rhiType = JzERHIType::OpenGL;
+                        break;
+                    case JzERenderAPI::Vulkan:
+                        m_settings.rhiType = JzERHIType::Vulkan;
+                        break;
+                    case JzERenderAPI::D3D12:
+                        m_settings.rhiType = JzERHIType::D3D12;
+                        break;
+                    case JzERenderAPI::Metal:
+                        m_settings.rhiType = JzERHIType::Metal;
+                        break;
+                    case JzERenderAPI::Auto:
+                    default:
+                        break;
+                }
             }
         }
     }
@@ -151,9 +167,10 @@ void JzRE::JzRERuntime::RegisterSystems()
     if (selectedRhiType == JzERHIType::Unknown) {
         selectedRhiType = JzDeviceFactory::GetDefaultRHIType();
     }
-    if (selectedRhiType == JzERHIType::Vulkan && !JzDeviceFactory::IsVulkanSupported()) {
-        JzRE_LOG_WARN("JzRERuntime: Vulkan requested but unavailable, fallback to OpenGL");
-        selectedRhiType = JzERHIType::OpenGL;
+    if (!JzDeviceFactory::IsRHITypeSupported(selectedRhiType)) {
+        JzRE_LOG_WARN("JzRERuntime: Requested RHI '{}' unavailable, fallback to default",
+                      JzDeviceFactory::GetRHITypeName(selectedRhiType));
+        selectedRhiType = JzDeviceFactory::GetDefaultRHIType();
     }
     if (selectedRhiType == JzERHIType::Unknown) {
         selectedRhiType = JzERHIType::OpenGL;
@@ -207,7 +224,7 @@ void JzRE::JzRERuntime::InitializeSubsystems()
     m_assetSystem->Initialize(*m_world, assetConfig);
 
     // Register resource factories
-    m_assetSystem->RegisterFactory<JzShaderAsset>(std::make_unique<JzShaderAssetFactory>());
+    m_assetSystem->RegisterFactory<JzShader>(std::make_unique<JzShaderFactory>());
     m_assetSystem->RegisterFactory<JzModel>(std::make_unique<JzModelFactory>());
     m_assetSystem->RegisterFactory<JzMesh>(std::make_unique<JzMeshFactory>());
     m_assetSystem->RegisterFactory<JzTexture>(std::make_unique<JzTextureFactory>());

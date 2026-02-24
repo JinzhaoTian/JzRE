@@ -98,6 +98,11 @@ JzRE::String JzRE::JzFileSystemUtils::FileTypeToString(JzRE::JzEFileType p_fileT
 
 JzRE::JzEFileType JzRE::JzFileSystemUtils::GetFileType(const JzRE::String &p_path)
 {
+    String loweredPath = p_path;
+    std::transform(loweredPath.begin(), loweredPath.end(), loweredPath.begin(), ::tolower);
+    if (loweredPath.ends_with(".jzshader.src.json"))
+        return JzEFileType::SHADER_PART;
+
     String ext = GetExtension(p_path);
     std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
 
@@ -105,9 +110,9 @@ JzRE::JzEFileType JzRE::JzFileSystemUtils::GetFileType(const JzRE::String &p_pat
         return JzEFileType::MODEL;
     else if (ext == "png" || ext == "jpeg" || ext == "jpg" || ext == "tga" || ext == "hdr")
         return JzEFileType::TEXTURE;
-    else if (ext == "ovfx")
+    else if (ext == "jzshader")
         return JzEFileType::SHADER;
-    else if (ext == "ovfxh")
+    else if (ext == "jzsblob" || ext == "hlsl" || ext == "hlsli")
         return JzEFileType::SHADER_PART;
     else if (ext == "ovmat")
         return JzEFileType::MATERIAL;

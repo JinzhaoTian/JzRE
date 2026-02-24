@@ -65,7 +65,6 @@ target_include_directories(JzRuntimePlatform
 find_package(glad CONFIG REQUIRED)
 find_package(glfw3 CONFIG REQUIRED)
 find_package(Vulkan REQUIRED)
-find_package(unofficial-shaderc CONFIG REQUIRED)
 find_package(unofficial-spirv-reflect CONFIG REQUIRED)
 
 # Platform-specific libraries
@@ -105,6 +104,5 @@ target_link_libraries(JzRuntimePlatform
         ${JZ_OPENGL_LIBS}
         ${JZ_VULKAN_LIBS}
         ${JZ_PLATFORM_LIBS}
-        unofficial::shaderc::shaderc
         unofficial::spirv-reflect
 )

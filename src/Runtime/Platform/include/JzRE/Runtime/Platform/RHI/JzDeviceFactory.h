@@ -67,6 +67,16 @@ public:
      */
     static Bool IsVulkanSupported();
 
+    /**
+     * @brief Check Direct3D 12 runtime availability.
+     */
+    static Bool IsD3D12Supported();
+
+    /**
+     * @brief Check Metal runtime availability.
+     */
+    static Bool IsMetalSupported();
+
 private:
     JzDeviceFactory() = default;
 };

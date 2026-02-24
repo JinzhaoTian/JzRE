@@ -52,7 +52,7 @@
 #include "JzRE/Runtime/Resource/JzMaterial.h"
 #include "JzRE/Runtime/Resource/JzTexture.h"
 #include "JzRE/Runtime/Resource/JzModel.h"
-#include "JzRE/Runtime/Resource/JzShaderAsset.h"
+#include "JzRE/Runtime/Resource/JzShader.h"
 
 namespace JzRE {
 

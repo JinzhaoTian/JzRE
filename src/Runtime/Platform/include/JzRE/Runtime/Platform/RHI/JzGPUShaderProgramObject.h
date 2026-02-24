@@ -5,6 +5,9 @@
 
 #pragma once
 
+#include <utility>
+#include <vector>
+
 #include "JzRE/Runtime/Core/JzRETypes.h"
 #include "JzRE/Runtime/Platform/RHI/JzGPUResource.h"
 
@@ -23,13 +26,60 @@ enum class JzEShaderProgramType : U8 {
 };
 
 /**
+ * @brief Serialized shader payload format.
+ *
+ * GLSL/MSL are text payloads.
+ * SPIRV/DXIL are binary payloads.
+ */
+enum class JzEShaderBinaryFormat : U8 {
+    DXIL,
+    SPIRV,
+    MSL,
+    GLSL
+};
+
+/**
  * @brief Shader program description
  */
 struct JzShaderProgramDesc {
-    JzEShaderProgramType type;
-    String               source;
-    String               entryPoint = "main";
-    String               debugName;
+    JzEShaderProgramType  stage  = JzEShaderProgramType::Vertex;
+    JzEShaderBinaryFormat format = JzEShaderBinaryFormat::GLSL;
+    std::vector<U8>       bytecodeOrText;
+    String                entryPoint = "main";
+    String                debugName;
+    String                reflectionKey;
+
+    /**
+     * @brief Assign UTF-8 shader text into payload storage.
+     */
+    void SetTextPayload(const String &text)
+    {
+        bytecodeOrText.assign(text.begin(), text.end());
+    }
+
+    /**
+     * @brief Decode payload as UTF-8 shader text.
+     */
+    String GetTextPayload() const
+    {
+        return String(bytecodeOrText.begin(), bytecodeOrText.end());
+    }
+
+    /**
+     * @brief Assign binary payload.
+     */
+    void SetBinaryPayload(std::vector<U8> binary)
+    {
+        bytecodeOrText = std::move(binary);
+    }
+
+    /**
+     * @brief Whether payload should be treated as text.
+     */
+    Bool IsTextPayload() const
+    {
+        return format == JzEShaderBinaryFormat::GLSL || format == JzEShaderBinaryFormat::MSL;
+    }
 };
 
 /**
@@ -57,17 +107,35 @@ public:
      */
     JzEShaderProgramType GetType() const
     {
-        return desc.type;
+        return desc.stage;
     }
 
     /**
-     * @brief Get the source of the shader
+     * @brief Get the shader payload format.
      *
-     * @return The source of the shader
+     * @return Payload format.
      */
-    const String &GetSource() const
+    JzEShaderBinaryFormat GetFormat() const
     {
-        return desc.source;
+        return desc.format;
+    }
+
+    /**
+     * @brief Get the shader payload bytes.
+     *
+     * @return Binary/text payload bytes.
+     */
+    const std::vector<U8> &GetPayload() const
+    {
+        return desc.bytecodeOrText;
+    }
+
+    /**
+     * @brief Get text payload decoded as UTF-8.
+     */
+    String GetTextPayload() const
+    {
+        return desc.GetTextPayload();
     }
 
     /**
@@ -78,6 +146,14 @@ public:
     const String &GetEntryPoint() const
     {
         return desc.entryPoint;
+    }
+
+    /**
+     * @brief Get reflection key for backend layout binding.
+     */
+    const String &GetReflectionKey() const
+    {
+        return desc.reflectionKey;
     }
 
 protected:

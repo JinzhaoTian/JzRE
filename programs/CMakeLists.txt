@@ -1,1 +1,2 @@
 add_subdirectory(JzREHeaderTool)
+add_subdirectory(JzREShaderTool)

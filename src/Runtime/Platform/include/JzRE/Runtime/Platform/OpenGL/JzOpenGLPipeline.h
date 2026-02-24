@@ -70,12 +70,18 @@ private:
      */
     GLint GetUniformLocation(const String &name);
 
+    /**
+     * @brief Build alias map for struct-qualified uniforms.
+     */
+    void BuildUniformAliasMap();
+
 private:
     GLuint                                       m_program  = 0;
     Bool                                         m_isLinked = false;
     String                                       m_linkLog;
     std::vector<std::shared_ptr<JzOpenGLShader>> m_shaders;
     std::unordered_map<String, GLint>            m_uniformLocations;
+    std::unordered_map<String, String>           m_uniformAliases;
 };
 
 } // namespace JzRE

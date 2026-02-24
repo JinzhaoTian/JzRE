@@ -15,7 +15,7 @@
 #include "JzRE/Runtime/Resource/JzMaterial.h"
 #include "JzRE/Runtime/Resource/JzMesh.h"
 #include "JzRE/Runtime/Resource/JzModel.h"
-#include "JzRE/Runtime/Resource/JzShaderAsset.h"
+#include "JzRE/Runtime/Resource/JzShader.h"
 
 namespace JzRE {
 
@@ -47,7 +47,7 @@ void JzAssetSystem::Update(JzWorld &world, F32 delta)
     // Process asset components (absorbed from JzAssetLoadingSystem)
     ProcessMeshAssets(world);
     ProcessMaterialAssets(world);
-    ProcessShaderAssets(world);
+    ProcessShaders(world);
 
     // Hot reload check (development mode only)
     if (m_hotReloadEnabled) {
@@ -63,8 +63,8 @@ void JzAssetSystem::Update(JzWorld &world, F32 delta)
 
 void JzAssetSystem::OnShutdown(JzWorld &world)
 {
-    if (world.HasContext<JzAssetManager*>()) {
-        world.RemoveContext<JzAssetManager*>();
+    if (world.HasContext<JzAssetManager *>()) {
+        world.RemoveContext<JzAssetManager *>();
     }
 
     if (JzServiceContainer::Has<JzAssetManager>()) {
@@ -92,7 +92,7 @@ void JzAssetSystem::Initialize(JzWorld &world, const JzAssetManagerConfig &confi
     // Register JzAssetManager in service container and world context
     // (JzRenderSystem, JzAssetBrowser use it)
     JzServiceContainer::Provide<JzAssetManager>(*m_assetManager);
-    world.SetContext<JzAssetManager*>(m_assetManager.get());
+    world.SetContext<JzAssetManager *>(m_assetManager.get());
 
     if (m_hotReloadEnabled) {
         JzRE_LOG_INFO("JzAssetSystem: Hot reload enabled with {}s check interval",
@@ -161,17 +161,18 @@ std::vector<JzEntity> JzAssetSystem::SpawnModel(JzWorld &world, JzModelHandle mo
                 auto matPath   = modelPath + "#mat" + std::to_string(matIdx);
                 auto matHandle = RegisterAsset<JzMaterial>(matPath, material);
                 if (matHandle.IsValid()) {
-                    auto       &matComp   = world.AddComponent<JzMaterialAssetComponent>(entity, matHandle);
-                    const auto &props     = material->GetProperties();
-                    matComp.ambientColor  = props.ambientColor;
-                    matComp.diffuseColor  = props.diffuseColor;
-                    matComp.specularColor = props.specularColor;
-                    matComp.shininess     = props.shininess;
-                    matComp.opacity       = props.opacity;
-                    matComp.baseColor     = JzVec4(props.diffuseColor.x, props.diffuseColor.y,
-                                                   props.diffuseColor.z, props.opacity);
+                    auto       &matComp       = world.AddComponent<JzMaterialAssetComponent>(entity, matHandle);
+                    const auto &props         = material->GetProperties();
+                    matComp.ambientColor      = props.ambientColor;
+                    matComp.diffuseColor      = props.diffuseColor;
+                    matComp.specularColor     = props.specularColor;
+                    matComp.shininess         = props.shininess;
+                    matComp.opacity           = props.opacity;
+                    matComp.baseColor         = JzVec4(props.diffuseColor.x, props.diffuseColor.y,
+                                                       props.diffuseColor.z, props.opacity);
                     matComp.hasDiffuseTexture = material->HasDiffuseTexture();
                     matComp.isReady           = true;
+                    matComp.UpdateShaderKeywordMask();
                     assetRef.AddMaterial(matHandle);
                 }
             }
@@ -206,9 +207,9 @@ void JzAssetSystem::AttachMaterial(JzWorld &world, JzEntity entity, JzMaterialHa
     world.GetComponent<JzAssetReferenceComponent>(entity).AddMaterial(handle);
 }
 
-void JzAssetSystem::AttachShader(JzWorld &world, JzEntity entity, JzShaderAssetHandle handle)
+void JzAssetSystem::AttachShader(JzWorld &world, JzEntity entity, JzShaderHandle handle)
 {
-    world.AddOrReplaceComponent<JzShaderAssetComponent>(entity, handle);
+    world.AddOrReplaceComponent<JzShaderComponent>(entity, handle);
     m_assetManager->AddRef(handle);
 
     if (!world.HasComponent<JzAssetReferenceComponent>(entity)) {
@@ -241,7 +242,7 @@ void JzAssetSystem::DetachAllAssets(JzWorld &world, JzEntity entity)
             m_assetManager->Release(JzModelHandle(id));
         }
         for (const auto &id : assetRef->shaderRefs) {
-            m_assetManager->Release(JzShaderAssetHandle(id));
+            m_assetManager->Release(JzShaderHandle(id));
         }
     }
 
@@ -249,7 +250,7 @@ void JzAssetSystem::DetachAllAssets(JzWorld &world, JzEntity entity)
     world.RemoveComponent<JzAssetReferenceComponent>(entity);
     world.RemoveComponent<JzMeshAssetComponent>(entity);
     world.RemoveComponent<JzMaterialAssetComponent>(entity);
-    world.RemoveComponent<JzShaderAssetComponent>(entity);
+    world.RemoveComponent<JzShaderComponent>(entity);
     world.RemoveComponent<JzTextureAssetComponent>(entity);
     world.RemoveComponent<JzModelAssetComponent>(entity);
     world.RemoveComponent<JzAssetLoadingTag>(entity);
@@ -386,12 +387,12 @@ void JzAssetSystem::ProcessMaterialAssets(JzWorld &world)
     }
 }
 
-void JzAssetSystem::ProcessShaderAssets(JzWorld &world)
+void JzAssetSystem::ProcessShaders(JzWorld &world)
 {
-    auto view = world.View<JzShaderAssetComponent>();
+    auto view = world.View<JzShaderComponent>();
 
     for (auto entity : view) {
-        auto &shaderComp = view.get<JzShaderAssetComponent>(entity);
+        auto &shaderComp = view.get<JzShaderComponent>(entity);
 
         if (shaderComp.isReady || !shaderComp.shaderHandle.IsValid()) {
             continue;
@@ -402,12 +403,12 @@ void JzAssetSystem::ProcessShaderAssets(JzWorld &world)
         switch (loadState) {
             case JzEAssetLoadState::Loaded:
             {
-                JzShaderAsset *shader = m_assetManager->Get(shaderComp.shaderHandle);
+                JzShader *shader = m_assetManager->Get(shaderComp.shaderHandle);
                 if (shader && shader->IsCompiled()) {
                     UpdateShaderComponentCache(shaderComp, shader);
                     shaderComp.isReady = true;
 
-                    JzRE_LOG_DEBUG("JzAssetSystem: Shader asset ready for entity {}",
+                    JzRE_LOG_DEBUG("JzAssetSystem: Shader ready for entity {}",
                                    static_cast<U32>(entity));
                 }
                 break;
@@ -422,7 +423,7 @@ void JzAssetSystem::ProcessShaderAssets(JzWorld &world)
             case JzEAssetLoadState::Failed:
                 world.RemoveComponent<JzAssetLoadingTag>(entity);
                 world.AddOrReplaceComponent<JzAssetLoadFailedTag>(entity);
-                JzRE_LOG_WARN("JzAssetSystem: Shader asset load failed for entity {}",
+                JzRE_LOG_WARN("JzAssetSystem: Shader load failed for entity {}",
                               static_cast<U32>(entity));
                 break;
 
@@ -457,19 +458,20 @@ void JzAssetSystem::UpdateMaterialComponentCache(JzMaterialAssetComponent &comp,
 
     // Convert diffuse to base color for PBR compatibility
     comp.baseColor = JzVec4(props.diffuseColor.x, props.diffuseColor.y, props.diffuseColor.z, props.opacity);
+
+    comp.hasDiffuseTexture  = material->HasDiffuseTexture();
+    comp.hasNormalTexture   = false;
+    comp.hasSpecularTexture = false;
+    comp.UpdateShaderKeywordMask();
 }
 
-void JzAssetSystem::UpdateShaderComponentCache(JzShaderAssetComponent &comp, JzShaderAsset *shader)
+void JzAssetSystem::UpdateShaderComponentCache(JzShaderComponent &comp, JzShader *shader)
 {
     if (!shader) {
         return;
     }
 
-    if (comp.shaderDefines.empty()) {
-        comp.cachedVariant = shader->GetMainVariant();
-    } else {
-        comp.cachedVariant = shader->GetVariant(comp.shaderDefines);
-    }
+    comp.cachedVariant = shader->GetVariant(comp.keywordMask);
 }
 
 void JzAssetSystem::UpdateEntityAssetTags(JzWorld &world, JzEntity entity)
@@ -496,7 +498,7 @@ void JzAssetSystem::UpdateEntityAssetTags(JzWorld &world, JzEntity entity)
         }
     }
 
-    if (auto *shaderComp = world.TryGetComponent<JzShaderAssetComponent>(entity)) {
+    if (auto *shaderComp = world.TryGetComponent<JzShaderComponent>(entity)) {
         if (shaderComp->shaderHandle.IsValid() && !shaderComp->isReady) {
             allReady   = false;
             anyLoading = true;
@@ -550,14 +552,14 @@ void JzAssetSystem::ForceHotReloadCheck()
     m_forceCheckNextFrame = true;
 }
 
-Bool JzAssetSystem::ReloadShader(JzShaderAssetHandle shaderHandle)
+Bool JzAssetSystem::ReloadShader(JzShaderHandle shaderHandle)
 {
     if (!m_assetManager || !m_assetManager->IsInitialized()) {
         JzRE_LOG_WARN("JzAssetSystem: AssetManager not available for shader reload");
         return false;
     }
 
-    JzShaderAsset *shader = m_assetManager->Get(shaderHandle);
+    JzShader *shader = m_assetManager->Get(shaderHandle);
     if (!shader) {
         JzRE_LOG_WARN("JzAssetSystem: Shader not found for reload");
         return false;
@@ -603,7 +605,7 @@ void JzAssetSystem::CheckShaderHotReload(JzWorld &world)
     auto usedShaders = CollectUsedShaders(world);
 
     for (auto shaderHandle : usedShaders) {
-        JzShaderAsset *shader = m_assetManager->Get(shaderHandle);
+        JzShader *shader = m_assetManager->Get(shaderHandle);
         if (!shader) {
             continue;
         }
@@ -624,12 +626,12 @@ void JzAssetSystem::CheckShaderHotReload(JzWorld &world)
     }
 }
 
-void JzAssetSystem::NotifyShaderReloaded(JzShaderAssetHandle shaderHandle, JzWorld &world)
+void JzAssetSystem::NotifyShaderReloaded(JzShaderHandle shaderHandle, JzWorld &world)
 {
     // Mark all entities with this shader as dirty
-    auto shaderView = world.View<JzShaderAssetComponent>();
+    auto shaderView = world.View<JzShaderComponent>();
     for (auto entity : shaderView) {
-        auto &shaderComp = shaderView.get<JzShaderAssetComponent>(entity);
+        auto &shaderComp = shaderView.get<JzShaderComponent>(entity);
         if (shaderComp.shaderHandle == shaderHandle) {
             // Reset ready state to trigger recompilation
             shaderComp.isReady       = false;
@@ -660,15 +662,15 @@ void JzAssetSystem::NotifyShaderReloaded(JzShaderAssetHandle shaderHandle, JzWor
     }
 }
 
-std::unordered_set<JzShaderAssetHandle, JzAssetHandle<JzShaderAsset>::Hash>
+std::unordered_set<JzShaderHandle, JzAssetHandle<JzShader>::Hash>
 JzAssetSystem::CollectUsedShaders(JzWorld &world)
 {
-    std::unordered_set<JzShaderAssetHandle, JzAssetHandle<JzShaderAsset>::Hash> usedShaders;
+    std::unordered_set<JzShaderHandle, JzAssetHandle<JzShader>::Hash> usedShaders;
 
     // Collect from shader components
-    auto shaderView = world.View<JzShaderAssetComponent>();
+    auto shaderView = world.View<JzShaderComponent>();
     for (auto entity : shaderView) {
-        auto &shaderComp = shaderView.get<JzShaderAssetComponent>(entity);
+        auto &shaderComp = shaderView.get<JzShaderComponent>(entity);
         if (shaderComp.shaderHandle.IsValid()) {
             usedShaders.insert(shaderComp.shaderHandle);
         }

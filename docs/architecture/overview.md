@@ -36,6 +36,7 @@ Standalone Example Build (examples/EditorExample/CMakeLists.txt)
 | ECS-centric runtime                 | Runtime frame behavior is driven by `JzWorld` systems.                                              |
 | Service locator for shared services | Runtime services are exposed via `JzServiceContainer`.                                              |
 | Command-list rendering API          | Runtime/editor rendering is recorded through `JzRHICommandList` and executed by backend devices.     |
+| Offline shader cooking              | Shader authoring uses HLSL; runtime consumes cooked `.jzshader` + `.jzsblob` artifacts only.         |
 
 ## Runtime and Editor Boundary
 
@@ -67,6 +68,8 @@ Current backend status:
 
 - OpenGL: implemented and kept as compatibility backend
 - Vulkan: implemented (runtime/editor path available, automatic fallback to OpenGL)
+- D3D12: API enum + project serialization + cooked payload target added (native backend integration pending)
+- Metal: API enum + project serialization + cooked payload target added (native backend integration pending)
 
 Notes on rendering command path:
 
@@ -78,10 +81,22 @@ Notes on rendering command path:
 Key responsibilities:
 
 - `JzAssetManager` lifecycle and registries
-- type factories (`JzShaderAssetFactory`, `JzModelFactory`, ...)
+- type factories (`JzShaderFactory`, `JzModelFactory`, ...)
 - sync/async loading
 - search-path based asset resolution
 - ECS-facing integration via `JzAssetSystem`
+- cooked shader package loading (`.jzshader` manifest + `.jzsblob` blob)
+
+## Shader Pipeline (Current)
+
+The shader pipeline is now offline-first:
+
+1. Author HLSL source + source manifest (`*.jzshader.src.json`) in `resources/shaders/src/`.
+2. Run `JzREShaderTool` to produce runtime artifacts:
+   - `*.jzshader` (manifest)
+   - `*.jzsblob` (binary chunk blob)
+3. Runtime loads `JzShader` from cooked manifest and selects variant by `keywordMask`.
+4. `JzShaderProgramDesc` carries cooked payload format (`GLSL`, `SPIRV`, `DXIL`, `MSL`) and bytes to RHI backends.
 
 ## Function Layer
 

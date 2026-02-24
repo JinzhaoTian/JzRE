@@ -62,6 +62,8 @@ String RenderAPIToString(JzERenderAPI api)
         case JzERenderAPI::Auto: return "Auto";
         case JzERenderAPI::OpenGL: return "OpenGL";
         case JzERenderAPI::Vulkan: return "Vulkan";
+        case JzERenderAPI::D3D12: return "D3D12";
+        case JzERenderAPI::Metal: return "Metal";
     }
     return "Auto";
 }
@@ -70,6 +72,8 @@ JzERenderAPI StringToRenderAPI(const String &str)
 {
     if (str == "OpenGL") return JzERenderAPI::OpenGL;
     if (str == "Vulkan") return JzERenderAPI::Vulkan;
+    if (str == "D3D12") return JzERenderAPI::D3D12;
+    if (str == "Metal") return JzERenderAPI::Metal;
     return JzERenderAPI::Auto;
 }
 
@@ -317,7 +321,7 @@ std::optional<JzProjectWorkspaceSettings> JzProjectManager::LoadWorkspaceSetting
         if (!std::filesystem::exists(legacyPath)) {
             return std::nullopt;
         }
-        workspacePath = std::move(legacyPath);
+        workspacePath              = std::move(legacyPath);
         loadedFromLegacyEditorFile = true;
     }
 

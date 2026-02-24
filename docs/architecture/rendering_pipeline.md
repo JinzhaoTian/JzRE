@@ -86,7 +86,9 @@ Implementation note:
 
 1. Reads `JzWindowStateComponent`.
 2. Tracks framebuffer size changes and window visibility.
-3. Resolves geometry pipeline from `shaders/standard` for the current frame.
+3. Resolves geometry pipeline from cooked shader asset `shaders/standard.jzshader` for the current frame.
+   - Preferred variant mask: `KeywordUsePbr | KeywordUseDiffuseMap` (keeps diffuse texture sampling path enabled by default).
+   - Fallback: shader main variant when preferred cooked variant is unavailable.
 4. Configures `JzRenderGraph` allocator and transition callbacks.
 5. Resets graph and records passes for all render targets (default + registered) in a unified loop.
 6. Compiles and executes graph.
@@ -178,8 +180,14 @@ Per draw call:
 
 - model/view/projection and material uniforms are set.
 - diffuse texture is bound when material has one.
-- pipeline vertex layout is built from vertex shader input declarations and attached to `JzPipelineDesc`.
+- pipeline vertex layout is read from cooked shader manifest (`vertexLayouts`) and attached to `JzPipelineDesc`.
 - `commandList.DrawIndexed(...)` is recorded with mesh index count.
+
+Shader variant selection:
+
+- shader variants are addressed by `keywordMask` (`U64`) instead of runtime define-map compilation.
+- `JzShaderComponent` stores `keywordMask`.
+- `JzAssetSystem` resolves cached shader pipeline via `GetVariant(keywordMask)`.
 
 ## RenderGraph Compile/Execute Behavior
 

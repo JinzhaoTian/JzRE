@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "shaderName": "editor_axis",
+  "keywords": [],
+  "vertexLayouts": {
+    "default": {
+      "bindings": [
+        { "binding": 0, "stride": 24, "perInstance": false }
+      ],
+      "attributes": [
+        { "location": 0, "binding": 0, "format": "Float3", "offset": 0 },
+        { "location": 1, "binding": 0, "format": "Float3", "offset": 12 }
+      ]
+    }
+  },
+  "renderState": {
+    "blendMode": "None",
+    "depthFunc": "LessEqual",
+    "cullMode": "None",
+    "depthTest": true,
+    "depthWrite": true,
+    "wireframe": false,
+    "msaa": 0
+  },
+  "stages": {
+    "Vertex": {
+      "file": "editor_axis.hlsl",
+      "entryPoint": "VSMain",
+      "profile": "vs_6_6"
+    },
+    "Fragment": {
+      "file": "editor_axis.hlsl",
+      "entryPoint": "PSMain",
+      "profile": "ps_6_6"
+    }
+  },
+  "variants": [
+    {
+      "keywordMask": 0,
+      "vertexLayout": "default"
+    }
+  ]
+}

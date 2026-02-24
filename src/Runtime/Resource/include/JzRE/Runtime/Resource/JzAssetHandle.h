@@ -17,7 +17,6 @@ class JzTexture;
 class JzMaterial;
 class JzModel;
 class JzShader;
-class JzShaderAsset;
 class JzFont;
 
 /**
@@ -128,7 +127,6 @@ using JzTextureHandle     = JzAssetHandle<JzTexture>;
 using JzMaterialHandle    = JzAssetHandle<JzMaterial>;
 using JzModelHandle       = JzAssetHandle<JzModel>;
 using JzShaderHandle      = JzAssetHandle<JzShader>;
-using JzShaderAssetHandle = JzAssetHandle<JzShaderAsset>;
 using JzFontHandle        = JzAssetHandle<JzFont>;
 
 } // namespace JzRE

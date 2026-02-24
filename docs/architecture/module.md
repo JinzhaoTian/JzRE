@@ -50,8 +50,8 @@ JzRE/
 │   │   │   │   ├── JzLRUCache.h, JzResource.h, JzResourceFactory.h
 │   │   │   │   ├── JzTexture.h, JzMesh.h, JzModel.h
 │   │   │   │   ├── JzMaterial.h, JzFont.h
-│   │   │   │   ├── JzShaderAsset.h, JzShaderProgram.h
-│   │   │   │   ├── JzShaderVariant.h, JzShaderVariantManager.h
+│   │   │   │   ├── JzShader.h
+│   │   │   │   ├── JzShaderVariantKey.h
 │   │   │   │   └── Jz*Factory.h
 │   │   │   └── src/
 │   │   │
@@ -91,8 +91,10 @@ JzRE/
 │       └── UI/                     # 40+ ImGui widget wrappers
 │
 ├── docs/                           # Documentation
-├── resources/                      # Engine resources (shaders, textures)
-└── programs/JzREHeaderTool/        # Code generation tool (libclang)
+├── resources/                      # Engine resources (cooked shaders, textures)
+└── programs/                       # Tooling
+    ├── JzREHeaderTool/             # Code generation tool (libclang)
+    └── JzREShaderTool/             # Offline HLSL -> cooked shader pack tool
 ```
 
 ---
@@ -257,19 +259,20 @@ cmake --build examples/EditorExample/build
 | Target              | Type       | Dependencies                                              |
 | ------------------- | ---------- | --------------------------------------------------------- |
 | `JzRuntimeCore`     | Static     | spdlog, fmt                                               |
-| `JzRuntimePlatform` | Static     | JzRuntimeCore, glad, glfw, vulkan, shaderc, spirv-reflect |
+| `JzRuntimePlatform` | Static     | JzRuntimeCore, glad, glfw, vulkan, spirv-reflect          |
 | `JzRuntimeResource` | Static     | JzRuntimeCore, JzRuntimePlatform, assimp, stb, freetype   |
 | `JzRuntimeFunction` | Static     | JzRuntimeCore, JzRuntimePlatform, JzRuntimeResource, entt |
 | `JzRERuntime`       | Interface  | All runtime layers                                        |
+| `JzREShaderTool`    | Executable | nlohmann-json, external tools (`dxc`, `spirv-cross`)      |
 | `TESTJzRECore`      | Executable | JzRuntimeCore, GTest::gtest_main                          |
 | `TESTJzREPlatform`  | Executable | JzRuntimePlatform, GTest::gtest_main                      |
 
 Standalone `examples/EditorExample` targets:
 
-| Target              | Type       | Dependencies                                              |
-| ------------------- | ---------- | --------------------------------------------------------- |
-| `JzEditorCore`      | Interface  | JzRERuntime                                               |
-| `JzEditorUI`        | Static     | JzEditorCore, imgui, vulkan                              |
-| `JzEditorPanels`    | Static     | JzEditorUI                                                |
-| `JzEditor`          | Static     | JzEditorPanels                                            |
-| `EditorExample`     | Executable | JzEditor                                                  |
+| Target           | Type       | Dependencies                |
+| ---------------- | ---------- | --------------------------- |
+| `JzEditorCore`   | Interface  | JzRERuntime                 |
+| `JzEditorUI`     | Static     | JzEditorCore, imgui, vulkan |
+| `JzEditorPanels` | Static     | JzEditorUI                  |
+| `JzEditor`       | Static     | JzEditorPanels              |
+| `EditorExample`  | Executable | JzEditor                    |

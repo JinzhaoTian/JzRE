@@ -105,10 +105,10 @@ struct JzVertexBindingDesc {
  * @brief Vertex attribute description.
  */
 struct JzVertexAttributeDesc {
-    U32                     location = 0;
-    U32                     binding  = 0;
-    JzEVertexAttributeFormat format  = JzEVertexAttributeFormat::Float3;
-    U32                     offset   = 0;
+    U32                      location = 0;
+    U32                      binding  = 0;
+    JzEVertexAttributeFormat format   = JzEVertexAttributeFormat::Float3;
+    U32                      offset   = 0;
 };
 
 /**
@@ -128,12 +128,43 @@ struct JzVertexLayoutDesc {
 };
 
 /**
+ * @brief Shader resource binding type.
+ */
+enum class JzEShaderResourceType : U8 {
+    UniformBuffer,
+    StorageBuffer,
+    SampledTexture,
+    Sampler,
+    StorageTexture,
+    PushConstants
+};
+
+/**
+ * @brief Shader resource binding descriptor.
+ */
+struct JzShaderResourceBindingDesc {
+    String                name;
+    JzEShaderResourceType type      = JzEShaderResourceType::UniformBuffer;
+    U32                   set       = 0;
+    U32                   binding   = 0;
+    U32                   arraySize = 1;
+};
+
+/**
+ * @brief Cross-backend shader reflection snapshot.
+ */
+struct JzShaderLayoutDesc {
+    std::vector<JzShaderResourceBindingDesc> resources;
+};
+
+/**
  * @brief Pipeline description
  */
 struct JzPipelineDesc {
     std::vector<JzShaderProgramDesc> shaders;
     JzRenderState                    renderState;
     JzVertexLayoutDesc               vertexLayout;
+    JzShaderLayoutDesc               shaderLayout;
     String                           debugName;
 };
 
@@ -274,8 +305,8 @@ protected:
         m_parametersDirty = false;
     }
 
-    JzPipelineDesc desc;
+    JzPipelineDesc                                     desc;
     std::unordered_map<String, JzShaderParameterValue> m_parameterCache;
-    Bool                                                m_parametersDirty = false;
+    Bool                                               m_parametersDirty = false;
 };
 } // namespace JzRE

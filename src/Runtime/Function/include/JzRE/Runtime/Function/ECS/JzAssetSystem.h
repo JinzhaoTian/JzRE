@@ -43,7 +43,7 @@
 #include "JzRE/Runtime/Resource/JzMaterial.h"
 #include "JzRE/Runtime/Resource/JzTexture.h"
 #include "JzRE/Runtime/Resource/JzModel.h"
-#include "JzRE/Runtime/Resource/JzShaderAsset.h"
+#include "JzRE/Runtime/Resource/JzShader.h"
 
 namespace JzRE {
 
@@ -52,11 +52,11 @@ class JzWorld;
 class JzModel;
 class JzMesh;
 class JzMaterial;
-class JzShaderAsset;
+class JzShader;
 class JzResourceFactory;
 struct JzMeshAssetComponent;
 struct JzMaterialAssetComponent;
-struct JzShaderAssetComponent;
+struct JzShaderComponent;
 
 /**
  * @brief ECS system facade for asset management
@@ -246,7 +246,7 @@ public:
     /**
      * @brief Attach a shader asset to an entity
      */
-    void AttachShader(JzWorld &world, JzEntity entity, JzShaderAssetHandle handle);
+    void AttachShader(JzWorld &world, JzEntity entity, JzShaderHandle handle);
 
     /**
      * @brief Detach all asset references from an entity and release refs
@@ -313,7 +313,7 @@ public:
      * @param handle Handle to the shader to reload
      * @return True if reload succeeded
      */
-    Bool ReloadShader(JzShaderAssetHandle handle);
+    Bool ReloadShader(JzShaderHandle handle);
 
     // ==================== Hot Reload Statistics ====================
 
@@ -344,11 +344,11 @@ private:
 
     void ProcessMeshAssets(JzWorld &world);
     void ProcessMaterialAssets(JzWorld &world);
-    void ProcessShaderAssets(JzWorld &world);
+    void ProcessShaders(JzWorld &world);
 
     void UpdateMeshComponentCache(JzMeshAssetComponent &comp, JzMesh *mesh);
     void UpdateMaterialComponentCache(JzMaterialAssetComponent &comp, JzMaterial *material);
-    void UpdateShaderComponentCache(JzShaderAssetComponent &comp, JzShaderAsset *shader);
+    void UpdateShaderComponentCache(JzShaderComponent &comp, JzShader *shader);
 
     void UpdateEntityAssetTags(JzWorld &world, JzEntity entity);
 
@@ -356,9 +356,9 @@ private:
 
     void CheckForHotReloadUpdates(JzWorld &world);
     void CheckShaderHotReload(JzWorld &world);
-    void NotifyShaderReloaded(JzShaderAssetHandle handle, JzWorld &world);
+    void NotifyShaderReloaded(JzShaderHandle handle, JzWorld &world);
 
-    std::unordered_set<JzShaderAssetHandle, JzAssetHandle<JzShaderAsset>::Hash>
+    std::unordered_set<JzShaderHandle, JzAssetHandle<JzShader>::Hash>
     CollectUsedShaders(JzWorld &world);
 
     // ==================== Member Variables ====================

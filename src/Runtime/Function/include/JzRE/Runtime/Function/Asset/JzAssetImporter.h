@@ -109,8 +109,8 @@ public:
      * Maps JzEFileType to the conventional subdirectory name:
      *   MODEL       -> "Models"
      *   TEXTURE     -> "Textures"
-     *   SHADER      -> "Shaders"
-     *   SHADER_PART -> "Shaders"
+     *   SHADER      -> "Shaders" (`.jzshader`)
+     *   SHADER_PART -> "Shaders" (`.jzsblob`, `.jzshader.src.json`, `.hlsl`, `.hlsli`)
      *   MATERIAL    -> "Materials"
      *   FONT        -> "Fonts"
      *   SOUND       -> "Sounds"

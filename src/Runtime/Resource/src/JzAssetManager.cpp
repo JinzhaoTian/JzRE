@@ -188,22 +188,20 @@ void JzAssetManager::AddSearchPath(const String &path)
 
 String JzAssetManager::FindFullPath(const String &relativePath) const
 {
-    namespace fs = std::filesystem;
-    const auto TryResolveShaderBasePath = [](const fs::path &basePath) -> String {
+    namespace fs                            = std::filesystem;
+    const auto TryResolveShaderManifestPath = [](const fs::path &basePath) -> String {
+        if (basePath.extension() == ".jzshader" && fs::exists(basePath)) {
+            return basePath.string();
+        }
+
         if (!basePath.extension().empty()) {
             return "";
         }
 
-        fs::path vertexPath = basePath;
-        vertexPath += ".vert";
-        if (fs::exists(vertexPath)) {
-            return basePath.string();
-        }
-
-        fs::path fragmentPath = basePath;
-        fragmentPath += ".frag";
-        if (fs::exists(fragmentPath)) {
-            return basePath.string();
+        fs::path shaderManifest  = basePath;
+        shaderManifest          += ".jzshader";
+        if (fs::exists(shaderManifest)) {
+            return shaderManifest.string();
         }
 
         return "";
@@ -215,9 +213,9 @@ String JzAssetManager::FindFullPath(const String &relativePath) const
         return relativePath;
     }
     if (p.is_absolute()) {
-        auto shaderBasePath = TryResolveShaderBasePath(p);
-        if (!shaderBasePath.empty()) {
-            return shaderBasePath;
+        auto shaderManifestPath = TryResolveShaderManifestPath(p);
+        if (!shaderManifestPath.empty()) {
+            return shaderManifestPath;
         }
     }
 
@@ -230,9 +228,9 @@ String JzAssetManager::FindFullPath(const String &relativePath) const
             return fullPath.string();
         }
 
-        auto shaderBasePath = TryResolveShaderBasePath(fullPath);
-        if (!shaderBasePath.empty()) {
-            return shaderBasePath;
+        auto shaderManifestPath = TryResolveShaderManifestPath(fullPath);
+        if (!shaderManifestPath.empty()) {
+            return shaderManifestPath;
         }
     }
 
@@ -240,9 +238,9 @@ String JzAssetManager::FindFullPath(const String &relativePath) const
     if (fs::exists(p)) {
         return fs::absolute(p).string();
     }
-    auto shaderBasePath = TryResolveShaderBasePath(p);
-    if (!shaderBasePath.empty()) {
-        return fs::absolute(shaderBasePath).string();
+    auto shaderManifestPath = TryResolveShaderManifestPath(p);
+    if (!shaderManifestPath.empty()) {
+        return fs::absolute(shaderManifestPath).string();
     }
 
     return ""; // Not found

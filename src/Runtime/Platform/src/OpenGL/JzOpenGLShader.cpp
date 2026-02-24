@@ -65,9 +65,18 @@ JzRE::Bool JzRE::JzOpenGLShader::CompileShader()
     m_compileLog.clear();
 
     // Convert shader type
-    GLenum shaderType = ConvertShaderType(desc.type);
+    GLenum shaderType = ConvertShaderType(desc.stage);
     if (shaderType == 0) {
         m_compileLog = "Unsupported shader type";
+        return false;
+    }
+
+    if (desc.format != JzEShaderBinaryFormat::GLSL) {
+        m_compileLog = "OpenGL backend only accepts GLSL text payload";
+        return false;
+    }
+    if (desc.bytecodeOrText.empty()) {
+        m_compileLog = "OpenGL shader payload is empty";
         return false;
     }
 
@@ -79,7 +88,8 @@ JzRE::Bool JzRE::JzOpenGLShader::CompileShader()
     }
 
     // Set shader source code
-    const char *source = desc.source.c_str();
+    const String textSource = desc.GetTextPayload();
+    const char  *source     = textSource.c_str();
     glShaderSource(m_handle, 1, &source, nullptr);
 
     // Compile shader

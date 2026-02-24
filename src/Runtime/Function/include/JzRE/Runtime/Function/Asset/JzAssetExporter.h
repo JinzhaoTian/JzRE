@@ -63,9 +63,9 @@ public:
      * @param options Export options
      * @return Result entry
      */
-    JzExportResultEntry ExportFile(const std::filesystem::path& assetPath,
-                                    const std::filesystem::path& destinationDir,
-                                    const JzExportOptions& options = {});
+    JzExportResultEntry ExportFile(const std::filesystem::path &assetPath,
+                                   const std::filesystem::path &destinationDir,
+                                   const JzExportOptions       &options = {});
 
     /**
      * @brief Export multiple asset files to an external directory.
@@ -75,18 +75,18 @@ public:
      * @return Vector of result entries
      */
     std::vector<JzExportResultEntry> ExportFiles(
-        const std::vector<std::filesystem::path>& assetPaths,
-        const std::filesystem::path& destinationDir,
-        const JzExportOptions& options = {});
+        const std::vector<std::filesystem::path> &assetPaths,
+        const std::filesystem::path              &destinationDir,
+        const JzExportOptions                    &options = {});
 
 private:
     /**
      * @brief Resolve the destination path for an asset export.
      */
     std::filesystem::path ResolveExportDestination(
-        const std::filesystem::path& assetPath,
-        const std::filesystem::path& destinationDir,
-        const JzExportOptions& options);
+        const std::filesystem::path &assetPath,
+        const std::filesystem::path &destinationDir,
+        const JzExportOptions       &options);
 };
 
 } // namespace JzRE

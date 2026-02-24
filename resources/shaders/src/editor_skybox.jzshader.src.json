@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "shaderName": "editor_skybox",
+  "keywords": [],
+  "vertexLayouts": {
+    "default": {
+      "bindings": [
+        { "binding": 0, "stride": 8, "perInstance": false }
+      ],
+      "attributes": [
+        { "location": 0, "binding": 0, "format": "Float2", "offset": 0 }
+      ]
+    }
+  },
+  "renderState": {
+    "blendMode": "None",
+    "depthFunc": "LessEqual",
+    "cullMode": "None",
+    "depthTest": true,
+    "depthWrite": false,
+    "wireframe": false,
+    "msaa": 0
+  },
+  "stages": {
+    "Vertex": {
+      "file": "editor_skybox.hlsl",
+      "entryPoint": "VSMain",
+      "profile": "vs_6_6"
+    },
+    "Fragment": {
+      "file": "editor_skybox.hlsl",
+      "entryPoint": "PSMain",
+      "profile": "ps_6_6"
+    }
+  },
+  "variants": [
+    {
+      "keywordMask": 0,
+      "vertexLayout": "default"
+    }
+  ]
+}

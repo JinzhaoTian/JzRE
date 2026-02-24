@@ -84,7 +84,7 @@ public:
      * @param commandBuffer Target command buffer.
      * @param boundTextures Bound textures keyed by texture slot.
      */
-    void BindResources(VkCommandBuffer commandBuffer,
+    void BindResources(VkCommandBuffer                                                  commandBuffer,
                        const std::unordered_map<U32, std::shared_ptr<JzVulkanTexture>> &boundTextures);
 
 private:
@@ -94,18 +94,19 @@ private:
     };
 
     struct JzUniformBindingDesc {
-        U32 set   = 0;
-        U32 binding = 0;
-        U32 size  = 0;
+        U32                                             set     = 0;
+        U32                                             binding = 0;
+        U32                                             size    = 0;
         std::unordered_map<String, JzUniformMemberDesc> members;
         std::shared_ptr<JzVulkanBuffer>                 buffer;
         std::vector<U8>                                 cpuData;
     };
 
     struct JzSamplerBindingDesc {
-        U32    set     = 0;
-        U32    binding = 0;
-        String name;
+        U32              set            = 0;
+        U32              binding        = 0;
+        VkDescriptorType descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        String           name;
     };
 
     Bool CreateGraphicsPipeline();
@@ -116,16 +117,16 @@ private:
     void BindDescriptorSets(VkCommandBuffer commandBuffer);
 
 private:
-    JzVulkanDevice                               *m_owner         = nullptr;
-    Bool                                          m_isValid       = false;
-    std::vector<std::shared_ptr<JzVulkanShader>>  m_shaders;
-    VkPipelineLayout                              m_pipelineLayout = VK_NULL_HANDLE;
-    VkPipeline                                    m_pipeline       = VK_NULL_HANDLE;
-    std::vector<VkDescriptorSetLayout>            m_descriptorSetLayouts;
-    VkDescriptorPool                              m_descriptorPool = VK_NULL_HANDLE;
-    std::vector<VkDescriptorSet>                  m_descriptorSets;
-    std::vector<JzUniformBindingDesc>             m_uniformBindings;
-    std::vector<JzSamplerBindingDesc>             m_samplerBindings;
+    JzVulkanDevice                              *m_owner   = nullptr;
+    Bool                                         m_isValid = false;
+    std::vector<std::shared_ptr<JzVulkanShader>> m_shaders;
+    VkPipelineLayout                             m_pipelineLayout = VK_NULL_HANDLE;
+    VkPipeline                                   m_pipeline       = VK_NULL_HANDLE;
+    std::vector<VkDescriptorSetLayout>           m_descriptorSetLayouts;
+    VkDescriptorPool                             m_descriptorPool = VK_NULL_HANDLE;
+    std::vector<VkDescriptorSet>                 m_descriptorSets;
+    std::vector<JzUniformBindingDesc>            m_uniformBindings;
+    std::vector<JzSamplerBindingDesc>            m_samplerBindings;
 };
 
 } // namespace JzRE

@@ -30,9 +30,9 @@ struct JzReflectedUniformMember {
 };
 
 struct JzReflectedDescriptorBinding {
-    VkDescriptorSetLayoutBinding                     layoutBinding{};
-    String                                           name;
-    U32                                              blockSize = 0;
+    VkDescriptorSetLayoutBinding                         layoutBinding{};
+    String                                               name;
+    U32                                                  blockSize = 0;
     std::unordered_map<String, JzReflectedUniformMember> members;
 };
 
@@ -257,8 +257,8 @@ Bool ConvertVertexAttributeFormat(JzEVertexAttributeFormat format, VkFormat &vkF
     return false;
 }
 
-void CollectUniformMembers(const SpvReflectBlockVariable &member,
-                           const String                  &prefix,
+void CollectUniformMembers(const SpvReflectBlockVariable                        &member,
+                           const String                                         &prefix,
                            std::unordered_map<String, JzReflectedUniformMember> &outMembers)
 {
     const char *memberName = member.name ? member.name : "";
@@ -286,8 +286,8 @@ void CollectUniformMembers(const SpvReflectBlockVariable &member,
     }
 
     JzReflectedUniformMember reflectedMember;
-    reflectedMember.offset = member.absolute_offset;
-    reflectedMember.size   = member.size > 0 ? member.size : member.padded_size;
+    reflectedMember.offset  = member.absolute_offset;
+    reflectedMember.size    = member.size > 0 ? member.size : member.padded_size;
     outMembers[currentName] = reflectedMember;
 }
 
@@ -303,7 +303,7 @@ JzVulkanPipeline::JzVulkanPipeline(JzVulkanDevice &device, const JzPipelineDesc 
         auto shader = std::make_shared<JzVulkanShader>(device, shaderDesc);
         if (!shader->IsCompiled()) {
             JzRE_LOG_ERROR("JzVulkanPipeline: failed to compile shader stage '{}' for pipeline '{}': {}",
-                           static_cast<I32>(shaderDesc.type),
+                           static_cast<I32>(shaderDesc.stage),
                            desc.debugName,
                            shader->GetCompileLog());
             m_isValid = false;
@@ -350,7 +350,7 @@ void JzVulkanPipeline::CommitParameters()
 }
 
 void JzVulkanPipeline::BindResources(
-    VkCommandBuffer commandBuffer,
+    VkCommandBuffer                                                  commandBuffer,
     const std::unordered_map<U32, std::shared_ptr<JzVulkanTexture>> &boundTextures)
 {
     if (commandBuffer == VK_NULL_HANDLE || m_pipelineLayout == VK_NULL_HANDLE) {
@@ -454,16 +454,11 @@ void JzVulkanPipeline::UpdateSamplerDescriptors(
     const auto &parameters      = GetParameterCache();
     auto        fallbackTexture = m_owner->GetFallbackTexture();
 
-    for (const auto &samplerBinding : m_samplerBindings) {
-        if (samplerBinding.set >= m_descriptorSets.size()) {
-            continue;
-        }
-
-        U32 slot = 0;
-        const auto slotIter = parameters.find(samplerBinding.name);
-        if (slotIter != parameters.end()) {
+    const auto ResolveSlot = [&parameters](const String &parameterName) -> U32 {
+        auto toSlot = [](const JzShaderParameterValue &value) -> U32 {
+            U32 slot = 0;
             std::visit(
-                [&](const auto &typedValue) {
+                [&slot](const auto &typedValue) {
                     using TValue = std::decay_t<decltype(typedValue)>;
                     if constexpr (std::is_same_v<TValue, I32>) {
                         slot = typedValue < 0 ? 0 : static_cast<U32>(typedValue);
@@ -471,29 +466,59 @@ void JzVulkanPipeline::UpdateSamplerDescriptors(
                         slot = typedValue < 0.0f ? 0 : static_cast<U32>(typedValue);
                     }
                 },
-                slotIter->second);
+                value);
+            return slot;
+        };
+
+        auto iter = parameters.find(parameterName);
+        if (iter != parameters.end()) {
+            return toSlot(iter->second);
         }
 
+        if (parameterName.size() > 7 && parameterName.ends_with("Sampler")) {
+            const String baseName = parameterName.substr(0, parameterName.size() - 7);
+            iter                  = parameters.find(baseName);
+            if (iter != parameters.end()) {
+                return toSlot(iter->second);
+            }
+        }
+
+        return 0;
+    };
+
+    for (const auto &samplerBinding : m_samplerBindings) {
+        if (samplerBinding.set >= m_descriptorSets.size()) {
+            continue;
+        }
+
+        const U32 slot = ResolveSlot(samplerBinding.name);
+
         std::shared_ptr<JzVulkanTexture> texture;
-        const auto boundIter = boundTextures.find(slot);
+        const auto                       boundIter = boundTextures.find(slot);
         if (boundIter != boundTextures.end() && boundIter->second) {
             texture = boundIter->second;
         } else {
             texture = fallbackTexture;
         }
 
-        if (!texture ||
-            texture->GetImageView() == VK_NULL_HANDLE ||
-            texture->GetSampler() == VK_NULL_HANDLE) {
+        if (!texture || texture->GetImageView() == VK_NULL_HANDLE || texture->GetSampler() == VK_NULL_HANDLE) {
             continue;
         }
 
         VkDescriptorImageInfo imageInfo{};
-        imageInfo.sampler     = texture->GetSampler();
-        imageInfo.imageView   = texture->GetImageView();
-        imageInfo.imageLayout = texture->GetLayout() == VK_IMAGE_LAYOUT_UNDEFINED
-                                    ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-                                    : texture->GetLayout();
+        if (samplerBinding.descriptorType == VK_DESCRIPTOR_TYPE_SAMPLER) {
+            imageInfo.sampler     = texture->GetSampler();
+            imageInfo.imageView   = VK_NULL_HANDLE;
+            imageInfo.imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        } else if (samplerBinding.descriptorType == VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE) {
+            imageInfo.sampler     = VK_NULL_HANDLE;
+            imageInfo.imageView   = texture->GetImageView();
+            imageInfo.imageLayout = texture->GetLayout() == VK_IMAGE_LAYOUT_UNDEFINED ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : texture->GetLayout();
+        } else {
+            imageInfo.sampler     = texture->GetSampler();
+            imageInfo.imageView   = texture->GetImageView();
+            imageInfo.imageLayout = texture->GetLayout() == VK_IMAGE_LAYOUT_UNDEFINED ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : texture->GetLayout();
+        }
 
         VkWriteDescriptorSet write{};
         write.sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -501,7 +526,7 @@ void JzVulkanPipeline::UpdateSamplerDescriptors(
         write.dstBinding      = samplerBinding.binding;
         write.dstArrayElement = 0;
         write.descriptorCount = 1;
-        write.descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        write.descriptorType  = samplerBinding.descriptorType;
         write.pImageInfo      = &imageInfo;
 
         vkUpdateDescriptorSets(m_owner->GetVkDevice(), 1, &write, 0, nullptr);
@@ -568,7 +593,7 @@ Bool JzVulkanPipeline::CreateGraphicsPipeline()
         }
 
         SpvReflectShaderModule module{};
-        const auto reflectResult = spvReflectCreateShaderModule(
+        const auto             reflectResult = spvReflectCreateShaderModule(
             spirv.size() * sizeof(U32),
             spirv.data(),
             &module);
@@ -586,8 +611,8 @@ Bool JzVulkanPipeline::CreateGraphicsPipeline()
                         continue;
                     }
 
-                    auto &setMap = reflectedBindings[binding->set];
-                    auto [iter, inserted] = setMap.try_emplace(binding->binding);
+                    auto &setMap           = reflectedBindings[binding->set];
+                    auto [iter, inserted]  = setMap.try_emplace(binding->binding);
                     auto &reflectedBinding = iter->second;
 
                     if (inserted) {
@@ -602,9 +627,7 @@ Bool JzVulkanPipeline::CreateGraphicsPipeline()
                     }
 
                     if (reflectedBinding.layoutBinding.descriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER) {
-                        const U32 reflectedSize = binding->block.padded_size > 0
-                                                      ? binding->block.padded_size
-                                                      : binding->block.size;
+                        const U32 reflectedSize    = binding->block.padded_size > 0 ? binding->block.padded_size : binding->block.size;
                         reflectedBinding.blockSize = std::max(reflectedBinding.blockSize, reflectedSize);
 
                         for (U32 memberIndex = 0; memberIndex < binding->block.member_count; ++memberIndex) {
@@ -634,7 +657,7 @@ Bool JzVulkanPipeline::CreateGraphicsPipeline()
                             continue;
                         }
 
-                        const U32 location = inputVariable->location;
+                        const U32  location  = inputVariable->location;
                         const auto duplicate = std::find_if(
                             reflectedVertexInputs.begin(),
                             reflectedVertexInputs.end(),
@@ -664,7 +687,7 @@ Bool JzVulkanPipeline::CreateGraphicsPipeline()
 
         for (U32 setIndex = 0; setIndex <= maxSetIndex; ++setIndex) {
             std::vector<VkDescriptorSetLayoutBinding> bindings;
-            const auto reflectedIter = reflectedBindings.find(setIndex);
+            const auto                                reflectedIter = reflectedBindings.find(setIndex);
             if (reflectedIter != reflectedBindings.end()) {
                 bindings.reserve(reflectedIter->second.size());
                 for (const auto &[bindingIndex, binding] : reflectedIter->second) {
@@ -703,7 +726,7 @@ Bool JzVulkanPipeline::CreateGraphicsPipeline()
 
     std::vector<VkVertexInputBindingDescription>   vertexBindings;
     std::vector<VkVertexInputAttributeDescription> vertexAttributes;
-    Bool hasExplicitLayout = false;
+    Bool                                           hasExplicitLayout = false;
 
     if (desc.vertexLayout.IsValid()) {
         vertexBindings.reserve(desc.vertexLayout.bindings.size());
@@ -833,10 +856,7 @@ Bool JzVulkanPipeline::CreateGraphicsPipeline()
     depthStencil.stencilTestEnable     = VK_FALSE;
 
     VkPipelineColorBlendAttachmentState colorBlendAttachment{};
-    colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT |
-                                          VK_COLOR_COMPONENT_G_BIT |
-                                          VK_COLOR_COMPONENT_B_BIT |
-                                          VK_COLOR_COMPONENT_A_BIT;
+    colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
     ConfigureBlend(state.blendMode, colorBlendAttachment);
 
     VkPipelineColorBlendStateCreateInfo colorBlending{};
@@ -888,7 +908,7 @@ Bool JzVulkanPipeline::CreateGraphicsPipeline()
 
     if (!m_descriptorSetLayouts.empty()) {
         std::vector<VkDescriptorPoolSize> poolSizes;
-        auto appendPoolSize = [&poolSizes](VkDescriptorType type, U32 count) {
+        auto                              appendPoolSize = [&poolSizes](VkDescriptorType type, U32 count) {
             auto iter = std::find_if(
                 poolSizes.begin(),
                 poolSizes.end(),
@@ -920,11 +940,12 @@ Bool JzVulkanPipeline::CreateGraphicsPipeline()
                         uniformBinding.members[memberName] = {member.offset, member.size};
                     }
                     m_uniformBindings.push_back(std::move(uniformBinding));
-                } else if (reflectedBinding.layoutBinding.descriptorType == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER) {
+                } else if (reflectedBinding.layoutBinding.descriptorType == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER || reflectedBinding.layoutBinding.descriptorType == VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE || reflectedBinding.layoutBinding.descriptorType == VK_DESCRIPTOR_TYPE_SAMPLER) {
                     JzSamplerBindingDesc samplerBinding;
-                    samplerBinding.set     = setIndex;
-                    samplerBinding.binding = reflectedBinding.layoutBinding.binding;
-                    samplerBinding.name    = reflectedBinding.name;
+                    samplerBinding.set            = setIndex;
+                    samplerBinding.binding        = reflectedBinding.layoutBinding.binding;
+                    samplerBinding.descriptorType = reflectedBinding.layoutBinding.descriptorType;
+                    samplerBinding.name           = reflectedBinding.name;
                     m_samplerBindings.push_back(std::move(samplerBinding));
                 }
             }

@@ -44,9 +44,13 @@ foreach(CONFIG_TYPE DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${CONFIG_TYPE} ${JzRE_OUTPUT_DIR})
 endforeach()
 
-# copy resources to build directory (at configure time)
-file(COPY ${CMAKE_SOURCE_DIR}/resources/ 
-     DESTINATION ${JzRE_OUTPUT_DIR}/)
+# Keep build output resources synchronized for iterative shader/asset edits.
+add_custom_target(JzRESyncResources ALL
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_SOURCE_DIR}/resources
+            ${JzRE_OUTPUT_DIR}/resources
+    COMMENT "Synchronizing runtime resources"
+)
 
 # project root path
 set(JzRE_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/src")

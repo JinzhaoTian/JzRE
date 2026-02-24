@@ -5,6 +5,7 @@
 
 #include "JzRE/Runtime/Platform/OpenGL/JzOpenGLPipeline.h"
 
+#include <array>
 #include <type_traits>
 
 JzRE::JzOpenGLPipeline::JzOpenGLPipeline(const JzRE::JzPipelineDesc &desc) :
@@ -142,8 +143,65 @@ GLint JzRE::JzOpenGLPipeline::GetUniformLocation(const JzRE::String &name)
     // Get uniform location
     GLint location = glGetUniformLocation(m_program, name.c_str());
 
+    if (location == -1) {
+        BuildUniformAliasMap();
+        auto aliasIter = m_uniformAliases.find(name);
+        if (aliasIter != m_uniformAliases.end()) {
+            location = glGetUniformLocation(m_program, aliasIter->second.c_str());
+        }
+    }
+
     // Cache result (even if it is -1, cache it to avoid repeated queries for non-existent uniform)
     m_uniformLocations[name] = location;
 
     return location;
+}
+
+void JzRE::JzOpenGLPipeline::BuildUniformAliasMap()
+{
+    if (!m_isLinked || m_program == 0 || !m_uniformAliases.empty()) {
+        return;
+    }
+
+    GLint uniformCount = 0;
+    glGetProgramiv(m_program, GL_ACTIVE_UNIFORMS, &uniformCount);
+    if (uniformCount <= 0) {
+        return;
+    }
+
+    constexpr GLsizei                      MaxUniformNameLength = 512;
+    std::array<char, MaxUniformNameLength> nameBuffer{};
+
+    for (GLint index = 0; index < uniformCount; ++index) {
+        GLsizei actualLength = 0;
+        GLint   uniformSize  = 0;
+        GLenum  uniformType  = 0;
+        glGetActiveUniform(m_program,
+                           static_cast<GLuint>(index),
+                           MaxUniformNameLength,
+                           &actualLength,
+                           &uniformSize,
+                           &uniformType,
+                           nameBuffer.data());
+        (void)uniformType;
+        (void)uniformSize;
+
+        if (actualLength <= 0) {
+            continue;
+        }
+
+        String fullName(nameBuffer.data(), static_cast<Size>(actualLength));
+        if (fullName.size() > 3 && fullName.rfind("[0]") == fullName.size() - 3) {
+            fullName = fullName.substr(0, fullName.size() - 3);
+        }
+
+        Size dotPosition = fullName.find('.');
+        while (dotPosition != String::npos && dotPosition + 1 < fullName.size()) {
+            String alias = fullName.substr(dotPosition + 1);
+            if (!alias.empty() && m_uniformAliases.find(alias) == m_uniformAliases.end()) {
+                m_uniformAliases.emplace(std::move(alias), fullName);
+            }
+            dotPosition = fullName.find('.', dotPosition + 1);
+        }
+    }
 }

@@ -26,11 +26,11 @@
             "version>=": "2023-12-17"
         },
         {
-            "name": "shaderc",
-            "version>=": "2025.2"
+            "name": "spirv-reflect",
+            "version>=": "1.4.309.0"
         },
         {
-            "name": "spirv-reflect",
+            "name": "spirv-cross",
             "version>=": "1.4.309.0"
         },
         {

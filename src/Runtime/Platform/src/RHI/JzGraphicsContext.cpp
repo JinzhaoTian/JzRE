@@ -94,7 +94,7 @@ void JzGraphicsContext::Present()
         return;
     }
 
-    if (m_rhiType == JzERHIType::Vulkan) {
+    if (m_rhiType == JzERHIType::Vulkan || m_rhiType == JzERHIType::D3D12 || m_rhiType == JzERHIType::Metal) {
         // Vulkan backend handles queue submission and present internally.
         m_device->Flush();
     }

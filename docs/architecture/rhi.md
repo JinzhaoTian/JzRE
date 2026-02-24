@@ -8,6 +8,8 @@ Current backend status:
 
 - OpenGL: implemented and used in runtime/editor.
 - Vulkan: implemented for runtime/editor, with automatic fallback to OpenGL on initialization failure.
+- D3D12: target format and runtime API routing are defined in RHI enums/project config (native backend pending).
+- Metal: target format and runtime API routing are defined in RHI enums/project config (native backend pending).
 
 ## Current Runtime Rendering Path
 
@@ -67,6 +69,29 @@ graph TB
 ```
 
 ## Core Components
+
+### Shader Payload Contract
+
+`JzShaderProgramDesc` now represents cooked shader payloads instead of runtime source strings:
+
+- `stage`: shader stage (`Vertex`, `Fragment`, ...)
+- `format`: payload format (`GLSL`, `SPIRV`, `DXIL`, `MSL`)
+- `bytecodeOrText`: payload bytes (text is UTF-8 encoded)
+- `entryPoint`: stage entry point
+- `reflectionKey`: layout binding key into cooked manifest `reflectionLayouts`
+
+`JzPipelineDesc` now carries:
+
+- `shaders`: cooked stage descriptors selected for active backend
+- `shaderLayout`: merged reflection snapshot (`set/binding/type/arraySize`) for cross-backend validation
+- `vertexLayout`: explicit vertex input layout from cooked manifest
+
+Backends consume cooked payloads as follows:
+
+- OpenGL: `GLSL` text payload
+- Vulkan: `SPIRV` binary payload (`VkShaderModule` directly, no runtime shaderc compile)
+- D3D12: `DXIL` payload reserved in cooked artifacts (backend integration pending)
+- Metal: `MSL` text payload reserved in cooked artifacts (backend integration pending)
 
 ### `JzGraphicsContext`
 
@@ -187,11 +212,12 @@ Current Vulkan backend includes:
 - Vulkan resource objects (`Buffer`, `Texture`, `Framebuffer`, `VertexArray`, `Shader`, `Pipeline`)
 - pipeline setup:
   - descriptor set layouts from SPIR-V reflection
-  - vertex input state from `JzPipelineDesc.vertexLayout` (generated from vertex shader `layout(location=...) in` declarations in shader asset/registry compile path)
+  - vertex input state from `JzPipelineDesc.vertexLayout` (loaded from cooked shader manifest `vertexLayouts`)
   - SPIR-V reflected vertex input fallback when no explicit layout is provided
 - descriptor-backed parameter binding for `SetUniform(...)` and `BindTexture(...)`:
   - uniform buffers are uploaded from pipeline parameter cache
-  - combined image samplers are resolved from bound texture slots (with a fallback white texture)
+  - texture bindings resolve from bound texture slots with fallback white texture
+  - both `COMBINED_IMAGE_SAMPLER` and split `SAMPLED_IMAGE + SAMPLER` descriptor layouts are supported
 - Editor ImGui Vulkan backend integration with texture bridge
 
 Current compatibility note:
