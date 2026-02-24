@@ -2,65 +2,12 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "EditorExample Debug (Windows)",
+            "name": "JzRE CLI Debug (Windows)",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/examples/EditorExample/build/EditorExample/EditorExample.exe",
-            "args": [],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/examples/EditorExample/build/EditorExample",
-            "environment": [],
-            "console": "integratedTerminal",
-            "preLaunchTask": "EditorExample: Build"
-        },
-        {
-            "name": "EditorExample Debug (Windows, Clean + Build)",
-            "type": "cppvsdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/examples/EditorExample/build/EditorExample/EditorExample.exe",
-            "args": [],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/examples/EditorExample/build/EditorExample",
-            "environment": [],
-            "console": "integratedTerminal",
-            "preLaunchTask": "EditorExample: Clean & Build"
-        },
-        {
-            "name": "EditorExample Debug (macOS/Linux)",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/examples/EditorExample/build/EditorExample/EditorExample",
-            "args": [],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/examples/EditorExample/build/EditorExample",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "lldb",
-            "preLaunchTask": "EditorExample: Build"
-        },
-        {
-            "name": "EditorExample Debug (macOS/Linux, Clean + Build)",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/examples/EditorExample/build/EditorExample/EditorExample",
-            "args": [],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/examples/EditorExample/build/EditorExample",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "lldb",
-            "preLaunchTask": "EditorExample: Clean & Build"
-        },
-        {
-            "name": "RuntimeExample Debug (Windows)",
-            "type": "cppvsdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/build/JzRE/RuntimeExample.exe",
+            "program": "${workspaceFolder}/build/JzRE/JzRE.exe",
             "args": [
-                "--input",
-                "${workspaceFolder}/build/JzRE/EngineContent/Models/crate.obj",
-                "--graphic_api",
-                "vulkan"
+                "--help"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build/JzRE",
@@ -69,15 +16,12 @@
             "preLaunchTask": "CMake: Build"
         },
         {
-            "name": "RuntimeExample Debug (Windows, Clean + Build)",
+            "name": "JzRE CLI Debug (Windows, Clean + Build)",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/JzRE/RuntimeExample.exe",
+            "program": "${workspaceFolder}/build/JzRE/JzRE.exe",
             "args": [
-                "--input",
-                "${workspaceFolder}/build/JzRE/EngineContent/Models/crate.obj",
-                "--graphic_api",
-                "vulkan"
+                "--help"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build/JzRE",
@@ -86,15 +30,12 @@
             "preLaunchTask": "CMake: Clean & Build"
         },
         {
-            "name": "RuntimeExample Debug (macOS/Linux)",
+            "name": "JzRE CLI Debug (macOS/Linux)",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/JzRE/RuntimeExample",
+            "program": "${workspaceFolder}/build/JzRE/JzRE",
             "args": [
-                "--input",
-                "${workspaceFolder}/build/JzRE/EngineContent/Models/crate.obj",
-                "--graphic_api",
-                "vulkan"
+                "--help"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build/JzRE",
@@ -104,15 +45,12 @@
             "preLaunchTask": "CMake: Build"
         },
         {
-            "name": "RuntimeExample Debug (macOS/Linux, Clean + Build)",
+            "name": "JzRE CLI Debug (macOS/Linux, Clean + Build)",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/JzRE/RuntimeExample",
+            "program": "${workspaceFolder}/build/JzRE/JzRE",
             "args": [
-                "--input",
-                "${workspaceFolder}/build/JzRE/EngineContent/Models/crate.obj",
-                "--graphic_api",
-                "vulkan"
+                "--help"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build/JzRE",

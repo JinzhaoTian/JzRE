@@ -1,22 +1,22 @@
 # JzShaderCook.cmake
 # Helper for creating shader cook targets backed by JzREShaderTool.
 
-function(jzre_add_shader_cook_target)
+function(JzRE_add_shader_cook_target)
     set(options "")
     set(oneValueArgs TARGET_NAME SOURCE_DIR OUTPUT_DIR TOOL_TARGET)
     cmake_parse_arguments(ARG "${options}" "${oneValueArgs}" "" ${ARGN})
 
     if(NOT ARG_TARGET_NAME)
-        message(FATAL_ERROR "jzre_add_shader_cook_target: TARGET_NAME is required")
+        message(FATAL_ERROR "JzRE_add_shader_cook_target: TARGET_NAME is required")
     endif()
     if(NOT ARG_SOURCE_DIR)
-        message(FATAL_ERROR "jzre_add_shader_cook_target: SOURCE_DIR is required")
+        message(FATAL_ERROR "JzRE_add_shader_cook_target: SOURCE_DIR is required")
     endif()
     if(NOT ARG_OUTPUT_DIR)
-        message(FATAL_ERROR "jzre_add_shader_cook_target: OUTPUT_DIR is required")
+        message(FATAL_ERROR "JzRE_add_shader_cook_target: OUTPUT_DIR is required")
     endif()
     if(NOT ARG_TOOL_TARGET)
-        message(FATAL_ERROR "jzre_add_shader_cook_target: TOOL_TARGET is required")
+        message(FATAL_ERROR "JzRE_add_shader_cook_target: TOOL_TARGET is required")
     endif()
 
     file(GLOB_RECURSE SHADER_SOURCE_MANIFESTS CONFIGURE_DEPENDS

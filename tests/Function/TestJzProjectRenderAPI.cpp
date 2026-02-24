@@ -16,7 +16,7 @@ std::filesystem::path MakeTempProjectPath(const char *suffix)
 {
     std::mt19937_64 rng{std::random_device{}()};
     const auto      id = static_cast<unsigned long long>(rng());
-    return std::filesystem::temp_directory_path() / (std::string("jzre_render_api_") + suffix + "_" + std::to_string(id));
+    return std::filesystem::temp_directory_path() / (std::string("JzRE_render_api_") + suffix + "_" + std::to_string(id));
 }
 
 void CleanupPath(const std::filesystem::path &path)

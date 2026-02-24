@@ -22,6 +22,7 @@ target_link_libraries(
     TESTJzREPlatform
     PRIVATE
     JzRuntimePlatform
+    JzRuntimeCore
     GTest::gtest_main
 )
 

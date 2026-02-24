@@ -1,5 +1,5 @@
 # Runtime Core Layer - Basic utilities and types
-add_library(JzRuntimeCore STATIC)
+add_library(JzRuntimeCore OBJECT)
 
 file(GLOB_RECURSE CORE_SOURCES CONFIGURE_DEPENDS "src/*.cpp")
 file(GLOB_RECURSE CORE_HEADERS CONFIGURE_DEPENDS "include/*.h" "include/*.inl")

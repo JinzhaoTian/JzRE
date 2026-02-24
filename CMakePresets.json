@@ -112,6 +112,19 @@
                 "lhs": "${hostSystemName}",
                 "rhs": "Windows"
             }
+        },
+        {
+            "name": "cli-ninja-debug",
+            "displayName": "cli-ninja-debug",
+            "description": "Root aggregate build with CLI enabled",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build-cli",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "JzRE_BUILD_CLI": "ON",
+                "JzRE_BUILD_TESTS": "OFF",
+                "CMAKE_TOOLCHAIN_FILE": "$penv{HOME}/vcpkg/scripts/buildsystems/vcpkg.cmake"
+            }
         }
     ]
 }

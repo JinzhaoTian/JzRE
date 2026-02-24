@@ -1,5 +1,5 @@
 # Runtime Interface Layer
-add_library(JzRERuntime STATIC)
+add_library(JzRERuntime OBJECT)
 
 file(GLOB_RECURSE RUNTIME_APP_SOURCES CONFIGURE_DEPENDS "src/*.cpp")
 file(GLOB_RECURSE RUNTIME_APP_HEADERS CONFIGURE_DEPENDS "include/*.h")

@@ -2,8 +2,8 @@
 # Helper functions for organizing source files in Visual Studio
 
 # Function to organize sources into Visual Studio filters based on directory structure
-# Usage: jzre_setup_source_groups(target_name)
-function(jzre_setup_source_groups TARGET_NAME)
+# Usage: JzRE_setup_source_groups(target_name)
+function(JzRE_setup_source_groups TARGET_NAME)
     get_target_property(TARGET_SOURCES ${TARGET_NAME} SOURCES)
     get_target_property(TARGET_SOURCE_DIR ${TARGET_NAME} SOURCE_DIR)
     
@@ -17,12 +17,12 @@ function(jzre_setup_source_groups TARGET_NAME)
 endfunction()
 
 # Function to add sources with automatic source grouping
-# Usage: jzre_add_sources(target_name
+# Usage: JzRE_add_sources(target_name
 #            HEADERS header1.h header2.h ...
 #            SOURCES source1.cpp source2.cpp ...
 #            [BASE_DIR base_directory]
 #        )
-function(jzre_add_sources TARGET_NAME)
+function(JzRE_add_sources TARGET_NAME)
     set(options "")
     set(oneValueArgs BASE_DIR)
     set(multiValueArgs HEADERS SOURCES)
@@ -49,14 +49,14 @@ function(jzre_add_sources TARGET_NAME)
 endfunction()
 
 # Function to collect and group all sources in a directory tree
-# Usage: jzre_collect_sources(
+# Usage: JzRE_collect_sources(
 #            HEADERS_VAR out_headers
 #            SOURCES_VAR out_sources
 #            BASE_DIR directory
 #            [INCLUDE_EXTENSIONS h hpp inl]
 #            [SOURCE_EXTENSIONS cpp c cc cxx]
 #        )
-function(jzre_collect_sources)
+function(JzRE_collect_sources)
     set(options "")
     set(oneValueArgs HEADERS_VAR SOURCES_VAR BASE_DIR)
     set(multiValueArgs INCLUDE_EXTENSIONS SOURCE_EXTENSIONS)
@@ -92,7 +92,7 @@ function(jzre_collect_sources)
 endfunction()
 
 # Macro to set folder for a target in Visual Studio
-# Usage: jzre_set_target_folder(target_name folder_path)
-macro(jzre_set_target_folder TARGET_NAME FOLDER_PATH)
+# Usage: JzRE_set_target_folder(target_name folder_path)
+macro(JzRE_set_target_folder TARGET_NAME FOLDER_PATH)
     set_target_properties(${TARGET_NAME} PROPERTIES FOLDER "${FOLDER_PATH}")
 endmacro()

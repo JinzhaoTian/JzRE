@@ -19,6 +19,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(JzRE_REPOSITORY_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../..")
 set(JzRE_OUTPUT_DIR ${CMAKE_BINARY_DIR}/EditorExample)
 set(JzRE_ENGINE_SHADER_SOURCE_DIR "${JzRE_REPOSITORY_ROOT}/src/EngineContent/ShaderSource")
+set(JzRE_EDITOR_SHADER_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/EditorContent/ShaderSource")
 set(JzRE_ENGINE_SHADER_OUTPUT_DIR "${JzRE_OUTPUT_DIR}/EngineContent/Shaders")
 
 list(APPEND CMAKE_MODULE_PATH "${JzRE_REPOSITORY_ROOT}/cmake/modules")
@@ -38,20 +39,33 @@ endforeach()
 file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/resources/" DESTINATION ${JzRE_OUTPUT_DIR}/)
 
 if(JzRE_EDITOR_ENABLE_ENGINE_SHADER_COOK)
-    add_subdirectory("${JzRE_REPOSITORY_ROOT}/programs/JzREShaderTool" "${CMAKE_CURRENT_BINARY_DIR}/JzREShaderTool")
+    if(NOT TARGET JzREShaderTool)
+        add_subdirectory("${JzRE_REPOSITORY_ROOT}/programs/JzREShaderTool" "${CMAKE_CURRENT_BINARY_DIR}/JzREShaderTool")
+    endif()
 endif()
-add_subdirectory("${JzRE_REPOSITORY_ROOT}/src/Runtime" "${CMAKE_CURRENT_BINARY_DIR}/Runtime")
+if(NOT TARGET JzRERuntime)
+    add_subdirectory("${JzRE_REPOSITORY_ROOT}/src/Runtime" "${CMAKE_CURRENT_BINARY_DIR}/Runtime")
+endif()
 
 if(JzRE_EDITOR_ENABLE_ENGINE_SHADER_COOK)
-    jzre_add_shader_cook_target(
+    JzRE_add_shader_cook_target(
         TARGET_NAME JzRECookEngineShaders
         SOURCE_DIR ${JzRE_ENGINE_SHADER_SOURCE_DIR}
         OUTPUT_DIR ${JzRE_ENGINE_SHADER_OUTPUT_DIR}
         TOOL_TARGET JzREShaderTool
     )
+    JzRE_add_shader_cook_target(
+        TARGET_NAME JzRECookEditorShaders
+        SOURCE_DIR ${JzRE_EDITOR_SHADER_SOURCE_DIR}
+        OUTPUT_DIR ${JzRE_ENGINE_SHADER_OUTPUT_DIR}
+        TOOL_TARGET JzREShaderTool
+    )
+    add_custom_target(JzRECookAllShaders ALL
+        DEPENDS JzRECookEngineShaders JzRECookEditorShaders
+    )
 else()
-    add_custom_target(JzRECookEngineShaders
-        COMMAND ${CMAKE_COMMAND} -E echo "JzRECookEngineShaders disabled"
+    add_custom_target(JzRECookAllShaders
+        COMMAND ${CMAKE_COMMAND} -E echo "JzRECookAllShaders disabled"
         VERBATIM
     )
 endif()
@@ -85,4 +99,4 @@ target_link_libraries(
     JzEditor
 )
 
-add_dependencies(EditorExample JzRECookEngineShaders)
+add_dependencies(EditorExample JzRECookAllShaders)

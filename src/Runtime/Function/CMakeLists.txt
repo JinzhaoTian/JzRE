@@ -1,5 +1,5 @@
 # Runtime Function Layer - Rendering, Scene, ECS, Window
-add_library(JzRuntimeFunction STATIC)
+add_library(JzRuntimeFunction OBJECT)
 
 # Collect all sources by subsystem
 file(GLOB_RECURSE FUNCTION_HEADERS CONFIGURE_DEPENDS "include/*.h" "include/*.inl")
@@ -54,4 +54,3 @@ target_link_libraries(JzRuntimeFunction
     PUBLIC
         JzRuntimeResource
 )
-

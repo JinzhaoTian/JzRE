@@ -1,5 +1,5 @@
 # Runtime Resource Layer - Resource loading and management
-add_library(JzRuntimeResource STATIC)
+add_library(JzRuntimeResource OBJECT)
 
 file(GLOB_RECURSE RESOURCE_SOURCES CONFIGURE_DEPENDS "src/*.cpp")
 file(GLOB_RECURSE RESOURCE_HEADERS CONFIGURE_DEPENDS "include/*.h")
@@ -32,4 +32,3 @@ target_link_libraries(JzRuntimeResource
 )
 
 target_include_directories(JzRuntimeResource PRIVATE ${Stb_INCLUDE_DIR})
-

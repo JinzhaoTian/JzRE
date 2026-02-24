@@ -21,7 +21,7 @@ cd build && ctest --output-on-failure
 ./build/JzRE/JzRE
 ```
 
-To disable tests: `cmake -B build -DBUILD_TESTS=OFF`
+To disable tests: `cmake -B build -DJzRE_BUILD_TESTS=OFF`
 
 ## Architecture Overview
 

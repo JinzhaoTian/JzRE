@@ -23,4 +23,8 @@ target_link_libraries(
     JzEditorCore
     INTERFACE
     JzRERuntime
+    JzRuntimeFunction
+    JzRuntimeResource
+    JzRuntimePlatform
+    JzRuntimeCore
 )

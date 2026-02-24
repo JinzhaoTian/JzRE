@@ -6,7 +6,9 @@
 # Build Path
 /[Bb]uild
 /[Bb]uild-*
-examples/**/[Bb]uild/
+
+examples/**/[Bb]uild
+examples/**/[Bb]uild-*
 
 # Output Path
 /[Oo]utput

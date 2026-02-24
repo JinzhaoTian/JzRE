@@ -4,27 +4,34 @@
 
 JzRE is a cross-platform game engine built with C++20.
 
-Architecture is split into a mainline Runtime and a standalone Editor example:
+Architecture is split into a mainline Runtime, a CLI entry wired under `src`, and standalone examples:
 
 - Runtime (`src/Runtime/**`) provides engine capabilities and is built from the root project.
-- Editor example (`examples/EditorExample/**`) consumes runtime interfaces in an independent CMake project.
+- CLI (`src/CLI/**`) provides operational commands as a source module added by `src/CMakeLists.txt` when `JzRE_BUILD_CLI=ON`.
+- Runtime example (`examples/RuntimeExample/**`) is an independent CMake project.
+- Editor example (`examples/EditorExample/**`) is maintained as a legacy standalone project.
 
-Dependency direction is strictly top-down from editor integration to Core.
+Dependency direction is strictly top-down from application entrypoints (CLI/examples/editor) to Core.
 
 ## Layered Architecture
 
 ```text
 Mainline Build (root CMakeLists.txt)
-  -> JzRERuntime (runtime integration surface)
-    -> JzRuntimeFunction (ECS, systems)
-      -> JzRuntimeResource (assets/factories/cache)
-        -> JzRuntimePlatform (RHI, window, backend)
-          -> JzRuntimeCore (types/math/logging/threading)
+  -> JzRE (src/CLI)
+    -> JzRERuntime (runtime integration surface)
+      -> JzRuntimeFunction (ECS, systems)
+        -> JzRuntimeResource (assets/factories/cache)
+          -> JzRuntimePlatform (RHI, window, backend)
+            -> JzRuntimeCore (types/math/logging/threading)
 
-Standalone Example Build (examples/EditorExample/CMakeLists.txt)
+Standalone Legacy Editor Build (examples/EditorExample/CMakeLists.txt)
   -> EditorExample (Executable target)
     -> JzEditor (Editor UI/tools)
       -> JzRERuntime (same runtime layers as above)
+
+Standalone RuntimeExample Build (examples/RuntimeExample/CMakeLists.txt)
+  -> RuntimeExample (Executable target)
+    -> JzRERuntime (same runtime layers as above)
 ```
 
 ## Design Principles
@@ -36,6 +43,7 @@ Standalone Example Build (examples/EditorExample/CMakeLists.txt)
 | ECS-centric runtime                 | Runtime frame behavior is driven by `JzWorld` systems.                                              |
 | Service locator for shared services | Runtime services are exposed via `JzServiceContainer`.                                              |
 | Command-list rendering API          | Runtime/editor rendering is recorded through `JzRHICommandList` and executed by backend devices.     |
+| CLI-first operations                | Project/asset/shader/scene/run operations are exposed through `JzRE` domains.                         |
 | Offline shader cooking              | Shader authoring uses HLSL; runtime consumes cooked `.jzshader` + `.jzsblob` artifacts only.         |
 
 ## Runtime and Editor Boundary
@@ -92,7 +100,8 @@ Key responsibilities:
 The shader pipeline is now offline-first:
 
 1. Author HLSL source + source manifest (`*.jzshader.src.json`) in
-   `src/EngineContent/ShaderSource/` (engine defaults) or
+   `src/EngineContent/ShaderSource/` (runtime engine defaults),
+   `examples/EditorExample/EditorContent/ShaderSource/` (legacy editor-only shaders), or
    `<ProjectRoot>/Content/Shaders/src/` (project overrides).
 2. Run `JzREShaderTool` (or rely on CMake/CI auto-cook targets) to produce runtime artifacts:
    - `*.jzshader` (manifest)
@@ -148,7 +157,7 @@ RenderTarget/RenderOutput creation follows a two-phase model:
 
 The default render target (`DefaultScene`) is created at `JzRenderSystem` construction, uses `getDesiredSize = m_frameSize`, and cannot be unregistered. Panel targets are created at `JzView` construction (including initially-closed panels); `shouldRender` controls whether passes execute.
 
-## Editor Layer
+## Legacy Editor Layer
 
 The Editor uses runtime extension points rather than editor-specific runtime internals:
 
@@ -201,6 +210,7 @@ device.ExecuteCommandList(cmd);
 
 - [layers.md](layers.md)
 - [module.md](module.md)
+- [cli.md](cli.md)
 - [ecs.md](ecs.md)
 - [rendering_pipeline.md](rendering_pipeline.md)
 - [rhi.md](rhi.md)
@@ -211,6 +221,7 @@ device.ExecuteCommandList(cmd);
 ## Source References
 
 - `src/Runtime/Interface/src/JzRERuntime.cpp`
+- `src/CLI/src/main.cpp`
 - `src/Runtime/Function/src/ECS/JzWorld.cpp`
 - `src/Runtime/Function/src/ECS/JzRenderSystem.cpp`
 - `examples/EditorExample/Panels/src/JzView.cpp`

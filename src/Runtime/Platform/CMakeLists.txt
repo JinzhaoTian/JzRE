@@ -1,5 +1,5 @@
 # Runtime Platform Layer - RHI, Graphics Backends, Platform Abstractions
-add_library(JzRuntimePlatform STATIC)
+add_library(JzRuntimePlatform OBJECT)
 
 # Collect all RHI sources from src/ subdirectories
 file(GLOB_RECURSE PLATFORM_HEADERS CONFIGURE_DEPENDS "include/*.h")
