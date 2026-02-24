@@ -8,14 +8,14 @@
 
 ## Quick Reference
 
-| Aspect | Details |
-|--------|---------|
-| Language | C++20 |
-| Build System | CMake 3.20+ |
-| Package Manager | vcpkg |
-| Graphics API | OpenGL 3.3+ (Vulkan planned) |
-| UI Framework | ImGui (wrapped in stateful classes) |
-| Platforms | Windows, macOS, Linux |
+| Aspect          | Details                             |
+| --------------- | ----------------------------------- |
+| Language        | C++20                               |
+| Build System    | CMake 3.20+                         |
+| Package Manager | vcpkg                               |
+| Graphics API    | OpenGL 3.3+ (Vulkan planned)        |
+| UI Framework    | ImGui (wrapped in stateful classes) |
+| Platforms       | Windows, macOS, Linux               |
 
 ---
 
@@ -43,14 +43,14 @@ JzRE/
 
 ### Naming
 
-| Type | Pattern | Example |
-|------|---------|---------|
-| Class | `Jz` prefix + PascalCase | `JzResourceManager` |
-| Enum | `JzE` prefix | `JzERHIType`, `JzEBufferType` |
-| Member variable | `m_` prefix + camelCase | `m_resourceCache` |
-| Static variable | `__` prefix + UPPER_CASE | `__SERVICES` |
-| Method | PascalCase | `GetResource()` |
-| File | Match class name | `JzResourceManager.h/.cpp` |
+| Type            | Pattern                  | Example                       |
+| --------------- | ------------------------ | ----------------------------- |
+| Class           | `Jz` prefix + PascalCase | `JzResourceManager`           |
+| Enum            | `JzE` prefix             | `JzERHIType`, `JzEBufferType` |
+| Member variable | `m_` prefix + camelCase  | `m_resourceCache`             |
+| Static variable | `__` prefix + UPPER_CASE | `__SERVICES`                  |
+| Method          | PascalCase               | `GetResource()`               |
+| File            | Match class name         | `JzResourceManager.h/.cpp`    |
 
 ### Header Organization
 
@@ -93,6 +93,7 @@ All code must follow **Doxygen** format in **English**:
 ```
 
 File headers must include:
+
 ```cpp
 /**
  * @author    Jinzhao Tian
@@ -161,6 +162,7 @@ auto& eventSystem = world.GetContext<JzEventSystem>();
 ## Build Commands
 
 ### Configure
+
 ```bash
 # Windows
 cmake --preset windows-msvc-static
@@ -170,11 +172,13 @@ cmake --preset macos-clang-static
 ```
 
 ### Build
+
 ```bash
 cmake --build build
 ```
 
 ### Run
+
 ```bash
 ./build/JzRE/JzRE
 ```
@@ -189,6 +193,7 @@ JzRERuntime → JzRuntimeFunction → JzRuntimeResource → JzRuntimePlatform �
 ```
 
 **Detailed:**
+
 ```
 JzREEditor (Executable)
   └── JzEditor (Static) → JzRERuntime, imgui
@@ -205,16 +210,16 @@ JzREEditor (Executable)
 
 ## Current Implementation Status
 
-| Module | Status | Notes |
-|--------|--------|-------|
-| JzRuntimeCore | ✅ Complete | ThreadPool, TaskQueue, Math, Logging, Clock |
-| JzRuntimePlatform | ✅ Complete | RHI abstraction, OpenGL backend, Window backend |
-| OpenGL Backend | ✅ Complete | Full implementation |
-| Vulkan Backend | 🚧 Planned | Architecture ready, no implementation |
+| Module            | Status      | Notes                                                |
+| ----------------- | ----------- | ---------------------------------------------------- |
+| JzRuntimeCore     | ✅ Complete | ThreadPool, TaskQueue, Math, Logging, Clock          |
+| JzRuntimePlatform | ✅ Complete | RHI abstraction, OpenGL backend, Window backend      |
+| OpenGL Backend    | ✅ Complete | Full implementation                                  |
+| Vulkan Backend    | 🚧 Planned  | Architecture ready, no implementation                |
 | JzRuntimeResource | ✅ Complete | JzAssetManager, async loading, LRU cache, hot reload |
-| JzRuntimeFunction | ✅ Complete | ECS (EnTT), Systems, Event system |
-| JzREInterface | ✅ Complete | JzRERuntime application framework |
-| JzEditor | ✅ Complete | Panels, views, canvas, 40+ UI widgets |
+| JzRuntimeFunction | ✅ Complete | ECS (EnTT), Systems, Event system                    |
+| JzREInterface     | ✅ Complete | JzRERuntime application framework                    |
+| JzEditor          | ✅ Complete | Panels, views, canvas, 40+ UI widgets                |
 
 ---
 
@@ -263,15 +268,15 @@ JzREEditor (Executable)
 
 ## Threading Considerations
 
-| Component | Thread Safety |
-|-----------|---------------|
-| `JzThreadPool` | ✅ Thread-safe |
-| `JzTaskQueue` | ✅ Thread-safe |
-| `JzRHICommandList` | ✅ Recording is thread-safe |
-| `JzAssetManager` | ✅ Fine-grained mutexes, async loading supported |
-| `JzAssetRegistry` | ✅ Uses shared_mutex for read-heavy workloads |
-| `JzOpenGLDevice` | ❌ Single-threaded only |
-| `JzWorld` | ❌ Not thread-safe, use single thread |
+| Component          | Thread Safety                                    |
+| ------------------ | ------------------------------------------------ |
+| `JzThreadPool`     | ✅ Thread-safe                                   |
+| `JzTaskQueue`      | ✅ Thread-safe                                   |
+| `JzRHICommandList` | ✅ Recording is thread-safe                      |
+| `JzAssetManager`   | ✅ Fine-grained mutexes, async loading supported |
+| `JzAssetRegistry`  | ✅ Uses shared_mutex for read-heavy workloads    |
+| `JzOpenGLDevice`   | ❌ Single-threaded only                          |
+| `JzWorld`          | ❌ Not thread-safe, use single thread            |
 
 ---
 
@@ -294,15 +299,15 @@ AI agents **MUST** update documentation when making code changes. This is not op
 
 ### Auto-Update Rules
 
-| Code Change | Documentation to Update |
-|-------------|------------------------|
-| New class/module added | `docs/architecture/overview.md`, `docs/architecture/module.md` |
-| RHI or rendering changes | `docs/architecture/rhi.md`, `docs/architecture/rendering_pipeline.md` |
-| Resource/asset system changes | `docs/architecture/resource.md`, `docs/architecture/asset_system.md` |
-| Threading/Worker Thread changes | `docs/architecture/threading.md` |
-| Module structure changes | `docs/architecture/module.md`, `docs/architecture/layers.md` |
-| ECS components/systems | `docs/architecture/ecs.md` |
-| Input system changes | `docs/architecture/input_system_design.md` |
+| Code Change                     | Documentation to Update                                               |
+| ------------------------------- | --------------------------------------------------------------------- |
+| New class/module added          | `docs/architecture/overview.md`, `docs/architecture/module.md`        |
+| RHI or rendering changes        | `docs/architecture/rhi.md`, `docs/architecture/rendering_pipeline.md` |
+| Resource/asset system changes   | `docs/architecture/resource.md`, `docs/architecture/asset_system.md`  |
+| Threading/Worker Thread changes | `docs/architecture/threading.md`                                      |
+| Module structure changes        | `docs/architecture/module.md`, `docs/architecture/layers.md`          |
+| ECS components/systems          | `docs/architecture/ecs.md`                                            |
+| Input system changes            | `docs/architecture/input_system_design.md`                            |
 
 ### Documentation Standards
 
@@ -334,18 +339,18 @@ After adding rendering code in `src/Runtime/Function/src/Rendering/`:
 
 ## Documentation References
 
-| Document | Purpose |
-|----------|---------|
-| [overview.md](docs/architecture/overview.md) | High-level engine architecture |
-| [layers.md](docs/architecture/layers.md) | Layer dependency hierarchy |
-| [module.md](docs/architecture/module.md) | CMake and directory structure |
-| [ecs.md](docs/architecture/ecs.md) | ECS components and systems |
-| [rendering_pipeline.md](docs/architecture/rendering_pipeline.md) | Rendering flow and system order |
-| [rhi.md](docs/architecture/rhi.md) | RHI abstraction details |
-| [resource.md](docs/architecture/resource.md) | Resource/asset management |
-| [asset_system.md](docs/architecture/asset_system.md) | JzAssetManager and hot reload |
-| [threading.md](docs/architecture/threading.md) | Threading model |
-| [input_system_design.md](docs/architecture/input_system_design.md) | Input handling design |
+| Document                                                           | Purpose                         |
+| ------------------------------------------------------------------ | ------------------------------- |
+| [overview.md](docs/architecture/overview.md)                       | High-level engine architecture  |
+| [layers.md](docs/architecture/layers.md)                           | Layer dependency hierarchy      |
+| [module.md](docs/architecture/module.md)                           | CMake and directory structure   |
+| [ecs.md](docs/architecture/ecs.md)                                 | ECS components and systems      |
+| [rendering_pipeline.md](docs/architecture/rendering_pipeline.md)   | Rendering flow and system order |
+| [rhi.md](docs/architecture/rhi.md)                                 | RHI abstraction details         |
+| [resource.md](docs/architecture/resource.md)                       | Resource/asset management       |
+| [asset_system.md](docs/architecture/asset_system.md)               | JzAssetManager and hot reload   |
+| [threading.md](docs/architecture/threading.md)                     | Threading model                 |
+| [input_system_design.md](docs/architecture/input_system_design.md) | Input handling design           |
 
 ---
 

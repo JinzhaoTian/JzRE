@@ -40,14 +40,14 @@ App (JzRE executable)
 
 ### Key Libraries
 
-| Target | Description |
-|--------|-------------|
-| `JzRuntimeCore` | Math (JzVector, JzMatrix), types (JzRETypes), threading (JzThreadPool), logging (JzLogger) |
-| `JzRuntimePlatform` | RHI command pattern (`JzRHICommandList`, `JzDevice`), GPU objects, platform file dialogs |
-| `JzRuntimeResource` | `JzAssetManager`, factories for Texture/Mesh/Model/Shader/Material/Font |
+| Target              | Description                                                                                           |
+| ------------------- | ----------------------------------------------------------------------------------------------------- |
+| `JzRuntimeCore`     | Math (JzVector, JzMatrix), types (JzRETypes), threading (JzThreadPool), logging (JzLogger)            |
+| `JzRuntimePlatform` | RHI command pattern (`JzRHICommandList`, `JzDevice`), GPU objects, platform file dialogs              |
+| `JzRuntimeResource` | `JzAssetManager`, factories for Texture/Mesh/Model/Shader/Material/Font                               |
 | `JzRuntimeFunction` | ECS systems (`JzRenderSystem`, `JzCameraSystem`, `JzLightSystem`, `JzWindowSystem`), `JzInputManager` |
-| `JzREInterface` | Runtime application base class (`JzRERuntime`) with virtual `OnStart/OnUpdate/OnStop` hooks |
-| `JzEditor` | ImGui-based editor panels, UI widget wrappers |
+| `JzREInterface`     | Runtime application base class (`JzRERuntime`) with virtual `OnStart/OnUpdate/OnStop` hooks           |
+| `JzEditor`          | ImGui-based editor panels, UI widget wrappers                                                         |
 
 ### Include Path Convention
 
@@ -82,6 +82,7 @@ App (JzRE executable)
 ## Testing
 
 Tests use Google Test. Test files follow the pattern `Test*.cpp` in module subdirectories:
+
 - `tests/Core/TestJzMatrix.cpp`, `TestJzVector.cpp`, `TestJzClock.cpp`, `TestJzRETypes.cpp`
 
 The test executable `TESTJzRECore` links against `JzRuntimeCore` and `GTest::gtest_main`.
@@ -94,18 +95,19 @@ glfw3, glad, imgui (with docking), assimp, stb, gtest, nlohmann-json, spdlog, fm
 
 **IMPORTANT**: When making changes to the engine architecture, you MUST update the corresponding documentation in `/docs/architecture/`:
 
-| Document | Content |
-|----------|---------|
-| `overview.md` | High-level engine architecture and design philosophy |
-| `layers.md` | Layer dependency hierarchy (Core → Platform → Resource → Function) |
-| `module.md` | Module structure and inter-module dependencies |
-| `ecs.md` | ECS components, systems, and entity management |
-| `rendering_pipeline.md` | Rendering flow and system update order |
-| `rhi.md` | RHI abstraction and command pattern |
-| `resource.md` | Resource management and asset factories |
-| `threading.md` | Threading model and thread pool usage |
+| Document                | Content                                                            |
+| ----------------------- | ------------------------------------------------------------------ |
+| `overview.md`           | High-level engine architecture and design philosophy               |
+| `layers.md`             | Layer dependency hierarchy (Core → Platform → Resource → Function) |
+| `module.md`             | Module structure and inter-module dependencies                     |
+| `ecs.md`                | ECS components, systems, and entity management                     |
+| `rendering_pipeline.md` | Rendering flow and system update order                             |
+| `rhi.md`                | RHI abstraction and command pattern                                |
+| `resource.md`           | Resource management and asset factories                            |
+| `threading.md`          | Threading model and thread pool usage                              |
 
 Architecture changes that require documentation updates include:
+
 - Adding/removing/modifying ECS systems or components
 - Changing the rendering pipeline or system execution order
 - Modifying core abstractions (JzRERuntime, JzWorld, etc.)
