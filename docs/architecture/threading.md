@@ -83,6 +83,12 @@ OpenGL limitations:
 - Cannot generate render commands in parallel
 - ImGui must be initialized and rendered in the thread owning the context
 
+D3D12/Vulkan notes:
+
+- Both backends can record command lists on multiple threads in principle.
+- Current runtime path still records on the main thread (single direct command list per frame).
+- `JzD3D12Device::SupportsMultithreading()` returns `true` for future expansion.
+
 ---
 
 ## Evolution Phases

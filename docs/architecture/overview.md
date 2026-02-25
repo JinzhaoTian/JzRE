@@ -76,7 +76,7 @@ Current backend status:
 
 - OpenGL: implemented and kept as compatibility backend
 - Vulkan: implemented (runtime/editor path available, automatic fallback to OpenGL)
-- D3D12: API enum + project serialization + cooked payload target added (native backend integration pending)
+- D3D12: implemented for runtime (DXIL reflection + swapchain path, minimal feature set)
 - Metal: API enum + project serialization + cooked payload target added (native backend integration pending)
 
 Notes on rendering command path:
@@ -147,6 +147,7 @@ Current `JzRERuntime::Run()` flow (simplified):
 `Present()` behavior:
 - OpenGL: `Finish()` + `SwapBuffers()`
 - Vulkan: device-side submit + present (swapchain path)
+- D3D12: device-side submit + present (swapchain path)
 
 ## Render Target Lifecycle
 

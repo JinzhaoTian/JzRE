@@ -8,7 +8,7 @@ Current backend status:
 
 - OpenGL: implemented and used in runtime/editor.
 - Vulkan: implemented for runtime/editor, with automatic fallback to OpenGL on initialization failure.
-- D3D12: target format and runtime API routing are defined in RHI enums/project config (native backend pending).
+- D3D12: implemented for runtime (minimal feature set, swapchain path, editor backend not integrated).
 - Metal: target format and runtime API routing are defined in RHI enums/project config (native backend pending).
 
 ## Current Runtime Rendering Path
@@ -90,7 +90,7 @@ Backends consume cooked payloads as follows:
 
 - OpenGL: `GLSL` text payload
 - Vulkan: `SPIRV` binary payload (`VkShaderModule` directly, no runtime shaderc compile)
-- D3D12: `DXIL` payload reserved in cooked artifacts (backend integration pending)
+- D3D12: `DXIL` binary payload (runtime reflection + root signature/PSO creation)
 - Metal: `MSL` text payload reserved in cooked artifacts (backend integration pending)
 
 Cooked payload delivery path:
@@ -118,6 +118,7 @@ Current `Present()` behavior:
 
 1. OpenGL path: `device->Finish()` then `windowBackend->SwapBuffers()`
 2. Vulkan path: device-side `Flush()` submit + `vkQueuePresentKHR`
+3. D3D12 path: device-side `Flush()` submit + DXGI present
 
 ### `JzDevice`
 
@@ -231,8 +232,23 @@ Current compatibility note:
 - `BlitFramebufferToScreen(...)` is treated as a Vulkan no-op in runtime direct-swapchain mode.
 
 Default runtime/editor policy is platform auto-selection:
-- prefer Vulkan (including macOS MoltenVK path)
-- fallback to OpenGL with explicit logs when Vulkan is unavailable
+- prefer D3D12 on Windows
+- prefer Vulkan on non-Windows platforms (including macOS MoltenVK path)
+- fallback to OpenGL with explicit logs when higher-level backends are unavailable
+
+## D3D12 Runtime Notes
+
+Current D3D12 backend includes:
+- native device + swapchain initialization (DXGI)
+- command queue + allocator-per-frame + single graphics command list
+- RTV heap for back buffers and a single DSV heap for depth
+- runtime DXC reflection of DXIL payloads for root signatures, input layouts, and constant-buffer member offsets
+- descriptor-backed uniform/sampler binding (CBV/SRV + sampler tables)
+- texture-only resource barriers based on `JzERHIResourceState`
+
+Compatibility notes:
+- runtime path renders directly to swapchain with depth buffer
+- `BlitFramebufferToScreen(...)` is treated as a no-op (same as Vulkan runtime path)
 
 ## Source References
 

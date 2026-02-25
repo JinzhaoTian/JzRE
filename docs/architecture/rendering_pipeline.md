@@ -9,7 +9,7 @@ The rendering path is ECS-driven:
 - `JzRERuntime::Run()` drives the frame loop.
 - `JzWorld::Update()` executes registered systems in order.
 - `JzRenderSystem` builds and executes a per-frame `JzRenderGraph`.
-- RHI command lists are recorded and executed through `JzDevice` (OpenGL/Vulkan backend selected at runtime).
+- RHI command lists are recorded and executed through `JzDevice` (OpenGL/Vulkan/D3D12 backend selected at runtime).
 
 ## Runtime Frame Entry
 
@@ -98,6 +98,7 @@ Backend note:
 
 - OpenGL executes the recorded framebuffer blit.
 - Vulkan currently renders to swapchain in the runtime path, uses swapchain color+depth attachments for depth-tested 3D passes, and treats `BlitFramebufferToScreen(...)` as a no-op compatibility command.
+- D3D12 renders directly to swapchain with a depth buffer and treats `BlitFramebufferToScreen(...)` as a no-op compatibility command.
 
 ## Default Render Target
 
@@ -212,6 +213,7 @@ Shader variant selection:
 OpenGL backend currently treats `ResourceBarrier(...)` as no-op (implicit transitions).
 Vulkan backend consumes barrier transitions and applies layout changes before pass execution.
 Vulkan backend also resolves shader parameters through descriptor-backed uniform/sampler binding at draw time.
+D3D12 backend consumes texture barriers, uses descriptor-backed uniform/sampler binding, and renders directly to swapchain.
 
 ## EditorExample Integration Path
 
@@ -244,7 +246,7 @@ sequenceDiagram
     participant Camera as JzCameraSystem
     participant Light as JzLightSystem
     participant Render as JzRenderSystem
-    participant Device as JzDevice(OpenGL/Vulkan)
+    participant Device as JzDevice(OpenGL/Vulkan/D3D12)
 
     Runtime->>Window: PollWindowEvents()
     Runtime->>Runtime: OnUpdate(delta)

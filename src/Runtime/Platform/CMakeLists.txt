@@ -6,9 +6,11 @@ file(GLOB_RECURSE PLATFORM_HEADERS CONFIGURE_DEPENDS "include/*.h")
 file(GLOB_RECURSE PLATFORM_COMMON_SOURCES CONFIGURE_DEPENDS "src/*.cpp")
 list(FILTER PLATFORM_COMMON_SOURCES EXCLUDE REGEX ".*/src/OpenGL/.*")
 list(FILTER PLATFORM_COMMON_SOURCES EXCLUDE REGEX ".*/src/Vulkan/.*")
+list(FILTER PLATFORM_COMMON_SOURCES EXCLUDE REGEX ".*/src/D3D12/.*")
 list(FILTER PLATFORM_COMMON_SOURCES EXCLUDE REGEX ".*/src/Windows/.*")
 list(FILTER PLATFORM_COMMON_SOURCES EXCLUDE REGEX ".*/src/Linux/.*")
 list(FILTER PLATFORM_COMMON_SOURCES EXCLUDE REGEX ".*/src/macOS/.*")
+list(FILTER PLATFORM_HEADERS EXCLUDE REGEX ".*/include/JzRE/Runtime/Platform/D3D12/.*")
 
 # OpenGL backend - from src/OpenGL/
 file(GLOB OPENGL_SOURCES CONFIGURE_DEPENDS "src/OpenGL/*.cpp")
@@ -19,6 +21,12 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/include/JzRE/Runtime/Platform/Vulkan"
    AND IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/JzRE/Runtime/Platform/Vulkan")
     file(GLOB VULKAN_HEADERS CONFIGURE_DEPENDS "include/JzRE/Runtime/Platform/Vulkan/*.h")
     file(GLOB VULKAN_SOURCES CONFIGURE_DEPENDS "src/Vulkan/*.cpp")
+endif()
+
+# D3D12 backend (Windows only)
+if(WIN32)
+    file(GLOB D3D12_HEADERS CONFIGURE_DEPENDS "include/JzRE/Runtime/Platform/D3D12/*.h")
+    file(GLOB D3D12_SOURCES CONFIGURE_DEPENDS "src/D3D12/*.cpp")
 endif()
 
 # Platform-specific sources - from src/{Platform}/
@@ -38,6 +46,8 @@ set(ALL_PLATFORM_SOURCES
     ${OPENGL_HEADERS}
     ${VULKAN_SOURCES}
     ${VULKAN_HEADERS}
+    ${D3D12_SOURCES}
+    ${D3D12_HEADERS}
     ${PLATFORM_SPECIFIC_SOURCES}
 )
 
@@ -70,9 +80,15 @@ find_package(unofficial-spirv-reflect CONFIG REQUIRED)
 # Platform-specific libraries
 if(WIN32)
     find_package(OpenGL REQUIRED)
-    set(JzRE_PLATFORM_LIBS opengl32 gdi32)
+    set(JzRE_PLATFORM_LIBS opengl32 gdi32 d3d12 dxgi dxguid)
     set(JzRE_OPENGL_LIBS OpenGL::GL)
     set(JzRE_VULKAN_LIBS Vulkan::Vulkan)
+
+    find_library(DXCOMPILER_LIB dxcompiler)
+    if(NOT DXCOMPILER_LIB)
+        message(FATAL_ERROR "dxcompiler library not found. Install directx-dxc via vcpkg.")
+    endif()
+    list(APPEND JzRE_PLATFORM_LIBS ${DXCOMPILER_LIB})
 elseif(APPLE)
     find_library(COCOA_LIB Cocoa REQUIRED)
     find_library(IOKIT_LIB IOKit REQUIRED)

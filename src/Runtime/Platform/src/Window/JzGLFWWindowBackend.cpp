@@ -400,6 +400,7 @@ void JzGLFWWindowBackend::CreateGLFWWindow(const JzWindowConfig &config)
             break;
 
         case JzERHIType::D3D12:
+            glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
             break;
 
         case JzERHIType::Metal:
@@ -453,10 +454,10 @@ void JzGLFWWindowBackend::SetupCallbacks()
         if (self) {
             JzPlatformKeyEvent event;
             event.timestamp = JzClock::GetTimestampMicroseconds();
-            event.key      = key;
-            event.scancode = scancode;
-            event.action   = action;
-            event.mods     = mods;
+            event.key       = key;
+            event.scancode  = scancode;
+            event.action    = action;
+            event.mods      = mods;
             self->m_eventQueue.Push(std::move(event));
         }
     });
@@ -470,10 +471,10 @@ void JzGLFWWindowBackend::SetupCallbacks()
 
             JzPlatformMouseButtonEvent event;
             event.timestamp = JzClock::GetTimestampMicroseconds();
-            event.button   = button;
-            event.action   = action;
-            event.mods     = mods;
-            event.position = {static_cast<F32>(x), static_cast<F32>(y)};
+            event.button    = button;
+            event.action    = action;
+            event.mods      = mods;
+            event.position  = {static_cast<F32>(x), static_cast<F32>(y)};
             self->m_eventQueue.Push(std::move(event));
         }
     });
@@ -484,7 +485,7 @@ void JzGLFWWindowBackend::SetupCallbacks()
         if (self) {
             JzPlatformMouseScrollEvent event;
             event.timestamp = JzClock::GetTimestampMicroseconds();
-            event.offset = {static_cast<F32>(xOffset), static_cast<F32>(yOffset)};
+            event.offset    = {static_cast<F32>(xOffset), static_cast<F32>(yOffset)};
             self->m_eventQueue.Push(std::move(event));
         }
     });
@@ -495,7 +496,7 @@ void JzGLFWWindowBackend::SetupCallbacks()
         if (self) {
             JzPlatformMouseMoveEvent event;
             event.timestamp = JzClock::GetTimestampMicroseconds();
-            event.position = {static_cast<F32>(x), static_cast<F32>(y)};
+            event.position  = {static_cast<F32>(x), static_cast<F32>(y)};
             self->m_eventQueue.Push(std::move(event));
         }
     });
@@ -506,7 +507,7 @@ void JzGLFWWindowBackend::SetupCallbacks()
         if (self) {
             JzPlatformMouseEnterEvent event;
             event.timestamp = JzClock::GetTimestampMicroseconds();
-            event.entered = (entered == GLFW_TRUE);
+            event.entered   = (entered == GLFW_TRUE);
             self->m_eventQueue.Push(std::move(event));
         }
     });
@@ -519,7 +520,7 @@ void JzGLFWWindowBackend::SetupCallbacks()
 
             JzPlatformWindowResizeEvent event;
             event.timestamp = JzClock::GetTimestampMicroseconds();
-            event.size = {width, height};
+            event.size      = {width, height};
             self->m_eventQueue.Push(std::move(event));
         }
     });
@@ -530,7 +531,7 @@ void JzGLFWWindowBackend::SetupCallbacks()
         if (self) {
             JzPlatformFramebufferResizeEvent event;
             event.timestamp = JzClock::GetTimestampMicroseconds();
-            event.size = {width, height};
+            event.size      = {width, height};
             self->m_eventQueue.Push(std::move(event));
         }
     });
@@ -545,7 +546,7 @@ void JzGLFWWindowBackend::SetupCallbacks()
 
             JzPlatformWindowMoveEvent event;
             event.timestamp = JzClock::GetTimestampMicroseconds();
-            event.position = {x, y};
+            event.position  = {x, y};
             self->m_eventQueue.Push(std::move(event));
         }
     });
@@ -578,7 +579,7 @@ void JzGLFWWindowBackend::SetupCallbacks()
         if (self) {
             JzPlatformWindowFocusEvent event;
             event.timestamp = JzClock::GetTimestampMicroseconds();
-            event.focused = (focused == GLFW_TRUE);
+            event.focused   = (focused == GLFW_TRUE);
             self->m_eventQueue.Push(std::move(event));
         }
     });
@@ -602,7 +603,7 @@ void JzGLFWWindowBackend::SetupCallbacks()
 
             JzPlatformFileDropEvent event;
             event.timestamp = JzClock::GetTimestampMicroseconds();
-            event.position = {static_cast<F32>(x), static_cast<F32>(y)};
+            event.position  = {static_cast<F32>(x), static_cast<F32>(y)};
             for (I32 i = 0; i < count; ++i) {
                 event.paths.emplace_back(paths[i]);
             }
@@ -627,7 +628,7 @@ void JzGLFWWindowBackend::SetupCallbacks()
         if (self) {
             JzPlatformContentScaleEvent event;
             event.timestamp = JzClock::GetTimestampMicroseconds();
-            event.scale = {xScale, yScale};
+            event.scale     = {xScale, yScale};
             self->m_eventQueue.Push(std::move(event));
         }
     });

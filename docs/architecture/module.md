@@ -48,6 +48,20 @@ JzRE/
 └── docs/
 ```
 
+### Runtime Platform Backend Directories
+
+```text
+src/Runtime/Platform/
+├── include/JzRE/Runtime/Platform/
+│   ├── OpenGL/
+│   ├── Vulkan/
+│   └── D3D12/        # Windows-only backend
+└── src/
+    ├── OpenGL/
+    ├── Vulkan/
+    └── D3D12/
+```
+
 ## Module Dependencies
 
 ```mermaid
@@ -145,7 +159,7 @@ cmake --build examples/EditorExample/build
 | Target | Type | Dependencies |
 | --- | --- | --- |
 | `JzRuntimeCore` | Object | spdlog, fmt |
-| `JzRuntimePlatform` | Object | JzRuntimeCore, glad, glfw, vulkan, spirv-reflect |
+| `JzRuntimePlatform` | Object | JzRuntimeCore, glad, glfw, vulkan, spirv-reflect, d3d12/dxgi/dxguid (Windows), directx-dxc/dxcompiler (Windows) |
 | `JzRuntimeResource` | Object | JzRuntimeCore, JzRuntimePlatform, assimp, stb, freetype |
 | `JzRuntimeFunction` | Object | JzRuntimeCore, JzRuntimePlatform, JzRuntimeResource, entt |
 | `JzRERuntime` | Object | Runtime layers |

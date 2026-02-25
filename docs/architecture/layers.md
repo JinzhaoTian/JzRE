@@ -87,7 +87,7 @@ Provides platform-agnostic services through abstraction:
 | Component             | Description                                            |
 | --------------------- | ------------------------------------------------------ |
 | **RHI**               | Rendering Hardware Interface - abstracts graphics APIs |
-| **Graphics Backends** | OpenGL + Vulkan implementations (runtime selectable)   |
+| **Graphics Backends** | OpenGL + Vulkan + D3D12 implementations (runtime selectable) |
 | **Platform APIs**     | File dialogs, message boxes per OS                     |
 
 **Directory Structure:**
@@ -113,10 +113,11 @@ Platform/
 │   │   └── JzPlatformInputEvents.h
 │   ├── Dialog/       # Cross-platform file dialogs
 │   ├── OpenGL/       # OpenGL backend implementation
-│   └── Vulkan/       # Vulkan backend implementation
+│   ├── Vulkan/       # Vulkan backend implementation
+│   └── D3D12/        # Direct3D 12 backend implementation (Windows)
 └── src/
     ├── RHI/, Command/, Threading/, Window/
-    ├── OpenGL/, Vulkan/
+    ├── OpenGL/, Vulkan/, D3D12/
     └── Windows/, Linux/, macOS/  # Platform-specific code
 ```
 

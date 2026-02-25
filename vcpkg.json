@@ -55,6 +55,10 @@
         {
             "name": "entt",
             "version>=": "3.14.0"
+        },
+        {
+            "name": "directx-dxc",
+            "platform": "windows"
         }
     ],
     "builtin-baseline": "5d8a81e7e232ca70c62f645b0ff434ac5574e921"

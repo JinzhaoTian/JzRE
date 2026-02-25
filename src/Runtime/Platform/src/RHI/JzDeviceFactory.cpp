@@ -9,12 +9,19 @@
 #include <cstring>
 #include <vector>
 
+#if defined(_WIN32)
+#include <d3d12.h>
+#endif
+
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 #include <vulkan/vulkan.h>
 
 #include "JzRE/Runtime/Core/JzLogger.h"
 #include "JzRE/Runtime/Platform/OpenGL/JzOpenGLDevice.h"
+#if defined(_WIN32)
+#include "JzRE/Runtime/Platform/D3D12/JzD3D12Device.h"
+#endif
 #include "JzRE/Runtime/Platform/Vulkan/JzVulkanDevice.h"
 #include "JzRE/Runtime/Platform/Window/JzIWindowBackend.h"
 
@@ -73,6 +80,11 @@ std::unique_ptr<JzRE::JzDevice> JzRE::JzDeviceFactory::CreateDevice(JzRE::JzERHI
         selectedType = JzERHIType::OpenGL;
     }
 
+    if (selectedType == JzERHIType::D3D12 && !windowBackend) {
+        JzRE_LOG_WARN("JzDeviceFactory: D3D12 requires a window backend, falling back to OpenGL");
+        selectedType = JzERHIType::OpenGL;
+    }
+
     if (selectedType == JzERHIType::D3D12 && !IsD3D12Supported()) {
         JzRE_LOG_WARN("JzDeviceFactory: D3D12 requested but unavailable, falling back to OpenGL");
         selectedType = JzERHIType::OpenGL;
@@ -92,8 +104,12 @@ std::unique_ptr<JzRE::JzDevice> JzRE::JzDeviceFactory::CreateDevice(JzRE::JzERHI
         case JzERHIType::Vulkan:
             return std::make_unique<JzVulkanDevice>(*windowBackend);
         case JzERHIType::D3D12:
-            JzRE_LOG_WARN("JzDeviceFactory: D3D12 backend integration is not enabled yet, forcing OpenGL");
+#if defined(_WIN32)
+            return std::make_unique<JzD3D12Device>(*windowBackend);
+#else
+            JzRE_LOG_WARN("JzDeviceFactory: D3D12 backend not available on this platform, forcing OpenGL");
             return std::make_unique<JzOpenGLDevice>();
+#endif
         case JzERHIType::Metal:
             JzRE_LOG_WARN("JzDeviceFactory: Metal backend integration is not enabled yet, forcing OpenGL");
             return std::make_unique<JzOpenGLDevice>();
@@ -181,8 +197,7 @@ JzRE::Bool JzRE::JzDeviceFactory::IsVulkanSupported()
 JzRE::Bool JzRE::JzDeviceFactory::IsD3D12Supported()
 {
 #if defined(_WIN32)
-    // Reserved for native D3D12 backend capability checks.
-    return false;
+    return SUCCEEDED(D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_11_0, __uuidof(ID3D12Device), nullptr));
 #else
     return false;
 #endif
