@@ -8,7 +8,6 @@
 #include <algorithm>
 #include <cstring>
 #include <fstream>
-#include <iterator>
 #include <unordered_set>
 
 #include <nlohmann/json.hpp>
@@ -864,8 +863,8 @@ Bool JzShader::BuildPipelineShaderLayout(const JzShaderTargetData &target, JzSha
 }
 
 Bool JzShader::MergeLayoutResource(JzShaderLayoutDesc                &layout,
-                                        const JzShaderResourceBindingDesc &resource,
-                                        const String                      &layoutKey) const
+                                   const JzShaderResourceBindingDesc &resource,
+                                   const String                      &layoutKey) const
 {
     auto iter = std::find_if(layout.resources.begin(), layout.resources.end(), [&resource](const JzShaderResourceBindingDesc &existing) {
         return existing.set == resource.set && existing.binding == resource.binding && existing.type == resource.type;

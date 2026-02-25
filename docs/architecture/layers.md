@@ -74,12 +74,11 @@ Engine foundation - no dependencies on other modules.
 | Types      | `JzRETypes.h`, `JzVertex.h`                    |
 | Math       | `JzVector.h`, `JzMatrix.h`                     |
 | Timing     | `JzClock.h`                                    |
-| Threading  | `JzThreadPool.h`, `JzTaskQueue.h`              |
+| Threading  | `JzThreadPool.h`                               |
 | Events     | `JzPlatformEvent.h`, `JzPlatformEventQueue.h`  |
 | Services   | `JzServiceContainer.h`                         |
 | Logging    | `JzLogger.h`, `JzLogSink.h`, `JzELog.h`        |
 | Utilities  | `JzDelegate.h`, `JzFileSystemUtils.h`          |
-| Reflection | `JzObject.h`, `JzReflectable.h`, `JzISerializable.h` |
 
 ### 2. Platform Layer (`src/Runtime/Platform/`)
 
@@ -106,8 +105,8 @@ Platform/
 │   │   └── Variant payload-based command stream recording
 │   ├── Threading/    # Multi-threaded rendering infrastructure
 │   │   ├── JzRenderThreadPool.h, JzRenderThreadContext.h
-│   │   ├── JzRenderTask.h, JzCommandBufferTask.h
-│   │   └── JzRHICommandManager.h
+│   │   ├── JzRenderTask.h, JzResourceUpdateTask.h
+│   │   └── JzTaskComparator.h
 │   ├── Window/       # Window backend abstraction
 │   │   ├── JzIWindowBackend.h, JzGLFWWindowBackend.h
 │   │   ├── JzWindowConfig.h
@@ -143,7 +142,7 @@ High-level engine systems:
 
 | Subsystem | Directory   | Key Classes                                                    |
 | --------- | ----------- | -------------------------------------------------------------- |
-| Scene     | `Scene/`    | `JzActor` (legacy)                                             |
+| Scene     | `Scene/`    | `JzSceneSerializer`                                            |
 | ECS       | `ECS/`      | `JzWorld`, `JzSystem`, `Jz*Component` (EnTT-based)             |
 | Event     | `Event/`    | `JzEventSystem`, `JzEventQueue`, `JzECSEvent`, `JzPlatformEventAdapter` |
 | Input     | `ECS/`      | `JzInputSystem`, `JzInputComponents`, `JzInputEvents`          |

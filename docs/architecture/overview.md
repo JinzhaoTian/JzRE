@@ -60,7 +60,7 @@ Key responsibilities:
 
 - fundamental types and math (`JzRETypes`, vectors, matrices)
 - timing and utilities (`JzClock`)
-- threading primitives (`JzThreadPool`, `JzTaskQueue`)
+- threading primitives (`JzThreadPool`)
 - logging (`spdlog` integration)
 - service container (`JzServiceContainer`)
 

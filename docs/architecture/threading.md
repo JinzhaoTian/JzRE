@@ -44,7 +44,6 @@ This document describes the evolution plan from single-threaded to multi-threade
 | Component    | File                 | Status         | Description                        |
 | ------------ | -------------------- | -------------- | ---------------------------------- |
 | Thread Pool  | `JzThreadPool.h`     | ✅ Implemented | General task parallel execution    |
-| Task Queue   | `JzTaskQueue.h`      | ✅ Implemented | Priority task scheduling           |
 | Command List | `JzRHICommandList.h` | ✅ Implemented | Thread-safe command recording      |
 | Frame Sync   | `examples/EditorExample/Application/src/JzREEditor.cpp` | ✅ Implemented | Main/worker thread synchronization |
 
@@ -127,12 +126,12 @@ graph LR
 ```mermaid
 sequenceDiagram
     participant Main as Main Thread
-    participant TaskQ as JzTaskQueue
+    participant ThreadPool as JzThreadPool
     participant Worker as Worker Thread
     participant GPU as GPU Context
 
-    Main->>TaskQ: Request resource load
-    TaskQ->>Worker: Dispatch task
+    Main->>ThreadPool: Request resource load
+    ThreadPool->>Worker: Dispatch task
     Worker->>Worker: Read file (I/O)
     Worker->>Worker: Decode data (CPU)
     Worker->>Main: Data ready callback
@@ -154,11 +153,13 @@ enum class JzEResourceState {
     Error      // Load failed
 };
 
-// Using existing JzTaskQueue (implemented in JzAssetManager)
+// Using JzAssetManager's internal thread pool
 void JzAssetManager::LoadAsyncInternal(const String& path) {
-    auto& taskQueue = JzServiceContainer::Get<JzTaskQueue>();
+    if (!m_loadThreadPool) {
+        return;
+    }
 
-    taskQueue.Submit(JzETaskPriority::Normal, [this, path]() {
+    m_loadThreadPool->Submit([this, path]() {
         // Background: read file, decode
         auto data = ReadFile(path);
         auto decoded = DecodeData(data);
@@ -173,7 +174,7 @@ void JzAssetManager::LoadAsyncInternal(const String& path) {
 
 ### Dependencies
 
-- Existing `JzTaskQueue`
+- Existing `JzThreadPool` (owned by `JzAssetManager`)
 - Need to add main thread callback mechanism
 
 ---
@@ -187,7 +188,7 @@ void JzAssetManager::LoadAsyncInternal(const String& path) {
 ```mermaid
 graph TD
     subgraph "Parallelizable Group"
-        MoveSystem[JzMoveSystem]
+        MotionSystem[MotionSystem (planned)]
         CollisionSystem[JzCollisionDetectionSystem]
     end
 
@@ -204,7 +205,7 @@ graph TD
         RenderSystem[JzRenderSystem]
     end
 
-    MoveSystem --> SceneGraph
+    MotionSystem --> SceneGraph
     CollisionSystem --> SceneGraph
     SceneGraph --> Visibility
     SceneGraph --> Spatial
@@ -419,7 +420,8 @@ class JzComponentPool {
 };
 
 // Systems process by component type in batches
-void JzMoveSystem::Update(JzEntityManager& manager, F32 delta) {
+// Example movement system (pseudo-code)
+void MotionSystem::Update(JzEntityManager& manager, F32 delta) {
     // Get component pools (contiguous memory)
     auto transformPool = manager.GetPool<JzTransformComponent>();
     auto velocityPool = manager.GetPool<JzVelocityComponent>();
@@ -459,12 +461,11 @@ private:
     mutable std::mutex m_commandMutex;
 };
 
-// JzTaskQueue uses condition variables
-class JzTaskQueue {
+// JzThreadPool uses condition variables
+class JzThreadPool {
 private:
     std::mutex m_queueMutex;
     std::condition_variable m_condition;
-    std::atomic<Bool> m_stop{false};
 };
 ```
 
@@ -494,7 +495,7 @@ private:
 
 JzRE's multi-threading evolution follows a progressive approach:
 
-1. **Existing Foundation**: `JzThreadPool` and `JzTaskQueue` provide threading infrastructure
+1. **Existing Foundation**: `JzThreadPool` provides threading infrastructure
 2. **OpenGL Limitation**: Current OpenGL backend doesn't support multi-threaded rendering
 3. **Vulkan Enablement**: Vulkan backend is integrated and ready for multi-threaded command recording evolution
 4. **Progressive Evolution**: Start from background I/O, gradually expand to full parallel rendering

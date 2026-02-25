@@ -154,7 +154,7 @@ Compatibility note:
 
 ### Editor Migration Guide
 
-When migrating editor overlays from `JzRenderPass` to `JzRenderGraphContribution`:
+When migrating editor overlays from legacy render-pass logic to `JzRenderGraphContribution`:
 
 - Map `pass.feature` to `contribution.requiredFeature`.
 - Move `setupPass(...)` logic into `contribution.execute(context)`.

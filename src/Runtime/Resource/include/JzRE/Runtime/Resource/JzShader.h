@@ -15,7 +15,6 @@
 #include "JzRE/Runtime/Platform/RHI/JzGPUShaderProgramObject.h"
 #include "JzRE/Runtime/Platform/RHI/JzRHIPipeline.h"
 #include "JzRE/Runtime/Resource/JzResource.h"
-#include "JzRE/Runtime/Resource/JzShaderVariantKey.h"
 
 namespace JzRE {
 
@@ -53,7 +52,7 @@ struct JzShaderStageData {
  * @brief Backend-specific stage selection for one variant.
  */
 struct JzShaderTargetData {
-    JzERHIType                          rhiType = JzERHIType::Unknown;
+    JzERHIType                     rhiType = JzERHIType::Unknown;
     std::vector<JzShaderStageData> stages;
 };
 
@@ -61,9 +60,9 @@ struct JzShaderTargetData {
  * @brief Variant record loaded from cooked manifest.
  */
 struct JzShaderVariantData {
-    U64                                  keywordMask = 0;
-    String                               vertexLayoutName{"default"};
-    JzRenderState                        renderState;
+    U64                             keywordMask = 0;
+    String                          vertexLayoutName{"default"};
+    JzRenderState                   renderState;
     std::vector<JzShaderTargetData> targets;
 };
 
@@ -104,14 +103,6 @@ public:
      * @brief Get or build pipeline variant by keyword bitmask.
      */
     std::shared_ptr<JzRHIPipeline> GetVariant(U64 keywordMask);
-
-    /**
-     * @brief Get or build pipeline variant by variant key.
-     */
-    std::shared_ptr<JzRHIPipeline> GetVariant(const JzShaderVariantKey &key)
-    {
-        return GetVariant(key.keywordMask);
-    }
 
     /**
      * @brief Compatibility overload from defines map to keyword bitmask.
@@ -233,7 +224,7 @@ private:
 
     std::unordered_map<String, JzShaderLayoutDesc> m_reflectionLayouts;
     std::unordered_map<String, JzVertexLayoutDesc> m_vertexLayouts;
-    std::vector<JzShaderVariantData>          m_variants;
+    std::vector<JzShaderVariantData>               m_variants;
 
     std::vector<U8>                            m_blobData;
     std::unordered_map<U32, JzBlobChunkRecord> m_blobChunkTable;

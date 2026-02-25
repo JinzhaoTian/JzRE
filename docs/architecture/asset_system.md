@@ -542,7 +542,6 @@ src/Runtime/Resource/include/JzRE/Runtime/Resource/
 ├── JzAssetManager.h      # Central manager (Resource layer)
 ├── JzAssetManager.inl    # Template implementation
 ├── JzLRUCache.h          # Memory management
-├── JzAssetHeaders.h      # Unified header (aggregator, renamed from JzAssetSystem.h)
 ├── JzShader.h       # Shader asset with variant support
 └── JzShaderFactory.h # Factory for shader loading
 

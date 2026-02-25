@@ -104,7 +104,7 @@ public:
 | Material      | `JzMaterial` | `JzMaterialFactory` | Render materials   |
 | Shader        | `JzShader` | `JzShaderFactory` | Cooked shader package (`.jzshader` + `.jzsblob`) |
 | Model         | `JzModel`    | `JzModelFactory`    | Complete 3D models |
-| Font          | `JzFont`     | `JzFontFactory`     | Text rendering     |
+
 
 ### Resource Class Relationships
 
@@ -192,7 +192,6 @@ assetManager->RegisterFactory<JzMesh>(std::make_unique<JzMeshFactory>());
 assetManager->RegisterFactory<JzTexture>(std::make_unique<JzTextureFactory>());
 assetManager->RegisterFactory<JzMaterial>(std::make_unique<JzMaterialFactory>());
 assetManager->RegisterFactory<JzShader>(std::make_unique<JzShaderFactory>());
-assetManager->RegisterFactory<JzFont>(std::make_unique<JzFontFactory>());
 
 // Search paths are also added
 assetManager->AddSearchPath(enginePath.string());

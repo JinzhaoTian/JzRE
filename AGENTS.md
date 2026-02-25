@@ -273,7 +273,6 @@ JzREEditor (Executable)
 | Component          | Thread Safety                                    |
 | ------------------ | ------------------------------------------------ |
 | `JzThreadPool`     | ✅ Thread-safe                                   |
-| `JzTaskQueue`      | ✅ Thread-safe                                   |
 | `JzRHICommandList` | ✅ Recording is thread-safe                      |
 | `JzAssetManager`   | ✅ Fine-grained mutexes, async loading supported |
 | `JzAssetRegistry`  | ✅ Uses shared_mutex for read-heavy workloads    |
