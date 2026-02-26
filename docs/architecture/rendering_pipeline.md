@@ -184,6 +184,10 @@ Per draw call:
 - pipeline vertex layout is read from cooked shader manifest (`vertexLayouts`) and attached to `JzPipelineDesc`.
 - `commandList.DrawIndexed(...)` is recorded with mesh index count.
 
+D3D12 note: input-layout semantic names are stored in pipeline-owned buffers with stable lifetime so
+PSO creation always receives valid `SemanticName` pointers. Root signature resources
+use DXIL reflection when available, with cooked reflection as a fallback.
+
 Shader variant selection:
 
 - shader variants are addressed by `keywordMask` (`U64`) instead of runtime define-map compilation.

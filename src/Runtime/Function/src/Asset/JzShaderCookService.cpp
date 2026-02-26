@@ -13,6 +13,7 @@
 
 #include <nlohmann/json.hpp>
 
+#include "JzRE/Runtime/Core/JzFileSystemUtils.h"
 #include "JzRE/Runtime/Core/JzLogger.h"
 #include "JzRE/Runtime/Function/ECS/JzAssetSystem.h"
 
@@ -316,7 +317,7 @@ std::filesystem::path JzShaderCookService::ResolveShaderToolPath() const
     const char *toolName = "JzREShaderTool";
 #endif
 
-    return (fs::current_path() / toolName).lexically_normal();
+    return (JzFileSystemUtils::GetExecutableDirectory() / toolName).lexically_normal();
 }
 
 } // namespace JzRE

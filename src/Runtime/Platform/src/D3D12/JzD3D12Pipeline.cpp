@@ -57,6 +57,77 @@ U32 ComputeTypeSize(const D3D12_SHADER_TYPE_DESC &desc)
     return 4 * std::max(1u, desc.Columns) * elements;
 }
 
+JzEShaderResourceType ConvertShaderResourceType(const D3D12_SHADER_INPUT_BIND_DESC &desc)
+{
+    switch (desc.Type) {
+        case D3D_SIT_CBUFFER:
+            return JzEShaderResourceType::UniformBuffer;
+        case D3D_SIT_SAMPLER:
+            return JzEShaderResourceType::Sampler;
+        case D3D_SIT_TEXTURE:
+            return JzEShaderResourceType::SampledTexture;
+        case D3D_SIT_TBUFFER:
+        case D3D_SIT_STRUCTURED:
+        case D3D_SIT_BYTEADDRESS:
+#if defined(D3D_SIT_APPEND_STRUCTURED)
+        case D3D_SIT_APPEND_STRUCTURED:
+#endif
+#if defined(D3D_SIT_CONSUME_STRUCTURED)
+        case D3D_SIT_CONSUME_STRUCTURED:
+#endif
+            return JzEShaderResourceType::StorageBuffer;
+        case D3D_SIT_UAV_RWTYPED:
+        case D3D_SIT_UAV_RWSTRUCTURED:
+        case D3D_SIT_UAV_RWBYTEADDRESS:
+#if defined(D3D_SIT_UAV_APPEND_STRUCTURED)
+        case D3D_SIT_UAV_APPEND_STRUCTURED:
+#endif
+#if defined(D3D_SIT_UAV_CONSUME_STRUCTURED)
+        case D3D_SIT_UAV_CONSUME_STRUCTURED:
+#endif
+        case D3D_SIT_UAV_RWSTRUCTURED_WITH_COUNTER:
+            return desc.Dimension == D3D_SRV_DIMENSION_BUFFER ? JzEShaderResourceType::StorageBuffer : JzEShaderResourceType::StorageTexture;
+        default:
+            break;
+    }
+
+    return JzEShaderResourceType::SampledTexture;
+}
+
+D3D12_DESCRIPTOR_RANGE_TYPE ConvertDescriptorRangeType(JzEShaderResourceType type)
+{
+    switch (type) {
+        case JzEShaderResourceType::UniformBuffer:
+            return D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
+        case JzEShaderResourceType::StorageBuffer:
+        case JzEShaderResourceType::StorageTexture:
+            return D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+        case JzEShaderResourceType::Sampler:
+            return D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
+        case JzEShaderResourceType::SampledTexture:
+        default:
+            return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+    }
+}
+
+void MergeReflectedResource(std::vector<JzShaderResourceBindingDesc> &resources, const JzShaderResourceBindingDesc &resource)
+{
+    auto iter = std::find_if(resources.begin(), resources.end(), [&resource](const JzShaderResourceBindingDesc &existing) {
+        return existing.set == resource.set && existing.binding == resource.binding && existing.type == resource.type;
+    });
+
+    if (iter == resources.end()) {
+        resources.push_back(resource);
+        return;
+    }
+
+    if (iter->name.empty()) {
+        iter->name = resource.name;
+    }
+
+    iter->arraySize = std::max(iter->arraySize, resource.arraySize);
+}
+
 DXGI_FORMAT ConvertVertexFormat(JzEVertexAttributeFormat format)
 {
     switch (format) {
@@ -328,18 +399,26 @@ const std::vector<JzVertexBindingDesc> &JzD3D12Pipeline::GetVertexBindings() con
 Bool JzD3D12Pipeline::BuildReflection()
 {
     m_inputSemantics.clear();
+    m_reflectedResources.clear();
 
     std::unordered_map<U64, JzReflectedCBuffer> reflectedBuffers;
+
+    Bool reflectionComplete = true;
 
     for (const auto &shader : m_shaders) {
         const auto bytecode   = shader->GetPayload();
         auto       reflection = ReflectShader(bytecode);
         if (!reflection) {
+            JzRE_LOG_WARN("JzD3D12Pipeline: DXIL reflection unavailable for pipeline '{}' stage '{}'",
+                          desc.debugName,
+                          static_cast<I32>(shader->GetType()));
+            reflectionComplete = false;
             continue;
         }
 
         D3D12_SHADER_DESC shaderDesc{};
         if (FAILED(reflection->GetDesc(&shaderDesc))) {
+            reflectionComplete = false;
             continue;
         }
 
@@ -365,6 +444,14 @@ Bool JzD3D12Pipeline::BuildReflection()
             if (FAILED(reflection->GetResourceBindingDesc(i, &bindDesc))) {
                 continue;
             }
+
+            JzShaderResourceBindingDesc resource;
+            resource.name      = bindDesc.Name ? bindDesc.Name : "";
+            resource.type      = ConvertShaderResourceType(bindDesc);
+            resource.set       = bindDesc.Space;
+            resource.binding   = bindDesc.BindPoint;
+            resource.arraySize = std::max<U32>(1U, static_cast<U32>(bindDesc.BindCount));
+            MergeReflectedResource(m_reflectedResources, resource);
 
             if (bindDesc.Type == D3D_SIT_CBUFFER && bindDesc.Name) {
                 cbufferBindings[bindDesc.Name] = {bindDesc.Space, bindDesc.BindPoint};
@@ -412,25 +499,23 @@ Bool JzD3D12Pipeline::BuildReflection()
     }
 
     m_uniformBindings.clear();
-    for (const auto &resource : desc.shaderLayout.resources) {
-        if (resource.type != JzEShaderResourceType::UniformBuffer) {
-            continue;
-        }
+    m_uniformBindings.reserve(reflectedBuffers.size());
+    for (const auto &entry : reflectedBuffers) {
+        const U32 set     = static_cast<U32>(entry.first >> 32);
+        const U32 binding = static_cast<U32>(entry.first & 0xFFFFFFFFu);
 
-        const U64 key  = (static_cast<U64>(resource.set) << 32) | resource.binding;
-        auto      iter = reflectedBuffers.find(key);
-        if (iter == reflectedBuffers.end()) {
-            continue;
-        }
+        JzD3D12UniformBinding bindingDesc;
+        bindingDesc.set         = set;
+        bindingDesc.binding     = binding;
+        bindingDesc.size        = entry.second.size;
+        bindingDesc.alignedSize = AlignTo(bindingDesc.size, 256);
+        bindingDesc.members     = entry.second.members;
+        bindingDesc.cpuData.assign(bindingDesc.alignedSize, 0);
+        m_uniformBindings.push_back(std::move(bindingDesc));
+    }
 
-        JzD3D12UniformBinding binding;
-        binding.set         = resource.set;
-        binding.binding     = resource.binding;
-        binding.size        = iter->second.size;
-        binding.alignedSize = AlignTo(binding.size, 256);
-        binding.members     = iter->second.members;
-        binding.cpuData.assign(binding.alignedSize, 0);
-        m_uniformBindings.push_back(std::move(binding));
+    if (!reflectionComplete) {
+        m_reflectedResources.clear();
     }
 
     return true;
@@ -444,15 +529,30 @@ Bool JzD3D12Pipeline::BuildRootSignature()
     m_resourceBindings.clear();
     m_samplerBindings.clear();
 
+    const auto &sourceResources = m_reflectedResources.empty() ? desc.shaderLayout.resources : m_reflectedResources;
+    std::vector<JzShaderResourceBindingDesc> resources = sourceResources;
+    std::sort(resources.begin(), resources.end(), [](const JzShaderResourceBindingDesc &lhs, const JzShaderResourceBindingDesc &rhs) {
+        if (lhs.set != rhs.set) {
+            return lhs.set < rhs.set;
+        }
+        if (lhs.binding != rhs.binding) {
+            return lhs.binding < rhs.binding;
+        }
+        if (lhs.type != rhs.type) {
+            return static_cast<U8>(lhs.type) < static_cast<U8>(rhs.type);
+        }
+        return lhs.name < rhs.name;
+    });
+
     std::vector<D3D12_DESCRIPTOR_RANGE> cbvSrvRanges;
     std::vector<D3D12_DESCRIPTOR_RANGE> samplerRanges;
-    cbvSrvRanges.reserve(desc.shaderLayout.resources.size());
-    samplerRanges.reserve(desc.shaderLayout.resources.size());
+    cbvSrvRanges.reserve(resources.size());
+    samplerRanges.reserve(resources.size());
 
     UINT cbvSrvIndex  = 0;
     UINT samplerIndex = 0;
 
-    for (const auto &resource : desc.shaderLayout.resources) {
+    for (const auto &resource : resources) {
         if (resource.type == JzEShaderResourceType::PushConstants) {
             continue;
         }
@@ -477,7 +577,7 @@ Bool JzD3D12Pipeline::BuildRootSignature()
         }
 
         D3D12_DESCRIPTOR_RANGE range{};
-        range.RangeType                         = (resource.type == JzEShaderResourceType::UniformBuffer) ? D3D12_DESCRIPTOR_RANGE_TYPE_CBV : D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+        range.RangeType                         = ConvertDescriptorRangeType(resource.type);
         range.NumDescriptors                    = 1;
         range.BaseShaderRegister                = resource.binding;
         range.RegisterSpace                     = resource.set;
@@ -661,6 +761,8 @@ Bool JzD3D12Pipeline::BuildPipelineState()
     m_semanticNames.clear();
 
     if (m_vertexLayout.IsValid()) {
+        m_inputElements.reserve(m_vertexLayout.attributes.size());
+        m_semanticNames.reserve(m_vertexLayout.attributes.size());
         for (const auto &attribute : m_vertexLayout.attributes) {
             D3D12_INPUT_ELEMENT_DESC element{};
 
@@ -723,6 +825,14 @@ Bool JzD3D12Pipeline::BuildPipelineState()
     psoDesc.DepthStencilState.StencilEnable    = FALSE;
     psoDesc.DepthStencilState.StencilReadMask  = D3D12_DEFAULT_STENCIL_READ_MASK;
     psoDesc.DepthStencilState.StencilWriteMask = D3D12_DEFAULT_STENCIL_WRITE_MASK;
+
+    // D3D12 validates stencil op enums even when StencilEnable=FALSE; zero is not a valid
+    // D3D12_STENCIL_OP or D3D12_COMPARISON_FUNC value and causes E_INVALIDARG.
+    const D3D12_DEPTH_STENCILOP_DESC defaultStencilOp = {
+        D3D12_STENCIL_OP_KEEP, D3D12_STENCIL_OP_KEEP,
+        D3D12_STENCIL_OP_KEEP, D3D12_COMPARISON_FUNC_ALWAYS};
+    psoDesc.DepthStencilState.FrontFace = defaultStencilOp;
+    psoDesc.DepthStencilState.BackFace  = defaultStencilOp;
 
     psoDesc.NumRenderTargets = 1;
     psoDesc.RTVFormats[0]    = DXGI_FORMAT_R8G8B8A8_UNORM;

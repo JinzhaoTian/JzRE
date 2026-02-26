@@ -6,8 +6,9 @@
 #include "JzRE/Runtime/JzRERuntime.h"
 
 #include "JzRE/Runtime/Core/JzClock.h"
-#include "JzRE/Runtime/Function/Project/JzProjectConfig.h"
+#include "JzRE/Runtime/Core/JzFileSystemUtils.h"
 #include "JzRE/Runtime/Core/JzServiceContainer.h"
+#include "JzRE/Runtime/Function/Project/JzProjectConfig.h"
 
 #include "JzRE/Runtime/Function/ECS/JzTransformComponents.h"
 #include "JzRE/Runtime/Function/ECS/JzCameraComponents.h"
@@ -241,7 +242,10 @@ void JzRE::JzRERuntime::InitializeSubsystems()
     m_assetSystem->RegisterFactory<JzTexture>(std::make_unique<JzTextureFactory>());
     m_assetSystem->RegisterFactory<JzMaterial>(std::make_unique<JzMaterialFactory>());
 
-    const auto enginePath        = std::filesystem::current_path();
+    // Use the directory that contains the engine executable, not the working directory.
+    // When `JzRE run <project>` is invoked from a game project folder, current_path()
+    // would point at the project, causing EngineContent lookups to fail.
+    const auto enginePath        = JzFileSystemUtils::GetExecutableDirectory();
     const auto engineContent     = (enginePath / "EngineContent");
     const auto engineModelsPath  = (engineContent / "Models");
     const auto engineTexPath     = (engineContent / "Textures");

@@ -308,6 +308,9 @@ std::shared_ptr<JzGPUShaderProgramObject> JzD3D12Device::CreateShader(const JzSh
 std::shared_ptr<JzRHIPipeline> JzD3D12Device::CreatePipeline(const JzPipelineDesc &desc)
 {
     auto pipeline = std::make_shared<JzD3D12Pipeline>(*this, desc);
+    if (!pipeline->IsValid()) {
+        return nullptr;
+    }
     m_stats.pipelines++;
     return pipeline;
 }

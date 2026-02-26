@@ -105,6 +105,7 @@ private:
     std::vector<JzD3D12UniformBinding>    m_uniformBindings;
     std::vector<JzD3D12DescriptorBinding> m_resourceBindings;
     std::vector<JzD3D12DescriptorBinding> m_samplerBindings;
+    std::vector<JzShaderResourceBindingDesc> m_reflectedResources;
 
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_cbvSrvHeap;
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_samplerHeap;

@@ -90,7 +90,11 @@ Backends consume cooked payloads as follows:
 
 - OpenGL: `GLSL` text payload
 - Vulkan: `SPIRV` binary payload (`VkShaderModule` directly, no runtime shaderc compile)
-- D3D12: `DXIL` binary payload (runtime reflection + root signature/PSO creation)
+- D3D12: `DXIL` binary payload (runtime reflection + root signature/PSO creation). Root
+  signature resources are derived from DXIL reflection when available, falling
+  back to cooked manifest layouts if reflection is unavailable. Input-layout
+  semantic names are stored in pipeline-owned buffers with stable lifetime so
+  D3D12 PSO creation always sees valid `SemanticName` pointers.
 - Metal: `MSL` text payload reserved in cooked artifacts (backend integration pending)
 
 Cooked payload delivery path:

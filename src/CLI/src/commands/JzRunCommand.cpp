@@ -8,7 +8,6 @@
 #include <cstdio>
 #include <format>
 #include <optional>
-#include <sstream>
 #include <unordered_set>
 
 #include <nlohmann/json.hpp>
@@ -38,7 +37,9 @@ String BuildHelp()
            "  JzRE run [path] [--project <file.jzreproject>] [--rhi auto|opengl|vulkan]\n"
            "           [--width <n>] [--height <n>] [--title <name>] [--skip-build]\n"
            "\n"
-           "  path          Project directory (default: current working directory).\n"
+           "  path          Project directory; searches it and parent directories for a\n"
+           "                .jzreproject file. Omit to use the current working directory\n"
+           "                (current directory only, no parent traversal).\n"
            "  --project     Explicit path to .jzreproject file.\n"
            "  --rhi         Render API to use at runtime (default: auto).\n"
            "  --width       Window width in pixels.\n"
@@ -122,7 +123,7 @@ JzCliResult JzRunCommand::Execute(JzCliContext              &context,
                                   const std::vector<String> &args,
                                   JzCliOutputFormat          format)
 {
-    if (args.empty() || args.front() == "--help" || args.front() == "-h") {
+    if (!args.empty() && (args.front() == "--help" || args.front() == "-h")) {
         return JzCliResult::Ok(BuildHelp());
     }
 
@@ -134,15 +135,12 @@ JzCliResult JzRunCommand::Execute(JzCliContext              &context,
 
     if (auto *projectFile = parsed.GetFirstValue("--project")) {
         projectPath = std::filesystem::path(*projectFile).lexically_normal();
-    } else {
-        std::filesystem::path startDir = std::filesystem::current_path();
-        if (!parsed.positionals.empty()) {
-            startDir = std::filesystem::path(parsed.positionals.front());
-            if (startDir.is_relative()) {
-                startDir = std::filesystem::current_path() / startDir;
-            }
-            startDir = startDir.lexically_normal();
+    } else if (!parsed.positionals.empty()) {
+        auto startDir = std::filesystem::path(parsed.positionals.front());
+        if (startDir.is_relative()) {
+            startDir = std::filesystem::current_path() / startDir;
         }
+        startDir = startDir.lexically_normal();
 
         if (startDir.extension() == ".jzreproject") {
             projectPath = startDir;
@@ -157,6 +155,18 @@ JzCliResult JzRunCommand::Execute(JzCliContext              &context,
             }
             projectPath = *found;
         }
+    } else {
+        // Default: look for a .jzreproject file in the current working directory only
+        const auto cwd   = std::filesystem::current_path();
+        auto       found = FindProjectFileIn(cwd);
+        if (!found.has_value()) {
+            return JzCliResult::Error(
+                JzCliExitCode::ProjectError,
+                std::format("No .jzreproject file found in '{}'.\n"
+                            "Use --project to specify the project file explicitly.",
+                            cwd.string()));
+        }
+        projectPath = *found;
     }
 
     if (JzProjectManager::ValidateProjectFile(projectPath) != JzEProjectResult::Success) {

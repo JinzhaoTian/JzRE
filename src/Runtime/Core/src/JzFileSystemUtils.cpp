@@ -4,7 +4,22 @@
  */
 
 #include "JzRE/Runtime/Core/JzFileSystemUtils.h"
+
 #include <algorithm>
+#include <filesystem>
+
+#if defined(_WIN32)
+    #ifndef WIN32_LEAN_AND_MEAN
+        #define WIN32_LEAN_AND_MEAN
+    #endif
+    #include <windows.h>
+#elif defined(__APPLE__)
+    #include <mach-o/dyld.h>
+    #include <climits>
+#elif defined(__linux__)
+    #include <unistd.h>
+    #include <climits>
+#endif
 
 JzRE::String JzRE::JzFileSystemUtils::MakeWindowsStyle(const JzRE::String &p_path)
 {
@@ -94,6 +109,31 @@ JzRE::String JzRE::JzFileSystemUtils::FileTypeToString(JzRE::JzEFileType p_fileT
     }
 
     return "Unknown";
+}
+
+std::filesystem::path JzRE::JzFileSystemUtils::GetExecutableDirectory()
+{
+#if defined(_WIN32)
+    wchar_t buf[MAX_PATH] = {};
+    DWORD   len           = ::GetModuleFileNameW(nullptr, buf, MAX_PATH);
+    if (len > 0 && len < MAX_PATH) {
+        return std::filesystem::path(buf).parent_path();
+    }
+#elif defined(__APPLE__)
+    char     buf[PATH_MAX] = {};
+    uint32_t size          = PATH_MAX;
+    if (_NSGetExecutablePath(buf, &size) == 0) {
+        return std::filesystem::path(buf).parent_path();
+    }
+#elif defined(__linux__)
+    char    buf[PATH_MAX] = {};
+    ssize_t len           = ::readlink("/proc/self/exe", buf, PATH_MAX - 1);
+    if (len > 0) {
+        buf[len] = '\0';
+        return std::filesystem::path(buf).parent_path();
+    }
+#endif
+    return std::filesystem::current_path();
 }
 
 JzRE::JzEFileType JzRE::JzFileSystemUtils::GetFileType(const JzRE::String &p_path)

@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <filesystem>
+
 #include "JzRE/Runtime/Core/JzRETypes.h"
 
 namespace JzRE {
@@ -76,6 +78,17 @@ public:
      * @param p_path
      */
     static JzEFileType GetFileType(const String &p_path);
+
+    /**
+     * @brief Returns the directory that contains the currently running executable.
+     *
+     * Unlike std::filesystem::current_path() (which is the working directory),
+     * this always returns the folder where the .exe/.bin lives, regardless of
+     * where the process was launched from.
+     *
+     * Falls back to current_path() if the platform query fails.
+     */
+    static std::filesystem::path GetExecutableDirectory();
 };
 
 } // namespace JzRE
