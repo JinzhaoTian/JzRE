@@ -19,6 +19,7 @@
 #include "JzRE/Runtime/Function/ECS/JzRenderSystem.h"
 #include "JzRE/Runtime/Function/ECS/JzAssetSystem.h"
 #include "JzRE/Runtime/Function/Event/JzEventSystem.h"
+#include "JzRE/Runtime/Function/Script/JzScriptSystem.h"
 #include "JzRE/Runtime/Platform/RHI/JzDevice.h"
 #include "JzRE/Runtime/Platform/RHI/JzGraphicsContext.h"
 
@@ -206,6 +207,7 @@ protected:
     std::shared_ptr<JzRenderSystem> m_renderSystem;
     std::shared_ptr<JzAssetSystem>  m_assetSystem;
     std::shared_ptr<JzEventSystem>  m_eventSystem;
+    std::shared_ptr<JzScriptSystem> m_scriptSystem;
 
     // Asset import/export services
     std::unique_ptr<JzAssetImporter> m_assetImporter;

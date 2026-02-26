@@ -17,6 +17,8 @@ set_target_properties(TESTJzREFunction PROPERTIES FOLDER "Tests")
 target_compile_features(TESTJzREFunction PUBLIC cxx_std_20)
 
 find_package(GTest CONFIG REQUIRED)
+find_package(sol2 CONFIG REQUIRED)
+find_package(lua  CONFIG REQUIRED)
 
 target_link_libraries(
     TESTJzREFunction
@@ -25,6 +27,8 @@ target_link_libraries(
     JzRuntimeResource
     JzRuntimePlatform
     JzRuntimeCore
+    sol2::sol2
+    lua
     GTest::gtest_main
 )
 

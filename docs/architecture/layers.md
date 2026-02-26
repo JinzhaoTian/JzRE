@@ -151,6 +151,7 @@ High-level engine systems:
 | Asset     | `ECS/`      | `JzAssetSystem`, `JzAssetComponents` (hot reload, ECS integration) |
 | Render    | `ECS/`      | `JzRenderSystem`, `JzCameraSystem`, `JzLightSystem`            |
 | Project   | `Project/`  | `JzProjectConfig`, `JzProjectManager` (project lifecycle)      |
+| **Script**| `Script/`   | `JzScriptSystem`, `JzScriptContext`, `JzScriptComponent` — Lua scripting via sol3 |
 
 ### 5. Interface Layer (`src/Runtime/Interface/`)
 

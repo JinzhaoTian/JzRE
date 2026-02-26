@@ -210,6 +210,9 @@ void JzRE::JzRERuntime::RegisterSystems()
     m_assetSystem = m_world->RegisterSystem<JzAssetSystem>();
     JzServiceContainer::Provide<JzAssetSystem>(*m_assetSystem);
 
+    m_scriptSystem = m_world->RegisterSystem<JzScriptSystem>();
+    JzServiceContainer::Provide<JzScriptSystem>(*m_scriptSystem);
+
     m_cameraSystem = m_world->RegisterSystem<JzCameraSystem>();
     m_lightSystem  = m_world->RegisterSystem<JzLightSystem>();
     m_renderSystem = m_world->RegisterSystem<JzRenderSystem>();
@@ -238,11 +241,12 @@ void JzRE::JzRERuntime::InitializeSubsystems()
     m_assetSystem->RegisterFactory<JzTexture>(std::make_unique<JzTextureFactory>());
     m_assetSystem->RegisterFactory<JzMaterial>(std::make_unique<JzMaterialFactory>());
 
-    const auto enginePath       = std::filesystem::current_path();
-    const auto engineContent    = (enginePath / "EngineContent");
-    const auto engineModelsPath = (engineContent / "Models");
-    const auto engineTexPath    = (engineContent / "Textures");
-    const auto engineShaderPath = (engineContent / "Shaders");
+    const auto enginePath        = std::filesystem::current_path();
+    const auto engineContent     = (enginePath / "EngineContent");
+    const auto engineModelsPath  = (engineContent / "Models");
+    const auto engineTexPath     = (engineContent / "Textures");
+    const auto engineShaderPath  = (engineContent / "Shaders");
+    const auto engineScriptPath  = (engineContent / "Scripts");
 
     // Add search paths based on project content and engine fallback content.
     if (hasLoadedProject) {
@@ -255,6 +259,7 @@ void JzRE::JzRERuntime::InitializeSubsystems()
         m_assetSystem->AddSearchPath((contentPath / "Textures").string());
         m_assetSystem->AddSearchPath(config.GetShaderCookedPath().string());
         m_assetSystem->AddSearchPath((contentPath / "Materials").string());
+        m_assetSystem->AddSearchPath((contentPath / "Scripts").string());
     }
 
     m_assetSystem->AddSearchPath(enginePath.string());
@@ -262,6 +267,7 @@ void JzRE::JzRERuntime::InitializeSubsystems()
     m_assetSystem->AddSearchPath(engineModelsPath.string());
     m_assetSystem->AddSearchPath(engineTexPath.string());
     m_assetSystem->AddSearchPath(engineShaderPath.string());
+    m_assetSystem->AddSearchPath(engineScriptPath.string());
 
     // Keep compatibility with existing sample output layouts.
     m_assetSystem->AddSearchPath((enginePath / "models").string());
@@ -362,12 +368,14 @@ void JzRE::JzRERuntime::ShutdownSubsystems()
     // Shutdown all subsystems in reverse order of initialization
     JzServiceContainer::Remove<JzRenderSystem>();
     JzServiceContainer::Remove<JzAssetSystem>();
+    JzServiceContainer::Remove<JzScriptSystem>();
     JzServiceContainer::Remove<JzEventSystem>();
     JzServiceContainer::Remove<JzWindowSystem>();
     m_renderSystem.reset();
     m_lightSystem.reset();
     m_cameraSystem.reset();
     m_assetSystem.reset();
+    m_scriptSystem.reset();
     m_eventSystem.reset();
     m_inputSystem.reset();
     if (m_graphicsContext) {

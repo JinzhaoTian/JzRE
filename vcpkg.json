@@ -57,6 +57,14 @@
             "version>=": "3.14.0"
         },
         {
+            "name": "lua",
+            "version>=": "5.4.6"
+        },
+        {
+            "name": "sol2",
+            "version>=": "3.3.0"
+        },
+        {
             "name": "directx-dxc",
             "platform": "windows"
         }

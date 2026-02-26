@@ -131,9 +131,10 @@ Current runtime registers systems in this order:
 2. `JzInputSystem` (`Input` phase metadata)
 3. `JzEventSystem` (`Input` phase metadata)
 4. `JzAssetSystem` (`Logic` phase metadata)
-5. `JzCameraSystem` (`PreRender` phase metadata)
-6. `JzLightSystem` (`PreRender` phase metadata)
-7. `JzRenderSystem` (`Render` phase metadata)
+5. `JzScriptSystem` (`Logic` phase metadata) — Lua script execution
+6. `JzCameraSystem` (`PreRender` phase metadata)
+7. `JzLightSystem` (`PreRender` phase metadata)
+8. `JzRenderSystem` (`Render` phase metadata)
 
 Execution order is exactly this registration order because `JzWorld::Update` is linear.
 
@@ -229,6 +230,23 @@ Visibility filtering uses:
 - `JzWindowEventQueueComponent`
 - `JzPrimaryWindowTag`
 
+### Scripting
+
+- `JzScriptComponent` — attaches a Lua script (`.lua` file) to an entity
+
+  | Field | Type | Description |
+  |---|---|---|
+  | `scriptPath` | `String` | Path to the `.lua` file (resolved via asset search paths) |
+  | `started` | `Bool` | Set by `JzScriptSystem` once `OnStart` has been called |
+
+  The script file may define any combination of:
+  ```lua
+  function OnStart(entity)   end  -- called once on first frame
+  function OnUpdate(entity, dt) end  -- called every Logic frame
+  function OnStop(entity)    end  -- called on entity destruction / system shutdown
+  ```
+  Entities are passed as `uint32_t` integers. Use the `world` global table to operate on them.
+
 ## Editor Interop with Runtime ECS
 
 Editor uses runtime ECS/render interfaces without editor-specific runtime coupling:
@@ -250,3 +268,6 @@ This keeps runtime ECS reusable for non-editor applications.
 - `src/Runtime/Function/src/ECS/JzInputSystem.cpp`
 - `src/Runtime/Function/include/JzRE/Runtime/Function/Event/JzEventSystem.h`
 - `src/Runtime/Function/src/ECS/JzRenderSystem.cpp`
+- `src/Runtime/Function/include/JzRE/Runtime/Function/Script/JzScriptComponent.h`
+- `src/Runtime/Function/include/JzRE/Runtime/Function/Script/JzScriptContext.h`
+- `src/Runtime/Function/include/JzRE/Runtime/Function/Script/JzScriptSystem.h`

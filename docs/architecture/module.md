@@ -161,7 +161,7 @@ cmake --build examples/EditorExample/build
 | `JzRuntimeCore` | Object | spdlog, fmt |
 | `JzRuntimePlatform` | Object | JzRuntimeCore, glad, glfw, vulkan, spirv-reflect, d3d12/dxgi/dxguid (Windows), directx-dxc/dxcompiler (Windows) |
 | `JzRuntimeResource` | Object | JzRuntimeCore, JzRuntimePlatform, assimp, stb, freetype |
-| `JzRuntimeFunction` | Object | JzRuntimeCore, JzRuntimePlatform, JzRuntimeResource, entt |
+| `JzRuntimeFunction` | Object | JzRuntimeCore, JzRuntimePlatform, JzRuntimeResource, entt, lua, sol2 |
 | `JzRERuntime` | Object | Runtime layers |
 | `JzREShaderTool` | Executable | nlohmann-json, dxc/spirv-cross toolchain |
 | `JzCLI` | Object | JzRERuntime, nlohmann-json |
