@@ -1,6 +1,6 @@
 /**
  * @author    Jinzhao Tian
- * @copyright Copyright (c) 2025 JzRE
+ * @copyright Copyright (c) 2026 JzRE
  */
 
 #include <memory>
@@ -73,9 +73,9 @@ TEST(JzCliCommandRegistry, BuiltinDomainHelpIsRoutable)
     ASSERT_TRUE(context.Initialize());
 
     const std::vector<JzRE::String> args = {"--help"};
-    const auto result = registry.Execute("project", context, args, JzRE::JzCliOutputFormat::Text);
+    const auto result = registry.Execute("init", context, args, JzRE::JzCliOutputFormat::Text);
     EXPECT_TRUE(result.IsSuccess());
-    EXPECT_NE(result.message.find("project commands"), JzRE::String::npos);
+    EXPECT_NE(result.message.find("init command"), JzRE::String::npos);
 
     context.Shutdown();
 }

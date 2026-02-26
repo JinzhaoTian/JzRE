@@ -1,6 +1,6 @@
 /**
  * @author    Jinzhao Tian
- * @copyright Copyright (c) 2025 JzRE
+ * @copyright Copyright (c) 2026 JzRE
  */
 
 #include <chrono>
@@ -14,10 +14,10 @@
 #include <nlohmann/json.hpp>
 
 #include "JzRE/CLI/JzCliContext.h"
-#include "JzRE/CLI/commands/JzAssetCommand.h"
-#include "JzRE/CLI/commands/JzProjectCommand.h"
-#include "JzRE/CLI/commands/JzSceneCommand.h"
-#include "JzRE/CLI/commands/JzShaderCommand.h"
+#include "JzRE/CLI/commands/JzInitCommand.h"
+#include "JzRE/CLI/commands/JzCreateCommand.h"
+#include "JzRE/CLI/commands/JzImportCommand.h"
+#include "JzRE/CLI/commands/JzBuildCommand.h"
 
 namespace {
 
@@ -29,7 +29,8 @@ std::filesystem::path MakeUniqueTempDir(const char *prefix)
     const auto now  = std::chrono::steady_clock::now().time_since_epoch().count();
 
     for (int i = 0; i < 64; ++i) {
-        const auto candidate = base / (std::string(prefix) + "_" + std::to_string(now) + "_" + std::to_string(i));
+        const auto candidate =
+            base / (std::string(prefix) + "_" + std::to_string(now) + "_" + std::to_string(i));
         std::error_code ec;
         if (std::filesystem::create_directories(candidate, ec)) {
             return candidate;
@@ -59,235 +60,192 @@ std::filesystem::path FindProjectFile(const std::filesystem::path &projectDir)
     throw std::runtime_error("project file not found");
 }
 
-JzRE::JzCliResult CreateProject(JzRE::JzProjectCommand             &command,
-                                JzRE::JzCliContext                 &context,
-                                const std::filesystem::path        &projectDir,
-                                const JzRE::String                 &projectName,
-                                JzRE::JzCliOutputFormat             format = JzRE::JzCliOutputFormat::Text)
-{
-    const std::vector<JzRE::String> args = {
-        "create",
-        "--name", projectName,
-        "--dir", projectDir.string(),
-    };
-    return command.Execute(context, args, format);
-}
-
 } // namespace
 
-TEST(JzCliIntegration, ProjectCreateValidateInfoSet)
+TEST(JzCliIntegration, InitProject)
 {
-    const auto tempRoot   = MakeUniqueTempDir("JzRE_cli_project");
-    const auto projectDir = tempRoot / "Project";
+    const auto tempRoot   = MakeUniqueTempDir("JzRE_cli_init");
+    const auto projectDir = tempRoot / "MyGame";
 
     JzRE::JzCliContext context;
     ASSERT_TRUE(context.Initialize());
 
-    JzRE::JzProjectCommand project;
+    JzRE::JzInitCommand init;
 
-    const auto createResult = CreateProject(project, context, projectDir, "DemoProject");
-    ASSERT_TRUE(createResult.IsSuccess()) << createResult.message;
-
-    const auto projectFile = FindProjectFile(projectDir);
-
-    const std::vector<JzRE::String> validateArgs = {
-        "validate",
-        "--project", projectFile.string(),
+    const std::vector<JzRE::String> args = {
+        projectDir.string(),
+        "--name",
+        "MyGame",
+        "--render-api",
+        "opengl",
     };
-    const auto validateResult = project.Execute(context, validateArgs, JzRE::JzCliOutputFormat::Text);
-    ASSERT_TRUE(validateResult.IsSuccess()) << validateResult.message;
+    const auto result = init.Execute(context, args, JzRE::JzCliOutputFormat::Json);
+    ASSERT_TRUE(result.IsSuccess()) << result.message;
 
-    const std::vector<JzRE::String> infoArgs = {
-        "info",
-        "--project", projectFile.string(),
-    };
-    const auto infoResult = project.Execute(context, infoArgs, JzRE::JzCliOutputFormat::Json);
-    ASSERT_TRUE(infoResult.IsSuccess()) << infoResult.message;
-
-    auto infoPayload = Json::parse(infoResult.message);
-    EXPECT_EQ(infoPayload.at("project_name").get<std::string>(), "DemoProject");
-
-    const std::vector<JzRE::String> setArgs = {
-        "set",
-        "--project", projectFile.string(),
-        "--default-scene", "Content/Scenes/Main.jzscene",
-        "--render-api", "opengl",
-        "--shader-auto-cook", "off",
-        "--startup-mode", "host",
-    };
-    const auto setResult = project.Execute(context, setArgs, JzRE::JzCliOutputFormat::Text);
-    ASSERT_TRUE(setResult.IsSuccess()) << setResult.message;
-
-    const auto infoAfterSet = project.Execute(context, infoArgs, JzRE::JzCliOutputFormat::Json);
-    ASSERT_TRUE(infoAfterSet.IsSuccess()) << infoAfterSet.message;
-
-    auto setPayload = Json::parse(infoAfterSet.message);
-    EXPECT_EQ(setPayload.at("default_scene").get<std::string>(), "Content/Scenes/Main.jzscene");
-    EXPECT_EQ(setPayload.at("render_api").get<std::string>(), "opengl");
-    EXPECT_EQ(setPayload.at("startup_mode").get<std::string>(), "host");
-    EXPECT_FALSE(setPayload.at("shader_auto_cook").get<bool>());
+    const auto payload = Json::parse(result.message);
+    EXPECT_EQ(payload.at("project_name").get<std::string>(), "MyGame");
+    EXPECT_EQ(payload.at("render_api").get<std::string>(), "opengl");
+    EXPECT_TRUE(std::filesystem::exists(payload.at("project").get<std::string>()));
 
     context.Shutdown();
     std::error_code ec;
     std::filesystem::remove_all(tempRoot, ec);
 }
 
-TEST(JzCliIntegration, AssetImportExport)
+TEST(JzCliIntegration, InitProjectDefaultName)
 {
-    const auto tempRoot   = MakeUniqueTempDir("JzRE_cli_asset");
-    const auto projectDir = tempRoot / "Project";
-    const auto outDir     = tempRoot / "Exported";
+    const auto tempRoot   = MakeUniqueTempDir("JzRE_cli_init_name");
+    const auto projectDir = tempRoot / "NamedByDir";
 
     JzRE::JzCliContext context;
     ASSERT_TRUE(context.Initialize());
 
-    JzRE::JzProjectCommand project;
-    const auto createResult = CreateProject(project, context, projectDir, "AssetProject");
-    ASSERT_TRUE(createResult.IsSuccess()) << createResult.message;
+    JzRE::JzInitCommand init;
+
+    // No --name: should default to directory name "NamedByDir"
+    const std::vector<JzRE::String> args   = {projectDir.string()};
+    const auto                      result = init.Execute(context, args, JzRE::JzCliOutputFormat::Json);
+    ASSERT_TRUE(result.IsSuccess()) << result.message;
+
+    const auto payload = Json::parse(result.message);
+    EXPECT_EQ(payload.at("project_name").get<std::string>(), "NamedByDir");
+
+    context.Shutdown();
+    std::error_code ec;
+    std::filesystem::remove_all(tempRoot, ec);
+}
+
+TEST(JzCliIntegration, ImportAsset)
+{
+    const auto tempRoot   = MakeUniqueTempDir("JzRE_cli_import");
+    const auto projectDir = tempRoot / "Project";
+
+    JzRE::JzCliContext context;
+    ASSERT_TRUE(context.Initialize());
+
+    // Init the project first
+    JzRE::JzInitCommand             init;
+    const std::vector<JzRE::String> initArgs = {projectDir.string(), "--name", "AssetProject"};
+    ASSERT_TRUE(init.Execute(context, initArgs, JzRE::JzCliOutputFormat::Text).IsSuccess());
 
     const auto projectFile = FindProjectFile(projectDir);
 
+    // Write a dummy asset to import
     const auto sourceFile = tempRoot / "source" / "tex.png";
     WriteTextFile(sourceFile, "dummy-texture-data");
 
-    JzRE::JzAssetCommand asset;
+    JzRE::JzImportCommand import_cmd;
 
     const std::vector<JzRE::String> importArgs = {
-        "import",
-        "--project", projectFile.string(),
-        "--src", sourceFile.string(),
-        "--subfolder", "Textures",
+        sourceFile.string(),
+        "--project",
+        projectFile.string(),
+        "--subfolder",
+        "Textures",
     };
-    const auto importResult = asset.Execute(context, importArgs, JzRE::JzCliOutputFormat::Text);
+    const auto importResult =
+        import_cmd.Execute(context, importArgs, JzRE::JzCliOutputFormat::Text);
     ASSERT_TRUE(importResult.IsSuccess()) << importResult.message;
 
     const auto importedFile = projectDir / "Content" / "Textures" / "tex.png";
-    ASSERT_TRUE(std::filesystem::exists(importedFile));
-
-    const std::vector<JzRE::String> exportArgs = {
-        "export",
-        "--project", projectFile.string(),
-        "--src", "Textures/tex.png",
-        "--out", outDir.string(),
-    };
-    const auto exportResult = asset.Execute(context, exportArgs, JzRE::JzCliOutputFormat::Text);
-    ASSERT_TRUE(exportResult.IsSuccess()) << exportResult.message;
-
-    const auto exportedFile = outDir / "Textures" / "tex.png";
-    ASSERT_TRUE(std::filesystem::exists(exportedFile));
+    EXPECT_TRUE(std::filesystem::exists(importedFile));
 
     context.Shutdown();
     std::error_code ec;
     std::filesystem::remove_all(tempRoot, ec);
 }
 
-TEST(JzCliIntegration, ShaderCookAndCookProjectWithMockTool)
+TEST(JzCliIntegration, BuildProjectNoShaders)
 {
-    const auto tempRoot   = MakeUniqueTempDir("JzRE_cli_shader");
+    const auto tempRoot   = MakeUniqueTempDir("JzRE_cli_build");
     const auto projectDir = tempRoot / "Project";
 
-    const auto toolPath = tempRoot / "mock-shader-tool.sh";
-    WriteTextFile(toolPath, "#!/bin/sh\nexit 0\n");
-    std::error_code permEc;
-    std::filesystem::permissions(
-        toolPath,
-        std::filesystem::perms::owner_exec |
-        std::filesystem::perms::group_exec |
-        std::filesystem::perms::others_exec,
-        std::filesystem::perm_options::add,
-        permEc);
-    ASSERT_FALSE(permEc);
-
-    const auto inputDir = tempRoot / "shader-src";
-    const auto outDir   = tempRoot / "shader-out";
-    WriteTextFile(inputDir / "unit.jzshader.src.json", "{}\n");
-
     JzRE::JzCliContext context;
     ASSERT_TRUE(context.Initialize());
 
-    JzRE::JzShaderCommand shader;
-    {
-        const std::vector<JzRE::String> cookArgs = {
-            "cook",
-            "--input", inputDir.string(),
-            "--output-dir", outDir.string(),
-            "--tool", toolPath.string(),
-        };
-        const auto cookResult = shader.Execute(context, cookArgs, JzRE::JzCliOutputFormat::Json);
-        ASSERT_TRUE(cookResult.IsSuccess()) << cookResult.message;
-
-        const auto payload = Json::parse(cookResult.message);
-        EXPECT_EQ(payload.at("cooked").get<int>(), 1);
-        EXPECT_EQ(payload.at("total").get<int>(), 1);
-    }
-
-    JzRE::JzProjectCommand project;
-    const auto createResult = CreateProject(project, context, projectDir, "ShaderProject");
-    ASSERT_TRUE(createResult.IsSuccess()) << createResult.message;
+    // Init a project (no shader sources → build should succeed trivially)
+    JzRE::JzInitCommand             init;
+    const std::vector<JzRE::String> initArgs = {projectDir.string(), "--name", "BuildProject"};
+    ASSERT_TRUE(init.Execute(context, initArgs, JzRE::JzCliOutputFormat::Text).IsSuccess());
 
     const auto projectFile = FindProjectFile(projectDir);
-    WriteTextFile(projectDir / "Content" / "Shaders" / "src" / "project.jzshader.src.json", "{}\n");
 
-    {
-        const std::vector<JzRE::String> cookProjectArgs = {
-            "cook-project",
-            "--project", projectFile.string(),
-            "--tool", toolPath.string(),
-        };
-        const auto cookProjectResult = shader.Execute(context, cookProjectArgs, JzRE::JzCliOutputFormat::Json);
-        ASSERT_TRUE(cookProjectResult.IsSuccess()) << cookProjectResult.message;
+    JzRE::JzBuildCommand build;
 
-        const auto payload = Json::parse(cookProjectResult.message);
-        EXPECT_EQ(payload.at("cooked").get<int>(), 1);
-        EXPECT_EQ(payload.at("total").get<int>(), 1);
-    }
+    const std::vector<JzRE::String> buildArgs = {
+        "--project",
+        projectFile.string(),
+    };
+    const auto buildResult = build.Execute(context, buildArgs, JzRE::JzCliOutputFormat::Json);
+    ASSERT_TRUE(buildResult.IsSuccess()) << buildResult.message;
+
+    const auto payload = Json::parse(buildResult.message);
+    EXPECT_TRUE(payload.at("ok").get<bool>());
+
+    // Stamp file should have been written
+    const auto stampPath = projectDir / ".jzre-built";
+    EXPECT_TRUE(std::filesystem::exists(stampPath));
 
     context.Shutdown();
     std::error_code ec;
     std::filesystem::remove_all(tempRoot, ec);
 }
 
-TEST(JzCliIntegration, SceneValidateAndStats)
+TEST(JzCliIntegration, CreateShaderTemplate)
 {
-    const auto tempRoot = MakeUniqueTempDir("JzRE_cli_scene");
-    const auto sceneFile = tempRoot / "main.jzscene";
-
-    WriteTextFile(sceneFile,
-                  "{\n"
-                  "  \"version\": 1,\n"
-                  "  \"entities\": [\n"
-                  "    {\"name\": \"Camera\", \"transform\": {}},\n"
-                  "    {\"name\": \"Cube\", \"tags\": [\"demo\"]}\n"
-                  "  ]\n"
-                  "}\n");
+    const auto tempRoot = MakeUniqueTempDir("JzRE_cli_create");
 
     JzRE::JzCliContext context;
     ASSERT_TRUE(context.Initialize());
 
-    JzRE::JzSceneCommand scene;
+    JzRE::JzCreateCommand create;
 
-    {
-        const std::vector<JzRE::String> validateArgs = {
-            "validate",
-            "--file", sceneFile.string(),
-        };
-        const auto validateResult = scene.Execute(context, validateArgs, JzRE::JzCliOutputFormat::Text);
-        ASSERT_TRUE(validateResult.IsSuccess()) << validateResult.message;
-    }
+    const std::vector<JzRE::String> args = {
+        "shader",
+        "MyShader",
+        "--dir",
+        tempRoot.string(),
+    };
+    const auto result = create.Execute(context, args, JzRE::JzCliOutputFormat::Json);
+    ASSERT_TRUE(result.IsSuccess()) << result.message;
 
-    {
-        const std::vector<JzRE::String> statsArgs = {
-            "stats",
-            "--file", sceneFile.string(),
-        };
-        const auto statsResult = scene.Execute(context, statsArgs, JzRE::JzCliOutputFormat::Json);
-        ASSERT_TRUE(statsResult.IsSuccess()) << statsResult.message;
+    const auto payload  = Json::parse(result.message);
+    const auto filePath = std::filesystem::path(payload.at("path").get<std::string>());
+    EXPECT_TRUE(std::filesystem::exists(filePath));
+    EXPECT_EQ(filePath.filename().string(), "MyShader.jzshader.src.json");
 
-        const auto payload = Json::parse(statsResult.message);
-        EXPECT_EQ(payload.at("entities").get<int>(), 2);
-        EXPECT_EQ(payload.at("named_entities").get<int>(), 2);
-        EXPECT_EQ(payload.at("with_transform").get<int>(), 1);
-    }
+    // Verify content is valid JSON with expected keys
+    std::ifstream ifs(filePath);
+    const auto    content = Json::parse(ifs);
+    EXPECT_EQ(content.at("name").get<std::string>(), "MyShader");
+
+    context.Shutdown();
+    std::error_code ec;
+    std::filesystem::remove_all(tempRoot, ec);
+}
+
+TEST(JzCliIntegration, CreateScriptTemplate)
+{
+    const auto tempRoot = MakeUniqueTempDir("JzRE_cli_create_script");
+
+    JzRE::JzCliContext context;
+    ASSERT_TRUE(context.Initialize());
+
+    JzRE::JzCreateCommand create;
+
+    const std::vector<JzRE::String> args = {
+        "script",
+        "Player",
+        "--dir",
+        tempRoot.string(),
+    };
+    const auto result = create.Execute(context, args, JzRE::JzCliOutputFormat::Json);
+    ASSERT_TRUE(result.IsSuccess()) << result.message;
+
+    const auto payload  = Json::parse(result.message);
+    const auto filePath = std::filesystem::path(payload.at("path").get<std::string>());
+    EXPECT_TRUE(std::filesystem::exists(filePath));
+    EXPECT_EQ(filePath.filename().string(), "Player.lua");
 
     context.Shutdown();
     std::error_code ec;

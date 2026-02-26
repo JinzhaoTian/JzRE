@@ -66,9 +66,9 @@ String BuildGlobalHelp(const JzCliCommandRegistry &registry)
 {
     return std::format(
         "{}\nGlobal options:\n"
-        "  --help, -h\n"
-        "  --version\n"
-        "  --format text|json\n"
+        "  --help, -h                     Show help\n"
+        "  --version                      Show version\n"
+        "  --format text|json             Output format (default: text)\n"
         "  --log-level trace|debug|info|warn|error\n",
         registry.BuildHelpText());
 }
@@ -175,11 +175,11 @@ int main(int argc, char **argv)
         return static_cast<int>(JzCliExitCode::InvalidArguments);
     }
 
-    const auto          domain = commandTokens.front();
-    std::vector<String> domainArgs(commandTokens.begin() + 1, commandTokens.end());
+    const auto          command = commandTokens.front();
+    std::vector<String> commandArgs(commandTokens.begin() + 1, commandTokens.end());
 
     if (showHelp) {
-        domainArgs.insert(domainArgs.begin(), "--help");
+        commandArgs.insert(commandArgs.begin(), "--help");
     }
 
     JzCliContext context;
@@ -188,7 +188,7 @@ int main(int argc, char **argv)
         return static_cast<int>(JzCliExitCode::RuntimeError);
     }
 
-    const auto result = registry.Execute(domain, context, domainArgs, format);
+    const auto result = registry.Execute(command, context, commandArgs, format);
     context.Shutdown();
 
     if (result.IsSuccess()) {
