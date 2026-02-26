@@ -188,12 +188,6 @@ void JzRenderSystem::Update(JzWorld &world, F32 delta)
     }
 
     m_renderGraph.Compile();
-    static Bool s_dumpedGraph = false;
-    if (!s_dumpedGraph) {
-        m_renderGraph.DumpGraph("docs/architecture/render_graph_dump.md");
-        s_dumpedGraph = true;
-    }
-
     m_renderGraph.Execute(device);
 
     if (shouldBlit) {
