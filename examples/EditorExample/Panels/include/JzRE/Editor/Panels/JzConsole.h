@@ -7,7 +7,6 @@
 
 #include "JzRE/Runtime/Core/JzRETypes.h"
 #include "JzRE/Runtime/Core/JzELog.h"
-#include "JzRE/Runtime/Core/JzDelegate.h"
 #include "JzRE/Editor/UI/JzPanelWindow.h"
 #include "JzRE/Editor/UI/JzGroup.h"
 #include "JzRE/Editor/UI/JzText.h"
@@ -59,7 +58,6 @@ private:
 private:
     JzGroup                                  *m_logGroup;
     std::unordered_map<JzText *, JzELogLevel> m_logTextWidgets;
-    DelegateHandle                            m_logMessageHandle{0};
     Bool                                      m_clearOnPlay    = true;
     Bool                                      m_showDefaultLog = true;
     Bool                                      m_showInfoLog    = true;

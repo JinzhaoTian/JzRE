@@ -27,14 +27,14 @@ JzRE::JzConsole::JzConsole(const String &name, Bool is_opened) :
     m_logGroup = &CreateWidget<JzGroup>();
     m_logGroup->ReverseDrawOrder();
 
-    m_logMessageHandle = JzLogger::GetInstance().OnLogMessage.Add(
+    JzLogger::GetInstance().SetLogMessageCallback(
         std::bind(&JzConsole::OnLogMessage, this, std::placeholders::_1));
 }
 
 JzRE::JzConsole::~JzConsole()
 {
     // Unsubscribe from logger to prevent callbacks after destruction
-    JzLogger::GetInstance().OnLogMessage.Remove(m_logMessageHandle);
+    JzLogger::GetInstance().ClearLogMessageCallback();
 }
 
 void JzRE::JzConsole::OnLogMessage(const JzLogMessage &msg)

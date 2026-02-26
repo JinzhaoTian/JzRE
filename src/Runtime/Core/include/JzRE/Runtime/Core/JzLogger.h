@@ -5,9 +5,9 @@
 
 #pragma once
 
+#include <functional>
 #include <spdlog/logger.h>
 #include "JzRE/Runtime/Core/JzRETypes.h"
-#include "JzDelegate.h"
 #include "JzELog.h"
 
 namespace JzRE {
@@ -86,17 +86,27 @@ public:
      */
     void Critical(const String &message);
 
+    /**
+     * @brief Set the log message callback
+     *
+     * @param callback
+     */
+    void SetLogMessageCallback(std::function<void(const JzLogMessage &)> callback);
+
+    /**
+     * @brief Clear the log message callback
+     */
+    void ClearLogMessageCallback();
+
 private:
     JzLogger();
     ~JzLogger()                           = default;
     JzLogger(const JzLogger &)            = delete;
     JzLogger &operator=(const JzLogger &) = delete;
 
-public:
-    JzDelegate<const JzLogMessage &> OnLogMessage;
-
 private:
-    std::shared_ptr<spdlog::logger> m_logger;
+    std::shared_ptr<spdlog::logger>              m_logger;
+    std::function<void(const JzLogMessage &)>    m_logCallback;
 };
 
 } // namespace JzRE

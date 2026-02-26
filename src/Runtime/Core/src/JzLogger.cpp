@@ -26,7 +26,7 @@ JzRE::JzLogger::JzLogger()
         sinks.push_back(file_sink);
 
         // custom event sink
-        auto event_sink = std::make_shared<JzLogSink<std::mutex>>(OnLogMessage);
+        auto event_sink = std::make_shared<JzLogSink<std::mutex>>(m_logCallback);
         sinks.push_back(event_sink);
 
         // create multiple sink logger
@@ -74,6 +74,16 @@ void JzRE::JzLogger::Log(const JzRE::String &message, JzRE::JzELogLevel level)
         }
     }(),
                   message);
+}
+
+void JzRE::JzLogger::SetLogMessageCallback(std::function<void(const JzLogMessage &)> callback)
+{
+    m_logCallback = std::move(callback);
+}
+
+void JzRE::JzLogger::ClearLogMessageCallback()
+{
+    m_logCallback = nullptr;
 }
 
 void JzRE::JzLogger::Trace(const JzRE::String &message)

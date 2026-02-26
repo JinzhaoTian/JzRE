@@ -5,10 +5,10 @@
 
 #pragma once
 
+#include <functional>
 #include "spdlog/common.h"
 #include "spdlog/details/log_msg.h"
 #include "spdlog/sinks/base_sink.h"
-#include "JzDelegate.h"
 #include "JzELog.h"
 
 namespace JzRE {
@@ -24,20 +24,10 @@ public:
     /**
      * @brief Constructor
      *
-     * @param event
+     * @param callback
      */
-    explicit JzLogSink(JzDelegate<const JzLogMessage &> &event) :
-        m_event(event) { }
-
-    /**
-     * @brief Get the Event object
-     *
-     * @return JzDelegate<const JzLogMessage &>&
-     */
-    JzDelegate<const JzLogMessage &> &GetEvent()
-    {
-        return m_event;
-    }
+    explicit JzLogSink(std::function<void(const JzLogMessage &)> &callback) :
+        m_callback(callback) { }
 
 protected:
     void sink_it_(const spdlog::details::log_msg &msg) override
@@ -72,7 +62,7 @@ protected:
             }
         }();
 
-        m_event.Broadcast(logMsg);
+        if (m_callback) m_callback(logMsg);
     }
 
     void flush_() override
@@ -82,7 +72,7 @@ protected:
     }
 
 private:
-    JzDelegate<const JzLogMessage &> &m_event;
+    std::function<void(const JzLogMessage &)> &m_callback;
 };
 
 } // namespace JzRE
