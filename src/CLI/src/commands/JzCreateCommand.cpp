@@ -28,6 +28,7 @@ String BuildHelp()
     ss << "  JzRE create shader <name> [--dir <dir>] [--project <file.jzreproject>]\n";
     ss << "  JzRE create script <name> [--dir <dir>] [--project <file.jzreproject>]\n";
     ss << "  JzRE create entity <name> [--dir <dir>] [--project <file.jzreproject>]\n";
+    ss << "  JzRE create scene <name> [--dir <dir>] [--project <file.jzreproject>]\n";
     ss << "\n";
     ss << "  --dir     Output directory (default: current working directory or project content root).\n";
     ss << "  --project Load project to resolve default --dir from its content root.";
@@ -171,6 +172,42 @@ JzCliResult HandleCreateEntity(JzCliContext              &context,
     return WriteFile(outPath, entity.dump(2) + "\n", format);
 }
 
+JzCliResult HandleCreateScene(JzCliContext              &context,
+                              const std::vector<String> &args,
+                              JzCliOutputFormat          format)
+{
+    auto parsed = JzCliArgParser::Parse(args);
+
+    if (parsed.positionals.empty()) {
+        return JzCliResult::Error(JzCliExitCode::InvalidArguments,
+                                  "Missing required argument: <name>\n"
+                                  "  Usage: JzRE create scene <name> [--dir <dir>]");
+    }
+
+    const String name    = parsed.positionals.front();
+    const auto   outDir  = ResolveOutputDir(context,
+                                            parsed.GetFirstValue("--dir"),
+                                            parsed.GetFirstValue("--project"));
+    const auto   outPath = (outDir / name).lexically_normal();
+
+    // Ensure .jzscene extension
+    std::filesystem::path scenePath = outPath;
+    if (scenePath.extension() != ".jzscene") {
+        scenePath = scenePath.replace_extension(".jzscene");
+    }
+
+    // Also ensure it's in a Scenes subdirectory if the user didn't specify one
+    if (scenePath.parent_path().filename() != "Scenes") {
+        scenePath = scenePath.parent_path() / "Scenes" / scenePath.filename();
+    }
+
+    Json scene;
+    scene["version"]  = 1;
+    scene["entities"] = Json::array();
+
+    return WriteFile(scenePath, scene.dump(2) + "\n", format);
+}
+
 } // namespace
 
 const String &JzCreateCommand::GetDomain() const
@@ -198,6 +235,9 @@ JzCliResult JzCreateCommand::Execute(JzCliContext              &context,
     if (type == "entity") {
         return HandleCreateEntity(context, subArgs, format);
     }
+    if (type == "scene") {
+        return HandleCreateScene(context, subArgs, format);
+    }
 
     return JzCliResult::Error(
         JzCliExitCode::InvalidArguments,
@@ -206,7 +246,7 @@ JzCliResult JzCreateCommand::Execute(JzCliContext              &context,
 
 String JzCreateCommand::GetHelp() const
 {
-    return "  create   Create project files (shader, script, entity)";
+    return "  create   Create project files (shader, script, entity, scene)";
 }
 
 } // namespace JzRE

@@ -27,7 +27,7 @@ String BuildHelp()
            "  JzRE import <src> [--project <file.jzreproject>] [--overwrite] [--subfolder <dir>] [--model]\n"
            "\n"
            "  <src>        Source file or directory to import.\n"
-           "  --project    Path to the project file.\n"
+           "  --project    Path to the project file (default: first .jzreproject in current directory).\n"
            "  --overwrite  Overwrite existing assets.\n"
            "  --subfolder  Place imported assets into a content subfolder.\n"
            "  --model      Import as a 3D model (includes textures and materials).";
@@ -202,12 +202,26 @@ JzCliResult JzImportCommand::Execute(JzCliContext              &context,
     }
 
     auto *projectFile = parsed.GetFirstValue("--project");
-    if (projectFile == nullptr || projectFile->empty()) {
-        return JzCliResult::Error(JzCliExitCode::InvalidArguments,
-                                  "Missing required option: --project");
-    }
 
-    const auto projectPath = ResolveAbsolute(*projectFile);
+    std::filesystem::path projectPath;
+    if (projectFile == nullptr || projectFile->empty()) {
+        // Search for any .jzreproject file in current directory
+        const std::filesystem::path currentDir = std::filesystem::current_path();
+        std::filesystem::path foundProject;
+        for (const auto &entry : std::filesystem::directory_iterator(currentDir)) {
+            if (entry.is_regular_file() && entry.path().extension() == ".jzreproject") {
+                foundProject = entry.path();
+                break;
+            }
+        }
+        if (foundProject.empty()) {
+            return JzCliResult::Error(JzCliExitCode::InvalidArguments,
+                                      "No --project specified and no .jzreproject file found in current directory");
+        }
+        projectPath = foundProject;
+    } else {
+        projectPath = ResolveAbsolute(*projectFile);
+    }
 
     JzImportOptions options;
     options.overwriteExisting = parsed.HasOption("--overwrite");

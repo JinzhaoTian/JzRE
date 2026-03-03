@@ -31,6 +31,10 @@
 #include "JzRE/Runtime/Function/Asset/JzAssetExporter.h"
 #include "JzRE/Runtime/Function/Asset/JzShaderCookService.h"
 
+// Scene serialization
+#include "JzRE/Runtime/Function/Scene/JzSceneSerializer.h"
+#include "JzRE/Runtime/Function/Scene/JzDefaultSceneCreator.h"
+
 JzRE::JzRERuntime::JzRERuntime(const JzRERuntimeSettings &settings) :
     m_settings(settings)
 {
@@ -307,6 +311,39 @@ void JzRE::JzRERuntime::PreloadAssets()
     CreateGlobalConfigEntity();
     CreateDefaultCameraEntity();
     CreateDefaultLightEntity();
+
+    // Load default scene from project configuration
+    if (m_projectManager.HasLoadedProject()) {
+        const auto &config = m_projectManager.GetConfig();
+
+        std::filesystem::path scenePath;
+
+        if (!config.defaultScene.empty()) {
+            // Use explicitly configured scene
+            scenePath = config.rootPath / config.defaultScene;
+        } else {
+            // Try to use default scene path
+            scenePath = JzDefaultSceneCreator::GetDefaultScenePath(config);
+        }
+
+        if (std::filesystem::exists(scenePath)) {
+            if (JzSceneSerializer::Deserialize(*m_world, scenePath)) {
+                JzRE_LOG_INFO("JzRERuntime: Loaded scene from {}", scenePath.string());
+            } else {
+                JzRE_LOG_WARN("JzRERuntime: Failed to load scene from {}", scenePath.string());
+            }
+        } else if (config.defaultScene.empty()) {
+            // No explicit scene configured and no default scene exists - create one
+            auto createdPath = JzDefaultSceneCreator::CreateDefaultScene(config);
+            if (!createdPath.empty() && std::filesystem::exists(createdPath)) {
+                if (JzSceneSerializer::Deserialize(*m_world, createdPath)) {
+                    JzRE_LOG_INFO("JzRERuntime: Created and loaded default scene at {}", createdPath.string());
+                }
+            }
+        } else {
+            JzRE_LOG_WARN("JzRERuntime: Scene file not found: {}", scenePath.string());
+        }
+    }
 }
 
 void JzRE::JzRERuntime::OnFrameBegin()
